@@ -1,0 +1,34 @@
+{
+  "M1": {
+    "milestone": "M1_real_data_flow",
+    "total_records": 16376,
+    "splits": {
+      "train": 11469,
+      "val": 2452,
+      "held_out": 2455
+    },
+    "platform_distribution": {
+      "windows": 8795,
+      "posix": 6982,
+      "cross_platform": 599
+    },
+    "syntax_total": 16376,
+    "syntax_pass": 16194,
+    "syntax_pass_rate": 0.9889,
+    "verdict": "PASS",
+    "ran_at": "2026-09-06T09:45:58.244569+00:00"
+  },
+  "M2": {
+    "milestone": "M2_standards",
+    "documents_present": {
+      "goal.md": true,
+      "eval.md": true,
+      "docs/SPECIFICATION.md": true,
+      "docs/PRODUCTION_ACCEPTANCE_STANDARD.md": true,
+      "docs/ACCEPTANCE_CRITERIA.md": true
+    },
+    "ruff_clean": false,
+    "verdict": "FAIL",
+    "ran_at": "2026-09-06T09:45:58.286896+00:00"
+  }
+}
