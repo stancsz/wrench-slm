@@ -192,10 +192,19 @@ class NanoWrench(nn.Module):
         max_new_tokens: int = 128,
         temperature: float = 0.0,
         top_p: float = 1.0,
-        eos_token_id: int = 2,
+        eos_token_id: Optional[int] = None,
     ) -> torch.Tensor:
         self.eval()
-        curr_ids = input_ids.clone()
+        if eos_token_id is None:
+            eos_token_id = 258  # WrenchTokenizer default eos token
+
+        # If prompt exceeds available context space, preserve the rightmost prompt tokens
+        max_prompt_len = max(16, self.config.max_seq_len - max_new_tokens)
+        if input_ids.shape[-1] > max_prompt_len:
+            curr_ids = input_ids[:, -max_prompt_len:].clone()
+        else:
+            curr_ids = input_ids.clone()
+
         for _ in range(max_new_tokens):
             if curr_ids.shape[-1] >= self.config.max_seq_len:
                 break

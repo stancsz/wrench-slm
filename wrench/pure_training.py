@@ -83,6 +83,11 @@ class PureJsonlDataset(Dataset):
         p_ids = self.tokenizer.encode(f"Prompt: {prompt}\nCall: ", add_special_tokens=False)
         t_ids = self.tokenizer.encode(target, add_special_tokens=False) + [self.tokenizer.eos_token_id]
 
+        # Truncate prompt from the left so target is ALWAYS fully preserved and learned
+        max_prompt_len = max(16, self.max_len - len(t_ids) - 1)
+        if len(p_ids) > max_prompt_len:
+            p_ids = p_ids[-max_prompt_len:]
+
         input_ids = [self.tokenizer.bos_token_id] + p_ids + t_ids
         # Mask prompt from loss
         labels = [-100] * (1 + len(p_ids)) + t_ids

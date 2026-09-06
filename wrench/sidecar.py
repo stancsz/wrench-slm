@@ -433,7 +433,10 @@ class BackgroundTrainer:
                     target = item.get("canonical_call", "")
                     input_text = f"Prompt: {prompt}\nCall: "
                     input_ids = torch.tensor([self.tokenizer.encode(input_text, add_special_tokens=True)], device=self.device)
-                    out = self.model.generate(input_ids, max_new_tokens=48, temperature=0.0)
+                    max_ctx = self.model.config.max_seq_len - 48
+                    if input_ids.shape[1] > max_ctx:
+                        input_ids = input_ids[:, -max_ctx:]
+                    out = self.model.generate(input_ids, max_new_tokens=48, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
                     gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
                     if gen_text.strip() == target.strip() or fsm_validate(gen_text):
                         correct += 1
@@ -450,7 +453,10 @@ class BackgroundTrainer:
         self.model.eval()
         input_text = f"Prompt: {prompt}\nCall: "
         input_ids = torch.tensor([self.tokenizer.encode(input_text, add_special_tokens=True)], device=self.device)
-        out = self.model.generate(input_ids, max_new_tokens=64, temperature=0.0)
+        max_ctx = self.model.config.max_seq_len - 64
+        if input_ids.shape[1] > max_ctx:
+            input_ids = input_ids[:, -max_ctx:]
+        out = self.model.generate(input_ids, max_new_tokens=64, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
         gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
         clean = gen_text.strip().splitlines()[0] if gen_text.strip() else ""
         if fsm_validate(clean):
