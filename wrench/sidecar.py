@@ -1,9 +1,9 @@
 """Wrench Gateway Sidecar: Autonomous, continuous in-a-loop learning daemon.
 
 Runs alongside LeanRouter (localhost:4000), continuously tails tool_calls.log,
-filters successful Wrench-specific operations, trains the pure-blood NanoWrench
-model in the background, runs held-out evaluations, and serves canary offload
-on port 4010.
+filters successful Wrench-specific operations, trains the native from-scratch
+NanoWrench model in the background, runs held-out evaluations, and serves canary
+offload on port 4010.
 """
 
 from __future__ import annotations
@@ -153,7 +153,7 @@ class SidecarState:
     def save_status(self) -> None:
         payload = {
             "service": "Wrench-Gateway-Sidecar",
-            "version": "1.0.0-pure-blood",
+            "version": "1.0.0-native",
             "status": "RUNNING" if self.running else "STOPPED",
             "uptime_seconds": round(time.time() - self.uptime_started, 1),
             "lines_scanned": self.lines_scanned,
@@ -497,7 +497,7 @@ def make_http_handler(state: SidecarState, trainer: BackgroundTrainer):
                     response = {
                         "prediction": prediction,
                         "fallback": prediction == "ROUTER_FALLBACK",
-                        "model": "nano-wrench-pure-blood",
+                        "model": "nano-wrench-native",
                     }
                     self.send_response(200)
                     self.send_header("Content-Type", "application/json")

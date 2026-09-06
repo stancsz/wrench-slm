@@ -1,4 +1,4 @@
-"""Tests for 100% Pure-Blood NanoWrench architecture and Gateway Sidecar."""
+"""Tests for Native NanoWrench architecture and Gateway Sidecar."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Pure-Blood training engine for NanoWrench from scratch.
+"""Native training engine for NanoWrench from scratch.
 
 Runs natively on PyTorch with zero external framework dependencies.
 Features:

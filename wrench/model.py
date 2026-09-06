@@ -1,4 +1,4 @@
-"""100% Pure-Blood Nano-Wrench Transformer architecture.
+"""Native NanoWrench Transformer architecture built from scratch.
 
 Implemented natively in PyTorch with zero external pre-trained model dependencies.
 Features:
@@ -137,7 +137,7 @@ class TransformerBlock(nn.Module):
 
 
 class NanoWrench(nn.Module):
-    """100% Pure-Blood Handcrafted Nano Transformer for Wrench-SLM."""
+    """Native from-scratch Nano Transformer for Wrench-SLM."""
 
     def __init__(self, config: Optional[NanoWrenchConfig] = None) -> None:
         super().__init__()

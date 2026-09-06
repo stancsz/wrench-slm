@@ -1,4 +1,4 @@
-"""100% Pure-Blood Byte/Subword Tokenizer for Wrench-SLM.
+"""Native Domain-Specific Byte/Subword Tokenizer for Wrench-SLM.
 
 Designed specifically for fast, lossless encoding of JSON envelopes,
 shell commands, and arbitrary developer text with zero external dependencies.

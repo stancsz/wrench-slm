@@ -11,9 +11,9 @@ if (-not (Test-Path $VenvPython)) {
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host " Starting Wrench Gateway Sidecar (Pure-Blood Daemon)      " -ForegroundColor Cyan
+Write-Host " Starting Wrench Gateway Sidecar (Native Daemon)          " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Model Architecture : 100% Pure-Blood NanoWrench"
+Write-Host "Model Architecture : Native NanoWrench (From Scratch)"
 Write-Host "Gateway Target     : C:\Users\stanc\github\lean-router\logs"
 Write-Host "Canary Port        : http://127.0.0.1:4010"
 Write-Host ""

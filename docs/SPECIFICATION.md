@@ -3,7 +3,7 @@
 ```
 Document Version : 1.0.0-PROD
 Classification   : HARD SPECIFICATION / NON-NEGOTIABLE
-Target System    : Wrench-SLM (100% Pure-Blood Nano-Transformer, 0 External Base Weights)
+Target System    : Wrench-SLM (Native from-scratch Nano-Transformer, 0 External Base Weights)
 Hardware Baseline: NVIDIA GeForce RTX 5070 Ti (16GB GDDR7, BF16 / FP8), 48GB Host RAM
 Gateway Routing  : http://localhost:4000/v1 (Teachers: minimax, gpt5.6-luna)
 Deployment Mode  : LeanRouter Gateway Sidecar (Daemon / Docker, Port 4010)

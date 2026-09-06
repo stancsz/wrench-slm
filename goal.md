@@ -2,7 +2,7 @@
 
 ```
 Document Classification : NORTH STAR CHARTER / FOUNDATIONAL MISSION
-Target Architecture     : Wrench-SLM (100% Pure-Blood Nano-Transformer, 0 External Base Weights)
+Target Architecture     : Wrench-SLM (Native from-scratch Nano-Transformer, 0 External Base Weights)
 Hardware Baseline       : NVIDIA GeForce RTX 5070 Ti (16GB GDDR7, BF16 / FP8), 48GB Host RAM
 Gateway Routing Target  : http://localhost:4000/v1 (Teachers: minimax, gpt5.6-luna)
 Deployment Mode         : LeanRouter Gateway Sidecar (Autonomous In-a-Loop Daemon, Port 4010)
