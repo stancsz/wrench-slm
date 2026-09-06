@@ -1,0 +1,79 @@
+{
+  "dataset_name": "Wrench-SLM Production Ingestion Dataset",
+  "created_at": "2026-09-06T02:46:16.912926",
+  "total_records": 16376,
+  "splits": {
+    "train": 11469,
+    "val": 2452,
+    "held_out": 2455
+  },
+  "files": {
+    "train": "c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\train.jsonl",
+    "val": "c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\val.jsonl",
+    "held_out": "c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\held_out.jsonl"
+  },
+  "tool_distribution": {
+    "exec_command": 8795,
+    "write_stdin": 274,
+    "send_input": 40,
+    "get_goal": 39,
+    "multi_agent_v1": 29,
+    "spawn_agent": 26,
+    "view_image": 22,
+    "js": 20,
+    "create_goal": 19,
+    "update_goal": 18,
+    "mcp__node_repl": 13,
+    "Get-Content": 12,
+    "Set-Content": 10,
+    "mcp__codex_apps__github": 10,
+    "wait_agent": 9,
+    "write_file": 7,
+    "run": 6,
+    "request_user_input": 6,
+    "tabs": 5,
+    "apply_patch": 4,
+    "list_mcp_resources": 3,
+    "wait_threads": 3,
+    "read": 2,
+    "edit_file": 2,
+    "mcp__cua_repl": 2,
+    "mcp__browseros_neo": 1,
+    "Set-Item": 1,
+    "Stop-Process": 1,
+    "mcp__codex_app": 1,
+    "file_edit": 1,
+    "write_stinvoke": 1,
+    "wait_for_submission": 1,
+    "read_mcp_resource": 1,
+    "resume_agent": 1,
+    "read_thread": 1,
+    "mcp__codex_apps__plugin_management": 1,
+    "mcp__codex_apps__codex_document_control": 1,
+    "write_mcp_resource": 1,
+    "Write-File": 1,
+    "navigate": 1,
+    "mcp__codex_apps__browseros_neo": 1,
+    "multi_edit__apply_patch_v1": 1,
+    "wait_for_completion": 1
+  },
+  "model_provenance": {
+    "minimax/minimax-m3": 9394
+  },
+  "source_repository": "c:\\Users\\stanc\\github\\lean-router\\logs",
+  "zero_mutation_guarantee": "lean-router logs were accessed strictly in read-only mode",
+  "cross_platform_coverage": {
+    "supported_os": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ],
+    "platform_distribution": {
+      "windows": 8795,
+      "posix": 6982,
+      "cross_platform": 599
+    },
+    "augmentation_method": "Deterministic PowerShell-to-POSIX transpiler + explicit OS conditioning tags",
+    "total_augmented_records": 16376
+  }
+}

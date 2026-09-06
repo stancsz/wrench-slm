@@ -1,0 +1,411 @@
+{
+  "train": {
+    "split": "train",
+    "total": 1000,
+    "passed": 988,
+    "failed": 12,
+    "pass_rate_percent": 98.8,
+    "platform_breakdown": {
+      "windows": {
+        "total": 530,
+        "passed": 519,
+        "pass_rate": 97.9
+      },
+      "posix": {
+        "total": 428,
+        "passed": 428,
+        "pass_rate": 100.0
+      },
+      "cross_platform": {
+        "total": 42,
+        "passed": 41,
+        "pass_rate": 97.6
+      }
+    },
+    "tool_breakdown": {
+      "exec_command": {
+        "total": 958,
+        "passed": 947,
+        "pass_rate": 98.9
+      },
+      "mcp__browseros_neo": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "view_image": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "Set-Item": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "write_stdin": {
+        "total": 18,
+        "passed": 18,
+        "pass_rate": 100.0
+      },
+      "wait_agent": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "Stop-Process": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "get_goal": {
+        "total": 3,
+        "passed": 3,
+        "pass_rate": 100.0
+      },
+      "run": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "mcp__codex_app": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "js": {
+        "total": 3,
+        "passed": 3,
+        "pass_rate": 100.0
+      },
+      "file_edit": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "Get-Content": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "mcp__node_repl": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "update_goal": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "tabs": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "apply_patch": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "send_input": {
+        "total": 1,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "read": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      }
+    },
+    "failure_samples": [
+      {
+        "id": "wrench_prod_00f650c6d91d",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced parentheses in PowerShell command",
+        "args_preview": "{'cmd': 'cd C:\\\\Users\\\\stanc\\\\github\\\\open-souls && apply_patch <<\\'PATCH\\'\\n*** Begin Patch\\n*** Update File: SKILL.md\\n@@\\n - **续写一回**：`python engin"
+      },
+      {
+        "id": "wrench_prod_03d091ee8379",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced single quotes in PowerShell command",
+        "args_preview": "{'cmd': '$s = @\\'\\n\"\"\"Remove ALL judgment-word patterns (broader fix).\"\"\"\\nimport re\\nfrom pathlib import Path\\n\\nROOT = Path(\\'seasons/01-xianxia/chr"
+      },
+      {
+        "id": "wrench_prod_058b6543b544",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced parentheses in PowerShell command",
+        "args_preview": "{'cmd': '$content = @\\'\\nimport pathlib\\np = pathlib.Path(r\\'C:\\\\Users\\\\stanc\\\\github\\\\portfolio\\\\leanrouter-token-shield\\\\tests\\\\test_replay_check.py"
+      },
+      {
+        "id": "wrench_prod_058cec75fe3a",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced single quotes in PowerShell command",
+        "args_preview": "{'cmd': '$s = @\\'\\n\"\"\"Add Chinese char padding to clear min_body_chars.\"\"\"\\nimport re\\nfrom pathlib import Path\\nimport sys\\nsys.path.insert(0, \\'engi"
+      },
+      {
+        "id": "wrench_prod_07b10d92e207",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced single quotes in PowerShell command",
+        "args_preview": "{'cmd': 'apply_patch <<\\'PATCH\\'\\n*** Begin Patch\\n*** Update File: C:/Users/stanc/github/portfolio/leanrouter-token-shield/pyproject.toml\\n@@\\n-name "
+      }
+    ]
+  },
+  "val": {
+    "split": "val",
+    "total": 1000,
+    "passed": 982,
+    "failed": 18,
+    "pass_rate_percent": 98.2,
+    "platform_breakdown": {
+      "windows": {
+        "total": 534,
+        "passed": 518,
+        "pass_rate": 97.0
+      },
+      "posix": {
+        "total": 429,
+        "passed": 429,
+        "pass_rate": 100.0
+      },
+      "cross_platform": {
+        "total": 37,
+        "passed": 35,
+        "pass_rate": 94.6
+      }
+    },
+    "tool_breakdown": {
+      "exec_command": {
+        "total": 963,
+        "passed": 947,
+        "pass_rate": 98.3
+      },
+      "write_stdin": {
+        "total": 13,
+        "passed": 13,
+        "pass_rate": 100.0
+      },
+      "mcp__codex_apps__github": {
+        "total": 3,
+        "passed": 3,
+        "pass_rate": 100.0
+      },
+      "spawn_agent": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "js": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "update_goal": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "view_image": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "mcp__node_repl": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "multi_agent_v1": {
+        "total": 4,
+        "passed": 4,
+        "pass_rate": 100.0
+      },
+      "get_goal": {
+        "total": 4,
+        "passed": 4,
+        "pass_rate": 100.0
+      },
+      "create_goal": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "send_input": {
+        "total": 2,
+        "passed": 0,
+        "pass_rate": 0.0
+      }
+    },
+    "failure_samples": [
+      {
+        "id": "wrench_prod_b55008253a80",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced parentheses in PowerShell command",
+        "args_preview": "{'cmd': 'cd \"C:\\\\Users\\\\stanc\\\\github\\\\open-souls\" && Set-Content -Path .weld/fix3.py -Encoding utf8 -Value @\\'\\nimport os, re\\np = r\\'C:\\\\Users\\\\stan"
+      },
+      {
+        "id": "wrench_prod_b6af556e5543",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced curly braces in PowerShell command",
+        "args_preview": "{'cmd': '$p=\\'C:\\\\Users\\\\stanc\\\\github\\\\portfolio\\\\leanrouter-token-shield\\\\RESULTS.md\\'; $raw=[System.IO.File]::ReadAllText($p); $needle=\\'absolute d"
+      },
+      {
+        "id": "wrench_prod_b6e1ac25f5a1",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced single quotes in PowerShell command",
+        "args_preview": "{'cmd': 'grep -c \\'`\\' /tmp/novel_append.md\\ngrep -c \\'「\\' /tmp/novel_append.md\\necho \"--- 关键路径验证 ---\"\\ngrep -n \"handoff.md\" /tmp/novel_append.md | he"
+      },
+      {
+        "id": "wrench_prod_b7144599376f",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced parentheses in PowerShell command",
+        "args_preview": "{'cmd': '$content = @\\'\\nimport pathlib\\nimport os\\nos.chdir(r\\'C:\\\\Users\\\\stanc\\\\github\\\\portfolio\\\\leanrouter-token-shield\\')\\np = pathlib.Path(r\\'s"
+      },
+      {
+        "id": "wrench_prod_b78d430e061e",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced single quotes in PowerShell command",
+        "args_preview": "{'cmd': 'Set-Content -LiteralPath \\'prompts/.notes/_hook_audit2.py\\' -Encoding utf8 -Value @\\'\\n# -*- coding: utf-8 -*-\\n\"\"\"Categorize hook-evidence f"
+      }
+    ]
+  },
+  "held_out": {
+    "split": "held_out",
+    "total": 1000,
+    "passed": 984,
+    "failed": 16,
+    "pass_rate_percent": 98.4,
+    "platform_breakdown": {
+      "windows": {
+        "total": 540,
+        "passed": 528,
+        "pass_rate": 97.8
+      },
+      "posix": {
+        "total": 424,
+        "passed": 424,
+        "pass_rate": 100.0
+      },
+      "cross_platform": {
+        "total": 36,
+        "passed": 32,
+        "pass_rate": 88.9
+      }
+    },
+    "tool_breakdown": {
+      "exec_command": {
+        "total": 964,
+        "passed": 952,
+        "pass_rate": 98.8
+      },
+      "js": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "write_stdin": {
+        "total": 16,
+        "passed": 16,
+        "pass_rate": 100.0
+      },
+      "get_goal": {
+        "total": 3,
+        "passed": 3,
+        "pass_rate": 100.0
+      },
+      "mcp__cua_repl": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "send_input": {
+        "total": 4,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "mcp__codex_apps__browseros_neo": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "view_image": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "create_goal": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "request_user_input": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 100.0
+      },
+      "multi_agent_v1": {
+        "total": 3,
+        "passed": 3,
+        "pass_rate": 100.0
+      },
+      "apply_patch": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      },
+      "update_goal": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 100.0
+      }
+    },
+    "failure_samples": [
+      {
+        "id": "wrench_prod_db3172fca577",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced curly braces in PowerShell command",
+        "args_preview": "{'cmd': '$summary=Get-Content reports\\\\jinjiang-r20\\\\chapter-by-chapter-audit.json -Raw | ConvertFrom-Json; $rows=$summary.chapters | Sort-Object {[in"
+      },
+      {
+        "id": "wrench_prod_dcaf26a0e708",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced double quotes in PowerShell command",
+        "args_preview": "{'cmd': 'cd C:\\\\Users\\\\stanc\\\\github\\\\portfolio\\\\leanrouter-token-shield; py -3 -X utf8 -c \"import base64, pathlib; payload_b64 = \\'IyEvdXNyL2Jpbi9lbn"
+      },
+      {
+        "id": "wrench_prod_dd6304832047",
+        "tool": "send_input",
+        "platform": "cross_platform",
+        "error": "send_input missing input",
+        "args_preview": "{'target': '01a070c7-074d-7ed0-804b-8c76f3cb18bb', 'items': [{'type': 'text', 'text': '新任务：请作为 Persona 4 晋江女强权谋线读者，盲读并认真读完 ch1-ch10：seasons/01-xianxia"
+      },
+      {
+        "id": "wrench_prod_de07f23d833b",
+        "tool": "exec_command",
+        "platform": "windows",
+        "error": "Unbalanced parentheses in PowerShell command",
+        "args_preview": "{'cmd': '$script = @\\'\\nfrom pathlib import Path\\nimport re\\ntarget = Path(\"tests/test_harness_cli_integration.py\")\\nsource = target.read_text(encodin"
+      },
+      {
+        "id": "wrench_prod_def5a1959fe8",
+        "tool": "send_input",
+        "platform": "cross_platform",
+        "error": "send_input missing input",
+        "args_preview": "{'target': '01a06f1e-0c7f-79f3-a93e-e33ebe18d85c', 'items': [{'type': 'text', 'text': '你是读者 persona 4：晋江女强权谋线读者。请在 C:\\\\Users\\\\stanc\\\\github\\\\open-soul"
+      }
+    ]
+  }
+}
