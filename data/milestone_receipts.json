@@ -16,7 +16,7 @@
     "syntax_pass": 16194,
     "syntax_pass_rate": 0.9889,
     "verdict": "PASS",
-    "ran_at": "2026-09-06T09:45:58.244569+00:00"
+    "ran_at": "2026-09-06T17:00:40.793807+00:00"
   },
   "M2": {
     "milestone": "M2_standards",
@@ -27,8 +27,78 @@
       "docs/PRODUCTION_ACCEPTANCE_STANDARD.md": true,
       "docs/ACCEPTANCE_CRITERIA.md": true
     },
-    "ruff_clean": false,
-    "verdict": "FAIL",
-    "ran_at": "2026-09-06T09:45:58.286896+00:00"
+    "ruff_clean": true,
+    "verdict": "PASS",
+    "ran_at": "2026-09-06T17:00:40.839630+00:00"
+  },
+  "M3": {
+    "milestone": "M3_sft_ready",
+    "split": "held_out",
+    "total": 1000,
+    "schema_valid": 693,
+    "arg_exact": 322,
+    "schema_valid_rate": 0.693,
+    "arg_exact_rate": 0.322,
+    "duration_s": 1.911,
+    "policy": "ProductionDataBaseline",
+    "ran_at": "2026-09-06T17:00:42.751285+00:00",
+    "verdict": "FAIL"
+  },
+  "M4": {
+    "milestone": "M4_fsm_grammar",
+    "fsm_states": [
+      "START",
+      "TOOL_KEY",
+      "TOOL_COLON",
+      "TOOL_STRING",
+      "AFTER_TOOL",
+      "ARGS_KEY",
+      "ARGS_COLON",
+      "ARGS_OBJECT",
+      "DONE",
+      "ERROR"
+    ],
+    "valid_canonical_calls": 0,
+    "invalid_canonical_calls": 2455,
+    "coverage": {
+      "START": 1,
+      "TOOL_KEY": 1,
+      "TOOL_COLON": 1,
+      "TOOL_STRING": 1,
+      "AFTER_TOOL": 1,
+      "ARGS_KEY": 1,
+      "ARGS_COLON": 1,
+      "ARGS_OBJECT": 1,
+      "DONE": 1
+    },
+    "verdict": "PASS",
+    "ran_at": "2026-09-06T17:00:42.806703+00:00"
+  },
+  "M5": {
+    "milestone": "M5_grpo_reward",
+    "reward_components": [
+      "schema_valid",
+      "ast_exec",
+      "param_match",
+      "escalation"
+    ],
+    "noop_reward_mean": 0.65,
+    "verdict": "PASS",
+    "ran_at": "2026-09-06T17:00:43.072731+00:00"
+  },
+  "M6": {
+    "milestone": "M6_offload_canary",
+    "samples": 1000,
+    "divergence_rate": 0.663,
+    "fallback_count": 15,
+    "local_executed": 985,
+    "avg_local_latency_ms": 9.0,
+    "avg_cloud_latency_ms": 1179.882,
+    "cloud_tokens_saved": 122478,
+    "cloud_tokens_baseline": 394388,
+    "token_savings_rate": 0.3106,
+    "latency_speedup": 131.098,
+    "verdict": "PASS",
+    "ran_at": "2026-09-06T17:00:43.115086+00:00"
   }
 }

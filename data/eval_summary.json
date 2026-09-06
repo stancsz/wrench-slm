@@ -1,0 +1,68 @@
+{
+  "total": 1000,
+  "schema_valid": 693,
+  "arg_exact": 322,
+  "fallback": 15,
+  "schema_valid_rate": 0.693,
+  "arg_exact_rate": 0.322,
+  "fallback_rate": 0.015,
+  "duration_s": 1.9111998000007588,
+  "failure_samples": [
+    {
+      "id": "wrench_prod_da3ca9c269a4",
+      "tool": "exec_command",
+      "platform": "windows",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': 'Add-Content -LiteralPath \\'prompts/.notes/2026-09-04-jinjiang-round14-note.md\\' -Value @\\'\\n\\n\\n---\\n\\n## 十三、Round 16 — 大规模 S-tier 提升 (本 session 后续)\\n\\"
+    },
+    {
+      "id": "wrench_posix_0581b6b1d07b",
+      "tool": "exec_command",
+      "platform": "posix",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': 'Add-Content -LiteralPath \\'prompts/.notes/2026-09-04-jinjiang-round14-note.md\\' -Value @\\'\\n\\n\\n---\\n\\n## 十三、Round 16 — 大规模 S-tier 提升 (本 session 后续)\\n\\"
+    },
+    {
+      "id": "wrench_prod_da470aea45f3",
+      "tool": "exec_command",
+      "platform": "windows",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': \"Write-Host '--- SKILL.md ---'; Get-Content -Raw SKILL.md; Write-Host '--- 5-reader-cross-workflow.md ---'; Get-Content -Raw docs/standards/5-reader-cro"
+    },
+    {
+      "id": "wrench_posix_786e5bdd85c6",
+      "tool": "exec_command",
+      "platform": "posix",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': \"echo '--- SKILL.md ---'; cat -Raw SKILL.md; echo '--- 5-reader-cross-workflow.md ---'; cat -Raw docs/standards/5-reader-cross-workflow.md; echo '--- no"
+    },
+    {
+      "id": "wrench_prod_da4b3969da04",
+      "tool": "exec_command",
+      "platform": "windows",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': \"$s = @'\\nimport json\\nwith open('prompts/.notes/2026-09-04-quality-grades-v3.json',encoding='utf-8') as f:d=json.load(f)\\ng=next(x for x in d['grades']"
+    },
+    {
+      "id": "wrench_posix_3668b26e8eee",
+      "tool": "exec_command",
+      "platform": "posix",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': \"$s = @'\\nimport json\\nwith open('prompts/.notes/2026-09-04-quality-grades-v3.json',encoding='utf-8') as f:d=json.load(f)\\ng=next(x for x in d['grades']"
+    },
+    {
+      "id": "wrench_prod_da4c5bdbba36",
+      "tool": "js",
+      "platform": "cross_platform",
+      "error": "invalid JSON: Expecting value",
+      "args_preview": "{'code': \"let patch796 = `*** Begin Patch\\n*** Update File: seasons/01-xianxia/chronicle/796-凌朔立场.md\\n@@\\n-他走得不轻不重。\\n+他走得不轻不重。身后桥栏正中那张空白纸忽然被风掀起一角，露出十六年前他压在底下的一行"
+    },
+    {
+      "id": "wrench_prod_da60fedfd290",
+      "tool": "exec_command",
+      "platform": "windows",
+      "error": "fsm rejection",
+      "args_preview": "{'cmd': 'py -3 -X utf8 -c \"\\nimport os\\nLB = chr(91)+chr(24453)+chr(34917)+chr(93)  # 供生成时使用的变量\\nBT = chr(96); NL = chr(10); DQ = chr(34); BS = chr(92); SP = ch"
+    }
+  ]
+}

@@ -2,9 +2,10 @@
 
 ```
 Document Classification : NORTH STAR CHARTER / FOUNDATIONAL MISSION
-Target Architecture     : Wrench-SLM (Edge Task-Execution Small Language Model, 0.5B + Nano)
+Target Architecture     : Wrench-SLM (100% Pure-Blood Nano-Transformer, 0 External Base Weights)
 Hardware Baseline       : NVIDIA GeForce RTX 5070 Ti (16GB GDDR7, BF16 / FP8), 48GB Host RAM
 Gateway Routing Target  : http://localhost:4000/v1 (Teachers: minimax, gpt5.6-luna)
+Deployment Mode         : LeanRouter Gateway Sidecar (Autonomous In-a-Loop Daemon, Port 4010)
 Scope                   : Motivation, Philosophy, Division of Labor, Anti-Goals, Decision Rules
 ```
 
@@ -112,6 +113,57 @@ Wrench-SLM 与云端旗舰 Teacher 之间不是互相替代的关系，而是严
 * 复杂数学证明与长程算法推导。
 * **准则**：**宁可退回云端花几分钱，绝不在端侧瞎猜导致系统死循环。一旦小模型对参数或工具的置信度低于 0.85，必须立即返回 `ROUTER_FALLBACK` 触发兜底。**
 
+### 3.3 闭环飞轮：网关生产数据自进化与循环训练 (The Gateway-Mining Continuous Loop)
+
+Wrench-SLM 绝不是一次微调就封板的静态死模型，而是**与生产网关 (`http://localhost:4000/v1`) 共生、永远在后台循环训练的自进化有机体 (Self-Evolving Flywheel)**：
+
+```
+           [ 网关生产生态 Gateway (localhost:4000 / lean-router) ]
+                                    │
+                       真实流量驱动 │ 捕获每一次工具调用
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │ 1. 成功样本实时采掘器 (Tool Call Success Miner)          │
+       │    * 强成功过滤: 仅采集 real success (exit_code==0 / 正常)│
+       │    * Wrench 相关性过滤: 专精机械工具 (exec, stdin, goal)  │
+       │    * 绝对防污染: 自动对 Prompt 哈希比对，隔离测试集 0 渗透│
+       └─────────────────────────────────────────────────────────┘
+                                    │
+                      高质量增量样本 │ + 20%~30% 黄金历史回放
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │ 2. 常驻循环微调守护者 (Continuous In-a-Loop Trainer)     │
+       │    * RTX 5070 Ti 单卡常驻 (BF16, LoRA / GRPO 小步快跑)    │
+       │    * 持续自监督微调与环境奖励自进化 (No Refusal DPO)     │
+       └─────────────────────────────────────────────────────────┘
+                                    │
+                         候选新权重 │ 自动化全量门禁审计
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │ 3. 影子金丝雀验收与热重载 (Canary Verification & Reload) │
+       │    * 影子双跑验证: 分歧率 <= 1.0%, 显存零泄漏            │
+       │    * 持续循环训练，直到系统彻底达到 Mature & Useful 标准  │
+       └─────────────────────────────────────────────────────────┘
+```
+
+#### 3.3.1 样本采掘三项硬铁律 (Continuous Mining Strict Rules)
+1. **Tool Call 必须真实成功 (Success Verification)**：
+   严禁采集执行失败、报错抛出异常或超时截断的脏轨迹。只有返回 `exit_code == 0`、通过 Python AST 验证或在环境中成功产生期望动作的样本，才准许进入增量训练池。
+2. **严格收敛于 Wrench 领域 (Wrench Domain Relevance)**：
+   专注采掘属于 Wrench 领地的机械指令（环境探查、文件读写定位、进程交互、测试驱动、状态轮询）。凡涉及长篇发散对话、宏观需求推演等任务，直接剔除或仅保留 Fallback 标准范例。
+3. **隔离测试集防污染与去重 (Strict Quarantine & Deduplication)**：
+   每次进入循环训练队列前，严格校验 Prompt 哈希，确保 `data/held_out.jsonl` 等测试切片绝对物理隔离，防止过拟合与刷分自欺。
+
+#### 3.3.2 终极收敛：何为“成熟可用”？(Definition of "Mature & Useful Enough")
+循环训练不是无休止的盲目发散，而是必须向明确的工程标准收敛。当系统在网关真实流量中**连续 72 小时稳定满足以下全部 5 项硬性验收指标**时，方可判定为正式“成熟可用 (Mature & Useful Enough)”：
+1. **协议合法率 100%**：挂载 FSM 状态机输出数学级 100% 合法，模型裸输出 JSON 结构合法率 $\ge 99.5\%$；
+2. **跨平台真实执行成功率 $\ge 96.5\%$**：在 Windows PowerShell、POSIX Bash 和 Agent 内存沙箱中命令执行率稳定超越云端 Teacher 基线；
+3. **日常机械分流率稳定 $\ge 80.0\%$**：真实生产环境中 80% 以上的高频机械工具调用在本地毫秒级闭环，0 云端 Token 消耗；
+4. **影子金丝雀分歧率 $\le 1.0\%$**：与云端 Teacher (`minimax` / `gpt5.6-luna`) 的真实意图分歧低于百分之一；
+5. **本地毫秒级与显存恒定**：单次推理耗时 $p_{99} \le 25\text{ms}$，模型及 KV Cache 常驻显存严格锁定在 $2.5\text{ GB}$ 以内，零内存泄漏。
+
+达到该标准后，模型即转入“稳态巡航期”——继续常驻监听，仅对新引入的工具协议或低频边界用例做自适应吸纳。
+
 ---
 
 ## 4. 彻底反思：前期失败尝试的血泪教训 (Anti-Goals)
@@ -160,10 +212,11 @@ Wrench-SLM 与云端旗舰 Teacher 之间不是互相替代的关系，而是严
 | :--- | :--- | :--- | :--- |
 | **M1: 真实基座数据流** | 只读解析 `lean-router/logs`，建立跨平台（Win/Linux）标准化数据集 | 16,376 条高质量样本，跨平台语法验证通过率 $\ge 98\%$，`lean-router` 源码 0 碰触 | ✅ **已达成** |
 | **M2: 规范与准绳固化** | 制定严谨的技术规范与防作弊军规，建立自动化门禁 | `goal.md`, `eval.md`, `docs/SPECIFICATION.md` 全部就绪，Ruff 0 警告 | ✅ **已达成** |
-| **M3: LoRA SFT 筑基** | 基于 Qwen2.5-0.5B，对 Prompt 进行掩码，单卡 BF16 训练 | Held-out 结构合法率 $\ge 98.5\%$，工具参数准确率 $\ge 95\%$ | ⏳ **准备就绪** |
+| **M3: 纯血 NanoWrench 筑基** | 纯手搓 28M Transformer，0 借用外部底座，从零随机初始化，专属高密词表预热 | Held-out 结构合法率 $\ge 98.5\%$，工具参数准确率 $\ge 95\%$ | ⏳ **准备就绪** |
 | **M4: FSM 语法约束装配** | 集成轻量静态 Trie/Regex 状态机，解码步实施 Token 掩码 | 结构化交付合法率达到**数学级 100%**，CPU 掩码延迟 $< 0.1\text{ms}$ | ⏳ **待执行** |
 | **M5: 规则驱动本地 GRPO** | 以 Python AST 语法器与沙箱为 Reward，单卡 500 步 GRPO 自进化 | 边缘调用泛化鲁棒性提升，未见工具异常处理成功率提高 $20\%$ | ⏳ **待执行** |
 | **M6: 端到端投机分流** | 与 `http://localhost:4000/v1` 联动，实施双通道分流 | 生产系统端到端节省 $70\%+$ 旗舰 Token，端到端延迟降低 10 倍 | ⏳ **终极验收** |
+| **M7: 网关共生自进化飞轮** | 作为 LeanRouter 伴生 Sidecar (Docker/Native 守护常驻)，持续监听成功调用增量闭环训练 | 自动化采掘与过滤闭环，模型持续进化至成熟可用（分流率 $\ge 80\%$，分歧 $\le 1.0\%$） | ⏳ **自演进中** |
 
 ---
 
