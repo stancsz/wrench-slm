@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Set
 
 import torch
 
-from .fsm import fsm_validate
+from .fsm import GrammarLogitsProcessor, fsm_validate
 from .model import NanoWrench, NanoWrenchConfig
 from .pure_training import load_pure_model, save_pure_model
 from .reward import _is_powershell_balanced, _posix_balanced
@@ -331,6 +331,7 @@ class BackgroundTrainer:
         self.tokenizer = tokenizer
         self.device = get_optimal_device()
         self.model = self._get_or_create_model()
+        self.grammar_processor = GrammarLogitsProcessor(tokenizer)
 
     def _get_or_create_model(self) -> NanoWrench:
         if self.state.live_model_path.exists():
@@ -465,7 +466,13 @@ class BackgroundTrainer:
                         p_ids = [self.tokenizer.bos_token_id] + p_ids[-255:]
                     input_ids = torch.tensor([p_ids], device=self.device)
                     max_gen = 128
-                    out = self.model.generate(input_ids, max_new_tokens=max_gen, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
+                    out = self.model.generate(
+                        input_ids,
+                        max_new_tokens=max_gen,
+                        temperature=0.0,
+                        eos_token_id=self.tokenizer.eos_token_id,
+                        logits_processor=self.grammar_processor,
+                    )
                     gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
                     
                     is_match = False
@@ -487,7 +494,7 @@ class BackgroundTrainer:
                                 is_match = True
 
                     if total == 0:
-                        logger.info(f"[sidecar] Sample eval preview: Gen='{gen_text[:100]}' | Target='{target[:100]}' | Match={is_match}")
+                        logger.info(f"[sidecar] [GCD] Sample eval preview: Gen='{gen_text[:100]}' | Target='{target[:100]}' | Match={is_match}")
 
                     if is_match:
                         correct += 1
@@ -502,12 +509,19 @@ class BackgroundTrainer:
 
     def predict(self, prompt: str) -> str:
         self.model.eval()
+        input_text = f"Prompt: {prompt}\nCall: "
         p_ids = [self.tokenizer.bos_token_id] + self.tokenizer.encode(input_text, add_special_tokens=False)
         if len(p_ids) > 256:
             p_ids = [self.tokenizer.bos_token_id] + p_ids[-255:]
         input_ids = torch.tensor([p_ids], device=self.device)
         max_gen = 128
-        out = self.model.generate(input_ids, max_new_tokens=max_gen, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
+        out = self.model.generate(
+            input_ids,
+            max_new_tokens=max_gen,
+            temperature=0.0,
+            eos_token_id=self.tokenizer.eos_token_id,
+            logits_processor=self.grammar_processor,
+        )
         gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
         clean = gen_text.strip().splitlines()[0] if gen_text.strip() else ""
         if fsm_validate(clean):

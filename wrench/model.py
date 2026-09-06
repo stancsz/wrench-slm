@@ -12,7 +12,7 @@ Features:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -193,6 +193,7 @@ class NanoWrench(nn.Module):
         temperature: float = 0.0,
         top_p: float = 1.0,
         eos_token_id: Optional[int] = None,
+        logits_processor: Optional[Callable[[list[int], torch.Tensor], torch.Tensor]] = None,
     ) -> torch.Tensor:
         self.eval()
         if eos_token_id is None:
@@ -205,11 +206,17 @@ class NanoWrench(nn.Module):
         else:
             curr_ids = input_ids.clone()
 
+        start_len = curr_ids.shape[-1]
+
         for _ in range(max_new_tokens):
             if curr_ids.shape[-1] >= self.config.max_seq_len:
                 break
             logits, _ = self.forward(curr_ids)
             next_token_logits = logits[:, -1, :]
+
+            if logits_processor is not None:
+                generated_so_far = curr_ids[0, start_len:].tolist()
+                next_token_logits = logits_processor(generated_so_far, next_token_logits)
 
             if temperature > 0.0:
                 scaled_logits = next_token_logits / temperature
