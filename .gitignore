@@ -17,6 +17,7 @@ Thumbs.db
 
 # Runtime checkpoints and sidecar live state
 models/*.pt
+models/**/*.pt
 logs/
 *.log
 data/sidecar_buffer.jsonl

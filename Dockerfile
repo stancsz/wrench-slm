@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PyTorch with CUDA support
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124
+# Install NumPy and PyTorch with CUDA 12.8 nightly support (Blackwell sm_120 / RTX 50-series)
+RUN pip install --no-cache-dir numpy && \
+    pip install --no-cache-dir --pre torch --index-url https://download.pytorch.org/whl/nightly/cu128
 
 # Copy project code
 COPY wrench /app/wrench

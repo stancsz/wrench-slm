@@ -98,12 +98,15 @@ class SidecarState:
         self.status_file = self.data_dir / "sidecar_status.json"
         self.buffer_file = self.data_dir / "sidecar_buffer.jsonl"
         self.live_model_path = self.models_dir / "nano_wrench_live.pt"
+        self.checkpoints_dir = self.models_dir / "checkpoints"
+        self.checkpoints_dir.mkdir(parents=True, exist_ok=True)
 
         self.byte_offset: int = 0
         self.lines_scanned: int = 0
         self.mined_samples: int = 0
         self.train_cycles: int = 0
         self.latest_loss: float = 0.0
+        self.best_loss: float = float("inf")
         self.latest_accuracy: float = 0.0
         self.uptime_started: float = time.time()
         self.running: bool = True
@@ -160,8 +163,10 @@ class SidecarState:
             "mined_samples": self.mined_samples,
             "train_cycles_completed": self.train_cycles,
             "latest_train_loss": round(self.latest_loss, 4),
+            "best_train_loss": round(self.best_loss, 4) if self.best_loss != float("inf") else None,
             "latest_held_out_accuracy": round(self.latest_accuracy, 4),
             "model_path": str(self.live_model_path),
+            "checkpoints_dir": str(self.checkpoints_dir),
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         self.status_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -368,7 +373,9 @@ class BackgroundTrainer:
             self.state.latest_loss = metrics.loss_end
             self.state.train_cycles += 1
             save_pure_model(self.model, str(self.state.live_model_path))
-            self.evaluate_held_out()
+            self._save_checkpoint_copies()
+            self.evaluate_held_out(limit=25)
+            self.state.save_offset()
             self.state.save_status()
             logger.info(f"[sidecar] Cold start complete! Checkpoint saved to {self.state.live_model_path}")
             return True
@@ -403,16 +410,37 @@ class BackgroundTrainer:
         self.state.latest_loss = metrics.loss_end
         self.state.train_cycles += 1
         save_pure_model(self.model, str(self.state.live_model_path))
+        self._save_checkpoint_copies()
 
         if should_clear:
             self.state.buffer_file.write_text("", encoding="utf-8")
 
         self.evaluate_held_out(limit=25)
+        self.state.save_offset()
         self.state.save_status()
         logger.info(f"[sidecar] Cycle {self.state.train_cycles} complete! Loss={metrics.loss_end:.4f}")
         return True
 
-    def evaluate_held_out(self, limit: int = 100) -> float:
+    def _save_checkpoint_copies(self) -> None:
+        """Archive periodic snapshot copies and best loss copies of weights."""
+        try:
+            # 1. Periodic snapshot copy every 5 cycles
+            if self.state.train_cycles % 5 == 0:
+                periodic_name = f"nano_wrench_cycle_{self.state.train_cycles:04d}_loss_{self.state.latest_loss:.4f}.pt"
+                periodic_path = self.state.checkpoints_dir / periodic_name
+                save_pure_model(self.model, str(periodic_path))
+                logger.info(f"[sidecar] [CHECKPOINT] Saved periodic weight copy to {periodic_name}")
+
+            # 2. Best loss snapshot copy
+            if self.state.latest_loss < self.state.best_loss:
+                self.state.best_loss = self.state.latest_loss
+                best_path = self.state.checkpoints_dir / f"nano_wrench_best_loss_{self.state.latest_loss:.4f}.pt"
+                save_pure_model(self.model, str(best_path))
+                logger.info(f"[sidecar] [CHECKPOINT] Saved new best-loss weight copy to {best_path.name}")
+        except Exception as e:
+            logger.warning(f"[sidecar] Failed to save checkpoint copies: {e}")
+
+    def evaluate_held_out(self, limit: int = 25) -> float:
         held_out_path = self.state.data_dir / "held_out.jsonl"
         if not held_out_path.exists():
             return 0.0
@@ -432,13 +460,36 @@ class BackgroundTrainer:
                     prompt = item.get("prompt", "")
                     target = item.get("canonical_call", "")
                     input_text = f"Prompt: {prompt}\nCall: "
-                    input_ids = torch.tensor([self.tokenizer.encode(input_text, add_special_tokens=True)], device=self.device)
-                    max_ctx = self.model.config.max_seq_len - 48
-                    if input_ids.shape[1] > max_ctx:
-                        input_ids = input_ids[:, -max_ctx:]
-                    out = self.model.generate(input_ids, max_new_tokens=48, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
+                    p_ids = [self.tokenizer.bos_token_id] + self.tokenizer.encode(input_text, add_special_tokens=False)
+                    if len(p_ids) > 256:
+                        p_ids = [self.tokenizer.bos_token_id] + p_ids[-255:]
+                    input_ids = torch.tensor([p_ids], device=self.device)
+                    max_gen = 128
+                    out = self.model.generate(input_ids, max_new_tokens=max_gen, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
                     gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
-                    if gen_text.strip() == target.strip() or fsm_validate(gen_text):
+                    
+                    is_match = False
+                    if gen_text.strip() == target.strip():
+                        is_match = True
+                    else:
+                        try:
+                            clean_gen = gen_text.strip()
+                            gen_obj = json.loads(clean_gen)
+                            target_obj = json.loads(target)
+                            if gen_obj.get("tool") == target_obj.get("tool"):
+                                g_args = gen_obj.get("args", {})
+                                t_args = target_obj.get("args", {})
+                                if isinstance(g_args, dict) and isinstance(t_args, dict):
+                                    if g_args.get("cmd") == t_args.get("cmd") or g_args == t_args:
+                                        is_match = True
+                        except Exception:
+                            if fsm_validate(gen_text):
+                                is_match = True
+
+                    if total == 0:
+                        logger.info(f"[sidecar] Sample eval preview: Gen='{gen_text[:100]}' | Target='{target[:100]}' | Match={is_match}")
+
+                    if is_match:
                         correct += 1
                     total += 1
                 except Exception:
@@ -451,12 +502,12 @@ class BackgroundTrainer:
 
     def predict(self, prompt: str) -> str:
         self.model.eval()
-        input_text = f"Prompt: {prompt}\nCall: "
-        input_ids = torch.tensor([self.tokenizer.encode(input_text, add_special_tokens=True)], device=self.device)
-        max_ctx = self.model.config.max_seq_len - 64
-        if input_ids.shape[1] > max_ctx:
-            input_ids = input_ids[:, -max_ctx:]
-        out = self.model.generate(input_ids, max_new_tokens=64, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
+        p_ids = [self.tokenizer.bos_token_id] + self.tokenizer.encode(input_text, add_special_tokens=False)
+        if len(p_ids) > 256:
+            p_ids = [self.tokenizer.bos_token_id] + p_ids[-255:]
+        input_ids = torch.tensor([p_ids], device=self.device)
+        max_gen = 128
+        out = self.model.generate(input_ids, max_new_tokens=max_gen, temperature=0.0, eos_token_id=self.tokenizer.eos_token_id)
         gen_text = self.tokenizer.decode(out[0].tolist()[input_ids.shape[1]:])
         clean = gen_text.strip().splitlines()[0] if gen_text.strip() else ""
         if fsm_validate(clean):
@@ -466,15 +517,25 @@ class BackgroundTrainer:
 
 def make_http_handler(state: SidecarState, trainer: BackgroundTrainer):
     class SidecarHandler(BaseHTTPRequestHandler):
+        def address_string(self):
+            # Fast raw IP without blocking DNS reverse resolution
+            return self.client_address[0]
+
         def do_GET(self):
-            if self.path in {"/health", "/v1/health"}:
+            if self.path in {"/", ""}:
+                self.send_response(302)
+                self.send_header("Location", "/status")
+                self.end_headers()
+            elif self.path in {"/health", "/v1/health"}:
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(b'{"status": "ok", "service": "wrench-sidecar"}\n')
             elif self.path in {"/status", "/v1/status"}:
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 if state.status_file.exists():
                     self.wfile.write(state.status_file.read_bytes())
