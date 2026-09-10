@@ -4,7 +4,7 @@ Assessment date: 2026-09-09. This is a source-level assessment of the current wo
 
 Wrench can directly apply model adaptation, cached generation, efficient attention, and structured tool prediction. It can integrate serving optimizations through an inference backend. Its most distinctive research direction is tool-level speculation, whose usefulness still requires an end-to-end comparison. Building a distributed inference engine is a poor fit for the current small-model, single-device goal.
 
-The active [goal](../goal.md) prioritizes validated standalone weights. Router integration and cloud savings are deferred. This guide does not change that priority or authorize new training, deployment, or gateway changes.
+The active [goal](../../goal.md) prioritizes validated standalone weights. Router integration and cloud savings are deferred. This guide does not change that priority or authorize new training, deployment, or gateway changes.
 
 ## Concepts and coverage
 
@@ -83,13 +83,13 @@ README section 7 contains an 85-95% token acceptance claim, a 2-3x speculative s
 
 ## Repository evidence
 
-- [Pro inference](../wrench/pilot_inference.py): cached greedy generation, input budget, raw-output validation, fallback accounting.
-- [Packaged inference](../wrench/weight_inference.py): SDPA, dtype selection, pinned base and PEFT loading.
-- [Training entry point](../scripts/pilot_train.py) and [SFT implementation](../wrench/sft.py): BF16 LoRA setup and supervised training.
-- [Native model](../wrench/model.py): SDPA attention and full-prefix autoregressive loop.
-- [Teacher data acquisition](../scripts/fetch_real_data.py): prompt-variant generation and provenance labels.
-- [Workflow](../wrench/pilot_workflow.py) and [environment](../wrench/pilot_environment.py): preliminary observations, disposable tools, draft-only writes.
-- [Grammar wrapper](../wrench/inference.py), [FSM](../wrench/fsm.py), and [tokenizer grammar](../wrench/tokenizer_fsm.py): separate constrained-generation machinery.
+- [Pro inference](../../wrench/pilot_inference.py): cached greedy generation, input budget, raw-output validation, fallback accounting.
+- [Packaged inference](../../wrench/weight_inference.py): SDPA, dtype selection, pinned base and PEFT loading.
+- [Training entry point](../../scripts/pilot_train.py) and [SFT implementation](../../wrench/sft.py): BF16 LoRA setup and supervised training.
+- [Native model](../../wrench/model.py): SDPA attention and full-prefix autoregressive loop.
+- [Teacher data acquisition](../../scripts/fetch_real_data.py): prompt-variant generation and provenance labels.
+- [Workflow](../../wrench/pilot_workflow.py) and [environment](../../wrench/pilot_environment.py): preliminary observations, disposable tools, draft-only writes.
+- [Grammar wrapper](../../wrench/inference.py), [FSM](../../wrench/fsm.py), and [tokenizer grammar](../../wrench/tokenizer_fsm.py): separate constrained-generation machinery.
 - [Model release progress](MODEL_RELEASE_PROGRESS.md) and [pilot progress](USEFULNESS_PILOT_PROGRESS.md): recorded training and comparison limits. Consult actual receipts before reusing point-in-time metrics.
 
 ## Primary references

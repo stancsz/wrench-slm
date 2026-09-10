@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Wrench-SLM is a focused small language model family for speculative tool pre-execution and draft verification.">
+  <title>Wrench-SLM | Local hands for agent work</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap site-row">
+      <a class="brand" href="index.html" aria-label="Wrench-SLM home">
+        <svg class="brand-mark" viewBox="0 0 48 48" role="img" aria-label="Wrench mark">
+          <path fill="none" stroke="#ff5a2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M29.4 9.2a12 12 0 0 0-2.1 14.2L10 40.7a4.1 4.1 0 0 0 5.8 5.8l17.3-17.3a12 12 0 0 0 14.2-2.1l-8.2-2-4-4 2-8.2a12 12 0 0 0-7.7 2.3Z" transform="translate(-2 -2) scale(.94)"/>
+          <circle cx="13" cy="37" r="3" fill="#1e3a5f"/>
+        </svg>
+        <span><span class="brand-name">Wrench-SLM</span><br><span class="brand-sub">local tool intelligence</span></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#why">Why</a>
+        <a href="#tiers">Tiers</a>
+        <a href="status.html">Status ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Speculative tool execution / draft verification</div>
+          <h1 class="display">Give your agent<br><span class="accent">local hands.</span></h1>
+          <p class="sub">Wrench-SLM is a focused small language model family for the mechanical work that makes agent systems expensive: reading state, assembling routine calls, and waiting for the cloud to say what a local process already knew. The site explains the architecture and the current evidence. V21 is a validated Wrench-Pro adapter release within a narrow authored task contract; router integration and production serving remain separate work.</p>
+          <div class="metric-strip" aria-label="Current V21 release metrics">
+            <div class="metric"><div class="k">V21 holdout</div><div class="v" data-stat="holdout">440/440</div><div class="delta">exact, frozen evaluation</div></div>
+            <div class="metric"><div class="k">Context suite</div><div class="v" data-stat="context">220/220</div><div class="delta">fresh context perturbation</div></div>
+            <div class="metric"><div class="k">Release</div><div class="v" data-stat="checkpoint">V21 ready</div><div class="delta">LoRA adapter, not standalone</div></div>
+          </div>
+        </div>
+        <aside class="spec-card reveal" aria-label="Wrench-SLM design brief">
+          <div class="kicker">Field brief</div>
+          <h3>Small model. Clear boundary.</h3>
+          <dl class="rows">
+            <dt>Mission</dt><dd>pre-execute routine tools</dd>
+            <dt>Input</dt><dd>agent intent + platform context</dd>
+            <dt>Output</dt><dd>strict structured tool call</dd>
+            <dt>Safety</dt><dd>read-only first, escalate mutations</dd>
+            <dt>Review</dt><dd>cloud receives the draft + result</dd>
+          </dl>
+          <hr>
+          <p class="mono" style="font-size:.76rem;margin:0;color:var(--ink-soft)">No general chatbot ambition.<br>Just fewer wasted rounds.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="why" class="section">
+      <div class="wrap grid-2">
+        <div class="reveal">
+          <div class="kicker">01 / the problem</div>
+          <h2>Most agent work is not frontier work.</h2>
+          <p>Agent systems spend a large share of their time on deterministic tasks: <code>git status</code>, directory listings, port checks, dependency reads, and basic parameter assembly. Sending every one of those jobs through a frontier model adds prompt cost, network delay, and another generated tool-call round.</p>
+          <p class="lede">Wrench treats the routine layer as an engineering surface, not a reasoning contest.</p>
+        </div>
+        <div class="diagram reveal" aria-label="Wrench request flow diagram">
+          <div class="kicker">Request flow / WR-002</div>
+          <div class="row"><span class="pill">agent intent</span><span class="arrow">→</span><span class="pill local">Wrench draft</span></div>
+          <div class="row"><span class="pill local">read-only tool</span><span class="arrow">→</span><span class="pill local">local result</span></div>
+          <div class="row"><span class="pill local">draft + result</span><span class="arrow">→</span><span class="pill cloud">cloud review</span></div>
+          <div class="row"><span class="pill">mutation / ambiguity</span><span class="arrow">→</span><span class="pill cloud">escalate</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tiers" class="section">
+      <div class="wrap">
+        <div class="kicker">02 / the model family</div>
+        <h2>Two sizes. One job.</h2>
+        <p class="sub" style="max-width:66ch">Flash is the always-on edge design target. Pro is the workstation adapter released as V21. They share the same core contract: structured tool calls, deterministic verification, and a hard line between safe routine work and work that belongs with a larger model.</p>
+        <div class="tiers">
+          <article class="tier flash reveal">
+            <span class="tag">TIER 1 / EDGE</span>
+            <h3>Wrench-Flash <span class="mono" style="font-size:.75em">135M</span></h3>
+            <div class="role">The quiet 24/7 gateway</div>
+            <p>Designed for a Raspberry Pi or CPU-only host that can sit beside an agent stack and catch the low-risk, repetitive work before it travels.</p>
+            <ul>
+              <li>Local read-only and diagnostic pre-execution</li>
+              <li>Low-power target, around 5W class hardware</li>
+              <li>Turns tool output into reviewable context</li>
+            </ul>
+            <div class="specs"><span>Target</span><strong>Pi 4 / Pi 5 / CPU</strong><span>Purpose</span><strong>always-on gateway</strong><span>Target p99</span><strong>≤ 50 ms</strong><span>RAM target</span><strong>≤ 180 MB</strong></div>
+          </article>
+          <article class="tier pro reveal">
+            <span class="tag">TIER 2 / WORKSTATION</span>
+            <h3>Wrench-Pro <span class="mono" style="font-size:.75em">0.5B</span></h3>
+            <div class="role">The local execution workhorse</div>
+            <p>For a workstation with a consumer GPU. More capacity for platform context and parameter selection, while keeping the contract narrow and auditable.</p>
+            <ul>
+              <li>Fast local tool-call generation on RTX-class GPU</li>
+              <li>Strict schema and grammar-constrained decoding</li>
+              <li>Escalates long chains, mutations, and ambiguity</li>
+            </ul>
+            <div class="specs"><span>Target</span><strong>RTX 5070 Ti / 16 GB</strong><span>Purpose</span><strong>flagship local tier</strong><span>Target p99</span><strong>≤ 20 ms</strong><span>VRAM target</span><strong>≤ 1.2 GB</strong></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tight">
+      <div class="wrap">
+        <div class="tape"><span class="dot"></span><span>current evidence snapshot</span><span class="spacer"></span><span class="mono" data-stat="sample-date">Sep 6, 2026</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap status-grid">
+        <div class="panel reveal">
+          <div class="kicker">03 / project status</div>
+          <h2>Validated adapter. Router deferred.</h2>
+          <p>The V21 Wrench-Pro adapter passed the frozen 440-case holdout, the fresh 220-case context suite, and a clean-environment package load. The result is bounded to the authored local contract and does not certify a router, hosted service, or arbitrary shell execution.</p>
+          <div class="callout">Status: <strong>weights ready for release</strong>. The adapter is distributed separately from the Git source repository.</div>
+          <p style="margin-top:18px"><a href="status.html">Read the milestone ledger and acceptance gates →</a></p>
+        </div>
+        <div class="panel reveal">
+          <div class="kicker">What Wrench does not do</div>
+          <h2>Not every request belongs local.</h2>
+          <ul class="checklist">
+            <li>It does not replace a frontier model for deep planning.</li>
+            <li>It does not speculatively run mutations or destructive commands.</li>
+            <li>It does not claim human, market, or production proof from a replay.</li>
+            <li>It does not certify router savings, hosted serving, or production traffic.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <span>WRENCH-SLM / A FOCUSED TOOL INTELLIGENCE PROJECT</span>
+      <span><a href="status.html">STATUS</a> · <span data-year>2026</span></span>
+    </div>
+  </footer>
+</body>
+</html>\n

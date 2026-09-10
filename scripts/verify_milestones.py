@@ -75,7 +75,7 @@ def _milestone_one() -> dict:
 
 
 def _milestone_two() -> dict:
-    docs = ["goal.md", "eval.md", "docs/SPECIFICATION.md", "docs/PRODUCTION_ACCEPTANCE_STANDARD.md", "docs/ACCEPTANCE_CRITERIA.md"]
+    docs = ["goal.md", "eval.md", "docs/reference/SPECIFICATION.md", "docs/reference/PRODUCTION_ACCEPTANCE_STANDARD.md", "docs/reference/ACCEPTANCE_CRITERIA.md"]
     present = {name: (ROOT / name).exists() for name in docs}
     has_ruff = True
     try:

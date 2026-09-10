@@ -23,9 +23,9 @@
     "documents_present": {
       "goal.md": true,
       "eval.md": true,
-      "docs/SPECIFICATION.md": true,
-      "docs/PRODUCTION_ACCEPTANCE_STANDARD.md": true,
-      "docs/ACCEPTANCE_CRITERIA.md": true
+      "docs/reference/SPECIFICATION.md": true,
+      "docs/reference/PRODUCTION_ACCEPTANCE_STANDARD.md": true,
+      "docs/reference/ACCEPTANCE_CRITERIA.md": true
     },
     "ruff_clean": true,
     "verdict": "PASS",

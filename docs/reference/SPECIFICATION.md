@@ -239,8 +239,10 @@ Any AI agent, sub-agent, or human developer contributing to the Wrench-SLM repos
 wrench-slm/
 ├── README.md                      # Public project overview & quickstart
 ├── docs/
-│   ├── SPECIFICATION.md           # This document (Master Technical Standard)
-│   └── ACCEPTANCE_CRITERIA.md     # Quick-reference audit checklist & gates
+│   ├── index.html                 # GitHub Pages overview
+│   ├── status.html                # GitHub Pages release status
+│   ├── assets/                    # Static site assets and receipt snapshot
+│   └── reference/                 # Project specifications, audits, and handoffs
 ├── data/
 │   ├── train.jsonl                # 11,469 verified training records
 │   ├── val.jsonl                  # 2,452 validation records

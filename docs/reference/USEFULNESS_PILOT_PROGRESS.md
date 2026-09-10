@@ -52,7 +52,7 @@ Next protocol requirement: keep real native tool schemas on every cloud turn, in
 ## Dataset, candidate, and workflow completed
 
 - data/pilots/authored-developer-v1 contains 640 training, 80 development, 80 calibration, and 120 evaluation scenarios. Evaluation has 24 wording families, 80 English cases and 40 held-out Chinese transfer cases. It is not 120 independent wording families. Manifests, token lengths, and isolation audits are preserved there.
-- docs/USEFULNESS_PILOT_PROTOCOL_V1.md freezes budgets, comparisons, scoring, and uncertainty methods. The small number of independent families limits the strength of any quality conclusion.
+- docs/reference/USEFULNESS_PILOT_PROTOCOL_V1.md freezes budgets, comparisons, scoring, and uncertainty methods. The small number of independent families limits the strength of any quality conclusion.
 - Real disposable file, Git, search, and loopback HTTP environments are implemented. Writes register drafts only. Outcome checks require actual supporting tool observations.
 - artifacts/usefulness-pilot/pro-candidate-v1 records one completed 150-step LoRA training run on the pinned pretrained base. No candidate selection used evaluation outcomes.
 - artifacts/usefulness-pilot/development-v1 records unchanged-base development exact predictions of 7/80, candidate development 74/80, and candidate calibration 80/80. Candidate development errors concentrate in line-range tasks (4/10 exact). Prediction agreement is not final task success.

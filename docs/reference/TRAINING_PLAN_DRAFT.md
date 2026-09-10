@@ -104,7 +104,7 @@ Replace automatic training on the serving model with a versioned process: collec
 
 ## Sources
 
-- Current project purpose: [goal.md](../goal.md).
+- Current project purpose: [goal.md](../../goal.md).
 - Existing SFT, grammar, and GRPO direction: [SPECIFICATION.md](SPECIFICATION.md).
 - Existing deployment goals: [PRODUCTION_ACCEPTANCE_STANDARD.md](PRODUCTION_ACCEPTANCE_STANDARD.md) and [ACCEPTANCE_CRITERIA.md](ACCEPTANCE_CRITERIA.md).
 - Training review in this conversation, 2026-09-09. Its reproductions concern the current code and datasets, not a complete new model evaluation.

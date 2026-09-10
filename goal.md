@@ -71,7 +71,7 @@ The selected step-200 validation loss was `0.000010001144472248717`.
 The run's sequential loader exposed all kinds and languages at every declared
 checkpoint. At step 300 it had presented 4,800 unique rows, 2,400 in each
 language, with no repeated presentations. This corrects the V16 exposure
-failure documented in [the correctness audit](docs/TRAINING_CORRECTNESS_AUDIT.md).
+failure documented in [the correctness audit](docs/reference/TRAINING_CORRECTNESS_AUDIT.md).
 
 ## Quality interpretation
 
@@ -124,9 +124,9 @@ for reproducibility and is dependency storage, not part of the model/checkpoint
 budget. The older duplicate `clean-env-v1` environment was removed.
 
 The detailed operator instructions and recovery notes are in
-[MODEL_RELEASE_HANDOFF.md](docs/MODEL_RELEASE_HANDOFF.md). The historical data
-repair rationale remains in [TRAINING_REPAIR_HANDOFF.md](docs/TRAINING_REPAIR_HANDOFF.md)
-and [TRAINING_CORRECTNESS_AUDIT.md](docs/TRAINING_CORRECTNESS_AUDIT.md).
+[MODEL_RELEASE_HANDOFF.md](docs/reference/MODEL_RELEASE_HANDOFF.md). The historical data
+repair rationale remains in [TRAINING_REPAIR_HANDOFF.md](docs/reference/TRAINING_REPAIR_HANDOFF.md)
+and [TRAINING_CORRECTNESS_AUDIT.md](docs/reference/TRAINING_CORRECTNESS_AUDIT.md).
 
 ## Next work after this goal
 

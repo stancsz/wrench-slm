@@ -1,10 +1,10 @@
 # Wrench Small Language Model (Wrench-SLM)
 
-For a source-based assessment of implemented techniques, possible integrations, and unverified performance claims, see [AI engineering techniques and Wrench coverage](docs/AI_ENGINEERING_TECHNIQUES.md). The [active goal](goal.md) prioritizes validated standalone model weights.
+For a source-based assessment of implemented techniques, possible integrations, and unverified performance claims, see [AI engineering techniques and Wrench coverage](docs/reference/AI_ENGINEERING_TECHNIQUES.md). The [active goal](goal.md) prioritizes the validated V21 Wrench-Pro adapter release. Git stores source and evidence only; model weights are distributed separately.
 
 For the current V21 training state, verified receipts, independent evaluations,
-and weight-release decision, see the [model release handoff](docs/MODEL_RELEASE_HANDOFF.md)
-and [model release progress](docs/MODEL_RELEASE_PROGRESS.md). The exact
+and weight-release decision, see the [model release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md)
+and [model release progress](docs/reference/MODEL_RELEASE_PROGRESS.md). The exact
 adapter package is `artifacts/model-release/package-selected-v21`.
 
 The architecture and performance targets described below are project vision and
@@ -202,6 +202,8 @@ Wrench 绝不是简单的关键词匹配或基础 LoRA 微调，而是将当前�
 
 ### 8.2 务实的四阶段落地路线 (The Phased Roadmap)
 
+The V21 release closes the adapter training and weight-quality scope. The routing, hosted serving, and hardware rollout phases remain future work.
+
 | 阶段 | 核心任务与技术抓手 | 交付产物与成功指标 |
 | :--- | :--- | :--- |
 | **Phase 1: 真实基座与高可用 SFT** | 通过 `localhost:4000` 调动 MiniMax/Luna 构建真实数据集 + Qwen2.5-0.5B LoRA SFT 流水线 | 参数提取准确率 > 95%，格式合法率 > 98%，单卡可一键复现 |
@@ -211,27 +213,27 @@ Wrench 绝不是简单的关键词匹配或基础 LoRA 微调，而是将当前�
 
 ---
 
-## 9. Hardware Target & Verification (双阶梯实测硬件基准)
+## 9. Hardware Targets & Observed V21 Measurement (双阶梯硬件目标与 V21 观测)
 
-Wrench 针对端侧与工作站两大典型计算环境完成深度软硬协同适配与实测验证：
+The following hardware figures are design targets unless explicitly marked as an observed V21 measurement. The release evidence does not certify Flash performance, high-concurrency serving, or the older millisecond targets.
 
-### Tier 1: Wrench-Flash (135M) 硬件基准
+### Tier 1: Wrench-Flash (135M) Hardware Target
 - **设备形态**：树莓派 4 / 树莓派 5 (Raspberry Pi 4/5)、工控迷你主机（Intel N100 等）或办公 PC CPU。
 - **架构与计算**：4 核心 ARM Cortex-A72 / A76 (或 x86_64)，纯 CPU 原生推理。
 - **内存与功耗**：
   - INT4 GGUF 量化权重体积：**< 85 MB**
   - 常驻物理内存 (RSS)：**< 180 MB**
   - 整机运行功耗：**3W ~ 5W**（支持 7×24 小时无风扇极低功耗静音常驻）
-- **性能实测**：端到端首字延迟 **35ms ~ 50ms**，完全能够匹配家庭/工位网络路由吞吐。
+- **验证状态**：Flash hardware performance has not been measured in the V21 release gate.
 
-### Tier 2: Wrench-Pro (0.5B) 硬件基准
+### Tier 2: Wrench-Pro (0.5B) Hardware Target
 - **设备形态**：高性能本地开发工作站。
 - **GPU 算力**：NVIDIA GeForce RTX 5070 Ti (16 GB GDDR7, CUDA 12.8 / 13.4, SM 10.0+)。
 - **精度与显存**：
   - 原生硬件级 `bfloat16` (BF16) 混合精度加速：显存常驻 **~1.0 GB**
   - INT8 量化显存常驻：**< 600 MB**
   - LoRA / 全参数微调显存开销：**3 GB ~ 8 GB**
-- **性能实测**：首字延迟 **12ms ~ 15ms**，推理吞吐 **> 200 tok/s**，支持 10 QPS 高并发无阻塞推理。
+- **Observed V21 package evaluation**: 1.175 seconds p50 and 2.466 seconds p95 on one RTX 5070 Ti Windows host. This is evaluator latency, not a serving target.
 - **宿主环境**：48 GB RAM, Intel Core i5-12400F (6C/12T), Windows 11 / Linux 原生支持。
 
 ---
@@ -254,11 +256,11 @@ Wrench 针对端侧与工作站两大典型计算环境完成深度软硬协同�
   阐述为什么要做 Wrench、生产环境 80% 机械调用的本质、与云端 Teacher (`minimax`/`gpt5.6-luna`) 的明确分工边界，以及血泪总结的四大反向禁令与一票否决决策准绳。
 * 📊 **[Evaluation Protocol & Audit Harness (严谨评测体系与审计协议)](eval.md)**:
   定义四大评测维度（Schema 合法率、沙箱执行成功率、物理延迟显存开销、本地分流率）、标准评测脚本、不可篡改的 JSON 机器收据规范与防作弊红线。
-* 📘 **[Master Engineering Specification (主技术与架构规范)](docs/SPECIFICATION.md)**:
+* 📘 **[Master Engineering Specification (主技术与架构规范)](docs/reference/SPECIFICATION.md)**:
   详述系统架构数据协议、三大冻结训练阶段（LoRA SFT -> FSM -> GRPO）、严格的数据分割隔离与 AI Agent 五大约束军规。
-* 📋 **[Acceptance Criteria & Audit Protocol (硬性验收标准与审计清单)](docs/ACCEPTANCE_CRITERIA.md)**:
+* 📋 **[Acceptance Criteria & Audit Protocol (硬性验收标准与审计清单)](docs/reference/ACCEPTANCE_CRITERIA.md)**:
   提供四大门禁的数学公式定义（$S_{\text{valid}}$, $E_{\text{rate}}$, $L_{p99}$, $O_{\text{rate}}$）与预提交必跑脚本。
-* 🛡️ **[Production Acceptance Standard (防忽悠生产准入终极法典)](docs/PRODUCTION_ACCEPTANCE_STANDARD.md)**:
+* 🛡️ **[Production Acceptance Standard (防忽悠生产准入终极法典)](docs/reference/PRODUCTION_ACCEPTANCE_STANDARD.md)**:
   剖析常见 6 大欺骗套路，确立五重防忽悠生产准入硬门禁（对抗扰动测试、真实双盲系统执行、P0 越权零容忍、10 QPS 零泄漏压测与 24 小时影子金丝雀）。
 * 📦 **[Dataset Provenance & Design Specification (语料来源与设计目标规范)](data/README.md)**:
   详述五大语料采集管道（真实网关 Replay、双轨 Teacher 蒸馏、跨平台转译、机械工具专项工程矩阵、P0 越权逃逸负样本）与推测预执行反薅羊毛四大设计目标。

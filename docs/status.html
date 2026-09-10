@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Transparent milestone and acceptance status for Wrench-SLM.">
+  <title>Wrench-SLM | Project status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap site-row">
+      <a class="brand" href="index.html" aria-label="Wrench-SLM home">
+        <svg class="brand-mark" viewBox="0 0 48 48" role="img" aria-label="Wrench mark">
+          <path fill="none" stroke="#ff5a2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M29.4 9.2a12 12 0 0 0-2.1 14.2L10 40.7a4.1 4.1 0 0 0 5.8 5.8l17.3-17.3a12 12 0 0 0 14.2-2.1l-8.2-2-4-4 2-8.2a12 12 0 0 0-7.7 2.3Z" transform="translate(-2 -2) scale(.94)"/>
+          <circle cx="13" cy="37" r="3" fill="#1e3a5f"/>
+        </svg>
+        <span><span class="brand-name">Wrench-SLM</span><br><span class="brand-sub">project status</span></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="index.html">Overview</a>
+        <a href="#milestones">Milestones</a>
+        <a href="#limits">Limits</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" style="padding-bottom:24px">
+      <div class="wrap">
+        <div class="eyebrow">Evidence ledger / build snapshot</div>
+        <h1 class="display">Built in the open.<br><span class="accent">Labelled by what is proven.</span></h1>
+        <p class="sub">This page describes the V21 release snapshot recorded on <span data-stat="sample-date">Sep 10, 2026</span>. It separates validated adapter evidence from router, hardware, and live deployment work that remains open.</p>
+      </div>
+    </section>
+
+    <section class="section tight">
+      <div class="wrap">
+        <div class="metric-strip" style="margin-top:0">
+          <div class="metric"><div class="k">Frozen holdout</div><div class="v" data-stat="holdout">440/440</div><div class="delta">exact V21 evaluation</div></div>
+          <div class="metric"><div class="k">Context suite</div><div class="v" data-stat="context">220/220</div><div class="delta">fresh perturbation set</div></div>
+          <div class="metric"><div class="k">Checkpoint</div><div class="v" data-stat="checkpoint">V21 ready</div><div class="delta">adapter release scope</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="milestones" class="section">
+      <div class="wrap status-grid">
+        <div class="panel reveal">
+          <div class="kicker">Milestone ledger</div>
+          <h2>Six audited building blocks.</h2>
+          <ul class="gate-list" aria-label="V21 release results">
+            <li data-milestone="M1_training_contract"><span class="dot pass"></span><span><span class="name">M1 / training contract</span><br><span class="meta">6,144 authored rows, 176 development, 440 frozen evaluation</span></span><span class="badge pass" data-verdict>PASS</span></li>
+            <li data-milestone="M2_training_run"><span class="dot pass"></span><span><span class="name">M2 / bounded training run</span><br><span class="meta">300 steps, finite loss, deterministic mixed exposure</span></span><span class="badge pass" data-verdict>PASS</span></li>
+            <li data-milestone="M3_frozen_holdout"><span class="dot pass"></span><span><span class="name">M3 / frozen holdout</span><br><span class="meta">440/440 exact with zero unexpected filesystem changes</span></span><span class="badge pass" data-verdict>PASS</span></li>
+            <li data-milestone="M4_context_generalization"><span class="dot pass"></span><span><span class="name">M4 / context generalization</span><br><span class="meta">220/220 exact on the fresh context-release-v2b suite</span></span><span class="badge pass" data-verdict>PASS</span></li>
+            <li data-milestone="M5_package_verification"><span class="dot pass"></span><span><span class="name">M5 / clean package load</span><br><span class="meta">new Python 3.14 environment, empty model cache</span></span><span class="badge pass" data-verdict>PASS</span></li>
+            <li data-milestone="M6_router_serving"><span class="dot hold"></span><span><span class="name">M6 / router and serving</span><br><span class="meta">separate work for hosted behavior and production traffic</span></span><span class="badge hold" data-verdict>HOLD</span></li>
+          </ul>
+        </div>
+        <aside class="panel reveal">
+          <div class="kicker">Read this correctly</div>
+          <h2>What the receipts prove.</h2>
+          <p>V21 is a release-ready LoRA adapter for the declared Wrench-Pro contract. The exact package passed the frozen holdout, a fresh context suite, and a clean-environment load using the pinned Qwen base.</p>
+          <div class="callout blue">The evidence supports the adapter and its bounded local runtime. It does not establish router savings, arbitrary shell reliability, hosted serving, or production traffic quality.</div>
+          <p style="margin-top:16px">Keep the package immutable while router integration, hardware coverage, and deployment are evaluated as separate work.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="kicker">V21 release evidence</div>
+        <h2>Adapter quality and package checks.</h2>
+        <div class="panel reveal" style="padding:10px 20px">
+          <table class="status-table">
+            <thead><tr><th>Measurement</th><th class="num">Result</th><th>Scope</th></tr></thead>
+            <tbody>
+              <tr><td>Frozen evaluation</td><td class="num">440 / 440 exact</td><td>280 routine, 160 fallback</td></tr>
+              <tr><td>Fresh context suite</td><td class="num">220 / 220 exact</td><td>140 routine, 80 fallback</td></tr>
+              <tr><td>Package verifier</td><td class="num">passed</td><td>new Python 3.14 environment</td></tr>
+              <tr><td>Observed packaged latency</td><td class="num">1.175 s p50</td><td>RTX 5070 Ti evaluator run</td></tr>
+              <tr><td>Observed packaged latency</td><td class="num">2.466 s p95</td><td>one Windows host, not an SLO</td></tr>
+              <tr><td>Adapter SHA-256</td><td class="num mono">6a43d8cf…</td><td>immutable V21 package</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="limits" class="section">
+      <div class="wrap grid-2">
+        <div class="panel reveal">
+          <div class="kicker">Separate work</div>
+          <h2>What remains outside the release.</h2>
+          <ul class="checklist">
+            <li class="open">Publish the adapter to its chosen model registry and verify the remote checksums.</li>
+            <li class="open">Measure Flash and Pro on target hardware, including p99 latency and memory.</li>
+            <li class="open">Run router integration and hosted serving gates with live request evidence.</li>
+            <li class="open">Evaluate any merged, quantized, or converted artifact again.</li>
+            <li class="open">Establish production traffic reliability separately from authored evaluation.</li>
+          </ul>
+        </div>
+        <div class="panel reveal">
+          <div class="kicker">Guardrails already encoded</div>
+          <h2>Safety is a routing decision.</h2>
+          <ul class="checklist">
+            <li>Only read-only and diagnostic tools may be speculatively pre-executed.</li>
+            <li>Mutations and destructive actions remain behind verification.</li>
+            <li>Protocol generation is constrained by a finite-state grammar.</li>
+            <li>Held-out data remains separated from training and reward calculation.</li>
+          </ul>
+          <p class="mono" style="font-size:.77rem;color:var(--ink-soft);margin-top:18px">The operating principle: narrow scope, explicit proof, safe escalation.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <span>WRENCH-SLM / SNAPSHOT DATA EMBEDDED FROM REPOSITORY RECEIPTS</span>
+      <span><a href="index.html">OVERVIEW</a> · <span data-year>2026</span></span>
+    </div>
+  </footer>
+</body>
+</html>\n

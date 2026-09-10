@@ -25,11 +25,11 @@ It requires `Qwen/Qwen2.5-0.5B-Instruct` at revision
 
 Read the package cards before relying on it:
 
-- [MODEL_CARD.md](../artifacts/model-release/package-selected-v21/MODEL_CARD.md)
-- [DATA_CARD.md](../artifacts/model-release/package-selected-v21/DATA_CARD.md)
-- [EVALUATION_REPORT.md](../artifacts/model-release/package-selected-v21/EVALUATION_REPORT.md)
-- [LINEAGE.md](../artifacts/model-release/package-selected-v21/LINEAGE.md)
-- [RESOURCE_REPORT.md](../artifacts/model-release/package-selected-v21/RESOURCE_REPORT.md)
+- [MODEL_CARD.md](../../artifacts/model-release/package-selected-v21/MODEL_CARD.md)
+- [DATA_CARD.md](../../artifacts/model-release/package-selected-v21/DATA_CARD.md)
+- [EVALUATION_REPORT.md](../../artifacts/model-release/package-selected-v21/EVALUATION_REPORT.md)
+- [LINEAGE.md](../../artifacts/model-release/package-selected-v21/LINEAGE.md)
+- [RESOURCE_REPORT.md](../../artifacts/model-release/package-selected-v21/RESOURCE_REPORT.md)
 
 ## What the weights do
 

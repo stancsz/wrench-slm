@@ -62,12 +62,12 @@ def main():
             'model_id': MODEL, 'revision': REVISION, 'adapter_sha256': digest(CANDIDATE / 'adapter_model.safetensors'),
             'candidate_checkpoint': str(CANDIDATE), 'platform': platform.platform(), 'python': sys.version,
             'packages': {name: importlib.metadata.version(name) for name in ['torch', 'transformers', 'peft', 'numpy']},
-            'protocol_sha256': digest(ROOT / 'docs/USEFULNESS_PILOT_PROTOCOL_V1.md'),
+            'protocol_sha256': digest(ROOT / 'docs/reference/USEFULNESS_PILOT_PROTOCOL_V1.md'),
             'source_sha256': {name: digest(ROOT / name) for name in sources},
             'dataset_manifest_sha256': digest(DATA / 'manifest.json'),
             'hardware': torch.cuda.get_device_name(0), 'max_input_tokens': 1536, 'max_new_tokens': 192, 'decoding': 'greedy_unconstrained_then_strict_validation'}
     (output / 'run.json').write_text(json.dumps(meta, indent=2), encoding='utf-8')
-    (output / 'protocol.md').write_bytes((ROOT / 'docs/USEFULNESS_PILOT_PROTOCOL_V1.md').read_bytes())
+    (output / 'protocol.md').write_bytes((ROOT / 'docs/reference/USEFULNESS_PILOT_PROTOCOL_V1.md').read_bytes())
     for name in sources:
         snapshot = output / 'source' / name
         snapshot.parent.mkdir(parents=True, exist_ok=True)

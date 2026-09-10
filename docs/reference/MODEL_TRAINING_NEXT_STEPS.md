@@ -8,7 +8,7 @@
 Prepared: 2026-09-09. This file retains the earlier V4 through V12 execution
 history for provenance. It is not the current run plan. Current V21 evidence is
 recorded in [MODEL_RELEASE_PROGRESS.md](MODEL_RELEASE_PROGRESS.md) and
-[goal.md](../goal.md).
+[goal.md](../../goal.md).
 
 ## 1. Objective and immediate next step
 

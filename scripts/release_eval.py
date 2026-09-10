@@ -62,7 +62,7 @@ def main():
             'arguments': vars(args), 'model': MODEL, 'revision': REVISION,
             'adapter_sha256': digest(checkpoint / ('weights/adapter_model.safetensors' if args.package else 'adapter_model.safetensors')) if checkpoint else None,
             'dataset_sha256': digest(task_path), 'hardware': torch.cuda.get_device_name(0),
-            'protocol_sha256': digest(ROOT / 'docs/MODEL_RELEASE_PROTOCOL_V1.md'),
+            'protocol_sha256': digest(ROOT / 'docs/reference/MODEL_RELEASE_PROTOCOL_V1.md'),
             'platform': platform.platform(), 'packages': {name: importlib.metadata.version(name) for name in ['torch', 'transformers', 'peft']},
             'source_sha256': {name: digest(ROOT / name) for name in ['scripts/release_eval.py', 'wrench/release_eval.py', 'wrench/pilot_inference.py', 'wrench/pilot_environment.py', 'wrench/dataset.py', 'wrench/protocol.py']},
             'scope': 'Direct model predictions; authored tasks; zero cloud requests; no serving promotion'}
@@ -71,7 +71,7 @@ def main():
         snapshot = output / 'source' / name
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         snapshot.write_bytes((ROOT / name).read_bytes())
-    (output / 'protocol.md').write_bytes((ROOT / 'docs/MODEL_RELEASE_PROTOCOL_V1.md').read_bytes())
+    (output / 'protocol.md').write_bytes((ROOT / 'docs/reference/MODEL_RELEASE_PROTOCOL_V1.md').read_bytes())
     rows = []
     try:
         torch.manual_seed(42)

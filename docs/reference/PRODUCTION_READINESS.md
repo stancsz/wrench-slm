@@ -28,7 +28,7 @@ serving, arbitrary shell safety, or production traffic reliability.
 | 1 | Hosted production path is not validated with the V21 package | Critical | The V21 receipts prove local packaged inference only; they do not measure a live service |
 | 2 | Latency numbers are synthetic constants | Critical | `wrench/canary.py`: local `8 + 1 ms`, cloud `1100 + len(prompt)//8 ms` |
 | 3 | Safety is asserted, not measured against the mutation subset | High | `data/manifest.json` lists 522 mutation records, no replay against them |
-| 4 | Production acceptance standard is documentation, not an executable gate | Medium-High | `docs/PRODUCTION_ACCEPTANCE_STANDARD.md` lists six anti-patterns; only the canary measures one |
+| 4 | Production acceptance standard is documentation, not an executable gate | Medium-High | `docs/reference/PRODUCTION_ACCEPTANCE_STANDARD.md` lists six anti-patterns; only the canary measures one |
 | 5 | Mechanical-share justification comes from the sibling system, not Wrench's own logs | Medium | Cited 74.8–81.2% from `lean-router/logs/`; no Wrench-side re-derivation |
 
 The five gaps together explain why the answer is *not yet*. None of them is exotic; all of them have a clear closing action.
@@ -79,7 +79,7 @@ but a service claim still needs live traffic, safety, and integration evidence.
 - Local: `8.0 + 1.0 ms`
 - Cloud: `1100 + len(prompt)//8 ms`
 
-The "9 ms vs 1,172 ms" headline number is therefore a ratio of two synthetic numbers, not a measurement. The site (`gh-pages/status.html`) already labels this as a simulation; the in-repo docs and any external post must do the same.
+The "9 ms vs 1,172 ms" headline number is therefore a ratio of two synthetic numbers, not a measurement. The site (`docs/status.html`) already labels this as a simulation; the in-repo docs and any external post must do the same.
 
 ### Why this blocks production
 
@@ -126,7 +126,7 @@ There is also a subtler problem: the boundary between "read-only diagnostic" and
 
 ### What is missing
 
-`docs/PRODUCTION_ACCEPTANCE_STANDARD.md` already names six production anti-patterns:
+`docs/reference/PRODUCTION_ACCEPTANCE_STANDARD.md` already names six production anti-patterns:
 1. **Warm-cache**: measuring with pre-warmed shell or KV cache and reporting it as cold-start latency.
 2. **Empty-loop**: running 0-message / no-tool loops to claim token savings.
 3. **Micro-benchmark**: running on a single prompt to claim p99.
@@ -160,7 +160,7 @@ The natural failure mode for AI infrastructure projects is not "we forgot a chec
 
 The structural reason the project exists is the *mechanical share* of tool calls:
 the percentage of prompts that are routine enough to handle locally.
-`docs/SPECIFICATION.md` cites 74.8 to 81.2%, measured from `lean-router/logs/`.
+`docs/reference/SPECIFICATION.md` cites 74.8 to 81.2%, measured from `lean-router/logs/`.
 
 That number is the *justification*, but it is a measurement of a different system. Wrench's own logs do not yet exist as a separate stream, because the sidecar daemon (`wrench/sidecar.py`) has not been run against live traffic. As long as the justification lives in the parent's logs and not in Wrench's own, the architecture is borrowing evidence from another repo.
 
@@ -173,7 +173,7 @@ A production rollout needs to know what fraction of *real Wrench traffic* is mec
 1. Run the sidecar live against `lean-router/logs/tool_calls.log` for ≥ 24 hours of representative traffic.
 2. Re-compute the mechanical share from Wrench's own observation, not the parent's.
 3. Compare the two distributions. If they diverge, the architecture needs to handle the cases Wrench sees but the parent does not.
-4. Update the production cost model with the Wrench-side number. Cite both numbers side by side in the README and on `gh-pages/`.
+4. Update the production cost model with the Wrench-side number. Cite both numbers side by side in the README and on `docs/`.
 
 ---
 
@@ -219,7 +219,7 @@ The architecture is production-ready when **all** of the following are true, eac
 - [ ] Six anti-pattern checks are implemented in `scripts/` and CI fails on any violation.
 - [ ] Wrench-side mechanical share is measured from ≥ 24 hours of live sidecar traffic.
 - [ ] Sidecar daemon has been observed mining live `tool_calls.log` and updating model weights at least once.
-- [ ] Every public claim on `README.md`, `goal.md`, and `gh-pages/` is traceable to a JSON receipt.
+- [ ] Every public claim on `README.md`, `goal.md`, and `docs/` is traceable to a JSON receipt.
 
 When all nine are checked, the architecture is production-ready. Until then, it is honest research-grade infrastructure.
 

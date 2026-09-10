@@ -1,0 +1,25 @@
+{
+  "snapshot_ran_at": "2026-09-10T00:00:00-06:00",
+  "snapshot_kind": "V21 adapter release receipts and bounded integration status.",
+  "hardware_proof": false,
+  "checkpoint_released": true,
+  "project_state": "weight_release_ready",
+  "model_release": {
+    "version": "V21",
+    "status": "WEIGHTS READY FOR RELEASE",
+    "adapter_sha256": "6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348",
+    "manifest_sha256": "219d6e85cbadf4701796e6d27d49ed057d3fb182fbda5fbecc9be1f59c9e3ea7",
+    "frozen_holdout": { "exact": "440/440", "routine": "280/280", "fallback": "160/160" },
+    "context_suite": { "exact": "220/220", "routine": "140/140", "fallback": "80/80" },
+    "clean_environment": "passed",
+    "router_status": "deferred"
+  },
+  "milestones": {
+    "M1_training_contract": { "verdict": "PASS", "scope": "6,144 authored training rows, 176 development rows, 440 frozen evaluation rows" },
+    "M2_training_run": { "verdict": "PASS", "scope": "300 steps, finite losses, deterministic exposure" },
+    "M3_frozen_holdout": { "verdict": "PASS", "scope": "440/440 exact with zero unexpected filesystem changes" },
+    "M4_context_generalization": { "verdict": "PASS", "scope": "220/220 exact on the fresh context-release-v2b suite" },
+    "M5_package_verification": { "verdict": "PASS", "scope": "fresh Python 3.14 environment and empty model cache" },
+    "M6_router_serving": { "verdict": "HOLD", "scope": "router, hosted serving, and production traffic are separate work" }
+  }
+}
