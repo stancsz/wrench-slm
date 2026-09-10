@@ -20,7 +20,46 @@ import torch.nn.functional as F
 
 
 @dataclass
+class WrenchPi135MConfig:
+    """Tier 1: Raspberry Pi / Low-Power CPU Gateway Architecture (Wrench-Pi).
+    
+    ~135M-150M parameters. Designed to run on Raspberry Pi 4/5 (ARM64) or low-power CPUs
+    via GGUF/llama.cpp/NEON in < 80MB RAM footprint, enabling 24/7 silent hardware token gateways.
+    """
+    vocab_size: int = 32000
+    dim: int = 768
+    n_layers: int = 12
+    n_heads: int = 12
+    intermediate_dim: int = 2048
+    max_seq_len: int = 2048
+    norm_eps: float = 1e-6
+    rope_theta: float = 10000.0
+    tie_embeddings: bool = True
+    initializer_range: float = 0.02
+
+
+@dataclass
+class Wrench05BConfig:
+    """Tier 2: Workstation / GPU Pro Architecture (Wrench-Pro).
+    
+    ~490M-500M parameters. Designed for RTX 5070 Ti / consumer GPUs in ~1GB VRAM,
+    delivering 15ms ultra-low latency speculative tool prediction and slot extraction.
+    """
+    vocab_size: int = 32000
+    dim: int = 1024
+    n_layers: int = 24
+    n_heads: int = 16
+    intermediate_dim: int = 2816
+    max_seq_len: int = 2048
+    norm_eps: float = 1e-6
+    rope_theta: float = 10000.0
+    tie_embeddings: bool = True
+    initializer_range: float = 0.02
+
+
+@dataclass
 class NanoWrenchConfig:
+    """DEPRECATED: 28M Nano prototype config. Superseded by WrenchPi135MConfig and Wrench05BConfig."""
     vocab_size: int = 4096
     dim: int = 512
     n_layers: int = 8

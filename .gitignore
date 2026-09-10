@@ -18,10 +18,15 @@ Thumbs.db
 # Runtime checkpoints and sidecar live state
 models/*.pt
 models/**/*.pt
+artifacts/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
 logs/
 *.log
 data/sidecar_buffer.jsonl
 data/sidecar_offset.json
 data/sidecar_status.json
 data/sidecar.pid
-

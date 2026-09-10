@@ -1,0 +1,67 @@
+{
+  "completed_at": "2026-09-07T06:12:57.520551+00:00",
+  "downloads": [
+    {
+      "url": "https://huggingface.co/datasets/gorilla-llm/Berkeley-Function-Calling-Leaderboard/resolve/main/BFCL_v3_exec_simple.json",
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\raw\\bfcl\\BFCL_v3_exec_simple.json",
+      "status": "downloaded",
+      "http_status": 200,
+      "bytes": 87953
+    },
+    {
+      "url": "https://huggingface.co/datasets/gorilla-llm/Berkeley-Function-Calling-Leaderboard/resolve/main/BFCL_v3_exec_multiple.json",
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\raw\\bfcl\\BFCL_v3_exec_multiple.json",
+      "status": "downloaded",
+      "http_status": 200,
+      "bytes": 82066
+    },
+    {
+      "url": "https://huggingface.co/datasets/gorilla-llm/Berkeley-Function-Calling-Leaderboard/resolve/main/BFCL_v3_exec_parallel.json",
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\raw\\bfcl\\BFCL_v3_exec_parallel.json",
+      "status": "downloaded",
+      "http_status": 200,
+      "bytes": 56281
+    },
+    {
+      "url": "https://huggingface.co/datasets/gorilla-llm/Berkeley-Function-Calling-Leaderboard/resolve/main/BFCL_v3_exec_parallel_multiple.json",
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\raw\\bfcl\\BFCL_v3_exec_parallel_multiple.json",
+      "status": "downloaded",
+      "http_status": 200,
+      "bytes": 73943
+    }
+  ],
+  "observed_calls": 10308,
+  "events": 58039,
+  "distillation": {
+    "responses": 200,
+    "successful": 196,
+    "variants": 490
+  },
+  "build": {
+    "dataset_name": "Wrench-SLM Real Data Aggregated Build",
+    "version": "3.0.0-real-aggregated",
+    "built_at": "2026-09-07T06:12:57.509628+00:00",
+    "total_records": 9956,
+    "splits": {
+      "train": 7002,
+      "val": 1491,
+      "held_out": 1463
+    },
+    "sources": {
+      "lean_router_gateway_distillation": 490,
+      "lean_router_production_log": 9466
+    },
+    "categories": {
+      "distilled_observed_trace": 490,
+      "observed_replay_trace": 9466
+    },
+    "evidence_boundary": {
+      "observed_trace": "gateway_completed_log_only",
+      "teacher_distillation": "teacher_generated_prompt_variants_only",
+      "legacy": "pre-existing local records copied to data/legacy and excluded from this build",
+      "public_bfcl": "raw public evaluation reference, not merged into training splits"
+    },
+    "legacy_split_untouched": true
+  },
+  "legacy_untouched": true
+}

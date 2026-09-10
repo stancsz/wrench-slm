@@ -1,10 +1,10 @@
 {
   "samples": 1000,
-  "divergence_rate": 0.663,
-  "local_executed": 985,
-  "fallback": 15,
+  "divergence_rate": 0.685,
+  "local_executed": 971,
+  "fallback": 29,
   "avg_local_latency_ms": 9.0,
-  "avg_cloud_latency_ms": 1179.882005899705,
-  "cloud_tokens_saved": 122478,
-  "cloud_tokens_baseline": 394388
+  "avg_cloud_latency_ms": 1172.0392156862745,
+  "cloud_tokens_saved": 154174,
+  "cloud_tokens_baseline": 418179
 }

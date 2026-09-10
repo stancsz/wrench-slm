@@ -5,25 +5,15 @@ from __future__ import annotations
 import json
 import math
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import torch
-from torch.utils.data import DataLoader
 
-from .dataset import JsonlDataset, build_training_prompt
+from .dataset import build_training_prompt
+from .sft import TrainingMetrics, sft_train  # noqa: F401
 from .protocol import ROUTER_FALLBACK
 from .reward import compute_reward
-
-
-@dataclass
-class TrainingMetrics:
-    steps: int
-    loss_start: float
-    loss_end: float
-    duration_s: float
-    examples_seen: int
 
 
 def build_lora_model(base_model, peft_config):
@@ -31,60 +21,6 @@ def build_lora_model(base_model, peft_config):
     model = get_peft_model(base_model, peft_config)
     model.print_trainable_parameters()
     return model
-
-
-def sft_train(
-    model,
-    tokenizer,
-    train_path: str,
-    *,
-    val_path: Optional[str] = None,
-    micro_batch_size: int = 1,
-    grad_accum_steps: int = 16,
-    learning_rate: float = 1e-4,
-    max_steps: int = 500,
-    log_every: int = 25,
-    seed: int = 42,
-) -> TrainingMetrics:
-    """LoRA SFT over masked prompts with deterministic data order."""
-    torch.manual_seed(seed)
-    dataset = JsonlDataset(train_path, tokenizer)
-    dataloader = DataLoader(dataset, batch_size=None, num_workers=0)
-    optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=learning_rate)
-    model.train()
-
-    iterator = iter(dataloader)
-    loss_start = loss_end = 0.0
-    examples = 0
-    started = time.perf_counter()
-    losses: List[float] = []
-    for step in range(max_steps):
-        optimizer.zero_grad(set_to_none=True)
-        accumulated = 0.0
-        for micro in range(grad_accum_steps):
-            try:
-                batch = next(iterator)
-            except StopIteration:
-                iterator = iter(dataloader)
-                batch = next(iterator)
-            batch = {k: v.to(model.device) for k, v in batch.items()}
-            outputs = model(**batch)
-            loss = outputs.loss / grad_accum_steps
-            loss.backward()
-            accumulated += float(loss.detach())
-        torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
-        optimizer.step()
-        examples += grad_accum_steps
-        losses.append(accumulated)
-        if step == 0:
-            loss_start = accumulated
-        if (step + 1) % log_every == 0 or step == max_steps - 1:
-            recent = sum(losses[-log_every:]) / max(1, len(losses[-log_every:]))
-            print(f"[sft] step {step + 1:>4}/{max_steps} loss={recent:.4f}")
-
-    loss_end = accumulated
-    duration = time.perf_counter() - started
-    return TrainingMetrics(max_steps, loss_start, loss_end, duration, examples)
 
 
 def _advantage(rewards: List[float]) -> List[float]:

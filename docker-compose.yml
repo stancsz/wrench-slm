@@ -13,6 +13,7 @@ services:
       - TZ=America/Denver
       - LEAN_ROUTER_LOGS_DIR=/gateway_logs
       - SIDECAR_PORT=4010
+      - WRENCH_CHECKPOINT_KEEP_BEST=3
       - PYTHONUNBUFFERED=1
     volumes:
       - ./wrench:/app/wrench

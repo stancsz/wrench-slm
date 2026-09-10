@@ -1,0 +1,212 @@
+[
+  {
+    "path": "data\\acquisition_receipt.json",
+    "bytes": 2551,
+    "sha256_head": "5d2df1d8bff17c82"
+  },
+  {
+    "path": "data\\build\\held_out.jsonl",
+    "bytes": 4499351,
+    "sha256_head": "25968f3148064054"
+  },
+  {
+    "path": "data\\build\\manifest.json",
+    "bytes": 1464,
+    "sha256_head": "63046e12c9af1938"
+  },
+  {
+    "path": "data\\build\\PUBLIC_DATA_NOTE.md",
+    "bytes": 253,
+    "sha256_head": "0c2cd33e42742de7"
+  },
+  {
+    "path": "data\\build\\README.md",
+    "bytes": 280,
+    "sha256_head": "cf8722e6f19d1273"
+  },
+  {
+    "path": "data\\build\\train.jsonl",
+    "bytes": 22093229,
+    "sha256_head": "04c41fc59446a8ea"
+  },
+  {
+    "path": "data\\build\\val.jsonl",
+    "bytes": 4339344,
+    "sha256_head": "568e62c57323b3ac"
+  },
+  {
+    "path": "data\\build\\verification_report.json",
+    "bytes": 18539,
+    "sha256_head": "94c90cf7a026c525"
+  },
+  {
+    "path": "data\\canary_summary.json",
+    "bytes": 245,
+    "sha256_head": "105b8469a0cde072"
+  },
+  {
+    "path": "data\\DATA_PREPARATION_GUIDE.md",
+    "bytes": 10563,
+    "sha256_head": "ea96da1003fefa1b"
+  },
+  {
+    "path": "data\\eval_summary.json",
+    "bytes": 2906,
+    "sha256_head": "19cbaa5bc855ce37"
+  },
+  {
+    "path": "data\\fetch_inventory.json",
+    "bytes": 4574,
+    "sha256_head": "05d7d4f415224f87"
+  },
+  {
+    "path": "data\\held_out.jsonl",
+    "bytes": 7009101,
+    "sha256_head": "c2f960fbc085249d"
+  },
+  {
+    "path": "data\\legacy\\canary_summary.json",
+    "bytes": 245,
+    "sha256_head": "105b8469a0cde072"
+  },
+  {
+    "path": "data\\legacy\\eval_summary.json",
+    "bytes": 2906,
+    "sha256_head": "19cbaa5bc855ce37"
+  },
+  {
+    "path": "data\\legacy\\held_out.jsonl",
+    "bytes": 7009101,
+    "sha256_head": "c2f960fbc085249d"
+  },
+  {
+    "path": "data\\legacy\\manifest.json",
+    "bytes": 2662,
+    "sha256_head": "16e19067b4e8bce8"
+  },
+  {
+    "path": "data\\legacy\\milestone_receipts.json",
+    "bytes": 2557,
+    "sha256_head": "3f78d83cfb8dfd67"
+  },
+  {
+    "path": "data\\legacy\\train.jsonl",
+    "bytes": 33774235,
+    "sha256_head": "6a90a84703f5f167"
+  },
+  {
+    "path": "data\\legacy\\val.jsonl",
+    "bytes": 6688454,
+    "sha256_head": "e8b0cf2388791445"
+  },
+  {
+    "path": "data\\legacy\\verification_report.json",
+    "bytes": 4750,
+    "sha256_head": "6ee640282406a2bc"
+  },
+  {
+    "path": "data\\manifest.json",
+    "bytes": 2662,
+    "sha256_head": "16e19067b4e8bce8"
+  },
+  {
+    "path": "data\\milestone_receipts.json",
+    "bytes": 2557,
+    "sha256_head": "3f78d83cfb8dfd67"
+  },
+  {
+    "path": "data\\raw\\bfcl\\BFCL_v3_exec_multiple.json",
+    "bytes": 82066,
+    "sha256_head": "180ccd3681485657"
+  },
+  {
+    "path": "data\\raw\\bfcl\\BFCL_v3_exec_parallel.json",
+    "bytes": 56281,
+    "sha256_head": "67826cdd638e1416"
+  },
+  {
+    "path": "data\\raw\\bfcl\\BFCL_v3_exec_parallel_multiple.json",
+    "bytes": 73943,
+    "sha256_head": "e3134c946b215d34"
+  },
+  {
+    "path": "data\\raw\\bfcl\\BFCL_v3_exec_simple.json",
+    "bytes": 87953,
+    "sha256_head": "120eb383a8ec801b"
+  },
+  {
+    "path": "data\\raw\\bfcl\\cli_rows.jsonl",
+    "bytes": 0,
+    "sha256_head": "e3b0c44298fc1c14"
+  },
+  {
+    "path": "data\\raw\\bfcl\\summary.json",
+    "bytes": 517,
+    "sha256_head": "7d97e111c3898e86"
+  },
+  {
+    "path": "data\\raw\\distillation.jsonl",
+    "bytes": 173421,
+    "sha256_head": "023232380022e6da"
+  },
+  {
+    "path": "data\\raw\\hf_acquisition_receipt.json",
+    "bytes": 1821,
+    "sha256_head": "563531de0007d6c7"
+  },
+  {
+    "path": "data\\raw\\lean_router\\events.jsonl",
+    "bytes": 21811794,
+    "sha256_head": "ee7941408e60812f"
+  },
+  {
+    "path": "data\\raw\\lean_router\\scan_receipt.json",
+    "bytes": 1381,
+    "sha256_head": "8fd7fb70b1da3fb6"
+  },
+  {
+    "path": "data\\raw\\lean_router\\tool_calls.jsonl",
+    "bytes": 30749171,
+    "sha256_head": "ea6563b19b319a5c"
+  },
+  {
+    "path": "data\\README.md",
+    "bytes": 16897,
+    "sha256_head": "d328d0c116095773"
+  },
+  {
+    "path": "data\\sidecar.pid",
+    "bytes": 10,
+    "sha256_head": "dff99449837dd96e"
+  },
+  {
+    "path": "data\\sidecar_buffer.jsonl",
+    "bytes": 100259,
+    "sha256_head": "e6a0d78c10f2573b"
+  },
+  {
+    "path": "data\\sidecar_offset.json",
+    "bytes": 155,
+    "sha256_head": "41a3298a1475c7ad"
+  },
+  {
+    "path": "data\\sidecar_status.json",
+    "bytes": 453,
+    "sha256_head": "b0b80682a1be3d77"
+  },
+  {
+    "path": "data\\train.jsonl",
+    "bytes": 33774235,
+    "sha256_head": "6a90a84703f5f167"
+  },
+  {
+    "path": "data\\val.jsonl",
+    "bytes": 6688454,
+    "sha256_head": "e8b0cf2388791445"
+  },
+  {
+    "path": "data\\verification_report.json",
+    "bytes": 4750,
+    "sha256_head": "6ee640282406a2bc"
+  }
+]

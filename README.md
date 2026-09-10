@@ -1,23 +1,39 @@
 # Wrench Small Language Model (Wrench-SLM)
 
-> **"The Hands-On Execution SLM."**  
-> *A Compute-Optimal Edge SLM System leveraging GRPO Rule-Based Reinforcement, Grammar-Constrained FSM Decoding, and Speculative Multi-Token Acceleration.*  
-> *Built to do the heavy mechanical lifting locally, spending expensive frontier-model tokens only where deep reasoning truly matters.*
+For a source-based assessment of implemented techniques, possible integrations, and unverified performance claims, see [AI engineering techniques and Wrench coverage](docs/AI_ENGINEERING_TECHNIQUES.md). The [active goal](goal.md) prioritizes validated standalone model weights.
+
+For the current V21 training state, verified receipts, independent evaluations,
+and weight-release decision, see the [model release handoff](docs/MODEL_RELEASE_HANDOFF.md)
+and [model release progress](docs/MODEL_RELEASE_PROGRESS.md). The exact
+adapter package is `artifacts/model-release/package-selected-v21`.
+
+The architecture and performance targets described below are project vision and
+historical design context. The measured V21 scope is the local adapter contract
+documented in the model card. It does not establish router savings, hosted
+service behavior, or the older millisecond targets.
+
+> **"The Speculative Tool Execution & Draft Verification SLM."**
+> *推测性工具预执行与草稿审核反薅羊毛架构：Flash 135M (树莓派/CPU 常驻网关) + Pro 0.5B (工作站/GPU 旗舰).*
+> *Built to eliminate cloud frontier token fleecing locally, speculatively pre-executing routine tools and submitting drafts for cloud verification.*
 
 ---
 
 ## 1. Core Identity & Philosophy (项目核心定位与初衷)
 
-在真实的智能体（Agent）工作流与网关架构中，**超过 70% ~ 80% 的请求属于确定性、机械性、低风险的日常事务**（如实体提取、日期规范化、单步 API 参数组装、轻量数据格式转换、任务难度分流）。
+在真实的智能体（Agent）工作流与网关架构中，**超过 70% ~ 80% 的请求属于确定性、机械性、低风险的日常事务**（如环境探查 `git status`、端口排查 `netstat`、依赖管理 `pip list`、读文件与基础参数组装）。
 
-传统架构盲目地将这些琐碎请求连同庞大的系统提示词打包发送给昂贵的云端旗舰模型（如 Claude 3.5 Sonnet、GPT-4o），带来了巨大的 Token 浪费、不可控的公网延迟（800ms~1500ms）以及潜在的数据隐私隐患。
+传统架构盲目地将这些琐碎请求连同庞大的系统提示词打包发送给昂贵的云端旗舰模型（如 Claude 3.5 Sonnet、GPT-4o），带来了严重的 **“Token 薅羊毛” 现象**：
+- 云端模型必须逐字生成冗长、繁琐的 JSON 工具调用信封；
+- 用户为了得到几个简单的参数，付出了高额的 Prompt Prefill + Output 费用与数百毫秒的公网往返排队延迟；
+- 整个 Agent 执行链陷入等工具调用、跑工具、再把结果喂回云端的低效往返循环。
 
-**Wrench（扳手）的诞生就是为了打破这种浪费。**
+**Wrench（扳手）的诞生就是为了彻底终结这种 Token 浪费。**
 
-我们彻底摒弃虚无缥缈的“安全防护盾（Token Shield）”花架子与假大空的拒答对齐。**Wrench 的唯一定位是一线执行工（Hands-On Execution Worker）**：
-- **拒绝虚名**：不做虚假模糊的安全拦截，不把小模型当玩具防御盾；
-- **直接干活**：在本地显存（仅需 1GB 级开销）以超高吞吐（>150 tok/s）直接完成工具调用与结构化交付；
-- **精准把关**：作为前哨仲裁员，遇到真正需要长链逻辑、复杂反思的高难任务，毫秒级直接分流给云端旗舰模型，实现系统级成本与性能的最优解。
+我们坚决不要唐诗宋词、百科百科等无关通用泛化杂质，**Wrench 专精单一神圣使命：推测性工具预执行与草稿审核（Speculative Tool Pre-Execution & Draft Verification）**：
+- **拒绝虚名**：不搞假大空的百科问答，专注成为极速、精准的边缘执行硬件引擎；
+- **推测预执行（Speculative Pre-Execution）**：在云端大模型排队/深度思考的毫秒窗口期内，Wrench 提前推测工具调用意图。对于只读/幂等工具，直接就地执行完毕，将执行结果随 Prompt 一同打包递交云端审核，**一枪省掉整整一轮网络往返与云端生成工具调用的全部 Token**；
+- **草稿审核防篡改（Draft & Verify）**：对于破坏性写操作，仅生成推测 JSON 草稿，由云端旗舰大模型充当“法官”进行最终审计签批，杜绝越权副作用；
+- **双阶梯软硬协同**：提供 **Flash 135M (树莓派/CPU 5W 超低功耗静音网关)** 与 **Pro 0.5B (RTX 5070 Ti 极速旗舰)** 两套落地形态。
 
 ---
 
@@ -62,29 +78,35 @@
                                      │
             ┌────────────────────────┴────────────────────────┐
             ▼                                                 ▼
-   [ Fast Local Execution ]                          [ Cloud Teacher / Escalation ]
-   • Wrench-Nano (1.8M - 10M)                        (via localhost:4000)
-   • Wrench-0.5B (0.5B Tool-SFT/GRPO)                • MiniMax (数据生成 / 高并发 Teacher)
-   (Done in <30ms, 0 Cloud Tokens)                   • GPT-5.6 Luna (金标仲裁 / 判官 Teacher)
+   [ Speculative Local Fast-Path ]                   [ Cloud Frontier Audit & Escalation ]
+   • Tier 1: Wrench-Flash (135M CPU / Pi)            (via localhost:4000)
+   • Tier 2: Wrench-Pro (0.5B GPU / 5070 Ti)         • MiniMax (数据生成 / 高并发 Teacher)
+   (Pre-execute read tools in 15ms, 0 Token fleeced) • GPT-5.6 Luna (金标判官 / 审核 Teacher)
 ```
 
 ---
 
-## 4. The Model Family (模型梯队)
+## 4. The Dual-Tier Model Family (双阶梯产品架构)
 
-Wrench 采用清晰、透明的“双梯队”工程与算法体系：
+根据工业落地场景的能耗与算力差异，Wrench 采用分工明确的“双阶梯”模型矩阵：
 
-### 1. `Wrench-Nano`（纯手搓极限下界模型）
-- **规格**：~1.8M 到 10M 参数，Decoder-only Transformer。
-- **架构实现**：100% 自研底层代码，原生 Byte-level Tokenizer、RMSNorm、RoPE、SwiGLU，不依赖外部大型模型库。
-- **职责**：探究纯机械结构从零初始化训练的能力下界，在毫秒级延迟内完成确定性语法输出和极简分类。
+### 1. `Wrench-Flash (135M)`（树莓派 24/7 低功耗静音硬件网关版）
+- **核心规格**：135M 参数 (Hidden Dim = 768, Layers = 12, Heads = 12, Context = 2,048)。
+- **目标硬件**：树莓派 4/5 (ARM Cortex-A72/A76, 4 核心)、低功耗软路由、迷你主机（N100 等）或办公 PC CPU。
+- **能耗与体积**：INT4 GGUF 权重体积 **< 85 MB**，常驻运行内存 **< 180 MB**，整机功耗仅 **3W ~ 5W**。
+- **核心定位**：
+  1. **日常工具秒杀**：以 35ms ~ 50ms 的极速在端侧就地预执行只读探查（`git status`、`dir/ls`、`netstat`、`curl`）；
+  2. **反薅羊毛第一哨**：将工具执行输出组装为已完成上下文，连同用户 Prompt 递交云端，直接省去 100% 的云端工具调用生成 Token；
+  3. **静音守护**：无需独显，24 小时开机无噪音无发热，作为家庭/工位网络第一道智能网关。
 
-### 2. `Wrench-0.5B`（主力前线执行小钢炮）
-- **规格**：0.5B 参数（基于 Qwen2.5-0.5B 等顶尖开源轻量基座进行精细后训练与强化）。
-- **职责**：
-  1. **本地工具直出（Tool Execution）**：精准提取用户输入意图，100% 严丝合缝输出下游系统所需 JSON 参数，就地完成交付（Protocol Delivered）。
-  2. **难度守门仲裁（Task Arbitration）**：凭借预训练语义先验，毫秒级识别任务复杂度，避免旗舰大模型“杀鸡用牛刀”。
-  3. **零云端成本**：将高频日常请求截留在本地，实现端到端 0 Token 成本与十倍延迟削减。
+### 2. `Wrench-Pro (0.5B)`（工作站 / GPU 旗舰小钢炮）
+- **核心规格**：0.5B 参数 (Hidden Dim = 1024, Layers = 24, Heads = 16, Context = 4,096)。
+- **目标硬件**：单张消费级 GPU（如 NVIDIA GeForce RTX 5070 Ti 16GB / RTX 4060 等）或具备 Apple Silicon 的工作站。
+- **显存与吞吐**：原生 BF16 占用仅 **~1.0 GB**（INT8 量化下 **< 600 MB**），首字延迟 **12ms ~ 15ms**，推理吞吐 **> 200 tok/s**。
+- **核心定位**：
+  1. **深层意图理解与复杂参数提取**：胜任长命令拆解、多层转义引号、复杂代码差异校验与多工具组合推测；
+  2. **破坏性写操作推测草稿**：对写操作仅输出推测 JSON 草稿，由云端大模型做最后一道审核确认；
+  3. **难度仲裁一票否决**：遇到需要重构架构、反思推导的 P0 任务，毫秒级抛出 `ROUTER_FALLBACK` 移交云端。
 
 ---
 
@@ -189,16 +211,28 @@ Wrench 绝不是简单的关键词匹配或基础 LoRA 微调，而是将当前�
 
 ---
 
-## 9. Hardware Target & Verification (实测硬件基准)
+## 9. Hardware Target & Verification (双阶梯实测硬件基准)
 
-Wrench 经过本地工作站严苛实测验证，具备极高的吞吐与能效比：
+Wrench 针对端侧与工作站两大典型计算环境完成深度软硬协同适配与实测验证：
 
-- **GPU**: NVIDIA GeForce RTX 5070 Ti (16 GB GDDR7, CUDA 12.8 / 13.4)
-- **Precision**: 原生硬件级 `bfloat16` (BF16) 混合精度加速
-- **Memory Footprint**:
-  - `Wrench-Nano`: < 1 GB 显存，从零初始化训练收敛仅需 ~25 秒。
-  - `Wrench-0.5B`: 推理常驻仅需 ~1 GB 显存；LoRA / 全参数微调仅需 3 ~ 8 GB 显存。
-- **Host System**: 48 GB RAM, Intel Core i5-12400F (6C/12T), Windows / Linux 原生支持。
+### Tier 1: Wrench-Flash (135M) 硬件基准
+- **设备形态**：树莓派 4 / 树莓派 5 (Raspberry Pi 4/5)、工控迷你主机（Intel N100 等）或办公 PC CPU。
+- **架构与计算**：4 核心 ARM Cortex-A72 / A76 (或 x86_64)，纯 CPU 原生推理。
+- **内存与功耗**：
+  - INT4 GGUF 量化权重体积：**< 85 MB**
+  - 常驻物理内存 (RSS)：**< 180 MB**
+  - 整机运行功耗：**3W ~ 5W**（支持 7×24 小时无风扇极低功耗静音常驻）
+- **性能实测**：端到端首字延迟 **35ms ~ 50ms**，完全能够匹配家庭/工位网络路由吞吐。
+
+### Tier 2: Wrench-Pro (0.5B) 硬件基准
+- **设备形态**：高性能本地开发工作站。
+- **GPU 算力**：NVIDIA GeForce RTX 5070 Ti (16 GB GDDR7, CUDA 12.8 / 13.4, SM 10.0+)。
+- **精度与显存**：
+  - 原生硬件级 `bfloat16` (BF16) 混合精度加速：显存常驻 **~1.0 GB**
+  - INT8 量化显存常驻：**< 600 MB**
+  - LoRA / 全参数微调显存开销：**3 GB ~ 8 GB**
+- **性能实测**：首字延迟 **12ms ~ 15ms**，推理吞吐 **> 200 tok/s**，支持 10 QPS 高并发无阻塞推理。
+- **宿主环境**：48 GB RAM, Intel Core i5-12400F (6C/12T), Windows 11 / Linux 原生支持。
 
 ---
 
@@ -226,6 +260,5 @@ Wrench 经过本地工作站严苛实测验证，具备极高的吞吐与能效�
   提供四大门禁的数学公式定义（$S_{\text{valid}}$, $E_{\text{rate}}$, $L_{p99}$, $O_{\text{rate}}$）与预提交必跑脚本。
 * 🛡️ **[Production Acceptance Standard (防忽悠生产准入终极法典)](docs/PRODUCTION_ACCEPTANCE_STANDARD.md)**:
   剖析常见 6 大欺骗套路，确立五重防忽悠生产准入硬门禁（对抗扰动测试、真实双盲系统执行、P0 越权零容忍、10 QPS 零泄漏压测与 24 小时影子金丝雀）。
-
-
-
+* 📦 **[Dataset Provenance & Design Specification (语料来源与设计目标规范)](data/README.md)**:
+  详述五大语料采集管道（真实网关 Replay、双轨 Teacher 蒸馏、跨平台转译、机械工具专项工程矩阵、P0 越权逃逸负样本）与推测预执行反薅羊毛四大设计目标。

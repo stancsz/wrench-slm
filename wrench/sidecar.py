@@ -12,6 +12,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import threading
 import time
 from datetime import datetime, timezone
@@ -61,6 +62,10 @@ WRENCH_TOOLS = {
     "wait_agent",
     "multi_agent_v1",
 }
+
+# Keep the native sidecar's local weight archive bounded. The live model is
+# stored separately, so this limit applies only to retained snapshot copies.
+CHECKPOINT_KEEP_BEST = max(1, int(os.environ.get("WRENCH_CHECKPOINT_KEEP_BEST", "3")))
 
 
 def _find_gateway_logs_dir() -> Path:
@@ -423,7 +428,7 @@ class BackgroundTrainer:
         return True
 
     def _save_checkpoint_copies(self) -> None:
-        """Archive periodic snapshot copies and best loss copies of weights."""
+        """Save a snapshot and retain only the best bounded set of copies."""
         try:
             # 1. Periodic snapshot copy every 5 cycles
             if self.state.train_cycles % 5 == 0:
@@ -438,6 +443,24 @@ class BackgroundTrainer:
                 best_path = self.state.checkpoints_dir / f"nano_wrench_best_loss_{self.state.latest_loss:.4f}.pt"
                 save_pure_model(self.model, str(best_path))
                 logger.info(f"[sidecar] [CHECKPOINT] Saved new best-loss weight copy to {best_path.name}")
+
+            snapshots = list(self.state.checkpoints_dir.glob("*.pt"))
+
+            def snapshot_rank(path: Path) -> tuple[float, float]:
+                match = re.search(r"_loss_([0-9]+(?:\.[0-9]+)?)\.pt$", path.name)
+                loss = float(match.group(1)) if match else float("inf")
+                # For equal losses, retain the newest copy first.
+                return loss, -path.stat().st_mtime
+
+            stale = sorted(snapshots, key=snapshot_rank)[CHECKPOINT_KEEP_BEST:]
+            for path in stale:
+                path.unlink()
+            if stale:
+                logger.info(
+                    "[sidecar] [CHECKPOINT] Pruned %d snapshot(s); retaining %d best copy/copies",
+                    len(stale),
+                    min(len(snapshots), CHECKPOINT_KEEP_BEST),
+                )
         except Exception as e:
             logger.warning(f"[sidecar] Failed to save checkpoint copies: {e}")
 

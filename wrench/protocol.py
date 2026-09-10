@@ -52,6 +52,14 @@ def exact_match(prediction: dict[str, Any] | None, target: dict[str, Any]) -> bo
     return prediction is not None and canonical_json(prediction) == canonical_json(target)
 
 
+def prediction_matches_target(prediction: str, record: dict[str, Any]) -> bool:
+    """Strict pilot scoring: all arguments matter; fallback is a distinct action."""
+    if record['tool'] == 'fallback':
+        return prediction == ROUTER_FALLBACK
+    parsed, valid = parse_call(prediction)
+    return valid.valid and exact_match(parsed, target_call(record))
+
+
 def iter_jsonl(path: str) -> Iterable[dict[str, Any]]:
     with open(path, encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, 1):

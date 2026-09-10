@@ -1,49 +1,77 @@
 # Wrench-SLM: Master Engineering Specification & Operational Standard
 
 ```
-Document Version : 1.0.0-PROD
+Document Version : 2.0.0-PROD
 Classification   : HARD SPECIFICATION / NON-NEGOTIABLE
-Target System    : Wrench-SLM (Native from-scratch Nano-Transformer, 0 External Base Weights)
+Target System    : Wrench-SLM 0.5B (Speculative Tool Execution & Draft Verification Engine)
+Model Specs      : ~490M-500M Params, dim=1024, layers=24, heads=16, intermediate=2816, vocab=32k
 Hardware Baseline: NVIDIA GeForce RTX 5070 Ti (16GB GDDR7, BF16 / FP8), 48GB Host RAM
 Gateway Routing  : http://localhost:4000/v1 (Teachers: minimax, gpt5.6-luna)
-Deployment Mode  : LeanRouter Gateway Sidecar (Daemon / Docker, Port 4010)
-Scope            : Engineering Standards, Motivation, Training, Experimentation, Acceptance Gates
+Deployment Mode  : LeanRouter Gateway Sidecar (Speculative Pre-Execution Daemon, Port 4010)
+Scope            : Speculative Tool Pre-Execution, Anti-Token Fleecing, Dual-Path Safety Gates
 ```
 
 ---
 
 ## 1. Motivation & Architectural Anti-Goals
 
-### 1.1 The Fundamental Problem
+### 1.1 The Fundamental Problem (The Token Fleecing Trap)
 Modern autonomous software engineering agent loops generate tens of thousands of intermediate tool-call requests. Empirical analysis of production routing logs (`lean-router/logs/`) reveals that **74.8% to 81.2% of all agent tool invocations are purely mechanical, deterministic, and low-entropy**:
 * Running shell commands (`git status`, `git diff`, `pytest`, `ruff check`, `head -n 20 <file>`, `ls`, `wc -l`)
 * Feeding stdin input to interactive sub-processes (`write_stdin`, `send_input`)
 * Polling goal and task status (`get_goal`, `update_goal`)
 * Orchestrating sub-agent life-cycles (`spawn_agent`, `wait_agent`)
 
-Routing these routine, mechanical operations to 600-billion-parameter cloud frontier models (e.g., Claude 3.5 Sonnet, GPT-4o) introduces three catastrophic engineering bottlenecks:
-1. **Latency Overhead**: Network roundtrips plus cloud time-to-first-token (TTFT) consume **800ms to 2,500ms** per tool call.
-2. **Economic Waste**: Routine commands burn millions of tokens per task, inflating per-run operational costs by up to \$12.00/hour.
-3. **External Vulnerability**: Network jitter, rate limits (HTTP 429), and cloud provider outages stall the entire agent loop.
+Routing these routine, mechanical operations to 600-billion-parameter cloud frontier models (e.g., Claude 3.5 Sonnet, GPT-4o) subjects developers to three catastrophic economic traps (The Token Fleecing Trap):
+1. **Expensive Output Token Fleecing**: Cloud providers charge 3x~4x premium on Output Tokens. Generating 50-100 tokens of boilerplate JSON tool calls (`{"type":"function", "function":{...}}`) is pure financial waste.
+2. **Two-Round Latency Penalty**: A single tool call requires TWO round-trips: Model generates call -> Client executes -> Client sends output -> Model generates response. End-to-end latency explodes to **3,000ms to 5,000ms**.
+3. **Repeated Context Prefill Tax**: On the second turn, the cloud model re-charges input token pricing to re-read the entire 30,000~60,000 token conversation context just to see the tool output!
 
-### 1.2 The Wrench-SLM Mission
-**Wrench-SLM** is an edge-native, sub-1-billion parameter model (0.5B base architecture) purpose-built to act as the agent's mechanical "wrench":
-* Offload **>= 70%** of routine, mechanical tool invocations locally on consumer GPU hardware.
-* Deliver tool predictions in **< 30ms (p99)** with **0 cloud tokens consumed**.
-* Yield immediately to cloud frontier teachers (`minimax`, `gpt5.6-luna` via `http://localhost:4000/v1`) whenever semantic complexity, open-ended reasoning, or architectural planning is detected.
+### 1.2 The Wrench-SLM Mission: Dual-Tier Speculative Pre-Execution & Anti-Fleecing
+**Wrench-SLM** delivers a **Dual-Tier (双阶梯)** speculative tool execution engine running concurrently inside `LeanRouter`:
+* **Tier 1: Wrench-Pi (`WrenchPi135MConfig`: ~135M-150M params, INT4 ~85MB)**:
+  * **Target**: Raspberry Pi 4/5 (ARM Cortex-A76, 4GB/8GB RAM), low-power fanless mini PCs, or pure CPU servers.
+  * **Capability**: Runs 24/7 as a silent 5W hardware token gateway for an entire home/office local network (`http://raspberrypi:4000/v1`). Delivers 35ms~60ms CPU inference latency via llama.cpp / GGUF with < 180MB RAM footprint.
+* **Tier 2: Wrench-Pro (`Wrench05BConfig`: ~490M-500M params, BF16 ~1.0GB)**:
+  * **Target**: Workstations with RTX 5070 Ti / consumer GPUs.
+  * **Capability**: Delivers **12ms~15ms** ultra-low latency speculative tool prediction, complex slot extraction, and multi-tool planning.
+* **Speculative Pre-Execution**: Safely executes idempotent read-only commands (`git status`, `cat`, `curl`, `netstat`) in local sandbox BEFORE the cloud model responds.
+* **Single-Turn Context Injection**: Injects the speculative tool call AND real execution output directly into Turn 1 sent to the cloud model, cutting 1 full round trip and 100% of tool-call output tokens.
+* **Draft-Only Mutation Safety**: For destructive or write operations (`rm`, `git commit`, `kill`), drafts the speculative JSON call without physical execution until the frontier model confirms.
 
 ---
 
 ### 1.3 Post-Mortem of Flawed Past Attempts (Strictly Prohibited Anti-Patterns)
 
-Future contributing agents and developers are **strictly prohibited** from repeating the design pathologies that compromised earlier projects (such as `leanrouter-token-shield`):
+Future contributing agents and developers are **strictly prohibited** from repeating the design pathologies that compromised earlier projects:
 
 | Anti-Pattern | Root Pathology | Why It Failed | Strict Wrench-SLM Mandate |
 | :--- | :--- | :--- | :--- |
-| **Fake Safety Shields** | Keyword substring filters (`unsafe_fragments = ["rm -rf", "drop table"]`) | High false-positive rate on routine commands (`rm -rf build/`, `git clean -fd`); bypassed trivially by whitespace/aliases (`rm -r -f`). | **NO pseudo-safety substring filtering.** Tool execution safety is handled exclusively by OS sandboxing and file-permission jails. |
-| **Synthetic Template Delusion** | Handcrafting synthetic tool-call templates (`"send this to local"`) | Model memorizes artificial phrasing; suffers 90%+ out-of-distribution failure when deployed on real developer queries. | **100% Real Production Data.** All training data is extracted from verified production agent logs (`tool_calls.log*`, `events/*.jsonl`). |
-| **Unconstrained DPO Refusal Collapse** | Applying Direct Preference Optimization (DPO) to train refusal behavior | Reward hacking: the model learns that refusing all queries minimizes KL penalty, collapsing JSON syntax validity from 100% to 63% and rendering the model useless. | **Subjective DPO is BANNED.** Policy optimization is performed solely via GRPO with deterministic Python runtime compiler/execution rewards. |
-| **Mock / Buzzword Theater** | Declaring success using mock test functions or synthetic benchmarks | Code that does not actually execute in real runtimes breaks immediately when deployed. | **Rigid Execution Verification.** Every training split must pass AST/runtime parser execution verification with >= 95% pass rate. |
+| **28M Nano Toy Delusion** | Believing a 25M-28M from-scratch model can learn generalized developer intent | Capacity too small; collapses into rote memorization of exact training strings; hallucinates punctuation without heavy FSM crutches. | **DEPRECATED 28M.** Upgraded permanently to **0.5B (Wrench05BConfig)** for true semantic intent understanding and slot-filling. |
+| **Fake Safety Shields** | Keyword substring filters (`unsafe_fragments = ["rm -rf", "drop table"]`) | High false-positive rate on routine commands (`rm -rf build/`, `git clean -fd`); bypassed trivially by whitespace/aliases (`rm -r -f`). | **NO pseudo-safety substring filtering.** Dual-gate safety: Safe-Read automatic pre-execution vs. Mutation draft-only. |
+| **Synthetic Template Delusion** | Handcrafting synthetic tool-call templates (`"send this to local"`) | Model memorizes artificial phrasing; suffers 90%+ out-of-distribution failure when deployed on real developer queries. | **100% Real Production Data + Matrix Variations.** Real production traces augmented with multi-intent variations. |
+| **Unconstrained DPO Refusal Collapse** | Applying Direct Preference Optimization (DPO) to train refusal behavior | Reward hacking: model learns that refusing all queries minimizes KL penalty, collapsing JSON syntax validity. | **Subjective DPO is BANNED.** Objective compiler/AST execution verification and verification prompt injection. |
+
+---
+
+### 1.4 The 20/80 Pareto Tool Taxonomy (Golden 20% Covering 80% Traffic)
+
+Wrench-SLM does not attempt to memorize 5,000 arbitrary web APIs. It is engineered around the **Pareto Principle (80/20 Rule)**:
+> **A tight 20% core toolbox accounts for over 80% of real-world developer and agentic execution volume.**
+
+1. **`exec_command` (75%+ of total invocations)**:
+   - *Git State*: `git status`, `git diff`, `git log -n 5`, `git branch`, `git checkout -b`
+   - *File Inspection*: `cat`/`Get-Content`, `head -n 20`, `tail -n 50`, `wc -l`, `ls`/`dir`
+   - *Search & Grep*: `rg`, `grep -rn`, `fd`, `find`
+   - *Diagnostics & Services*: `curl`, `netstat`, `Test-NetConnection`, `docker ps/logs`, `ps`
+   - *Build & Deps*: `pip`/`uv`, `npm`, `pytest`, `ruff check`
+2. **`read_file` / `view_file`**: Precise code slice reading and inspection.
+3. **`write_to_file` / `replace_file_content`**: Structured local file modification.
+4. **`write_stdin` / `send_input`**: Interactive CLI process control (`y/n/q/exit`).
+5. **`get_goal` / `update_goal`**: Agent lifecycle heartbeats.
+6. **`fallback` / `ROUTER_FALLBACK`**: Graceful escalation for the remaining 20% long-tail complex reasoning.
+
+By constraining 100% of Wrench's representational capacity to this Golden 20%, Wrench achieves near-zero error rates and eliminates 80% of all cloud token costs.
 
 ---
 

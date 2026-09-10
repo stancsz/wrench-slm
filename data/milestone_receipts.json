@@ -1,22 +1,22 @@
 {
   "M1": {
     "milestone": "M1_real_data_flow",
-    "total_records": 16376,
+    "total_records": 18757,
     "splits": {
-      "train": 11469,
-      "val": 2452,
-      "held_out": 2455
+      "train": 13218,
+      "val": 2851,
+      "held_out": 2688
     },
     "platform_distribution": {
-      "windows": 8795,
-      "posix": 6982,
-      "cross_platform": 599
+      "posix": 7543,
+      "windows": 10284,
+      "cross_platform": 930
     },
-    "syntax_total": 16376,
-    "syntax_pass": 16194,
-    "syntax_pass_rate": 0.9889,
+    "syntax_total": 18757,
+    "syntax_pass": 18577,
+    "syntax_pass_rate": 0.9904,
     "verdict": "PASS",
-    "ran_at": "2026-09-06T17:00:40.793807+00:00"
+    "ran_at": "2026-09-07T05:06:38.368708+00:00"
   },
   "M2": {
     "milestone": "M2_standards",
@@ -29,19 +29,19 @@
     },
     "ruff_clean": true,
     "verdict": "PASS",
-    "ran_at": "2026-09-06T17:00:40.839630+00:00"
+    "ran_at": "2026-09-07T05:06:38.410530+00:00"
   },
   "M3": {
     "milestone": "M3_sft_ready",
     "split": "held_out",
     "total": 1000,
-    "schema_valid": 693,
-    "arg_exact": 322,
-    "schema_valid_rate": 0.693,
-    "arg_exact_rate": 0.322,
-    "duration_s": 1.911,
+    "schema_valid": 686,
+    "arg_exact": 286,
+    "schema_valid_rate": 0.686,
+    "arg_exact_rate": 0.286,
+    "duration_s": 2.357,
     "policy": "ProductionDataBaseline",
-    "ran_at": "2026-09-06T17:00:42.751285+00:00",
+    "ran_at": "2026-09-07T05:06:40.767729+00:00",
     "verdict": "FAIL"
   },
   "M4": {
@@ -58,8 +58,8 @@
       "DONE",
       "ERROR"
     ],
-    "valid_canonical_calls": 0,
-    "invalid_canonical_calls": 2455,
+    "valid_canonical_calls": 227,
+    "invalid_canonical_calls": 2461,
     "coverage": {
       "START": 1,
       "TOOL_KEY": 1,
@@ -72,7 +72,7 @@
       "DONE": 1
     },
     "verdict": "PASS",
-    "ran_at": "2026-09-06T17:00:42.806703+00:00"
+    "ran_at": "2026-09-07T05:06:40.915865+00:00"
   },
   "M5": {
     "milestone": "M5_grpo_reward",
@@ -84,21 +84,21 @@
     ],
     "noop_reward_mean": 0.65,
     "verdict": "PASS",
-    "ran_at": "2026-09-06T17:00:43.072731+00:00"
+    "ran_at": "2026-09-07T05:06:41.269132+00:00"
   },
   "M6": {
     "milestone": "M6_offload_canary",
     "samples": 1000,
-    "divergence_rate": 0.663,
-    "fallback_count": 15,
-    "local_executed": 985,
+    "divergence_rate": 0.685,
+    "fallback_count": 29,
+    "local_executed": 971,
     "avg_local_latency_ms": 9.0,
-    "avg_cloud_latency_ms": 1179.882,
-    "cloud_tokens_saved": 122478,
-    "cloud_tokens_baseline": 394388,
-    "token_savings_rate": 0.3106,
-    "latency_speedup": 131.098,
+    "avg_cloud_latency_ms": 1172.039,
+    "cloud_tokens_saved": 154174,
+    "cloud_tokens_baseline": 418179,
+    "token_savings_rate": 0.3687,
+    "latency_speedup": 130.227,
     "verdict": "PASS",
-    "ran_at": "2026-09-06T17:00:43.115086+00:00"
+    "ran_at": "2026-09-07T05:06:41.320941+00:00"
   }
 }
