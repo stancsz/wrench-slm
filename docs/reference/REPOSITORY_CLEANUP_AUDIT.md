@@ -37,6 +37,6 @@ The downloaded package initially failed after relocation because normal imports 
 - Clean-export download restored 56 package files.
 - Relocated downloaded package: passed original manifest checks and two expected CUDA predictions using the existing release Python environment, an explicit pinned base, and an empty model cache.
 - Follow-up verifier/downloader tests after the bytecode fix: 8 passed.
-- CI configuration added; a remote CI result is not implied by the local tests.
+- Fresh Ubuntu/Python 3.11 GitHub runner installed dependencies, verified all 49 release files, and passed 158 tests (one warning). [CI run 34500892770](https://github.com/stancsz/wrench-slm/actions/runs/34500892770) tested commit 759c0ef.
 
 No new training run or router deployment was performed. The adapter weights and package manifest retain their original hashes.
