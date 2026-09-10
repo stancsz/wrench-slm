@@ -24,7 +24,7 @@ from wrench.pilot_tasks import public_record  # noqa: E402
 
 
 VERSION = "release-generalization-v17"
-OUTPUT = ROOT / "data/pilots" / VERSION
+OUTPUT = ROOT / "artifacts/archive/data/pilots" / VERSION
 KINDS = (
     "config", "lines", "search", "git_status", "git_log", "health",
     "draft", "ambiguous", "unsupported", "missing_tool", "invalid_range",

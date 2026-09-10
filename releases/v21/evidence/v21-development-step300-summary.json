@@ -1,0 +1,117 @@
+{
+  "tasks": 176,
+  "families": 11,
+  "exact": 176,
+  "exact_rate": 1.0,
+  "exact_wilson95_descriptive_only": [
+    0.9786397483323124,
+    1
+  ],
+  "exact_family_bootstrap95": [
+    1.0,
+    1.0
+  ],
+  "raw_protocol_valid_rate": 1.0,
+  "routine_tasks": 112,
+  "routine_exact_rate": 1.0,
+  "routine_accepted_call_rate": 1.0,
+  "fallback_tasks": 64,
+  "fallback_exact_rate": 1.0,
+  "execution_checked": true,
+  "routine_outcome_rate": 1.0,
+  "filesystem_changes": 0,
+  "prediction_latency_s": {
+    "p50": 1.1662156999955187,
+    "p95": 2.4244238999963272,
+    "p99": 2.601475699993898
+  },
+  "by_kind": {
+    "ambiguous": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "config": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "draft": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "git_log": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "git_status": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "health": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "invalid_range": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "lines": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "missing_tool": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "search": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    },
+    "unsupported": {
+      "tasks": 16,
+      "exact": 16,
+      "invalid": 0
+    }
+  },
+  "by_language": {
+    "en": {
+      "tasks": 88,
+      "exact": 88
+    },
+    "zh": {
+      "tasks": 88,
+      "exact": 88
+    }
+  },
+  "routine_by_language": {
+    "en": {
+      "tasks": 56,
+      "exact": 56
+    },
+    "zh": {
+      "tasks": 56,
+      "exact": 56
+    }
+  },
+  "model_quality_gates": {
+    "raw_protocol": true,
+    "routine_exact": true,
+    "routine_outcomes": true,
+    "useful_coverage": true,
+    "task_slice_floor": true,
+    "language_slice_floor": true,
+    "ambiguity": true,
+    "unsupported_and_invalid": true,
+    "unchanged_fixtures": true
+  },
+  "model_quality_passed": true
+}

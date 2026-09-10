@@ -38,6 +38,7 @@ def main():
     parser.add_argument('--resume-from', help='Trusted local trainer_state.pt from this pipeline')
     parser.add_argument('--gpu-memory-fraction', type=float, default=1.0)
     parser.add_argument('--initialize-adapter', help='Warm-start trusted adapter weights with a fresh optimizer')
+    parser.add_argument('--download-base', action='store_true', help='Allow downloading the pinned base; otherwise require a populated cache')
     args = parser.parse_args()
     if not 1 <= args.steps <= 1000:
         parser.error('Each run must have 1..1000 optimizer steps')
@@ -71,9 +72,9 @@ def main():
             raise RuntimeError('This bounded Pro run requires the CUDA device')
         torch.cuda.set_per_process_memory_fraction(args.gpu_memory_fraction)
         torch.cuda.reset_peak_memory_stats()
-        tokenizer = AutoTokenizer.from_pretrained(MODEL, revision=REVISION, local_files_only=True)
+        tokenizer = AutoTokenizer.from_pretrained(MODEL, revision=REVISION, local_files_only=not args.download_base)
         base = AutoModelForCausalLM.from_pretrained(
-            MODEL, revision=REVISION, local_files_only=True, dtype=torch.bfloat16,
+            MODEL, revision=REVISION, local_files_only=not args.download_base, dtype=torch.bfloat16,
             attn_implementation='sdpa',
         ).to('cuda')
         base.config.use_cache = False

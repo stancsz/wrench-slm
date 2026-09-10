@@ -1,0 +1,7 @@
+{
+  "reason": "Credential-shaped text in historical gateway corpus, not V21 input",
+  "replacements": 3,
+  "original_sha256": "71494925d0e12021b9cb3d857f442551cff756e97e6625acf745076d54960840",
+  "sanitized_sha256": "afb237fa24efa0b32b4e320942a45ba203a0dd10c4ec73acc230bdb26312efa5",
+  "note": "Historical manifest retains original acquisition metrics; sanitized bytes differ. Original retained only in local pre-cleanup snapshot."
+}

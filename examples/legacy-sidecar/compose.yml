@@ -1,0 +1,30 @@
+services:
+  wrench-sidecar:
+    build:
+      context: ../..
+      dockerfile: examples/legacy-sidecar/Dockerfile
+    container_name: wrench-sidecar
+    restart: always
+    ports:
+      - "4010:4010"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - TZ=America/Denver
+      - LEAN_ROUTER_LOGS_DIR=/gateway_logs
+      - SIDECAR_PORT=4010
+      - WRENCH_CHECKPOINT_KEEP_BEST=3
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ../../wrench:/app/wrench
+      - ../../artifacts/legacy-work/data:/app/artifacts/legacy-work/data
+      - ../../models:/app/models
+      - ../../logs:/app/logs
+      - ${LEAN_ROUTER_LOGS_DIR:?Set LEAN_ROUTER_LOGS_DIR to your gateway log directory}:/gateway_logs:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

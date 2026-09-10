@@ -1,0 +1,56 @@
+{
+  "repo_id": "stancsz/wrench-pro-v21-assets",
+  "revision": "466e6f269f16179ce87b47180f5624b178cbe11b",
+  "bundles": [
+    {
+      "file": "package-v20.tar.gz",
+      "sha256": "a28b0e37fde6a1731222f3500ef1dbb3d2e2f182ab4ad231e2db8c71026df842",
+      "bytes": 36621851,
+      "purpose": "Frozen full v20 package, including its checksum manifest and runtime",
+      "name": "package-v20",
+      "prefixes": [
+        "artifacts/model-release/package-selected-v20"
+      ]
+    },
+    {
+      "file": "package-v21.tar.gz",
+      "sha256": "b405be8af15740e032100eec4ed811cab8db8e5874dc59af984e27734e6a380b",
+      "bytes": 36637569,
+      "purpose": "Frozen full v21 package, including its checksum manifest and runtime",
+      "name": "package-v21",
+      "prefixes": [
+        "artifacts/model-release/package-selected-v21"
+      ]
+    },
+    {
+      "file": "authored-history.tar.gz",
+      "sha256": "0777027bdb1a8d4118b4e6d5240beb7c00cbff1e67870b951b023a9a4726a1e1",
+      "bytes": 308383775,
+      "purpose": "Historical authored datasets and generator snapshots; diagnostic only",
+      "name": "authored-history",
+      "prefixes": [
+        "artifacts/archive/data/pilots"
+      ]
+    },
+    {
+      "file": "training-evidence.tar.gz",
+      "sha256": "97c94efa24bacb975cecd2fd287cd0760cc98ed0740ede7d8fcd93043c83e22f",
+      "bytes": 26779711,
+      "purpose": "Run receipts, evaluations, source snapshots and audit reports across the adapter lineage",
+      "name": "training-evidence",
+      "prefixes": [
+        "artifacts/model-release"
+      ]
+    },
+    {
+      "file": "original-source.tar.gz",
+      "sha256": "59cf894a9dd534fd0a1c6e0a5ed0accab222dea0d660fdeeaf3969ce87f697f0",
+      "bytes": 285080,
+      "purpose": "Original pre-cleanup source and documentation; datasets distributed separately",
+      "name": "original-source",
+      "prefixes": [
+        "artifacts/archive/source-0828eb6"
+      ]
+    }
+  ]
+}

@@ -94,7 +94,7 @@ def _find_gateway_logs_dir() -> Path:
 class SidecarState:
     def __init__(self, root_dir: Path) -> None:
         self.root_dir = root_dir
-        self.data_dir = root_dir / "data"
+        self.data_dir = root_dir / "artifacts/legacy-work/data"
         self.models_dir = root_dir / "models"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.models_dir.mkdir(parents=True, exist_ok=True)

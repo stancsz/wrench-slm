@@ -26,7 +26,7 @@ from wrench.protocol import prediction_matches_target  # noqa: E402
 
 MODEL = 'Qwen/Qwen2.5-0.5B-Instruct'
 REVISION = '7ae557604adf67be50417f59c2c2f167def9a775'
-DATA = ROOT / 'data/pilots/authored-developer-v1'
+DATA = ROOT / 'artifacts/archive/data/pilots/authored-developer-v1'
 CANDIDATE = ROOT / 'artifacts/usefulness-pilot/pro-candidate-v1/checkpoint'
 
 

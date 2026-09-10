@@ -21,7 +21,7 @@ from wrench.protocol import canonical_json  # noqa: E402
 
 
 VERSION = "context-release-v1"
-OUTPUT = ROOT / "data/pilots" / VERSION
+OUTPUT = ROOT / "artifacts/archive/data/pilots" / VERSION
 KINDS = (
     "config", "lines", "search", "git_status", "git_log", "health",
     "draft", "ambiguous", "unsupported", "missing_tool", "invalid_range",

@@ -1,0 +1,100 @@
+{
+  "selection_rule": "highest development exact rate, then lowest validation loss, then earliest step",
+  "training_run_sha256": "22ce0230b4523e6632fcda0a77187797189fa4ad6adad33ce4bfcebe8f3e51df",
+  "selected": {
+    "step": 200,
+    "checkpoint": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\pro-training-v21\\step-000200",
+    "adapter_sha256": "6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348",
+    "evaluation": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\v21-development-step200",
+    "exact": 176,
+    "tasks": 176,
+    "exact_rate": 1.0,
+    "validation_loss": 1.0001144472248717e-05,
+    "quality_gates": {
+      "raw_protocol": true,
+      "routine_exact": true,
+      "routine_outcomes": true,
+      "useful_coverage": true,
+      "task_slice_floor": true,
+      "language_slice_floor": true,
+      "ambiguity": true,
+      "unsupported_and_invalid": true,
+      "unchanged_fixtures": true
+    },
+    "quality_passed": true,
+    "prediction_receipt_sha256": "6306cdb49fa6db2c672e10080479131031bd58c9a9c4a7a87f6d869fea711c53"
+  },
+  "candidates": [
+    {
+      "step": 100,
+      "checkpoint": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\pro-training-v21\\step-000100",
+      "adapter_sha256": "0e19c8beb4ebfa3e4f4b4a041f05720aec58b5afbecf79115feaf02c4dcf84cf",
+      "evaluation": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\v21-development-step100",
+      "exact": 176,
+      "tasks": 176,
+      "exact_rate": 1.0,
+      "validation_loss": 1.366186319553018e-05,
+      "quality_gates": {
+        "raw_protocol": true,
+        "routine_exact": true,
+        "routine_outcomes": true,
+        "useful_coverage": true,
+        "task_slice_floor": true,
+        "language_slice_floor": true,
+        "ambiguity": true,
+        "unsupported_and_invalid": true,
+        "unchanged_fixtures": true
+      },
+      "quality_passed": true,
+      "prediction_receipt_sha256": "50e3e7b8fd7d6737e3de104536b0080b3b739d9d02abc8a8d1a9b6cb62849b06"
+    },
+    {
+      "step": 200,
+      "checkpoint": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\pro-training-v21\\step-000200",
+      "adapter_sha256": "6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348",
+      "evaluation": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\v21-development-step200",
+      "exact": 176,
+      "tasks": 176,
+      "exact_rate": 1.0,
+      "validation_loss": 1.0001144472248717e-05,
+      "quality_gates": {
+        "raw_protocol": true,
+        "routine_exact": true,
+        "routine_outcomes": true,
+        "useful_coverage": true,
+        "task_slice_floor": true,
+        "language_slice_floor": true,
+        "ambiguity": true,
+        "unsupported_and_invalid": true,
+        "unchanged_fixtures": true
+      },
+      "quality_passed": true,
+      "prediction_receipt_sha256": "6306cdb49fa6db2c672e10080479131031bd58c9a9c4a7a87f6d869fea711c53"
+    },
+    {
+      "step": 300,
+      "checkpoint": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\pro-training-v21\\checkpoint",
+      "adapter_sha256": "9245da94059a2727cf2e013bb7f5551a5fc583401328b0bbc6656a185aa412d0",
+      "evaluation": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\v21-development-step300",
+      "exact": 176,
+      "tasks": 176,
+      "exact_rate": 1.0,
+      "validation_loss": 1.045671818241313e-05,
+      "quality_gates": {
+        "raw_protocol": true,
+        "routine_exact": true,
+        "routine_outcomes": true,
+        "useful_coverage": true,
+        "task_slice_floor": true,
+        "language_slice_floor": true,
+        "ambiguity": true,
+        "unsupported_and_invalid": true,
+        "unchanged_fixtures": true
+      },
+      "quality_passed": true,
+      "prediction_receipt_sha256": "31a2a10c0960e199e61f3a3fb25e99fc965238d46477eb9abf2c3f218d7cb83b"
+    }
+  ],
+  "status": "TRAINED CANDIDATE",
+  "release_approved": false
+}

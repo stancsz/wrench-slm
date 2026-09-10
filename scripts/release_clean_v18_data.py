@@ -18,7 +18,7 @@ from scripts import release_clean_v17_data as base
 
 
 base.VERSION = "release-generalization-v18"
-base.OUTPUT = base.ROOT / "data/pilots" / base.VERSION
+base.OUTPUT = base.ROOT / "artifacts/archive/data/pilots" / base.VERSION
 base.PROMPTS = deepcopy(base.PROMPTS)
 base.PROMPTS["train"]["lines"] = {
     "en": (

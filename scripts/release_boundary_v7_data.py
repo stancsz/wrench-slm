@@ -108,7 +108,7 @@ def clone_with_prompt(kind, template, instance):
 
 
 def main():
-    source = ROOT / 'data/pilots/release-generalization-v6'
+    source = ROOT / 'artifacts/archive/data/pilots/release-generalization-v6'
     parent_rows = [json.loads(line) for line in (source / 'train.jsonl').read_text(encoding='utf-8').splitlines()]
     additions = [clone_with_prompt(kind, template, instance)
                  for kind in TEMPLATES
@@ -125,7 +125,7 @@ def main():
         if key not in seen:
             seen[key] = label
             unique.append(row)
-    output = ROOT / 'data/pilots/release-generalization-v7'
+    output = ROOT / 'artifacts/archive/data/pilots/release-generalization-v7'
     output.mkdir(parents=True, exist_ok=False)
     (output / 'train.jsonl').write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in unique),
                                         encoding='utf-8')

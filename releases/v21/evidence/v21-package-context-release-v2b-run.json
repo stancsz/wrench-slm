@@ -1,0 +1,44 @@
+{
+  "status": "completed",
+  "started_at": "2026-09-10T12:23:10.505941+00:00",
+  "arguments": {
+    "data": "data/pilots/context-release-v2b",
+    "split": "development",
+    "checkpoint": null,
+    "package": "artifacts/model-release/package-selected-v21",
+    "base_path": "artifacts/model-release/base-dependency-v1",
+    "output": "artifacts/model-release/v21-package-context-release-v2b",
+    "execute": true,
+    "max_input_tokens": 1536,
+    "max_new_tokens": 192
+  },
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "adapter_sha256": "6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348",
+  "dataset_sha256": "631e9082866cb47c456ea144913cca37f5a50ee646b28a220aa7f2b0511b9680",
+  "hardware": "NVIDIA GeForce RTX 5070 Ti",
+  "protocol_sha256": "4b65824bdc07c6dbdb59bcb321b96b7e0c634117e712edb93dc968a51826e5d1",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "torch": "2.9.1+cu128",
+    "transformers": "4.57.1",
+    "peft": "0.20.0"
+  },
+  "source_sha256": {
+    "scripts/release_eval.py": "ca952ae48a3b2395061ffc663e539ac5b977e33448d8832b3be78a2e5e63c346",
+    "wrench/release_eval.py": "005d23d515f03890726bc1d1b08e6b5175639063106fe307fab1bbcb1d3dd4bb",
+    "wrench/pilot_inference.py": "84ef56e14c842e8afe95c591e2461dcca54cc2868e6bd30004b3ec3df99114bf",
+    "wrench/pilot_environment.py": "62d11205e3d9eff67d75039ba1e7ea4d3a6a4087726fab06cf95003f4e4de7dd",
+    "wrench/dataset.py": "3c3d37ec3481da3bedc4f4148c20699c55b3358566e2f253a4caac7b2c4e3ade",
+    "wrench/protocol.py": "01efa68fd9b0c176308ee93acf5f8c493c62a882c5cc5fee8da8890eaf1af883"
+  },
+  "scope": "Direct model predictions; authored tasks; zero cloud requests; no serving promotion",
+  "package_manifest_sha256": "a95f2e549ab33f3d20236cafd3d15fd1125fbb166bb944a6686615bd176711dc",
+  "inference_source": "Checksummed packaged runtime",
+  "load_duration_s": 2.4815176999982214,
+  "finished_at": "2026-09-10T12:28:21.639197+00:00",
+  "duration_s": 311.1274599000026,
+  "tasks_completed": 220,
+  "peak_allocated_bytes": 1105244672,
+  "peak_reserved_bytes": 1172307968
+}

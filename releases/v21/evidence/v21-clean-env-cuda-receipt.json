@@ -1,0 +1,51 @@
+{
+  "process_exit_code": 0,
+  "timed_out": false,
+  "peak_process_tree_rss_bytes": 1858416640,
+  "verifier_sha256": "e1f79c08dbc540d417ecc27641abb6483a24625e81f161eeb7a60ef1ebb5ae49",
+  "launcher_pid": 28848,
+  "rss_scope": "Sum of launcher and descendant RSS, sampled every 100ms; shared pages may be counted more than once.",
+  "wall_s": 15.138963399993372,
+  "package_manifest_sha256": "a95f2e549ab33f3d20236cafd3d15fd1125fbb166bb944a6686615bd176711dc",
+  "environment": {
+    "HF_HOME": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\v21-clean-env-cuda\\empty-hf-cache",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONPATH": "",
+    "OMP_NUM_THREADS": "4"
+  },
+  "verification": {
+    "status": "passed",
+    "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "worker_pid": 32880,
+    "sys_prefix": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\model-release\\clean-env-v21",
+    "sys_base_prefix": "C:\\Program Files\\Python314",
+    "adapter_sha256": "6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348",
+    "device": "cuda",
+    "load_s": 2.3257330000051297,
+    "first_prediction": {
+      "raw": "{\"args\":{\"end_line\":5,\"path\":\"src/example.txt\",\"start_line\":3},\"tool\":\"read_file\"}",
+      "action": "{\"args\":{\"end_line\":5,\"path\":\"src/example.txt\",\"start_line\":3},\"tool\":\"read_file\"}",
+      "invalid_output": false,
+      "reason": "valid_call",
+      "input_tokens": 396,
+      "output_tokens": 25,
+      "duration_s": 1.9257739000022411
+    },
+    "warm_prediction": {
+      "raw": "{\"args\":{\"end_line\":5,\"path\":\"src/example.txt\",\"start_line\":3},\"tool\":\"read_file\"}",
+      "action": "{\"args\":{\"end_line\":5,\"path\":\"src/example.txt\",\"start_line\":3},\"tool\":\"read_file\"}",
+      "invalid_output": false,
+      "reason": "valid_call",
+      "input_tokens": 396,
+      "output_tokens": 25,
+      "duration_s": 1.515641100006178
+    },
+    "peak_cuda_allocated_bytes": 1076785152,
+    "peak_cuda_reserved_bytes": 1153433600,
+    "scope": "Fresh interpreter, explicit pinned base, two quickstart predictions; no generated tools executed."
+  },
+  "passed": true
+}

@@ -1,0 +1,4 @@
+transformers==4.57.1
+peft==0.20.0
+tokenizers==0.22.1
+safetensors==0.6.2

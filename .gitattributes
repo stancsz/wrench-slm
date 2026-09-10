@@ -1,0 +1,4 @@
+# Preserve frozen data and receipt bytes across Windows and Unix checkouts.
+*.jsonl -text whitespace=cr-at-eol
+/data/releases/** -text whitespace=cr-at-eol
+/releases/** -text whitespace=cr-at-eol

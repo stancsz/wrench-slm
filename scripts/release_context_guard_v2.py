@@ -40,7 +40,7 @@ def main():
     quickstart['context']['resources'] = []
     quickstart['context']['prior_results'] = {'selected_file': 'docs/context-example.txt'}
     probes.append(quickstart)
-    output = ROOT / 'data/pilots/context-development-v2'
+    output = ROOT / 'artifacts/archive/data/pilots/context-development-v2'
     output.mkdir(parents=True, exist_ok=False)
     path = output / 'development.jsonl'
     path.write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in probes), encoding='utf-8')

@@ -216,7 +216,7 @@ def task(kind, index):
 
 
 def main():
-    output = ROOT / 'data/pilots/independent-challenge-v2'
+    output = ROOT / 'artifacts/archive/data/pilots/independent-challenge-v2'
     output.mkdir(parents=True, exist_ok=False)
     rows = [task(kind, index) for kind in PROMPTS for index in range(6)]
     random.Random('independent-challenge-v2').shuffle(rows)

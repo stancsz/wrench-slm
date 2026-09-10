@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "splits": {
+    "development": {
+      "tasks": 220,
+      "max_training_tokens": 621,
+      "max_prompt_tokens": 579,
+      "max_completion_tokens": 47,
+      "kinds": {
+        "missing_tool": 20,
+        "search": 20,
+        "health": 20,
+        "config": 20,
+        "ambiguous": 20,
+        "invalid_range": 20,
+        "draft": 20,
+        "lines": 20,
+        "git_status": 20,
+        "unsupported": 20,
+        "git_log": 20
+      },
+      "languages": {
+        "zh": 110,
+        "en": 110
+      },
+      "sha256": "631e9082866cb47c456ea144913cca37f5a50ee646b28a220aa7f2b0511b9680"
+    }
+  },
+  "packages": {
+    "torch": "2.9.1+cu128",
+    "transformers": "4.57.1",
+    "peft": "0.20.0",
+    "tokenizers": "0.22.1",
+    "safetensors": "0.6.2"
+  },
+  "formatter_sha256": "3c3d37ec3481da3bedc4f4148c20699c55b3358566e2f253a4caac7b2c4e3ade"
+}

@@ -14,7 +14,7 @@ ACTUALLY EXECUTABLE in a simulated runtime environment:
 
 Outputs:
   - Detailed verification report with pass rates per tool and per platform.
-  - JSON receipt saved to data/verification_report.json.
+  - JSON receipt saved to data/archive/baseline/verification_report.json.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 
-DATA_DIR = Path(r"c:\Users\stanc\github\portfolio\wrench-slm\data")
+DATA_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/data"
 
 
 # =========================================================================

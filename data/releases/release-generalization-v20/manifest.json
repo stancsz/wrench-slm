@@ -1,0 +1,77 @@
+{
+  "version": "release-generalization-v20",
+  "source": "Fresh resettable fixtures with public-input semantic checks; no historical scored rows imported.",
+  "generator_sha256": "a475e5cd903ecce50e6df71c8580ba540b3e50c6457ebd8dc3816060e5f3f829",
+  "line_count_public": 15,
+  "training_stream": "kind-round-robin, deterministic, language-alternating within each kind; Chinese line wording includes 到 and 至 variants",
+  "cross_split_families": 0,
+  "cross_split_exact_inputs": 0,
+  "splits": {
+    "train": {
+      "tasks": 6144,
+      "families": 192,
+      "sha256": "83fae2ef9c4920b14adf60e7aa8959c115e313ef12aa042d7a5f120d8f49f0a4",
+      "kinds": {
+        "config": 512,
+        "search": 512,
+        "git_status": 512,
+        "git_log": 512,
+        "health": 512,
+        "draft": 512,
+        "ambiguous": 512,
+        "unsupported": 512,
+        "missing_tool": 512,
+        "invalid_range": 512,
+        "lines": 1024
+      },
+      "languages": {
+        "en": 3072,
+        "zh": 3072
+      }
+    },
+    "development": {
+      "tasks": 176,
+      "families": 11,
+      "sha256": "312d1b8176433c95866b0159d268213e2fdfd77ae5b2d15dffb18590fcbd34e4",
+      "kinds": {
+        "unsupported": 16,
+        "lines": 16,
+        "git_log": 16,
+        "git_status": 16,
+        "ambiguous": 16,
+        "search": 16,
+        "config": 16,
+        "invalid_range": 16,
+        "draft": 16,
+        "missing_tool": 16,
+        "health": 16
+      },
+      "languages": {
+        "zh": 88,
+        "en": 88
+      }
+    },
+    "evaluation": {
+      "tasks": 440,
+      "families": 11,
+      "sha256": "e2a297007b25ac85c055732fc98e02e7574843bca5bdea4f76632d9f1a80ba09",
+      "kinds": {
+        "invalid_range": 40,
+        "git_log": 40,
+        "ambiguous": 40,
+        "unsupported": 40,
+        "health": 40,
+        "missing_tool": 40,
+        "git_status": 40,
+        "lines": 40,
+        "config": 40,
+        "draft": 40,
+        "search": 40
+      },
+      "languages": {
+        "zh": 220,
+        "en": 220
+      }
+    }
+  }
+}

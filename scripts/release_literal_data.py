@@ -71,7 +71,7 @@ def additions(rows):
 
 
 def main():
-    source = ROOT / 'data/pilots/release-context-v2'
+    source = ROOT / 'artifacts/archive/data/pilots/release-context-v2'
     rows = [json.loads(line) for line in (source / 'train.jsonl').read_text(encoding='utf-8').splitlines()]
     combined = rows + additions(rows)
     random.Random('release-literal-v3').shuffle(combined)
@@ -84,7 +84,7 @@ def main():
         if key not in seen:
             unique.append(row)
             seen[key] = label
-    output = ROOT / 'data/pilots/release-literal-v3'
+    output = ROOT / 'artifacts/archive/data/pilots/release-literal-v3'
     output.mkdir(parents=True, exist_ok=False)
     (output / 'train.jsonl').write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in unique), encoding='utf-8')
     for split in ['development', 'evaluation']:

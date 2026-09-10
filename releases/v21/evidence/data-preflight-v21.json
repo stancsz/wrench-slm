@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "splits": {
+    "train": {
+      "tasks": 6144,
+      "max_training_tokens": 569,
+      "max_prompt_tokens": 529,
+      "max_completion_tokens": 42,
+      "kinds": {
+        "config": 512,
+        "search": 512,
+        "git_status": 512,
+        "git_log": 512,
+        "health": 512,
+        "draft": 512,
+        "ambiguous": 512,
+        "unsupported": 512,
+        "missing_tool": 512,
+        "invalid_range": 512,
+        "lines": 1024
+      },
+      "languages": {
+        "en": 3072,
+        "zh": 3072
+      },
+      "sha256": "7734344c4f5097eee9aaf7efaced62727a32545a8103d628af239471026e1c30"
+    },
+    "development": {
+      "tasks": 176,
+      "max_training_tokens": 569,
+      "max_prompt_tokens": 527,
+      "max_completion_tokens": 42,
+      "kinds": {
+        "missing_tool": 16,
+        "unsupported": 16,
+        "git_log": 16,
+        "ambiguous": 16,
+        "config": 16,
+        "invalid_range": 16,
+        "health": 16,
+        "lines": 16,
+        "git_status": 16,
+        "draft": 16,
+        "search": 16
+      },
+      "languages": {
+        "en": 88,
+        "zh": 88
+      },
+      "sha256": "8c28cccdfb03c5fe3422b25b0e77c1ff38f2617f08d055420a5434c173be8d11"
+    },
+    "evaluation": {
+      "tasks": 440,
+      "max_training_tokens": 569,
+      "max_prompt_tokens": 527,
+      "max_completion_tokens": 42,
+      "kinds": {
+        "config": 40,
+        "search": 40,
+        "ambiguous": 40,
+        "lines": 40,
+        "git_log": 40,
+        "draft": 40,
+        "git_status": 40,
+        "unsupported": 40,
+        "invalid_range": 40,
+        "health": 40,
+        "missing_tool": 40
+      },
+      "languages": {
+        "en": 220,
+        "zh": 220
+      },
+      "sha256": "67d141edf2285060584cfc663527e16052d592b12fcbd407453863427c4cb996"
+    }
+  },
+  "packages": {
+    "torch": "2.9.1+cu128",
+    "transformers": "4.57.1",
+    "peft": "0.20.0",
+    "tokenizers": "0.22.1",
+    "safetensors": "0.6.2"
+  },
+  "formatter_sha256": "3c3d37ec3481da3bedc4f4148c20699c55b3358566e2f253a4caac7b2c4e3ade"
+}

@@ -86,7 +86,7 @@ def main():
     environment = os.environ.copy()
     environment.update(HF_HOME=str(output / 'empty-hf-cache'), HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1',
                        PYTHONNOUSERSITE='1', PYTHONPATH='', OMP_NUM_THREADS='4')
-    command = [str(Path(args.python).resolve()), '-X', 'utf8', '-c', CHILD, str(Path(args.base_path).resolve()), args.device]
+    command = [str(Path(args.python).resolve()), '-B', '-X', 'utf8', '-c', CHILD, str(Path(args.base_path).resolve()), args.device]
     started = time.perf_counter()
     peak_rss = 0
     with (output / 'stdout.txt').open('w', encoding='utf-8') as stdout, (output / 'stderr.txt').open('w', encoding='utf-8') as stderr:

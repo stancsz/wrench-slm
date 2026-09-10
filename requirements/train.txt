@@ -1,0 +1,8 @@
+# Install the appropriate torch build separately; verified CUDA build: 2.9.1+cu128.
+transformers==4.57.1
+peft==0.20.0
+tokenizers==0.22.1
+safetensors==0.6.2
+huggingface_hub>=0.34,<1.0
+numpy>=2.0,<3
+psutil>=6,<8

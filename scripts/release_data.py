@@ -17,6 +17,6 @@ if __name__ == '__main__':
     parser.add_argument('--version', default='release-authoring-v1')
     args = parser.parse_args()
     output = Path(args.output).resolve()
-    if not output.is_relative_to(ROOT / 'data' / 'pilots'):
-        parser.error('Use a new directory under data/pilots')
+    if not output.is_relative_to(ROOT / 'artifacts' / 'model-release'):
+        parser.error('Use a new directory under artifacts/model-release')
     print(json.dumps(build_release_data(output, version=args.version), indent=2))

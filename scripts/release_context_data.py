@@ -86,8 +86,8 @@ def derive(row):
 
 
 def main():
-    source = ROOT / 'data/pilots/release-authoring-v1'
-    output = ROOT / 'data/pilots/release-context-v2'
+    source = ROOT / 'artifacts/archive/data/pilots/release-authoring-v1'
+    output = ROOT / 'artifacts/archive/data/pilots/release-context-v2'
     original = [json.loads(line) for line in (source / 'train.jsonl').read_text(encoding='utf-8').splitlines()]
     train = [derived for row in original for derived in derive(row)]
     random.Random('release-context-v2').shuffle(train)

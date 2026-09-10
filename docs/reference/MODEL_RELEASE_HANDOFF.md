@@ -131,7 +131,7 @@ py -3.14 -m venv .release-env
 .release-env\Scripts\python.exe -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cu128
 .release-env\Scripts\python.exe -m pip install -r artifacts/model-release/package-selected-v21/requirements.txt
 Set-Location artifacts/model-release/package-selected-v21
-..\..\..\.release-env\Scripts\python.exe inference.py --input example.json --device cuda --base-path ..\base-dependency-v1
+..\..\..\.release-env\Scripts\python.exe -B inference.py --input example.json --device cuda --base-path ..\base-dependency-v1
 ```
 
 The relative command assumes the environment was created at the repository

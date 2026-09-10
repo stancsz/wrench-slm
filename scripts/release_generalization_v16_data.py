@@ -23,8 +23,8 @@ from wrench.protocol import canonical_json  # noqa: E402
 from wrench.release_data import make_release_task  # noqa: E402
 
 
-PARENT = ROOT / "data/pilots/release-generalization-v15"
-OUTPUT = ROOT / "data/pilots/release-generalization-v16"
+PARENT = ROOT / "artifacts/archive/data/pilots/release-generalization-v15"
+OUTPUT = ROOT / "artifacts/archive/data/pilots/release-generalization-v16"
 
 
 PROMPTS = {

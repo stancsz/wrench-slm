@@ -20,7 +20,7 @@ from scripts import release_context_v20_data as context_v20
 
 base = context_v20
 base.VERSION = "context-release-v2b"
-base.OUTPUT = base.ROOT / "data/pilots" / base.VERSION
+base.OUTPUT = base.ROOT / "artifacts/model-release/generated" / base.VERSION
 base.PROMPTS = {
     "config": {
         "en": "Using the selected context entry, inspect configuration file {path} and report its region value.",
@@ -70,7 +70,19 @@ base.PROMPTS = {
 
 
 if __name__ == "__main__":
-    base.main()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, help="New directory under artifacts/")
+    args = parser.parse_args()
+    if args.output:
+        target = args.output.resolve()
+        if not target.is_relative_to(ROOT / "artifacts") or target == ROOT / "artifacts":
+            parser.error("Output must be a new subdirectory of artifacts/")
+        base.OUTPUT = target
+    import contextlib
+    import io
+    with contextlib.redirect_stdout(io.StringIO()):
+        base.main()
     rows_path = base.OUTPUT / "development.jsonl"
     rows = []
     for line in rows_path.read_text(encoding="utf-8").splitlines():
@@ -87,3 +99,5 @@ if __name__ == "__main__":
     manifest["splits"]["development"]["sha256"] = hashlib.sha256(rows_path.read_bytes()).hexdigest()
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (base.OUTPUT / "generator.py").write_bytes(Path(__file__).read_bytes())
+
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))

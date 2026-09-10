@@ -1,0 +1,12 @@
+Wrench-SLM adapter and runtime license
+
+Copyright 2026 Wrench-SLM contributors.
+
+The Wrench-Pro LoRA adapter files under `weights/` and the Wrench runtime under
+`_wrench_runtime/`, together with the accompanying Wrench documentation, are
+licensed under the Apache License, Version 2.0. The full license terms are
+included in `LICENSE`. The Qwen base-derived files retain the upstream terms
+and attribution in `LICENSE-QWEN` and `NOTICE`.
+
+The Apache License, Version 2.0 is available at:
+https://www.apache.org/licenses/LICENSE-2.0

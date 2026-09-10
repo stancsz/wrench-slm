@@ -72,12 +72,12 @@ hf auth login
 hf download stancsz/wrench-pro-v21 --revision 0c77f1520091d30ed0613319a307cdbbed247320 --local-dir artifacts/model-release/hf-v21
 ```
 
-The Hub snapshot contains the adapter, tokenizer, training metadata, model README, and licenses. It does **not** contain the base weights or the complete locally verified inference package.
+The model Hub snapshot contains the adapter, tokenizer, training metadata, model README, and licenses. Full inference packages, the V20 initializer, source snapshots, and historical authored assets are available separately through the [release asset catalog](releases/v21/README.md). See [Training from a clone](docs/reference/TRAINING_FROM_CLONE.md) for setup, downloads, audits, training, evaluation, and export.
 
 There are two ways to work with the release:
 
 - **Load the adapter with PEFT.** Follow the model README on Hugging Face and use the exact base revision above. Loading weights alone does not apply Wrench's input formatting or output validation. Those are implemented in [the dataset formatter](wrench/dataset.py) and [the prediction runtime](wrench/pilot_inference.py).
-- **Use the complete verified local package.** Operators who have `artifacts/model-release/package-selected-v21` can follow the [handoff quickstart](docs/reference/MODEL_RELEASE_HANDOFF.md#reproduce-the-quickstart). That package includes an example input, runtime, dependency pins, and checksum manifest. It is an ignored local artifact and is not supplied by a Git clone or the Hub adapter download.
+- **Use the complete verified local package.** Operators who have `artifacts/model-release/package-selected-v21` can follow the [handoff quickstart](docs/reference/MODEL_RELEASE_HANDOFF.md#reproduce-the-quickstart). That package includes an example input, runtime, dependency pins, and checksum manifest. Restore it with `python scripts/fetch_assets.py --asset package-v21` after authenticating to the private asset repository.
 
 The verified package environment used Python 3.14, PyTorch 2.9.1+cu128, Transformers 4.57.1, PEFT 0.20.0, Tokenizers 0.22.1, and Safetensors 0.6.2. CPU performance and other hardware configurations have not been qualified by these release results.
 
@@ -97,7 +97,7 @@ For reproduction and later work:
 - [Training repair handoff](docs/reference/TRAINING_REPAIR_HANDOFF.md): data and training corrections.
 - [Current goal](goal.md): completed weight-release scope and deferred work.
 
-Paths under `artifacts/` in these documents refer to local receipts and packages. A fresh clone does not contain them. Reproducing the exact training lineage also requires the recorded V20 initializer.
+Small release receipts and cards are included under `releases/v21/`. The checksummed asset catalog supplies the full packages, V20 initializer and historical source/evidence. Historical handoffs preserve original paths; `releases/v21/path-map.json` records relocated data.
 
 ## What remains future work
 
@@ -115,7 +115,10 @@ The [engineering techniques assessment](docs/reference/AI_ENGINEERING_TECHNIQUES
 wrench/          Model, training, inference, validation, and experimental runtime code
 scripts/         Data preparation, training, evaluation, and packaging entry points
 tests/           Repository tests
-data/            Versioned datasets and metadata; some local datasets are untracked
+data/            Frozen release inputs and a clearly separated legacy baseline
+releases/v21/    Cards, evidence, checksums and downloadable asset catalog
+requirements/    Training and test dependencies
+examples/        Historical integrations
 docs/
   index.html     Static website overview
   status.html    Static release-status page

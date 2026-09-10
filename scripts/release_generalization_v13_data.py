@@ -20,8 +20,8 @@ from wrench.pilot_tasks import TOOLS, public_record
 from wrench.protocol import canonical_json
 
 
-PARENT = ROOT / 'data/pilots/release-generalization-v12'
-OUTPUT = ROOT / 'data/pilots/release-generalization-v13'
+PARENT = ROOT / 'artifacts/archive/data/pilots/release-generalization-v12'
+OUTPUT = ROOT / 'artifacts/archive/data/pilots/release-generalization-v13'
 
 PROMPTS = {
     'invalid_range': {

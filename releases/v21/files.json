@@ -1,0 +1,249 @@
+{
+  "files": [
+    {
+      "path": "data/releases/context-release-v2b/development.jsonl",
+      "bytes": 514813,
+      "sha256": "631e9082866cb47c456ea144913cca37f5a50ee646b28a220aa7f2b0511b9680"
+    },
+    {
+      "path": "data/releases/context-release-v2b/generator.py",
+      "bytes": 4409,
+      "sha256": "49824ce467e684dc61ba253ef06a244329fc499347b5421d5f98836016736413"
+    },
+    {
+      "path": "data/releases/context-release-v2b/manifest.json",
+      "bytes": 1129,
+      "sha256": "bbc3c4a1e019db8df76dbc0f7b635e8adda988eec3f490a97cb920dd8249eade"
+    },
+    {
+      "path": "data/releases/release-generalization-v20/development.jsonl",
+      "bytes": 375193,
+      "sha256": "312d1b8176433c95866b0159d268213e2fdfd77ae5b2d15dffb18590fcbd34e4"
+    },
+    {
+      "path": "data/releases/release-generalization-v20/evaluation.jsonl",
+      "bytes": 939464,
+      "sha256": "e2a297007b25ac85c055732fc98e02e7574843bca5bdea4f76632d9f1a80ba09"
+    },
+    {
+      "path": "data/releases/release-generalization-v20/generator.py",
+      "bytes": 1672,
+      "sha256": "a475e5cd903ecce50e6df71c8580ba540b3e50c6457ebd8dc3816060e5f3f829"
+    },
+    {
+      "path": "data/releases/release-generalization-v20/manifest.json",
+      "bytes": 2117,
+      "sha256": "7e1c0f2f5d04df56d9dff52454b1c041c9dada97454fc6793cd2a15765202c82"
+    },
+    {
+      "path": "data/releases/release-generalization-v20/train.jsonl",
+      "bytes": 13222271,
+      "sha256": "83fae2ef9c4920b14adf60e7aa8959c115e313ef12aa042d7a5f120d8f49f0a4"
+    },
+    {
+      "path": "data/releases/release-generalization-v21/development.jsonl",
+      "bytes": 375104,
+      "sha256": "8c28cccdfb03c5fe3422b25b0e77c1ff38f2617f08d055420a5434c173be8d11"
+    },
+    {
+      "path": "data/releases/release-generalization-v21/evaluation.jsonl",
+      "bytes": 939377,
+      "sha256": "67d141edf2285060584cfc663527e16052d592b12fcbd407453863427c4cb996"
+    },
+    {
+      "path": "data/releases/release-generalization-v21/generator.py",
+      "bytes": 1793,
+      "sha256": "bf259720627b5ed1de2b600ac4c1ef74639826e830c5f40908dbc4158a1db7db"
+    },
+    {
+      "path": "data/releases/release-generalization-v21/manifest.json",
+      "bytes": 2116,
+      "sha256": "e902d5292a35d7b27d41b9d6c8905a9f4b9a83a21047b78a6a0bea12cef42d4d"
+    },
+    {
+      "path": "data/releases/release-generalization-v21/train.jsonl",
+      "bytes": 13218348,
+      "sha256": "7734344c4f5097eee9aaf7efaced62727a32545a8103d628af239471026e1c30"
+    },
+    {
+      "path": "releases/v21/DATA_CARD.md",
+      "bytes": 2382,
+      "sha256": "95c33d24ed0398e52b9e8905c2fb38fd068f32990586b93609e73b4ac05251c4"
+    },
+    {
+      "path": "releases/v21/EVALUATION_REPORT.md",
+      "bytes": 2787,
+      "sha256": "e4c5fe590f7b2ce3a145afbcfd121e5388516c8f333297de1239140872191ca0"
+    },
+    {
+      "path": "releases/v21/evidence/audit-v21-exposure.json",
+      "bytes": 26812,
+      "sha256": "4c536ba88335dacf39560b78a7623be33d32bccc3b3cda2b9260da137d0ea672"
+    },
+    {
+      "path": "releases/v21/evidence/audit-v21-semantic-development.json",
+      "bytes": 906,
+      "sha256": "2aa8982f4a66bc343df30ffae26130da5c7def9af2a7f370e28068157fb96280"
+    },
+    {
+      "path": "releases/v21/evidence/audit-v21-semantic-evaluation.json",
+      "bytes": 910,
+      "sha256": "bee84f4b551e06d1d5754442e8ae952f8d1481073c1422d4cd980ed46ec77681"
+    },
+    {
+      "path": "releases/v21/evidence/audit-v21-semantic-train.json",
+      "bytes": 924,
+      "sha256": "ee305dbfce79344b6799b8f8ce023600ce66b6b004a8c4989fb1fe3ef7cc40e9"
+    },
+    {
+      "path": "releases/v21/evidence/context-release-v2b-manifest.json",
+      "bytes": 1129,
+      "sha256": "bbc3c4a1e019db8df76dbc0f7b635e8adda988eec3f490a97cb920dd8249eade"
+    },
+    {
+      "path": "releases/v21/evidence/context-release-v2b-semantic-audit.json",
+      "bytes": 901,
+      "sha256": "4afb47526e9b9d52a69bc862ea18252d2237c2b6d45eeb6d23c0814ef23ff006"
+    },
+    {
+      "path": "releases/v21/evidence/data-preflight-context-release-v2b.json",
+      "bytes": 1015,
+      "sha256": "35d1224a689079378fd6cb446411b197883cce365c4723a791f4602564618203"
+    },
+    {
+      "path": "releases/v21/evidence/data-preflight-v21.json",
+      "bytes": 2249,
+      "sha256": "034be67ff3d31c6b19d2dff5d61bcf186958a3e33a7b53526e09a71a1b968e28"
+    },
+    {
+      "path": "releases/v21/evidence/release-generalization-v21-manifest.json",
+      "bytes": 2116,
+      "sha256": "e902d5292a35d7b27d41b9d6c8905a9f4b9a83a21047b78a6a0bea12cef42d4d"
+    },
+    {
+      "path": "releases/v21/evidence/selection-v21.json",
+      "bytes": 4172,
+      "sha256": "6e820cd8ef252039a09b1489d10fef5416f7756b820f085e13931c2cfb991f1c"
+    },
+    {
+      "path": "releases/v21/evidence/v21-clean-env-cuda-receipt.json",
+      "bytes": 2375,
+      "sha256": "7eb1747e50fe50c95177b71222d2d72e1902ab0f3d944da0c2440b2625843e82"
+    },
+    {
+      "path": "releases/v21/evidence/v21-development-step100-summary.json",
+      "bytes": 2237,
+      "sha256": "ead4430f88012111a30fdc8a35fcba7210c519b49f1164291915a5c54854c8cf"
+    },
+    {
+      "path": "releases/v21/evidence/v21-development-step200-summary.json",
+      "bytes": 2238,
+      "sha256": "ec3f9bc018c2384f5645e90f0fc30c6e59bb307cc90049e85cf316a8558922c0"
+    },
+    {
+      "path": "releases/v21/evidence/v21-development-step300-summary.json",
+      "bytes": 2238,
+      "sha256": "0825666412e3242cd20b50fb81f34f9f6ee8ad57a7c72d0425183ad8679e0330"
+    },
+    {
+      "path": "releases/v21/evidence/v21-package-context-release-v2b-run.json",
+      "bytes": 2162,
+      "sha256": "e4740719d0fd250c6dd0e45a49e63e5c9fbd3b08a9497d97676d9608c0fa1c9a"
+    },
+    {
+      "path": "releases/v21/evidence/v21-package-context-release-v2b-summary.json",
+      "bytes": 2259,
+      "sha256": "8009ca13e47e81ef86f4a7600361716e6337a54c98122ee707fa09ec46404084"
+    },
+    {
+      "path": "releases/v21/evidence/v21-package-independent-evaluation-run.json",
+      "bytes": 2171,
+      "sha256": "6ea1cb6e978d57ae8b9740d94185ba4558dbd132362a4b3c577c5c2ca88d298b"
+    },
+    {
+      "path": "releases/v21/evidence/v21-package-independent-evaluation-summary.json",
+      "bytes": 2246,
+      "sha256": "d3746a1899d0bc0c26dda0d9dd77e449a76dba9c69805acac5ccca9c8f72faf3"
+    },
+    {
+      "path": "releases/v21/evidence/v21-release-verifier-final-receipt.json",
+      "bytes": 2383,
+      "sha256": "10043d4fec9918ce67b0f367b8514b68b46f5360bf0ff9d7c98451ff643ab2ea"
+    },
+    {
+      "path": "releases/v21/evidence/v21-release-verifier-final2-receipt.json",
+      "bytes": 2384,
+      "sha256": "a74e391a588e9cf6c5c27b2f1854f7ecf75702ec22223560ca264a30e2ee5236"
+    },
+    {
+      "path": "releases/v21/evidence/v21-release-verifier-final3.json",
+      "bytes": 2383,
+      "sha256": "c518c9b82e0d3c377e7e2a620a04ebf62ad6c58946288514c7ac42bd6a244aa6"
+    },
+    {
+      "path": "releases/v21/example.json",
+      "bytes": 1997,
+      "sha256": "8a32378450ee5f0a5088117533be7de71d5c7dd72c20e1b886688036e13719c3"
+    },
+    {
+      "path": "releases/v21/LICENSE",
+      "bytes": 11343,
+      "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+    },
+    {
+      "path": "releases/v21/LICENSE-QWEN",
+      "bytes": 11343,
+      "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+    },
+    {
+      "path": "releases/v21/LICENSE-WRENCH",
+      "bytes": 532,
+      "sha256": "e3fa6e32c6d7cc2baa9dae5ff2c7c85f1ce401b8fa8bd7c5c2d06577b050374d"
+    },
+    {
+      "path": "releases/v21/LINEAGE.md",
+      "bytes": 1434,
+      "sha256": "73b8d01c6d18a9216071f4f374f322dcb842a30434d726423bdd96446c153070"
+    },
+    {
+      "path": "releases/v21/MODEL_CARD.md",
+      "bytes": 2864,
+      "sha256": "6381c73e788891afe3ede680666db47fe333dc8a024b34f70d6ec2b95e61a867"
+    },
+    {
+      "path": "releases/v21/NOTICE",
+      "bytes": 450,
+      "sha256": "d1b8806f1d0aa57a078bde91e23266b34207a3291bcd064895a5994e7fc9d2f3"
+    },
+    {
+      "path": "releases/v21/path-map.json",
+      "bytes": 27156,
+      "sha256": "31fbccc7510175b4c88d04274b422ffeb9bf683cea9db16f4753a6f0022a7420"
+    },
+    {
+      "path": "releases/v21/release_manifest.json",
+      "bytes": 6543,
+      "sha256": "219d6e85cbadf4701796e6d27d49ed057d3fb182fbda5fbecc9be1f59c9e3ea7"
+    },
+    {
+      "path": "releases/v21/requirements.txt",
+      "bytes": 76,
+      "sha256": "57f6a28401c5d97f4a42dcbf4f8fd16c2db2e10a63aff94bf1306700e54555f2"
+    },
+    {
+      "path": "releases/v21/RESOURCE_REPORT.md",
+      "bytes": 1237,
+      "sha256": "e15e7061b40846fc96d4249f1af6d1e562fb3a1dbf4e55a3cba0c5b3c092e15b"
+    },
+    {
+      "path": "releases/v21/training_run.json",
+      "bytes": 3083,
+      "sha256": "22ce0230b4523e6632fcda0a77187797189fa4ad6adad33ce4bfcebe8f3e51df"
+    },
+    {
+      "path": "releases/v21/evidence/relocated-package-verification.json",
+      "bytes": 2381,
+      "sha256": "ccf2927daa1b09fe49ae4b8961c09d8d92e2c055644d6beba5bf1c53ac0800d6"
+    }
+  ]
+}

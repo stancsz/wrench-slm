@@ -25,9 +25,9 @@ For the model release, start with the [release handoff](reference/MODEL_RELEASE_
 
 When project receipts change, update `assets/status.json` from these repository sources:
 
-- `../data/milestone_receipts.json`
-- `../data/canary_summary.json`
-- `../data/verification_report.json`
+- `../data/archive/baseline/milestone_receipts.json`
+- `../data/archive/baseline/canary_summary.json`
+- `../data/archive/baseline/verification_report.json`
 
 The site must preserve evidence boundaries. A replay, canary, or audit receipt is not proof of human adoption, live production behavior, or released-model quality.
 

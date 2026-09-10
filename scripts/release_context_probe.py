@@ -15,7 +15,7 @@ from wrench.pilot_tasks import TOOLS  # noqa: E402
 
 
 def main():
-    data = ROOT / 'data/pilots/release-authoring-v1'
+    data = ROOT / 'artifacts/archive/data/pilots/release-authoring-v1'
     rows = [json.loads(line) for line in (data / 'development.jsonl').read_text(encoding='utf-8').splitlines()]
     probes = []
     for kind in ['lines', 'draft', 'search', 'git_status', 'git_log', 'health']:
@@ -41,7 +41,7 @@ def main():
         'fixture': {'files': {'src/example.txt': 'one\ntwo\nthree\nfour\nfive\nsix\n'}, 'git': False, 'health': None},
         'expected_answer': ['three', 'four', 'five'],
     })
-    output = ROOT / 'data/pilots/context-development-v1'
+    output = ROOT / 'artifacts/archive/data/pilots/context-development-v1'
     output.mkdir(parents=True, exist_ok=False)
     path = output / 'development.jsonl'
     path.write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in probes), encoding='utf-8')

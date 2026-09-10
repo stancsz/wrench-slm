@@ -29,8 +29,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
-DATA_DIR = Path(r"c:\Users\stanc\github\portfolio\wrench-slm\data")
-LEAN_ROUTER_LOGS_DIR = Path(r"c:\Users\stanc\github\lean-router\logs")
+DATA_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/data"
+LEAN_ROUTER_LOGS_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/gateway-logs"
 
 random.seed(42)
 
@@ -520,7 +520,7 @@ def generate_data_engineering_samples() -> List[EnrichedRecord]:
     records = []
 
     files = [
-        "data/train.jsonl", "data/val.jsonl", "data/manifest.json",
+        "data/archive/baseline/train.jsonl", "data/archive/baseline/val.jsonl", "data/archive/baseline/manifest.json",
         "logs/events.jsonl", "metrics.csv", "users.parquet", "app.db"
     ]
 
@@ -565,9 +565,9 @@ def generate_data_engineering_samples() -> List[EnrichedRecord]:
 
     # JQ structured JSON query
     jq_queries = [
-        ("jq '.tool_distribution' data/manifest.json", "Extract tool distribution statistics from manifest using jq"),
-        ("jq -r '.total_records' data/manifest.json", "Get total records count from manifest.json via jq"),
-        ("jq -s 'length' data/val.jsonl", "Count JSON objects in data/val.jsonl with jq")
+        ("jq '.tool_distribution' data/archive/baseline/manifest.json", "Extract tool distribution statistics from manifest using jq"),
+        ("jq -r '.total_records' data/archive/baseline/manifest.json", "Get total records count from manifest.json via jq"),
+        ("jq -s 'length' data/archive/baseline/val.jsonl", "Count JSON objects in data/archive/baseline/val.jsonl with jq")
     ]
     for cmd, desc in jq_queries:
         records.append(EnrichedRecord(
@@ -596,7 +596,7 @@ def generate_data_engineering_samples() -> List[EnrichedRecord]:
     # Python data inspection one-liners
     py_data = [
         ("python -c \"import pandas as pd; print(pd.read_csv('metrics.csv').info())\"", "Inspect column schema and dtypes of metrics.csv with pandas"),
-        ("python -c \"import json; print(len(json.load(open('data/manifest.json'))))\"", "Check key count in manifest.json with Python")
+        ("python -c \"import json; print(len(json.load(open('data/archive/baseline/manifest.json'))))\"", "Check key count in manifest.json with Python")
     ]
     for cmd, desc in py_data:
         records.append(EnrichedRecord(

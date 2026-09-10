@@ -77,6 +77,8 @@ def main():
         torch.manual_seed(42)
         torch.cuda.reset_peak_memory_stats()
         if args.package:
+            # Frozen historical packages checksum bytecode; importing must not rewrite it.
+            sys.dont_write_bytecode = True
             sys.path.insert(0, str(checkpoint))
             from _wrench_runtime.weight_inference import load_executor, verify_package
             verify_package(checkpoint)

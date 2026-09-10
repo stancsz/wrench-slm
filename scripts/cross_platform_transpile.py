@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 
-DATA_DIR = Path(r"c:\Users\stanc\github\portfolio\wrench-slm\data")
+DATA_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/data"
 
 
 _POSIX_VERIFY_CACHE: Dict[str, bool] = {}

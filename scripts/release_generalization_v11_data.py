@@ -185,7 +185,7 @@ def build_additions():
 
 
 def main():
-    parent = ROOT / 'data/pilots/release-generalization-v10'
+    parent = ROOT / 'artifacts/archive/data/pilots/release-generalization-v10'
     parent_train = parent / 'train.jsonl'
     parent_rows = [json.loads(line) for line in parent_train.read_text(encoding='utf-8').splitlines()]
     additions = build_additions()
@@ -204,7 +204,7 @@ def main():
             seen[key] = label
             unique.append(row)
 
-    output = ROOT / 'data/pilots/release-generalization-v11'
+    output = ROOT / 'artifacts/archive/data/pilots/release-generalization-v11'
     output.mkdir(parents=True, exist_ok=False)
     train_path = output / 'train.jsonl'
     train_path.write_text(''.join(json.dumps(row, ensure_ascii=False) + '\n' for row in unique), encoding='utf-8')

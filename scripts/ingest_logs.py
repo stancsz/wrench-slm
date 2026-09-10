@@ -7,16 +7,8 @@ Reads real production logs from LeanRouter (READ-ONLY) and transforms them into
 standardized, high-quality, verified training, validation, and held-out evaluation
 datasets for Wrench-SLM.
 
-Data sources parsed:
-  - c:\\Users\\stanc\\github\\lean-router\\logs\\tool_calls.log*
-  - c:\\Users\\stanc\\github\\lean-router\\logs\\events\\*.jsonl
-  - c:\\Users\\stanc\\github\\lean-router\\logs\\router.log*
-
-Outputs written strictly into:
-  - c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\train.jsonl
-  - c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\val.jsonl
-  - c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\held_out.jsonl
-  - c:\\Users\\stanc\\github\\portfolio\\wrench-slm\\data\\manifest.json
+Historical gateway logs are read from artifacts/legacy-work/gateway-logs.
+Scratch datasets are written to artifacts/legacy-work/data.
 """
 
 from __future__ import annotations
@@ -33,8 +25,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
-LEAN_ROUTER_LOGS_DIR = Path(r"c:\Users\stanc\github\lean-router\logs")
-OUTPUT_DATA_DIR = Path(r"c:\Users\stanc\github\portfolio\wrench-slm\data")
+LEAN_ROUTER_LOGS_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/gateway-logs"
+OUTPUT_DATA_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/data"
 
 
 # Regex patterns for high-precision log extraction

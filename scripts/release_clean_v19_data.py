@@ -21,7 +21,7 @@ from scripts import release_clean_v18_data as v18  # noqa: E402
 
 base = v18.base
 base.VERSION = "release-generalization-v19"
-base.OUTPUT = base.ROOT / "data/pilots" / base.VERSION
+base.OUTPUT = base.ROOT / "artifacts/archive/data/pilots" / base.VERSION
 base.PROMPTS = deepcopy(base.PROMPTS)
 
 

@@ -26,8 +26,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT_DIR / "data"
-LOGS_DIR = Path(r"c:\Users\stanc\github\lean-router\logs")
+DATA_DIR = ROOT_DIR / "artifacts/legacy-work/data"
+LOGS_DIR = Path(__file__).resolve().parents[1] / "artifacts/legacy-work/gateway-logs"
 
 # High-frequency 20% mechanical tools whitelist
 ALLOWED_TOOLS = {

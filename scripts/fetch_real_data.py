@@ -16,11 +16,11 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
+DATA = ROOT / "artifacts/acquisition"
 RAW = DATA / "raw"
 BUILD = DATA / "build"
 LEGACY = DATA / "legacy"
-LOGS = Path(r"C:\Users\stanc\github\lean-router\logs")
+LOGS = ROOT / "artifacts/legacy-work/gateway-logs"
 BFCL_REPO = "gorilla-llm/Berkeley-Function-Calling-Leaderboard"
 BFCL_FILES = (
     "BFCL_v3_exec_simple.json",
@@ -276,7 +276,7 @@ def build(observed: list[dict[str, Any]], distilled: list[dict[str, Any]]) -> di
     }
     (BUILD / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     (BUILD / "README.md").write_text(
-        "# Wrench real-data build\n\nThis build is separate from data/train.jsonl, data/val.jsonl, and data/held_out.jsonl. Log-derived rows are observed gateway traces, not independently re-executed commands. Raw BFCL files are public evaluation references kept outside training splits.\n",
+        "# Wrench real-data build\n\nThis build is separate from data/archive/baseline/train.jsonl, data/archive/baseline/val.jsonl, and data/archive/baseline/held_out.jsonl. Log-derived rows are observed gateway traces, not independently re-executed commands. Raw BFCL files are public evaluation references kept outside training splits.\n",
         encoding="utf-8",
     )
     return manifest

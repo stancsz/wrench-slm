@@ -24,7 +24,7 @@ from wrench import (  # noqa: E402
 
 
 def _milestone_one() -> dict:
-    dataset_dir = ROOT / "data"
+    dataset_dir = ROOT / "data/archive/baseline"
     manifest = json.loads((dataset_dir / "manifest.json").read_text(encoding="utf-8"))
     total = manifest.get("total_records", 0)
     coverage = manifest.get("cross_platform_coverage", {})
@@ -94,7 +94,7 @@ def _milestone_two() -> dict:
 
 
 def _milestone_three() -> dict:
-    summary = evaluate_baseline(str(ROOT / "data/held_out.jsonl"), limit=1000)
+    summary = evaluate_baseline(str(ROOT / "data/archive/baseline/held_out.jsonl"), limit=1000)
     summary_dict = {
         "milestone": "M3_sft_ready",
         "split": "held_out",
@@ -110,14 +110,14 @@ def _milestone_three() -> dict:
     summary_dict["verdict"] = "PASS" if (
         summary_dict["schema_valid_rate"] >= 0.985 and summary_dict["arg_exact_rate"] >= 0.95
     ) else "FAIL"
-    write_summary(summary, str(ROOT / "data/eval_summary.json"))
+    write_summary(summary, str(ROOT / "artifacts/legacy-reports/eval_summary.json"))
     return summary_dict
 
 
 def _milestone_four() -> dict:
     valid_samples = 0
     invalid_samples = 0
-    for record in iter_jsonl(ROOT / "data/held_out.jsonl"):
+    for record in iter_jsonl(ROOT / "data/archive/baseline/held_out.jsonl"):
         if fsm_validate(record.get("canonical_call", "")):
             valid_samples += 1
         else:
@@ -137,7 +137,7 @@ def _milestone_four() -> dict:
 def _milestone_five() -> dict:
     breakdown_total = 0.0
     breakdown_count = 0
-    for record in iter_jsonl(ROOT / "data/held_out.jsonl"):
+    for record in iter_jsonl(ROOT / "data/archive/baseline/held_out.jsonl"):
         from wrench.reward import compute_reward
         breakdown = compute_reward(record["prompt"], "{\"tool\": \"noop\", \"args\": {}}", record)
         breakdown_total += breakdown.total
@@ -153,8 +153,8 @@ def _milestone_five() -> dict:
 
 def _milestone_six() -> dict:
     policy = ProductionDataBaseline()
-    canary = run_canary(policy, str(ROOT / "data/held_out.jsonl"), limit=1000)
-    write_canary(canary, str(ROOT / "data/canary_summary.json"))
+    canary = run_canary(policy, str(ROOT / "data/archive/baseline/held_out.jsonl"), limit=1000)
+    write_canary(canary, str(ROOT / "artifacts/legacy-reports/canary_summary.json"))
     payload = {
         "milestone": "M6_offload_canary",
         "samples": canary.samples,
@@ -182,6 +182,7 @@ def main() -> int:
     print(" Wrench-SLM Milestone Verifier")
     print("=" * 72)
 
+    (ROOT / "artifacts/legacy-reports").mkdir(parents=True, exist_ok=True)
     chosen = [int(m) for m in args.milestones.split(",") if m]
     receipts = {}
     if 1 in chosen:
@@ -203,7 +204,7 @@ def main() -> int:
         receipts["M6"] = _milestone_six()
         print("[M6]", json.dumps(receipts["M6"], ensure_ascii=False))
 
-    out_path = ROOT / "data/milestone_receipts.json"
+    out_path = ROOT / "artifacts/legacy-reports/milestone_receipts.json"
     out_path.write_text(json.dumps(receipts, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nWrote {out_path}")
     return 0

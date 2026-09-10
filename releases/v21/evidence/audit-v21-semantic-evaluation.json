@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "rows": 440,
+  "ids": 440,
+  "kinds": {
+    "config": 40,
+    "search": 40,
+    "ambiguous": 40,
+    "lines": 40,
+    "git_log": 40,
+    "draft": 40,
+    "git_status": 40,
+    "unsupported": 40,
+    "invalid_range": 40,
+    "health": 40,
+    "missing_tool": 40
+  },
+  "languages": {
+    "en": 220,
+    "zh": 220
+  },
+  "invalid_range_categories": {
+    "beyond_eof": 13,
+    "reversed": 13,
+    "zero_or_negative": 14
+  },
+  "missing_invalid_range_categories": [],
+  "errors": [],
+  "warnings": [],
+  "error_count": 0,
+  "warning_count": 0,
+  "scope": "Semantic audit of public-input visibility and authored fixture relationships; it does not prove model quality or licensing.",
+  "dataset": "data\\pilots\\release-generalization-v21",
+  "split": "evaluation",
+  "dataset_sha256": "67d141edf2285060584cfc663527e16052d592b12fcbd407453863427c4cb996"
+}

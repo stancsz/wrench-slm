@@ -558,8 +558,8 @@ def write_dataset(dataset, output, counts):
 
 
 def main():
-    challenge = write_dataset('independent-challenge-v6', 'data/pilots/independent-challenge-v6', 3)
-    sealed = write_dataset('release-authoring-v6', 'data/pilots/release-authoring-v6', 20)
+    challenge = write_dataset('independent-challenge-v6', 'artifacts/archive/data/pilots/independent-challenge-v6', 3)
+    sealed = write_dataset('release-authoring-v6', 'artifacts/archive/data/pilots/release-authoring-v6', 20)
     print(json.dumps({'challenge': challenge, 'sealed': sealed}, indent=2, ensure_ascii=False))
 
 
