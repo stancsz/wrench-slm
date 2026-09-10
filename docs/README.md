@@ -1,6 +1,19 @@
-# Wrench-SLM GitHub Pages site
+# Website and project documentation
 
-This folder is a static, dependency-free project site for Wrench-SLM.
+The `docs/` folder contains the static GitHub Pages website. Project documentation, including training instructions, audits, and release handoffs, lives in [reference/](reference/).
+
+The folder reorganization is complete: the former `gh-pages/` website files are directly in `docs/`, and the documents previously in `docs/` are now in `docs/reference/`.
+
+```text
+docs/
+  index.html       Website overview
+  status.html      Release status page
+  assets/          Website scripts, styles, and status data
+  reference/       Training instructions, specifications, audits, and handoffs
+    archive/       Historical documentation
+```
+
+For the model release, start with the [release handoff](reference/MODEL_RELEASE_HANDOFF.md) and [training next steps](reference/MODEL_TRAINING_NEXT_STEPS.md).
 
 ## Contents
 

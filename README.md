@@ -250,6 +250,8 @@ The following hardware figures are design targets unless explicitly marked as an
 
 ## 11. Engineering Standards & Documentation (工程规范与严谨文档)
 
+The static website lives directly in `docs/`. Training instructions, specifications, audits, and release handoffs live in [docs/reference/](docs/reference/). See the [documentation directory guide](docs/README.md) for the folder layout.
+
 本项目设立了硬性、不可篡改的工程规范、立项目标与自动化审计体系。所有参与本项目的 AI 代理与开发者均须无条件遵守：
 
 * 🎯 **[Project Goal & Core Purpose (目标定位与立项初衷)](goal.md)**:
