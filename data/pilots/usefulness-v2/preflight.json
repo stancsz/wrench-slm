@@ -1,0 +1,78 @@
+{
+  "status": "passed",
+  "manifest_sha256": "495a85457ec9c220bf3232cb1cd0a1d46d579877a3d92e9740c26d69dc486e59",
+  "splits": {
+    "development": {
+      "tasks": 110,
+      "families": 22,
+      "languages": {
+        "en": 55,
+        "zh": 55
+      },
+      "kinds": {
+        "invalid_range": 10,
+        "search": 10,
+        "missing_tool": 10,
+        "git_log": 10,
+        "git_status": 10,
+        "config": 10,
+        "health": 10,
+        "ambiguous": 10,
+        "lines": 10,
+        "unsupported": 10,
+        "draft": 10
+      }
+    },
+    "evaluation": {
+      "tasks": 600,
+      "families": 120,
+      "languages": {
+        "en": 300,
+        "zh": 300
+      },
+      "kinds": {
+        "git_log": 55,
+        "draft": 55,
+        "lines": 55,
+        "missing_tool": 55,
+        "unsupported": 55,
+        "git_status": 55,
+        "search": 55,
+        "health": 55,
+        "ambiguous": 55,
+        "invalid_range": 50,
+        "config": 55
+      }
+    }
+  },
+  "public_private_field_audit": "passed",
+  "cross_split_family_overlap": 0,
+  "cross_split_public_input_overlap": 0,
+  "historical_exact_public_input_overlap": 0,
+  "gold_rows_checked": 710,
+  "gold_failures": [],
+  "invalid_range_categories": {
+    "beyond_eof": 10,
+    "reversed": 20,
+    "zero_or_negative": 20
+  },
+  "routine_kinds": [
+    "config",
+    "draft",
+    "git_log",
+    "git_status",
+    "health",
+    "lines",
+    "search"
+  ],
+  "fallback_kinds": [
+    "ambiguous",
+    "invalid_range",
+    "missing_tool",
+    "unsupported"
+  ],
+  "limitations": [
+    "Exact-input overlap checks do not prove semantic independence.",
+    "Generated labels are executable fixture labels, not recovered production outcomes."
+  ]
+}

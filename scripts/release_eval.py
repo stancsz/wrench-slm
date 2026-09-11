@@ -1,27 +1,27 @@
 """Evaluate a specified local adapter or base without cloud calls or a router."""
 
 import argparse
-from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
 import json
-from pathlib import Path
 import platform
 import sys
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import torch  # noqa: E402
-from peft import PeftModel  # noqa: E402
-from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402
+import torch
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from wrench.pilot_environment import PilotEnvironment  # noqa: E402
-from wrench.pilot_inference import PilotExecutor  # noqa: E402
-from wrench.pilot_tasks import public_record  # noqa: E402
-from wrench.protocol import ROUTER_FALLBACK, prediction_matches_target  # noqa: E402
-from wrench.release_eval import outcome_matches, quality_gates, summarize  # noqa: E402
+from wrench.pilot_environment import PilotEnvironment
+from wrench.pilot_inference import PilotExecutor
+from wrench.pilot_tasks import public_record
+from wrench.protocol import ROUTER_FALLBACK, prediction_matches_target
+from wrench.release_eval import outcome_matches, quality_gates, summarize
 
 MODEL = 'Qwen/Qwen2.5-0.5B-Instruct'
 REVISION = '7ae557604adf67be50417f59c2c2f167def9a775'
@@ -39,6 +39,8 @@ def main():
     model_source.add_argument('--checkpoint', help='Omit both model sources for unchanged pretrained base')
     model_source.add_argument('--package', help='Evaluate the exact exported package and its bundled inference runtime')
     parser.add_argument('--base-path', help='Explicit local base dependency for packaged inference')
+    parser.add_argument('--protocol', default=str(ROOT / 'docs/reference/MODEL_RELEASE_PROTOCOL_V1.md'),
+                        help='Protocol file whose hash is recorded in the quality receipt')
     parser.add_argument('--output', required=True)
     parser.add_argument('--execute', action='store_true')
     parser.add_argument('--max-input-tokens', type=int, default=1536)
@@ -56,13 +58,18 @@ def main():
     if len(tasks) != manifest['splits'][args.split]['tasks'] or len({t['id'] for t in tasks}) != len(tasks):
         raise ValueError('Manifest count mismatch or duplicate task IDs')
     output.mkdir(parents=True, exist_ok=False)
+    protocol = Path(args.protocol).resolve()
+    if not protocol.is_file():
+        raise ValueError(f'Protocol file does not exist: {protocol}')
     checkpoint = Path(args.checkpoint or args.package).resolve() if args.checkpoint or args.package else None
+    package_manifest = json.loads((checkpoint / 'release_manifest.json').read_text(encoding='utf-8')) if args.package else {}
     started = time.perf_counter()
     meta = {'status': 'running', 'started_at': datetime.now(timezone.utc).isoformat(),
             'arguments': vars(args), 'model': MODEL, 'revision': REVISION,
             'adapter_sha256': digest(checkpoint / ('weights/adapter_model.safetensors' if args.package else 'adapter_model.safetensors')) if checkpoint else None,
             'dataset_sha256': digest(task_path), 'hardware': torch.cuda.get_device_name(0),
-            'protocol_sha256': digest(ROOT / 'docs/reference/MODEL_RELEASE_PROTOCOL_V1.md'),
+            'protocol_sha256': digest(protocol),
+            'base_weights_sha256': package_manifest.get('base_weights_sha256'),
             'platform': platform.platform(), 'packages': {name: importlib.metadata.version(name) for name in ['torch', 'transformers', 'peft']},
             'source_sha256': {name: digest(ROOT / name) for name in ['scripts/release_eval.py', 'wrench/release_eval.py', 'wrench/pilot_inference.py', 'wrench/pilot_environment.py', 'wrench/dataset.py', 'wrench/protocol.py']},
             'scope': 'Direct model predictions; authored tasks; zero cloud requests; no serving promotion'}
@@ -71,7 +78,7 @@ def main():
         snapshot = output / 'source' / name
         snapshot.parent.mkdir(parents=True, exist_ok=True)
         snapshot.write_bytes((ROOT / name).read_bytes())
-    (output / 'protocol.md').write_bytes((ROOT / 'docs/reference/MODEL_RELEASE_PROTOCOL_V1.md').read_bytes())
+    (output / 'protocol.md').write_bytes(protocol.read_bytes())
     rows = []
     try:
         torch.manual_seed(42)

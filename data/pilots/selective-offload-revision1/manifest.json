@@ -1,0 +1,93 @@
+{
+  "version": "selective-offload-v1",
+  "campaign": "selective-offload-revision1",
+  "source": "fresh authored families, separate from prior V1/V2 wording families",
+  "generator_sha256": "46fdafc191d2f603dc5c552b8a8cdad98ed24f7a6141f675f2c770a824c98f55",
+  "family_counts": {
+    "development": 24,
+    "evaluation": 120
+  },
+  "instances_per_family": 5,
+  "kinds": [
+    "config",
+    "lines",
+    "search",
+    "git_status",
+    "git_log",
+    "health",
+    "draft",
+    "ambiguous",
+    "unsupported",
+    "missing_tool",
+    "invalid_range",
+    "over_budget"
+  ],
+  "languages": [
+    "en",
+    "zh"
+  ],
+  "splits": {
+    "development": {
+      "tasks": 120,
+      "families": 24,
+      "sha256": "20e5d4ab2da93a7aeb0d652c0f3fa7939a892efc086577b4bd92263510b65b9a",
+      "kind_counts": {
+        "config": 10,
+        "lines": 10,
+        "search": 10,
+        "git_status": 10,
+        "git_log": 10,
+        "health": 10,
+        "draft": 10,
+        "ambiguous": 10,
+        "unsupported": 10,
+        "missing_tool": 10,
+        "invalid_range": 10,
+        "over_budget": 10
+      },
+      "language_counts": {
+        "en": 60,
+        "zh": 60
+      }
+    },
+    "evaluation": {
+      "tasks": 600,
+      "families": 120,
+      "sha256": "8558f329139f4e58bd96c61e597c5441c9372c36e4794f7d29c2f3386ae6ef0f",
+      "kind_counts": {
+        "config": 50,
+        "lines": 50,
+        "search": 50,
+        "git_status": 50,
+        "git_log": 50,
+        "health": 50,
+        "draft": 50,
+        "ambiguous": 50,
+        "unsupported": 50,
+        "missing_tool": 50,
+        "invalid_range": 50,
+        "over_budget": 50
+      },
+      "language_counts": {
+        "en": 300,
+        "zh": 300
+      }
+    }
+  },
+  "private_fields": [
+    "fixture",
+    "expected_answer",
+    "tool",
+    "args",
+    "kind"
+  ],
+  "inference_fields": [
+    "prompt",
+    "context"
+  ],
+  "limitations": [
+    "Authored fixtures are not representative production traffic.",
+    "The evaluation measures bounded Windows developer-tool workflows only.",
+    "The local gate is not a general safety or production claim."
+  ]
+}

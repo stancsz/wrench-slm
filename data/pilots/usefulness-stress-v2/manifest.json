@@ -1,0 +1,21 @@
+{
+  "version": "usefulness-stress-v2",
+  "source": "separate authored out-of-contract stress population; not V2 quality data",
+  "tasks": 12,
+  "categories": {
+    "over_budget": 3,
+    "unfamiliar_schema": 3,
+    "instruction_like_resources": 3,
+    "tool_failure": 3
+  },
+  "stress_sha256": "694f2544c550eb721df3afaf21500490f3e071a04b17b90f7e7cf431b03e682e",
+  "inference_fields": [
+    "prompt",
+    "context"
+  ],
+  "private_fields": [
+    "expected_observation"
+  ],
+  "no_tool_execution": true,
+  "protocol": "docs/reference/USEFULNESS_V2_STRESS_PROTOCOL.md"
+}

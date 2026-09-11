@@ -13,7 +13,7 @@ python -m pip install --upgrade pip
 python -m pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cu128
 python -m pip install -r requirements/dev.txt
 python scripts/verify_assets.py
-python -m pytest -q
+python -m pytest --import-mode=importlib tests -q
 ```
 
 On Unix, activate with `source .venv/bin/activate`. That makes the environment usable but does not establish Linux evaluation parity. CPU tests do not require CUDA; install a matching CPU PyTorch wheel when only reviewing data and code. Training and release_eval.py currently require CUDA.

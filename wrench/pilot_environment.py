@@ -81,7 +81,8 @@ class PilotEnvironment:
         started = time.perf_counter()
         receipt = {'call': call, 'executed': False, 'draft_only': False}
         try:
-            _, invalid, reason = validate_prediction(json.dumps(call), TOOLS)
+            visible_tools = self.task.get('context', {}).get('tools') or TOOLS
+            _, invalid, reason = validate_prediction(json.dumps(call), visible_tools)
             if invalid:
                 raise ValueError(reason)
             args = call['args']

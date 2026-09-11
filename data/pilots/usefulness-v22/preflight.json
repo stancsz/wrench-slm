@@ -1,0 +1,103 @@
+{
+  "status": "passed",
+  "manifest_sha256": "992cbf074d1c8d7402fcf9ccb92ba84ac898266e6a31fbe110501b738281d453",
+  "splits": {
+    "train": {
+      "tasks": 2816,
+      "families": 176,
+      "languages": {
+        "zh": 1408,
+        "en": 1408
+      },
+      "kinds": {
+        "git_log": 256,
+        "git_status": 256,
+        "health": 256,
+        "draft": 256,
+        "invalid_range": 256,
+        "config": 256,
+        "ambiguous": 256,
+        "search": 256,
+        "lines": 256,
+        "missing_tool": 256,
+        "unsupported": 256
+      }
+    },
+    "development": {
+      "tasks": 110,
+      "families": 22,
+      "languages": {
+        "zh": 55,
+        "en": 55
+      },
+      "kinds": {
+        "unsupported": 10,
+        "git_log": 10,
+        "ambiguous": 10,
+        "invalid_range": 10,
+        "missing_tool": 10,
+        "draft": 10,
+        "git_status": 10,
+        "lines": 10,
+        "health": 10,
+        "config": 10,
+        "search": 10
+      }
+    },
+    "evaluation": {
+      "tasks": 600,
+      "families": 120,
+      "languages": {
+        "zh": 300,
+        "en": 300
+      },
+      "kinds": {
+        "git_log": 55,
+        "invalid_range": 50,
+        "missing_tool": 55,
+        "health": 55,
+        "git_status": 55,
+        "draft": 55,
+        "config": 55,
+        "ambiguous": 55,
+        "lines": 55,
+        "unsupported": 55,
+        "search": 55
+      }
+    }
+  },
+  "overlaps": {
+    "development_vs_train": {
+      "families": 0,
+      "public_inputs": 0
+    },
+    "development_vs_evaluation": {
+      "families": 0,
+      "public_inputs": 0
+    },
+    "evaluation_vs_train": {
+      "families": 0,
+      "public_inputs": 0
+    }
+  },
+  "public_private_field_leaks": [],
+  "gold_rows_checked": 3526,
+  "gold_failures": [],
+  "kinds": [
+    "config",
+    "lines",
+    "search",
+    "git_status",
+    "git_log",
+    "health",
+    "draft",
+    "ambiguous",
+    "unsupported",
+    "missing_tool",
+    "invalid_range"
+  ],
+  "limitations": [
+    "Exact-input isolation does not prove semantic independence.",
+    "Executable labels are not recovered production outcomes."
+  ]
+}

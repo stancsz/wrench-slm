@@ -60,7 +60,7 @@ Latency was measured on one Windows machine with an NVIDIA GeForce RTX 5070 Ti. 
 
 Both suites contain authored scenarios with generated fixtures. Their perfect scores show success on those specific cases, not universal accuracy or proven generalization to production traffic. The context suite varies wording, paths, resource identities, and context ordering, but remains within the authored task contract.
 
-See the [release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md) for receipt locations, selection rules, environment details, and limitations. The [training correctness audit](docs/reference/TRAINING_CORRECTNESS_AUDIT.md) documents earlier defects and their repairs.
+See the [release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md) for receipt locations, selection rules, environment details, and limitations. The [training correctness audit](docs/reference/TRAINING_CORRECTNESS_AUDIT.md) documents earlier defects and their repairs. The [architecture](ARCHITECTURE.md), [product specification](docs/product-specs/PRODUCT_SPEC.md), and [project guide](docs/PROJECT_GUIDE.md) explain the repository-wide boundaries and workflows.
 
 ## Download and use
 
@@ -128,7 +128,7 @@ docs/
 artifacts/       Ignored local weights, checkpoints, packages, and receipts
 ```
 
-The website files are directly in `docs/`. Project reference documentation lives in `docs/reference/`. See the [directory guide](docs/README.md) for website maintenance.
+The website files are directly in `docs/`. Project reference documentation lives in `docs/reference/`. See the [project guide](docs/PROJECT_GUIDE.md), [code guide](docs/reference/CODE_GUIDE.md), and [directory guide](docs/README.md) for repository and website maintenance.
 
 Model and checkpoint storage has a 5 GB budget. The retention policy keeps the selected release, its initializer, the pinned base, and three V21 trainer snapshots. See the handoff for exact retained paths; historical storage measurements should not be treated as a live disk-usage report.
 

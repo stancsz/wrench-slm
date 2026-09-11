@@ -1,0 +1,76 @@
+{
+  "version": "usefulness-pilot-v2",
+  "source": "newly authored wording families and generated disposable fixtures; no production logs or V8/V21 predictions",
+  "generator_sha256": "34446f6c1cd7985e92dc94b46eeeb0934f650679c3060b8773ee441e3daa48c4",
+  "fixture_generator_sha256": "62d11205e3d9eff67d75039ba1e7ea4d3a6a4087726fab06cf95003f4e4de7dd",
+  "cross_split_families": 0,
+  "cross_split_public_inputs": 0,
+  "evaluation_families": 120,
+  "instances_per_family": 5,
+  "language_counts": {
+    "development": {
+      "en": 55,
+      "zh": 55
+    },
+    "evaluation": {
+      "en": 300,
+      "zh": 300
+    }
+  },
+  "kind_counts": {
+    "development": {
+      "invalid_range": 10,
+      "search": 10,
+      "missing_tool": 10,
+      "git_log": 10,
+      "git_status": 10,
+      "config": 10,
+      "health": 10,
+      "ambiguous": 10,
+      "lines": 10,
+      "unsupported": 10,
+      "draft": 10
+    },
+    "evaluation": {
+      "git_log": 55,
+      "draft": 55,
+      "lines": 55,
+      "missing_tool": 55,
+      "unsupported": 55,
+      "git_status": 55,
+      "search": 55,
+      "health": 55,
+      "ambiguous": 55,
+      "invalid_range": 50,
+      "config": 55
+    }
+  },
+  "private_fields": [
+    "fixture",
+    "tool",
+    "args",
+    "expected_answer"
+  ],
+  "inference_fields": [
+    "prompt",
+    "context"
+  ],
+  "limitations": [
+    "The population is authored and does not estimate production traffic.",
+    "Gold labels are checked by disposable fixtures but are not recovered user outcomes.",
+    "Execution is Windows-only and the shell surface is allowlisted.",
+    "The evaluation is independent of historical wording families by construction intent, not a guarantee of semantic independence."
+  ],
+  "splits": {
+    "development": {
+      "tasks": 110,
+      "families": 22,
+      "sha256": "3baa4ce4356f3a1672273931f7546f21660c9f4c55c88de14b4967d0636aa5a7"
+    },
+    "evaluation": {
+      "tasks": 600,
+      "families": 120,
+      "sha256": "f7cd33a3f546964a6d6eb6b49d90a3133713e0bffb4499c8e593c5eb7cce3351"
+    }
+  }
+}
