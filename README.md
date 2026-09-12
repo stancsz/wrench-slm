@@ -57,12 +57,14 @@ run the tracked provider-free test suite:
 
 ```powershell
 py -3 -m pip install -r requirements/dev.txt
-py -3 -m pytest -q tests
+py -3 -m pytest -q tests/test_selective_offload.py tests/test_policy.py tests/test_pilot_workflow.py tests/test_release_boundaries.py
 ```
 
-This verifies the tracked source and tests. It does not download private
-weights, contact a provider, independently replay the 600-row local-quality
-campaign, or establish production value.
+This clean-clone subset currently covers 33 routing, policy, workflow, and
+release-boundary tests. It does not download private weights, contact a
+provider, independently replay the 600-row local-quality campaign, or establish
+production value. The full suite includes tests that require ignored local
+receipts and model-package manifests.
 
 For the shortest route through the repository:
 

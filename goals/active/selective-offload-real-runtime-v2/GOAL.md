@@ -93,12 +93,14 @@ M1, M2, and the fail-closed operator package are implemented and locally verifie
 ### Validation to rerun before changing state
 
 ```powershell
-py -3 -m pytest -q tests
+py -3 -m pytest -q tests/test_selective_offload.py tests/test_policy.py tests/test_pilot_workflow.py tests/test_release_boundaries.py
 ```
 
 Record fresh output and receipt paths here before marking a milestone done. The
-stronger receipt verifiers must be committed before they can become a clean-clone
-acceptance command. Do not reuse historical test counts as current proof.
+full suite currently needs ignored local receipts and model manifests. Stronger
+receipt verifiers and their inputs must be committed before they can become a
+zero-preparation clean-clone acceptance command. Do not reuse historical test
+counts as current proof.
 
 ### Remaining gap
 
