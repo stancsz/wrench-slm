@@ -63,8 +63,8 @@ outcome advantage.
 - Trust line: **Current operator decision: `DISABLE`.**
 - Proof unit: 90/600 accepted authored held-out cases, 90/90 successful accepted
   completions, zero accepted prohibited actions, and zero unexpected mutation.
-- Verification CTA: `py -3 scripts/verify_selective_local_quality.py` followed
-  by `py -3 scripts/verify_public_claims.py` and `py -3 -m pytest -q tests`.
+- Verification CTA: `py -3 -m pytest -q tests`. Stronger receipt verifiers are
+  development-worktree evidence until their source and inputs are committed.
 - Public boundary: **no measured frontier-token savings**.
 
 ## Distribution plan

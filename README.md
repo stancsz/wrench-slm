@@ -53,18 +53,16 @@ lower cost, production reliability, user adoption, or broad model advantage.
 ## Verify the evidence boundary
 
 Clone the repository, create an environment with the test dependencies, then
-run the provider-free gates:
+run the tracked provider-free test suite:
 
 ```powershell
 py -3 -m pip install -r requirements/dev.txt
-py -3 scripts/verify_selective_local_quality.py
-py -3 scripts/verify_public_claims.py
 py -3 -m pytest -q tests
 ```
 
-These commands verify tracked source, tests, and receipt identities. They do
-not download private weights, contact a provider, or replay unshipped row-level
-runtime artifacts.
+This verifies the tracked source and tests. It does not download private
+weights, contact a provider, independently replay the 600-row local-quality
+campaign, or establish production value.
 
 For the shortest route through the repository:
 

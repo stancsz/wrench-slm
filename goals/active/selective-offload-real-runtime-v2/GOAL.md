@@ -93,12 +93,12 @@ M1, M2, and the fail-closed operator package are implemented and locally verifie
 ### Validation to rerun before changing state
 
 ```powershell
-py -3 scripts/verify_selective_local_quality.py
-py -3 scripts/verify_public_claims.py
 py -3 -m pytest -q tests
 ```
 
-Record fresh output and receipt paths here before marking a milestone done. Do not reuse historical test counts as current proof.
+Record fresh output and receipt paths here before marking a milestone done. The
+stronger receipt verifiers must be committed before they can become a clean-clone
+acceptance command. Do not reuse historical test counts as current proof.
 
 ### Remaining gap
 
