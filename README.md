@@ -131,7 +131,7 @@ artifacts/       Ignored local weights, packages, and run receipts
 
 Durable boundaries live in [NORTHSTAR.md](NORTHSTAR.md) and
 [ARCHITECTURE.md](ARCHITECTURE.md). Historical plans are preserved in the
-[documentation archive](docs/reference/archive/README.md), not mixed into the
+[documentation archive](docs/reference/archive/), not mixed into the
 current execution path. The [marketing review](docs/MARKETING_REVIEW.md) records
 the audience, funnel diagnosis, launch dependencies, measurement baseline, and
 claim boundaries.
