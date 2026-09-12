@@ -1,137 +1,158 @@
 # Wrench-SLM
 
-Wrench-SLM trains small models to propose structured tool calls for routine developer tasks. The current artifact is **Wrench-Pro V21**, a LoRA adapter for Qwen2.5-0.5B-Instruct.
+### Let the small model handle the boring work. Keep the strong model in charge.
 
-V21 completed training and passed its authored evaluation suites. The current priority is model correctness and usable weights. Router integration, hosted serving, and measurements of cloud cost savings remain future work.
+Wrench-SLM is an evidence-gated experiment in selective local execution for
+developer tools. It proposes narrow structured actions, verifies what actually
+happened, and falls back whenever the request or result is uncertain.
 
-## What V21 does
+The current artifact, **Wrench-Pro V21**, is a LoRA adapter for
+Qwen2.5-0.5B-Instruct. It is a **private release candidate**, not a production
+service.
 
-Given a request and supplied Windows/PowerShell context, V21 predicts a JSON tool call or `ROUTER_FALLBACK`. The context includes available tool schemas and relevant resources or prior results.
+> **Current operator decision: `DISABLE`.** The local path works on a narrow
+> authored evaluation, but trusted production replay and matched cloud-value
+> evidence do not exist yet.
 
-The evaluated tasks cover:
+## Why Wrench exists
 
-- Configuration and file reads, including inclusive line ranges.
-- Literal text search that returns matching filenames.
-- Git status and the latest commit subject.
-- Local health endpoint reads.
-- File-write proposals for review.
-- Abstention for ambiguous requests, unsupported operations, missing tools, and invalid line ranges.
+Most routing demos ask whether a small model can answer. Wrench asks a harder
+question: **can it finish a real task safely enough that the larger model never
+needs to redo the work?**
 
-The inference runtime returns a proposal and validation result. It does not execute the generated tool call. The evaluator separately checks permitted actions in disposable fixtures; write proposals remain drafts.
+That changes the design:
 
-This is a narrow tool-call model. These results do not establish general coding ability, arbitrary shell reliability, or safe autonomous execution.
+- deterministic rules own rigid cases;
+- a small model may propose only explicitly supported actions;
+- a runtime verifier checks real tool observations, never fixture gold;
+- ambiguous, failed, timed-out, or boundary-changing work falls back intact;
+- rules-only and full disable are successful outcomes when learning adds no value.
 
-## Current release
+## What is real today
 
-| Item | V21 |
-| --- | --- |
-| Artifact | PEFT LoRA adapter |
-| Base model | Qwen/Qwen2.5-0.5B-Instruct |
-| Required base revision | `7ae557604adf67be50417f59c2c2f167def9a775` |
-| Selected checkpoint | Step 200 of the 300-step V21 run |
-| Training method | Supervised LoRA fine-tuning, initialized from V20 with a fresh optimizer |
-| Languages evaluated | English and Chinese |
-| Evaluated token budgets | 1,536 input tokens and 192 generated tokens |
-| Distribution | [Hugging Face: stancsz/wrench-pro-v21](https://huggingface.co/stancsz/wrench-pro-v21) |
+The supported local slice is intentionally small: selected configuration reads
+and bounded line reads. The runtime does not grant arbitrary shell access and
+write proposals remain review-only drafts.
 
-The adapter requires the pinned base model. Git contains source and documentation; weights are stored separately on Hugging Face. The Hugging Face repository was published privately, so access requires an authorized account.
+| Evidence | Observed result | What it does not prove |
+| --- | --- | --- |
+| Frozen V21 holdout | 440/440 exact authored predictions | General coding ability or production accuracy |
+| Fresh authored context suite | 220/220 exact predictions | Independent generalization |
+| Selective local gate | 90/600 accepted, 90/90 successful accepted completions | Production prevalence or savings |
+| Boundary results | Zero accepted prohibited actions and zero unexpected mutations in the frozen gate | Safety under untested traffic |
+| Operator package | `VALID_FAIL_CLOSED`, decision `DISABLE` | A production-ready route |
 
-The adapter file is 35,237,104 bytes. Its SHA-256 is:
+Latency on the V21 holdout was 1.175 seconds p50 and 2.466 seconds p95 on one
+Windows workstation with an NVIDIA GeForce RTX 5070 Ti. This is full local
+prediction latency in the evaluator, not hosted-service performance.
 
-```text
-6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348
-```
+All evaluated rows above are authored scenarios or generated fixtures. Wrench
+currently shows **no measured frontier-token savings** and makes no claim of
+lower cost, production reliability, user adoption, or broad model advantage.
 
-## What was measured
+## Verify the evidence boundary
 
-These results come from the frozen V21 package evaluation and the subsequent context suite recorded on September 10, 2026.
-
-| Evaluation | Observed result |
-| --- | --- |
-| Frozen holdout | 440/440 exact predictions |
-| Holdout routine cases | 280/280 exact, with fixture outcomes checked |
-| Holdout fallback cases | 160/160 correct abstentions |
-| Fresh context suite | 220/220 exact: 140 routine and 80 fallback |
-| Unexpected fixture filesystem changes | Zero |
-| Clean package load | Passed with the pinned base and dependencies in a fresh environment |
-| Holdout prediction latency | 1.175 seconds p50; 2.466 seconds p95 |
-
-Latency was measured on one Windows machine with an NVIDIA GeForce RTX 5070 Ti. It is full prediction latency in the evaluator, not time to first token or a hosted-service guarantee.
-
-Both suites contain authored scenarios with generated fixtures. Their perfect scores show success on those specific cases, not universal accuracy or proven generalization to production traffic. The context suite varies wording, paths, resource identities, and context ordering, but remains within the authored task contract.
-
-See the [release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md) for receipt locations, selection rules, environment details, and limitations. The [training correctness audit](docs/reference/TRAINING_CORRECTNESS_AUDIT.md) documents earlier defects and their repairs. The [architecture](ARCHITECTURE.md), [product specification](docs/product-specs/PRODUCT_SPEC.md), and [project guide](docs/PROJECT_GUIDE.md) explain the repository-wide boundaries and workflows.
-
-## Download and use
-
-Authenticate with a Hugging Face account that has access, then download the published adapter snapshot:
+Clone the repository, create an environment with the test dependencies, then
+run the provider-free gates:
 
 ```powershell
-python -m pip install huggingface_hub
-hf auth login
-hf download stancsz/wrench-pro-v21 --revision 0c77f1520091d30ed0613319a307cdbbed247320 --local-dir artifacts/model-release/hf-v21
+py -3 -m pip install -r requirements/dev.txt
+py -3 scripts/verify_selective_local_quality.py
+py -3 scripts/verify_public_claims.py
+py -3 -m pytest -q tests
 ```
 
-The model Hub snapshot contains the adapter, tokenizer, training metadata, model README, and licenses. Full inference packages, the V20 initializer, source snapshots, and historical authored assets are available separately through the [release asset catalog](releases/v21/README.md). See [Training from a clone](docs/reference/TRAINING_FROM_CLONE.md) for setup, downloads, audits, training, evaluation, and export.
+These commands verify tracked source, tests, and receipt identities. They do
+not download private weights, contact a provider, or replay unshipped row-level
+runtime artifacts.
 
-There are two ways to work with the release:
+For the shortest route through the repository:
 
-- **Load the adapter with PEFT.** Follow the model README on Hugging Face and use the exact base revision above. Loading weights alone does not apply Wrench's input formatting or output validation. Those are implemented in [the dataset formatter](wrench/dataset.py) and [the prediction runtime](wrench/pilot_inference.py).
-- **Use the complete verified local package.** Operators who have `artifacts/model-release/package-selected-v21` can follow the [handoff quickstart](docs/reference/MODEL_RELEASE_HANDOFF.md#reproduce-the-quickstart). That package includes an example input, runtime, dependency pins, and checksum manifest. Restore it with `python scripts/fetch_assets.py --asset package-v21` after authenticating to the private asset repository.
+1. Read the [maturity ladder](goal.md).
+2. Inspect the [active acceptance contract](goals/active/selective-offload-real-runtime-v2/GOAL.md).
+3. Review the [production value scorecard](docs/PRODUCTION_VALUE_SCORECARD.md).
+4. Follow the [V21 release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md) if you have private artifact access.
 
-The verified package environment used Python 3.14, PyTorch 2.9.1+cu128, Transformers 4.57.1, PEFT 0.20.0, Tokenizers 0.22.1, and Safetensors 0.6.2. CPU performance and other hardware configurations have not been qualified by these release results.
-
-## Training and reproduction
-
-V21 used 6,144 authored training rows in 192 wording families, 176 development rows, and a frozen 440-row evaluation set. Training used rank-16 LoRA, microbatch 2, gradient accumulation 8, learning rate `2e-6`, and seed 42.
-
-The run completed 300 optimizer steps and presented 4,800 unique training rows. Checkpoints at steps 100, 200, and 300 each scored 176/176 on development. Step 200 was selected by the declared rule: highest exact rate, then lowest validation loss, then earliest step.
-
-V21 uses authored supervised examples. Earlier teacher-data experiments and experimental reinforcement-learning code are separate from this release's training recipe.
-
-For reproduction and later work:
-
-- [Release handoff](docs/reference/MODEL_RELEASE_HANDOFF.md): exact artifact, dependencies, evidence, and recovery instructions.
-- [Release progress](docs/reference/MODEL_RELEASE_PROGRESS.md): recorded V21 results.
-- [Training next steps](docs/reference/MODEL_TRAINING_NEXT_STEPS.md): earlier operator plan; consult the current handoff before executing it.
-- [Training repair handoff](docs/reference/TRAINING_REPAIR_HANDOFF.md): data and training corrections.
-- [Current goal](goal.md): completed weight-release scope and deferred work.
-
-Small release receipts and cards are included under `releases/v21/`. The checksummed asset catalog supplies the full packages, V20 initializer and historical source/evidence. Historical handoffs preserve original paths; `releases/v21/path-map.json` records relocated data.
-
-## What remains future work
-
-Wrench-Flash is a proposed smaller CPU/edge model tier. This release provides no validated Flash checkpoint or Raspberry Pi benchmark.
-
-The repository also contains experimental policy, grammar, workflow, and training code. Their presence does not mean they are enabled in V21. In particular, the packaged Pro runtime generates tokens and validates the output afterward; it does not use grammar-constrained decoding to guarantee correctness.
-
-Future work may include quantization, constrained generation, broader independent evaluation, serving, and router integration. Token-level speculative decoding and multi-token prediction are research directions. No measured acceptance rate, throughput gain, cloud token reduction, or end-to-end speedup is claimed for them here.
-
-The [engineering techniques assessment](docs/reference/AI_ENGINEERING_TECHNIQUES.md) records implementation coverage and possible extensions. Historical architecture documents may contain older targets; use the current release evidence when describing V21.
-
-## Repository layout
+## From toy to production
 
 ```text
-wrench/          Model, training, inference, validation, and experimental runtime code
-scripts/         Data preparation, training, evaluation, and packaging entry points
-tests/           Repository tests
-data/            Frozen release inputs and a clearly separated legacy baseline
-releases/v21/    Cards, evidence, checksums and downloadable asset catalog
-requirements/    Training and test dependencies
-examples/        Historical integrations
-docs/
-  index.html     Static website overview
-  status.html    Static release-status page
-  assets/        Website assets
-  reference/     Specifications, audits, training instructions, and handoffs
-    archive/     Historical documentation
-artifacts/       Ignored local weights, checkpoints, packages, and receipts
+M0 Toy
+  -> M1 Safe prototype
+  -> M2 Reproducible candidate       <- current verified boundary
+  -> M3 Useful matched pilot         <- blocked on trusted data and budget
+  -> M4 Production candidate
+  -> M5 Production proven
 ```
 
-The website files are directly in `docs/`. Project reference documentation lives in `docs/reference/`. See the [project guide](docs/PROJECT_GUIDE.md), [code guide](docs/reference/CODE_GUIDE.md), and [directory guide](docs/README.md) for repository and website maintenance.
+The immediate gate is not another synthetic benchmark. It is an authorized,
+deterministically redacted replay package with joinable request/context and
+provider-usage records, followed by a fixed A/B/C comparison:
 
-Model and checkpoint storage has a 5 GB budget. The retention policy keeps the selected release, its initializer, the pinned base, and three V21 trainer snapshots. See the handoff for exact retained paths; historical storage measurements should not be treated as a live disk-usage report.
+- cloud-only;
+- deterministic rules plus fallback;
+- learned proposal plus the identical fallback path.
 
-## Licensing
+Every arm must account for calls, prompt/completion/cached tokens, cost,
+latency, retries, corrections, failures, and final outcomes. The learned route
+earns enablement only if it improves on rules without making outcomes worse
+than cloud-only.
 
-The published adapter includes Apache-2.0 license terms and Wrench attribution. Redistributed Qwen tokenizer files retain the upstream license and Alibaba Cloud attribution. The base model is a separate dependency. Consult the licenses and notices in the [model repository](https://huggingface.co/stancsz/wrench-pro-v21/tree/main) before redistribution.
+## V21 artifact
+
+| Item | Value |
+| --- | --- |
+| Form | PEFT LoRA adapter |
+| Base | `Qwen/Qwen2.5-0.5B-Instruct` |
+| Base revision | `7ae557604adf67be50417f59c2c2f167def9a775` |
+| Selected checkpoint | Step 200 of 300 |
+| Training | Supervised LoRA, initialized from V20 with a fresh optimizer |
+| Evaluated languages | English and Chinese |
+| Adapter size | 35,237,104 bytes |
+| Adapter SHA-256 | `6a43d8cf1da19770fc4764e148c758c1b8022fca31a21db9bd80b40bb4be6348` |
+| Distribution | Private candidate at [stancsz/wrench-pro-v21](https://huggingface.co/stancsz/wrench-pro-v21) |
+
+The adapter requires the pinned base model plus Wrench input formatting and
+output validation. It is not standalone weights. Authorized users can follow
+[Training from a clone](docs/reference/TRAINING_FROM_CLONE.md) and the
+[release asset catalog](releases/v21/README.md). Hardware beyond the recorded
+Windows/RTX 5070 Ti environment, including CPU operation, is not qualified.
+Downloading the private artifact requires an authorized account.
+
+## Repository map
+
+```text
+wrench/          Training, inference, validation, and experimental runtime code
+scripts/         Reproducible build, evaluation, readiness, and evidence gates
+tests/           Unit and integration tests
+data/            Frozen release inputs and separated legacy data
+releases/v21/    Release cards, checksums, and evidence snapshots
+docs/            Product, architecture, operations, audit, and website material
+goals/active/    The single active engineering contract
+artifacts/       Ignored local weights, packages, and run receipts
+```
+
+Durable boundaries live in [NORTHSTAR.md](NORTHSTAR.md) and
+[ARCHITECTURE.md](ARCHITECTURE.md). Historical plans are preserved in the
+[documentation archive](docs/reference/archive/README.md), not mixed into the
+current execution path. The [marketing review](docs/MARKETING_REVIEW.md) records
+the audience, funnel diagnosis, launch dependencies, measurement baseline, and
+claim boundaries.
+
+## Contributing
+
+The most useful contributions tighten evidence or reduce operator friction:
+independently authored evaluation cases, clean-install reproduction, safe
+service boundaries, receipt verification, and documentation fixes. Do not open
+an issue containing private prompts, credentials, proprietary traces, or raw
+customer data.
+
+Look for issues labeled `good first issue`, `help wanted`, `evidence`, or
+`production-gate`. A green local test is useful, but it does not close a
+production milestone unless the active goal names it as exit evidence.
+
+## License and attribution
+
+The private adapter snapshot carries Apache-2.0 terms and Wrench attribution.
+Redistributed Qwen tokenizer files retain their upstream license and Alibaba
+Cloud attribution. The base model is a separate dependency. Authorized users
+should inspect the model repository notices before redistribution.
