@@ -160,3 +160,11 @@ boundary suite passes 4 tests, including traversal, external-health, and
 automatic-application abstentions. The receipt is at
 `phases/phase-9-execution-boundary/boundary-tests.json`. This proves the
 verifier contract, not that the Qwen model can produce correct proposals.
+
+Phase 10 exercised the local Qwen runtime in shadow mode. Given a strict
+proposal prompt, it returned an exact `wrench.proposal.v1` read-file object;
+the Phase 9 harness accepted it and observed 787 bytes without mutation. The
+receipt is at `phases/phase-10-qwen-shadow-proposal/shadow-receipt.json`.
+FreeToken does not support constrained JSON decoding, so schema validation and
+fail-closed execution remain authoritative. This is one integration smoke
+case, not a proposal-quality or workflow-success result.

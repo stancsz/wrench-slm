@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.qwen-shadow-proposal.v1",
+  "observed_at": "2026-09-17T21:29:14-06:00",
+  "status": "PASS_SHADOW_BOUNDARY_ONLY",
+  "model": {
+    "served_model": "Qwen3.6-35B-A3B-NVFP4",
+    "runtime": "FreeToken",
+    "endpoint": "http://127.0.0.1:8000/v1/chat/completions",
+    "temperature": 0,
+    "thinking_disabled": true
+  },
+  "proposal": {
+    "schema": "wrench.proposal.v1",
+    "action": "read_file",
+    "path": "phases/phase-9-execution-boundary/README.md",
+    "max_bytes": 4096
+  },
+  "model_output": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"phases/phase-9-execution-boundary/README.md\",\"max_bytes\":4096}",
+  "model_usage": {
+    "prompt_tokens": 114,
+    "completion_tokens": 40,
+    "total_tokens": 154,
+    "finish_reason": "stop"
+  },
+  "verifier_result": {
+    "status": "accepted",
+    "action": "read_file",
+    "observed_bytes": 787,
+    "mutated": false
+  },
+  "runtime_diagnostic": {
+    "response_format_json_object": "rejected: constrained decoding is not supported",
+    "fallback": "schema validation and fail-closed harness remain authoritative"
+  },
+  "limits": [
+    "One hand-authored prompt and one local proposal are not a quality estimate.",
+    "No patch, shell command, credential, external endpoint, or autonomous write was allowed.",
+    "Portfolio approval, source acquisition, router profiling, pruning, calibration, and comparative workflow evaluation remain open."
+  ]
+}

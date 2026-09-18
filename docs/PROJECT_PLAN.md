@@ -45,6 +45,11 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   fail-closed, read-only verifier for the six proposed portfolio actions. Its
   boundary suite passes 4 tests and proves no patch application or generic
   shell capability.
+- **Phase 10, Qwen shadow proposal:** the local Qwen runtime emitted an exact
+  `wrench.proposal.v1` read proposal and the independent boundary accepted it
+  without mutation. FreeToken lacks constrained JSON decoding, so schema
+  validation remains the safety gate. This is one integration smoke case, not
+  a quality or workflow benchmark.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.
