@@ -54,6 +54,11 @@ def _validate_trace(trace: Any) -> None:
         _as_nonnegative_number(result.get("latency_ms"), "latency_ms", f"{trace['id']}/{arm}")
 
 
+def _trace_set_digest(traces: list[dict[str, Any]]) -> str:
+    encoded = json.dumps(traces, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _bootstrap_interval(values: list[float], seed: int = 17, samples: int = 2000) -> dict[str, float | None]:
     if not values:
         return {"low": None, "high": None}
@@ -134,6 +139,15 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             "status": "BLOCKED_TRACE_PROVENANCE",
             "paired_savings": [],
             "reason": "approved real workflow manifests require a 64-character trace_set_sha256",
+        }
+    expected_trace_hash = _trace_set_digest(traces)
+    if trace_hash != expected_trace_hash:
+        return {
+            **base,
+            "status": "BLOCKED_TRACE_PROVENANCE",
+            "paired_savings": [],
+            "reason": "trace_set_sha256 does not match the canonical trace contents",
+            "expected_trace_set_sha256": expected_trace_hash,
         }
     if not isinstance(provenance, dict) or any(
         not isinstance(provenance.get(field), str) or not provenance[field].strip()

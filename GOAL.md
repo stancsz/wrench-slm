@@ -521,3 +521,8 @@ requires a trace-set SHA-256 plus capture ID, timestamp, reviewer, and source
 scope before paired savings are computed. Missing provenance is explicitly
 blocked, and no real trace data was added. Evidence is in
 `phases/phase-51-trace-provenance-gate`.
+
+Phase 52 made the trace authorization receipt hash-integrity checked. For an
+approved manifest, the evaluator recomputes the canonical trace-set SHA-256
+and blocks any mismatch before calculating paired savings. No real workflow
+data was added. Evidence is in `phases/phase-52-trace-hash-integrity`.

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+
 from tools.evaluate_workflow_arms import evaluate_manifest
 
 
@@ -17,10 +20,11 @@ def _trace(identifier: str, learned_tokens: int = 70, *, mutation: bool = False)
 
 
 def _approved_manifest(traces: list[dict]) -> dict:
+    encoded = json.dumps(traces, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return {
         "schema": "wrench.workflow-arm-traces.v1",
         "authorization": "approved_real_workflow",
-        "trace_set_sha256": "0" * 64,
+        "trace_set_sha256": hashlib.sha256(encoded).hexdigest(),
         "provenance": {
             "capture_id": "capture-test",
             "captured_at": "2026-09-18T00:00:00Z",
@@ -53,3 +57,12 @@ def test_workflow_scoring_blocks_approved_manifest_without_provenance():
     receipt = evaluate_manifest(manifest)
     assert receipt["status"] == "BLOCKED_TRACE_PROVENANCE"
     assert receipt["paired_savings"] == []
+
+
+def test_workflow_scoring_blocks_trace_hash_mismatch():
+    manifest = _approved_manifest([_trace("hash-mismatch")])
+    manifest["trace_set_sha256"] = "f" * 64
+    receipt = evaluate_manifest(manifest)
+    assert receipt["status"] == "BLOCKED_TRACE_PROVENANCE"
+    assert receipt["paired_savings"] == []
+    assert len(receipt["expected_trace_set_sha256"]) == 64
