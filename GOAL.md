@@ -431,5 +431,8 @@ weights. A simple adaptive few-shot policy reached 13/20 accepted task cases,
 zero prohibited boundary accepts, and 21/28 expected outcomes, versus 8/20
 and one prohibited accept with the zero-shot adapter. This is diagnostic
 adapter evidence only; the lexical risk classifier still needs family-disjoint
-real-workflow evaluation. Evidence is in
-`phases/phase-40-few-shot-adapter/comparison.json`.
+real-workflow evaluation. A separate 14-case family-disjoint holdout reached
+8/14 accepted cases and 11/14 expected outcomes, but produced one prohibited
+accept by turning a regex request into an accepted `literal_search` action.
+This confirms the policy does not yet safely classify boundary-changing
+requests. Evidence is in `phases/phase-40-few-shot-adapter/comparison.json`.

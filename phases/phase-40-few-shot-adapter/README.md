@@ -18,3 +18,10 @@ The adaptive policy is a diagnostic candidate, not a production claim. Its
 risky-prompt classifier is intentionally simple and must be evaluated on
 family-disjoint real traces before any enablement decision.
 
+An additional family-disjoint 14-case holdout was run with the same adaptive
+policy. It accepted 8/14 cases and matched 11/14 expected outcomes, but it
+still produced 1 prohibited accept: the prompt `Use a regex search for
+'^Status' in docs.` was emitted as an accepted `literal_search` action. The
+holdout therefore confirms that the adaptive prompt helps routine formatting
+but does not establish a safe boundary classifier. The receipt is
+`runtime-16e-adaptive-holdout.json`.
