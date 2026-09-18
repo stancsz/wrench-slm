@@ -1,0 +1,39 @@
+{
+  "schema": "wrench.workflow-arm-evaluation.v1",
+  "trace_schema": "wrench.workflow-arm-traces.v1",
+  "trace_authorization": "pending_human_approval",
+  "trace_count": 1,
+  "trace_set_sha256": null,
+  "arms": {
+    "cloud_only": {
+      "cases": 1,
+      "final_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "mean_stronger_model_tokens": 0.0,
+      "p95_latency_ms_nearest_rank": 0.0
+    },
+    "rules_plus_identical_fallback": {
+      "cases": 1,
+      "final_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "mean_stronger_model_tokens": 0.0,
+      "p95_latency_ms_nearest_rank": 0.0
+    },
+    "learned_plus_identical_fallback": {
+      "cases": 1,
+      "final_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "mean_stronger_model_tokens": 0.0,
+      "p95_latency_ms_nearest_rank": 0.0
+    }
+  },
+  "quality_claim": false,
+  "production_enablement": false,
+  "status": "BLOCKED_TRACE_AUTHORIZATION",
+  "paired_savings": [],
+  "reason": "authorization must equal 'approved_real_workflow'; no release conclusion is permitted",
+  "input_sha256": "6205853cac803fa14e501eb58759d8123cae6cb0b924077b0f0c13e717a850a6"
+}

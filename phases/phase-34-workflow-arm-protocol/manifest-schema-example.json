@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.workflow-arm-traces.v1",
+  "authorization": "pending_human_approval",
+  "trace_set_sha256": null,
+  "traces": [
+    {
+      "id": "replace-with-approved-trace-id",
+      "family": "read_file",
+      "arms": {
+        "cloud_only": {
+          "final_success": true,
+          "prohibited_accept": false,
+          "unexpected_mutation": false,
+          "stronger_model_tokens": 0,
+          "latency_ms": 0
+        },
+        "rules_plus_identical_fallback": {
+          "final_success": true,
+          "prohibited_accept": false,
+          "unexpected_mutation": false,
+          "stronger_model_tokens": 0,
+          "latency_ms": 0
+        },
+        "learned_plus_identical_fallback": {
+          "final_success": true,
+          "prohibited_accept": false,
+          "unexpected_mutation": false,
+          "stronger_model_tokens": 0,
+          "latency_ms": 0
+        }
+      }
+    }
+  ]
+}

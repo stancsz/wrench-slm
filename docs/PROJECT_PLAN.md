@@ -174,6 +174,12 @@ release-ready.
   16E BF16 holdout is 9/14 before packing. The full lineage is recorded in
   `phases/phase-33-schema-guided-calibration`; this is still development
   evidence, not workflow value or release evidence.
+- **Phase 34 matched workflow-arm protocol:** a guarded evaluator now requires
+  one identical trace set for cloud-only, rules-plus-identical-fallback, and
+  learned-plus-identical-fallback. It computes paired token savings with a
+  bootstrap interval plus success, safety, and latency gates. The placeholder
+  manifest correctly returns `BLOCKED_TRACE_AUTHORIZATION`; no real trace or
+  production conclusion has been created.
 
 ## 1. Executive Summary & Core Objective
 

@@ -367,3 +367,13 @@ exact proposals before packing, making the packing loss explicit.
 This is a provisional behavior improvement, not a quality or release claim.
 The lineage and receipts are in
 `phases/phase-33-schema-guided-calibration/comparison.json`.
+
+Phase 34 added a receipt-only matched workflow-arm evaluator for cloud-only,
+rules-plus-identical-fallback, and learned-plus-identical-fallback. It computes
+paired stronger-model token savings, bootstrap uncertainty, final success,
+prohibited accepts, unexpected mutations, and p95 latency. It refuses release
+scoring unless the input manifest explicitly carries
+`authorization: approved_real_workflow`. The placeholder manifest is recorded
+as `BLOCKED_TRACE_AUTHORIZATION` in
+`phases/phase-34-workflow-arm-protocol/protocol-receipt.json`; no real traces
+or workflow-value claim were introduced.
