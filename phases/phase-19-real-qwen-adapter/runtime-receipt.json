@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.real-qwen-adapter-runtime.v1",
+  "observed_at": "2026-09-17T21:43:42-06:00",
+  "status": "PASS_REAL_LOCAL_ADAPTER_ONLY",
+  "runtime": {
+    "runtime": "FreeToken",
+    "endpoint": "http://127.0.0.1:8000/v1/chat/completions",
+    "model": "Qwen3.6-35B-A3B-NVFP4",
+    "checkpoint_path": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4",
+    "max_seq_len": 2048,
+    "max_output_tokens": 128,
+    "memory_ratio": 0.8,
+    "moe_strategy": "offload"
+  },
+  "request": {
+    "mode": "strict-json-proposal",
+    "temperature": 0,
+    "thinking_disabled": true,
+    "requested_action": "bounded read_file proposal"
+  },
+  "adapter_result": {
+    "status": "accepted",
+    "model": "Qwen3.6-35B-A3B-NVFP4",
+    "model_output_validated": true,
+    "observed_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-9-execution-boundary\\README.md",
+    "observed_bytes": 787,
+    "mutated": false
+  },
+  "usage": {
+    "prompt_tokens": 76,
+    "completion_tokens": 65,
+    "total_tokens": 141,
+    "finish_reason": "stop"
+  },
+  "limits": [
+    "One real local request is not a quality or task-success benchmark.",
+    "No external provider, download, write, patch, or shell action was used.",
+    "Portfolio approval, source acquisition, pruning, calibration, and comparative workflow evaluation remain open."
+  ]
+}

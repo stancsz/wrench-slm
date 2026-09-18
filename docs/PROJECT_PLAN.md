@@ -78,6 +78,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 18, cancellation and events:** cooperative cancellation plus
   circuit, reset, and bypass events are covered by 10 passing tests. Blocking
   interruption and external alert delivery remain unproven.
+- **Phase 19, real Qwen adapter path:** the actual local FreeToken/Qwen runtime
+  produced a strict proposal that passed the localhost adapter and independent
+  verifier. This is one real integration receipt, not a quality benchmark.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

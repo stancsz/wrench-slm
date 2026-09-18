@@ -224,3 +224,10 @@ The 10-test suite covers cancellation, circuit-open, reset, bypass, and
 observability-failure behavior. The receipt is at
 `phases/phase-18-cancellation-events/control-tests.json`. Blocking-kernel
 interruption and external alert delivery remain unproven.
+
+Phase 19 exercised the real local Qwen3.6 NVFP4 runtime through the Phase 15
+adapter. FreeToken served the configured model, Qwen returned a strict JSON
+read proposal, and the verifier accepted the 787-byte observation without
+mutation. The receipt is at
+`phases/phase-19-real-qwen-adapter/runtime-receipt.json`. This proves one
+real local integration path only, not model quality or workflow success.
