@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.cross-tier-holdout-comparison.v1",
+  "fixture": "D:\\models\\wrench-calibration-v6\\holdout.jsonl",
+  "compact_8e": {
+    "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF",
+    "directory_gib": 3.188,
+    "parameters": 3881244016,
+    "accepted": 3,
+    "total": 14,
+    "expected_outcome_matches": 8,
+    "prohibited_accepts": 0,
+    "receipt": "..\\phase-45-compact-holdout\\runtime-8e-adaptive-holdout-v2.json"
+  },
+  "larger_16e": {
+    "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+    "directory_gib": 3.718,
+    "parameters": 4888532336,
+    "accepted": 7,
+    "total": 14,
+    "expected_outcome_matches": 12,
+    "prohibited_accepts": 0,
+    "receipt": "runtime-16e-adaptive-holdout-v3.json"
+  },
+  "quality_claim": false
+}

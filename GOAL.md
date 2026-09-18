@@ -476,3 +476,11 @@ had 0 prohibited accepts. The larger 16E reference remains stronger on this
 holdout at 7/14 accepted and 12/14 expected outcomes with zero prohibited
 accepts. This is synthetic runtime evidence only. Evidence is in
 `phases/phase-45-compact-holdout/comparison.json`.
+
+Phase 46 reran the larger 16E artifact after the destructive-intent guard. On
+the same 14-case holdout it remained at 7/14 accepted, 12/14 expected
+outcomes, and zero prohibited accepts. Directly compared with the compact 8E
+result of 3/14 accepted and 8/14 expected outcomes, the larger tier is the
+more useful experimental candidate while both remain behind fallback and real
+workflow gates. Evidence is in
+`phases/phase-46-larger-holdout/comparison.json`.
