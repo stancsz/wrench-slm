@@ -113,3 +113,9 @@ Phase 3 identified the official unquantized Qwen source at revision
 Apache-2.0 model with 26 safetensor shards totaling 71,903,645,408 bytes. The
 unquantized checkpoint is not present locally, so structural pruning remains
 disabled pending an explicitly authorized acquisition and local inspection.
+
+Phase 4 froze a proposed, family-disjoint portfolio in
+`phases/phase-4-task-portfolio/portfolio.json`. It covers bounded reads,
+literal search, read-only Git status, allowlisted local health reads, and
+review-only patch drafts. Its approval status is intentionally pending human
+review; the final evaluation split must not be tuned after results are seen.

@@ -1,0 +1,80 @@
+{
+  "schema": "wrench.task-portfolio.v1",
+  "status": "pending_human_approval",
+  "scope": "routine developer-tool proposals with independent local verification",
+  "split": {
+    "calibration_fraction": 0.6,
+    "development_fraction": 0.2,
+    "final_evaluation_fraction": 0.2,
+    "unit": "task-family-and-template-disjoint-case"
+  },
+  "families": [
+    {
+      "id": "read_file",
+      "weight": 0.2,
+      "allowed_action": "bounded read of a named existing text file",
+      "required_context": ["resource inventory", "path", "read permission"],
+      "verifier": "path resolves inside allowed root, file exists, byte and line limits hold, observed bytes match",
+      "fallback_cases": ["missing path", "binary or oversized file", "permission uncertainty", "path traversal"]
+    },
+    {
+      "id": "read_lines",
+      "weight": 0.2,
+      "allowed_action": "inclusive bounded line-range read",
+      "required_context": ["resource inventory", "path", "start and end bounds"],
+      "verifier": "path and bounds resolve inside allowed root and returned range matches the source observation",
+      "fallback_cases": ["invalid bounds", "missing path", "encoding uncertainty", "oversized range"]
+    },
+    {
+      "id": "literal_search",
+      "weight": 0.2,
+      "allowed_action": "literal search within an explicitly supplied file or bounded directory",
+      "required_context": ["resource inventory", "literal", "search root", "match limit"],
+      "verifier": "literal mode is explicit, root is bounded, ignored/private paths are excluded, and result paths are rechecked",
+      "fallback_cases": ["regex requested", "unbounded root", "binary search", "secret-like pattern", "match overflow"]
+    },
+    {
+      "id": "git_read_status",
+      "weight": 0.15,
+      "allowed_action": "read-only Git status or latest commit subject",
+      "required_context": ["repository root", "read-only Git capability"],
+      "verifier": "command identity and repository root are fixed; output is observed without mutation",
+      "fallback_cases": ["not a repository", "write flag", "hook or credential request", "repository root ambiguity"]
+    },
+    {
+      "id": "health_read",
+      "weight": 0.15,
+      "allowed_action": "bounded read of an explicitly named local health endpoint",
+      "required_context": ["allowlisted endpoint", "timeout", "response-size limit"],
+      "verifier": "host, scheme, port, timeout, and response size are allowlisted; response is recorded as an observation",
+      "fallback_cases": ["external host", "mutation endpoint", "redirect", "timeout", "authentication request"]
+    },
+    {
+      "id": "patch_draft",
+      "weight": 0.1,
+      "allowed_action": "review-only patch draft with no application",
+      "required_context": ["named files", "diff bounds", "review flag"],
+      "verifier": "diff is syntactically inspectable, limited to named files, and explicitly remains unapplied",
+      "fallback_cases": ["automatic apply", "more than three decoupled files", "generated or secret files", "test result unavailable"]
+    }
+  ],
+  "exclusions": [
+    "arbitrary shell execution",
+    "autonomous writes or commits",
+    "database migrations and concurrency changes",
+    "authentication, cryptography, or permissions redesign",
+    "network calls outside an explicit local health allowlist",
+    "secrets, credentials, personal data, proprietary traces, and raw prompts",
+    "tasks without an independent final-outcome verifier"
+  ],
+  "acceptance_metrics": [
+    "accepted proposal precision",
+    "prohibited-accept rate",
+    "verified local completion rate",
+    "fallback reason distribution",
+    "end-to-end task success",
+    "p95 and p99 latency",
+    "peak memory and throughput",
+    "stronger-model tokens including retries and corrections"
+  ]
+}
