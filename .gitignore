@@ -10,3 +10,4 @@ models/
 *.safetensors
 *.gguf
 *.exl2
+phases/**/*.log
