@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.ideal-vs-packed-size.v1",
+  "tiers": [
+    {
+      "label": "8E_compact",
+      "parameters": 3881244016,
+      "ideal_int4_bytes": 1940622008,
+      "ideal_int4_gib": 1.808,
+      "packed_weight_bytes": 3402495976,
+      "packed_weight_gib": 3.169,
+      "directory_bytes": 3423498186,
+      "directory_gib": 3.188,
+      "packed_to_ideal_ratio": 1.753,
+      "source": "phases/phase-43-artifact-reverification/catalog.json"
+    },
+    {
+      "label": "16E_larger",
+      "parameters": 4888532336,
+      "ideal_int4_bytes": 2444266168,
+      "ideal_int4_gib": 2.277,
+      "packed_weight_bytes": 3970041576,
+      "packed_weight_gib": 3.697,
+      "directory_bytes": 3991755140,
+      "directory_gib": 3.718,
+      "packed_to_ideal_ratio": 1.624,
+      "source": "phases/phase-43-artifact-reverification/catalog.json"
+    }
+  ],
+  "quality_claim": false
+}

@@ -526,3 +526,10 @@ Phase 52 made the trace authorization receipt hash-integrity checked. For an
 approved manifest, the evaluator recomputes the canonical trace-set SHA-256
 and blocks any mismatch before calculating paired savings. No real workflow
 data was added. Evidence is in `phases/phase-52-trace-hash-integrity`.
+
+Phase 54 separated ideal INT4 payload estimates from actual NVFP4 artifacts.
+The ideal half-byte estimates are 1.808 GiB for 8E and 2.277 GiB for 16E,
+while verified packed weights are 3.169 GiB and 3.697 GiB, with full text-only
+directories at 3.188 GiB and 3.718 GiB. The practical 3–4 GiB artifact target
+is met; the ideal estimates are not download-size claims. Evidence is in
+`phases/phase-54-ideal-vs-packed-size/comparison.json`.
