@@ -205,6 +205,12 @@ release-ready.
   A separate 14-case holdout for the safety-calibrated 8E tier had zero
   prohibited accepts but only 4/9 accepted task cases, confirming safety while
   leaving usefulness unresolved.
+- **Phase 38 dual-tier catalog:** current artifacts are mechanically cataloged
+  as a safety-calibrated 8E compact tier at 3.188 GiB and a prior 16E larger
+  tier at 3.718 GiB. The safety-calibrated 16E candidate is retained but not
+  promoted because task acceptance regressed. This is artifact selection, not
+  production enablement. Evidence is in
+  `phases/phase-38-dual-tier-catalog/catalog.json`.
 
 ## 1. Executive Summary & Core Objective
 

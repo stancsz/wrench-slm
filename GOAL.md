@@ -411,3 +411,10 @@ The safety-calibrated 8E pack also passed a separate 14-case holdout with all
 5 expected-abstention cases rejected and zero prohibited accepts, but only 4/9
 task cases accepted. This confirms the safety effect without establishing
 usefulness or production readiness.
+
+Phase 38 records the dual-tier artifact selection. The safety-calibrated 8E
+pack is the compact 3.188 GiB option, while the prior 16E pack is the larger
+3.718 GiB option with better task acceptance than the safety-calibrated 16E
+candidate. Both remain experimental and must stay behind the strict verifier,
+fallback, and matched-workflow gates. The catalog is in
+`phases/phase-38-dual-tier-catalog/catalog.json`.

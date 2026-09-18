@@ -1,0 +1,117 @@
+{
+  "schema": "wrench.dual-tier-model-catalog.v1",
+  "status": "EXPERIMENTAL_TWO_TIER_ARTIFACTS_VERIFIED",
+  "quality_claim": false,
+  "recommendation": {
+    "compact": "safety-calibrated 8E for the smallest local tier",
+    "larger": "prior 16E for the more useful larger tier, behind strict verifier and fallback",
+    "safety_larger": "16E safety candidate, not promoted because task acceptance regressed"
+  },
+  "tiers": [
+    {
+      "label": "compact_8E_safety",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF",
+      "directory_bytes": 3423498186,
+      "directory_gib": 3.188,
+      "packed_weight_bytes": 3402495976,
+      "packed_weight_gib": 3.169,
+      "parameter_count": 3881244016,
+      "model_type": "qwen3_5_moe",
+      "num_experts": 8,
+      "experts_per_token": 8,
+      "quantization_receipt": {
+        "schema": "wrench.qwen-modelopt-nvfp4.v1",
+        "status": "PASS_MODELOPT_EXPORT",
+        "source": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-calibrated-v7-safety",
+        "output": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-HF",
+        "calibration": "D:\\models\\wrench-calibration-v7-safety\\train.jsonl",
+        "calibration_rows": 280,
+        "quant_config": "w4a16",
+        "quality_claim": false
+      },
+      "text_only_receipt": {
+        "schema": "wrench.qwen-text-only-pack.v1",
+        "status": "PASS_TEXT_ONLY_VISION_STRIP",
+        "source": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-HF",
+        "output": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF",
+        "removed_tensor_prefix": "model.visual.",
+        "removed_tensor_count": 333,
+        "removed_tensor_names_sha256": "ab17c9d0d0add95747ed2bb3b194aeb4443902702c7732bdcff995d7d84554dc",
+        "remaining_weight_bytes": 3402495976,
+        "quality_claim": false
+      },
+      "task_acceptance": "8/20 unseen; 4/9 holdout",
+      "safety_evidence": "0 prohibited accepts on unseen and holdout"
+    },
+    {
+      "label": "larger_16E",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+      "directory_bytes": 3991755140,
+      "directory_gib": 3.718,
+      "packed_weight_bytes": 3970041576,
+      "packed_weight_gib": 3.697,
+      "parameter_count": 4888532336,
+      "model_type": "qwen3_5_moe",
+      "num_experts": 16,
+      "experts_per_token": 8,
+      "quantization_receipt": {
+        "schema": "wrench.qwen-modelopt-nvfp4.v1",
+        "status": "PASS_MODELOPT_EXPORT",
+        "source": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+        "output": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-HF",
+        "calibration": "D:\\models\\wrench-calibration-v6\\train.jsonl",
+        "calibration_rows": 200,
+        "quant_config": "w4a16",
+        "quality_claim": false
+      },
+      "text_only_receipt": {
+        "schema": "wrench.qwen-text-only-pack.v1",
+        "status": "PASS_TEXT_ONLY_VISION_STRIP",
+        "source": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-HF",
+        "output": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+        "removed_tensor_prefix": "model.visual.",
+        "removed_tensor_count": 333,
+        "removed_tensor_names_sha256": "ab17c9d0d0add95747ed2bb3b194aeb4443902702c7732bdcff995d7d84554dc",
+        "remaining_weight_bytes": 3970041576,
+        "quality_claim": false
+      },
+      "task_acceptance": "8/20 unseen",
+      "safety_evidence": "1 prohibited accept on unseen"
+    },
+    {
+      "label": "larger_16E_safety_candidate",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-TextOnly-HF",
+      "directory_bytes": 3991755191,
+      "directory_gib": 3.718,
+      "packed_weight_bytes": 3970041576,
+      "packed_weight_gib": 3.697,
+      "parameter_count": 4888532336,
+      "model_type": "qwen3_5_moe",
+      "num_experts": 16,
+      "experts_per_token": 8,
+      "quantization_receipt": {
+        "schema": "wrench.qwen-modelopt-nvfp4.v1",
+        "status": "PASS_MODELOPT_EXPORT",
+        "source": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v4-safety",
+        "output": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-HF",
+        "calibration": "D:\\models\\wrench-calibration-v7-safety\\train.jsonl",
+        "calibration_rows": 280,
+        "quant_config": "w4a16",
+        "quality_claim": false
+      },
+      "text_only_receipt": {
+        "schema": "wrench.qwen-text-only-pack.v1",
+        "status": "PASS_TEXT_ONLY_VISION_STRIP",
+        "source": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-HF",
+        "output": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-TextOnly-HF",
+        "removed_tensor_prefix": "model.visual.",
+        "removed_tensor_count": 333,
+        "removed_tensor_names_sha256": "ab17c9d0d0add95747ed2bb3b194aeb4443902702c7732bdcff995d7d84554dc",
+        "remaining_weight_bytes": 3970041576,
+        "quality_claim": false
+      },
+      "task_acceptance": "6/20 unseen",
+      "safety_evidence": "0 prohibited accepts on unseen"
+    }
+  ]
+}
