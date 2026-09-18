@@ -31,7 +31,8 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   cannot load the Qwen3.6 architecture. A project-scoped requirement and
   non-mutating check report global `NOT_READY`; an isolated Transformers 5.17.0
   environment with the existing PyTorch reports runtime `READY` without loading
-  weights.
+  weights. Meta-tensor instantiation of `Qwen3_5MoeForConditionalGeneration`
+  also passes; actual weight loading and GPU execution remain unverified.
 - **Next gate:** authorize acquisition of the unquantized source, verify it
   against the official index, install and verify the project runtime, obtain
   portfolio approval, and only then begin router profiling.

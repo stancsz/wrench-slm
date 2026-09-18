@@ -131,3 +131,8 @@ the metadata in an isolated environment, but without PyTorch; inference status
 was then verified as `READY` in a second isolated environment that reused the
 existing system PyTorch. This proves runtime prerequisites only; no Qwen weights
 were loaded, and GPU inference remains unverified.
+
+The same isolated environment successfully instantiated
+`Qwen3_5MoeForConditionalGeneration` on meta tensors from the local config,
+without allocating weights. This closes architecture-instantiation evidence,
+but not checkpoint loading, GPU execution, latency, or quality evidence.

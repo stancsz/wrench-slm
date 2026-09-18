@@ -22,3 +22,7 @@ An isolated environment using Transformers 5.17.0 with the existing system
 PyTorch now reports `READY` for architecture and backend availability. This is
 still a metadata/runtime prerequisite check only; no model weights were loaded
 and no GPU inference claim is made.
+
+The meta-load check in `tools/meta_load_check.py` can instantiate the model
+class on meta tensors without allocating its weights. A successful result is
+architecture evidence only, not a serving or quality result.
