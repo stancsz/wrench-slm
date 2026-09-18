@@ -16,10 +16,11 @@
       "packed_weight_gib": 3.172,
       "directory_bytes": 3426514763,
       "directory_gib": 3.191,
-      "prior_bf16_exact_matches": 7,
-      "prior_ftw_exact_matches": 5,
-      "prior_score_fixture": "D:\\models\\wrench-calibration-v2\\holdout.jsonl",
-      "quality_status": "PROVISIONAL_RERUN_PENDING"
+      "bf16_exact_matches": 9,
+      "ftw_exact_matches": 7,
+      "bf16_receipt": "score-8-calibrated-v3-corrected.json",
+      "ftw_receipt": "score-8-calibrated-v3-ftw-corrected.json",
+      "quality_status": "PROVISIONAL"
     },
     {
       "tier": "16E",

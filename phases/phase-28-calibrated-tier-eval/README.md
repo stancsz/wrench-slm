@@ -24,6 +24,6 @@ Current 16E evidence:
 
 The compact 8E calibrated FTW artifact remains 3,406,319,616 packed weight
 bytes, about 3.17 GiB, with a complete directory size of 3,426,514,763 bytes,
-about 3.19 GiB. Its prior 7/14 BF16 and 5/14 FTW receipts used the earlier
-holdout fixture and remain provisional until rerun against the corrected
-fixture. No score here is a production-quality claim.
+about 3.19 GiB. On the corrected holdout it scores 9/14 in BF16 and 7/14
+after NVFP4 packing, matching the 16E tier on these provisional measures. No
+score here is a production-quality claim.
