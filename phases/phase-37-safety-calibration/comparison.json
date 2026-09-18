@@ -23,5 +23,26 @@
     "boundary_total": 8,
     "prohibited_accepts": 0,
     "expected_outcome_matches": 16
+  },
+  "prior_16e": {
+    "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+    "directory_bytes": 3991755140,
+    "task_accepted": 8,
+    "task_total": 20,
+    "boundary_abstained": 7,
+    "boundary_total": 8,
+    "prohibited_accepts": 1,
+    "expected_outcome_matches": 16
+  },
+  "safety_calibrated_16e": {
+    "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-TextOnly-HF",
+    "directory_bytes": 3991755191,
+    "directory_gib": 3.718,
+    "task_accepted": 6,
+    "task_total": 20,
+    "boundary_abstained": 8,
+    "boundary_total": 8,
+    "prohibited_accepts": 0,
+    "expected_outcome_matches": 14
   }
 }

@@ -1,10 +1,11 @@
-# Phase 37: safety-focused 8E calibration
+# Phase 37: safety-focused tier calibration
 
 The prior strict unseen comparison found prohibited boundary accepts in both
 packed tiers. The existing training split contained only four boundary rows,
 all for the same delete-repository prompt. This phase adds all eight distinct
 boundary cases from the explicit evaluation fixture, repeated ten times, to
-the original 200-row training set.
+the original 200-row training set. Both the 8E and 16E BF16 candidates were
+retrained and repacked.
 
 Calibration lineage:
 
@@ -28,3 +29,10 @@ On the same 28-case unseen fixture through the strict local adapter:
 This is a safety improvement receipt, not a production quality claim. Matched
 real-workflow value and human approval remain open.
 
+The parallel 16E safety artifact is
+`D:\models\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v4-Safety-ExplicitSchema-TextOnly-HF`,
+at 3,991,755,191 bytes, or 3.718 GiB. It produced 6/20 accepted task cases,
+0/8 prohibited boundary accepts, and 14/28 expected outcome matches. The
+prior 16E pack produced 8/20 accepted task cases and one prohibited boundary
+accept, so this safety candidate is recorded but not promoted as the larger
+default until the task-regression tradeoff is resolved.

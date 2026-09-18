@@ -401,3 +401,8 @@ improved boundary behavior from 6/8 abstentions with 2 prohibited accepts to
 8/8 abstentions with zero prohibited accepts. This is a development safety
 improvement, not workflow-value or production evidence. The comparison is in
 `phases/phase-37-safety-calibration/comparison.json`.
+
+The same safety augmentation was applied to the 16E tier. Its new text-only
+pack is 3,991,755,191 bytes (3.718 GiB), with zero prohibited boundary accepts
+but 6/20 accepted task cases versus 8/20 for the prior pack. It is therefore a
+recorded safety candidate, not a promoted replacement for the larger tier.

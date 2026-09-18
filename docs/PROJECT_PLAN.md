@@ -199,6 +199,9 @@ release-ready.
   boundary accepts to zero on the identical strict unseen fixture. This is a
   safety development receipt, not a quality or production conclusion. Evidence
   is in `phases/phase-37-safety-calibration`.
+  The parallel 16E safety pack is also 3.718 GiB and removed its one
+  prohibited boundary accept, but task acceptance fell from 8/20 to 6/20. It
+  remains a candidate for further calibration rather than a promoted default.
 
 ## 1. Executive Summary & Core Objective
 
