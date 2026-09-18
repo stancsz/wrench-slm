@@ -231,3 +231,9 @@ read proposal, and the verifier accepted the 787-byte observation without
 mutation. The receipt is at
 `phases/phase-19-real-qwen-adapter/runtime-receipt.json`. This proves one
 real local integration path only, not model quality or workflow success.
+
+Phase 20 measured the real adapter path with a monotonic timer. A loose prompt
+abstained on invalid JSON after 4,986.808 ms; an exact-schema retry was
+accepted after 1,923.364 ms with 72 prompt and 40 completion tokens. Both
+attempts are preserved in `phases/phase-20-performance-smoke/performance-
+receipt.json`. This is a two-attempt diagnostic, not a throughput benchmark.

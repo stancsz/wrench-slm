@@ -81,6 +81,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 19, real Qwen adapter path:** the actual local FreeToken/Qwen runtime
   produced a strict proposal that passed the localhost adapter and independent
   verifier. This is one real integration receipt, not a quality benchmark.
+- **Phase 20, performance smoke:** one loose prompt abstained on invalid JSON;
+  an exact-schema retry passed in 1,923.364 ms with 112 reported total tokens.
+  The paired attempt receipt is diagnostic only, not a throughput benchmark.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

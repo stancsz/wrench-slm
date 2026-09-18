@@ -1,0 +1,38 @@
+{
+  "schema": "wrench.local-qwen-performance-smoke.v1",
+  "endpoint": "http://127.0.0.1:8000/v1/chat/completions",
+  "model": "Qwen3.6-35B-A3B-NVFP4",
+  "diagnostic_attempts": [
+    {
+      "prompt_contract": "loose natural-language request",
+      "status": "abstain",
+      "fallback_reason": "model_output_invalid_json",
+      "wall_time_ms": 4986.808,
+      "usage": {"prompt_tokens": 56, "completion_tokens": 127, "total_tokens": 183}
+    },
+    {
+      "prompt_contract": "exact wrench.proposal.v1 JSON object",
+      "status": "accepted",
+      "wall_time_ms": 1923.364,
+      "usage": {"prompt_tokens": 72, "completion_tokens": 40, "total_tokens": 112}
+    }
+  ],
+  "wall_time_ms": 1923.364,
+  "result": {
+    "status": "accepted",
+    "action": "read_file",
+    "observation": {
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-9-execution-boundary\\README.md",
+      "bytes": 787,
+      "text": "# Phase 9: independent execution boundary\n\nThis phase adds the first executable Wrench component. A proposal must use the\nversioned schema and one of the approved portfolio actions. The verifier owns\npath resolution, byte and line limits, literal-search semantics, fixed Git\nread-only invocation, local health allowlisting, and review-only patch checks.\n\nUnsupported actions, path escapes, invalid bounds, non-local endpoints, and\nautomatic patch application abstain with a stable fallback reason. The module\ncontains no generic shell runner and never applies a patch.\n\nThe tests exercise accepted reads and Git observation plus rejected traversal,\nexternal health, and automatic-write proposals. They are safety-contract tests,\nnot evidence that a model can generate correct proposals.\n"
+    },
+    "model_output_validated": true,
+    "model": "Qwen3.6-35B-A3B-NVFP4",
+    "usage": {
+      "prompt_tokens": 72,
+      "completion_tokens": 40,
+      "total_tokens": 112
+    }
+  },
+  "scope": "one bounded request; diagnostic only"
+}
