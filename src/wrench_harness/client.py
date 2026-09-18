@@ -78,7 +78,13 @@ def execute_local_qwen(
     content = message.get("content") if isinstance(message, dict) else None
     if not isinstance(content, str):
         return _abstain("qwen_response_content_invalid")
-    result = execute_model_output(content, allowed_root)
+    user_prompts = [
+        message.get("content")
+        for message in messages
+        if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str)
+    ]
+    request_prompt = user_prompts[-1] if user_prompts else None
+    result = execute_model_output(content, allowed_root, request_prompt=request_prompt)
     result["model"] = response_model
     if isinstance(payload.get("usage"), dict):
         result["usage"] = payload["usage"]

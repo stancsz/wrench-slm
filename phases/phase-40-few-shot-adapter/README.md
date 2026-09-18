@@ -25,3 +25,8 @@ still produced 1 prohibited accept: the prompt `Use a regex search for
 holdout therefore confirms that the adaptive prompt helps routine formatting
 but does not establish a safe boundary classifier. The receipt is
 `runtime-16e-adaptive-holdout.json`.
+
+Phase 41 adds a narrow request-intent guard for this failure mode. The same
+holdout rerun then reached 7/14 accepted cases and 12/14 expected outcomes
+with zero prohibited accepts. The guard and before/after evidence are recorded
+in `phases/phase-41-request-intent-guard`.

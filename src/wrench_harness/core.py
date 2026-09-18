@@ -217,7 +217,12 @@ def execute_proposal(proposal: Any, allowed_root: str | os.PathLike[str]) -> dic
     return handler(proposal, root)
 
 
-def execute_model_output(model_output: Any, allowed_root: str | os.PathLike[str]) -> dict[str, Any]:
+def execute_model_output(
+    model_output: Any,
+    allowed_root: str | os.PathLike[str],
+    *,
+    request_prompt: str | None = None,
+) -> dict[str, Any]:
     """Parse one model response strictly, then route it through the verifier.
 
     Surrounding prose and markdown are rejected rather than heuristically
@@ -232,6 +237,16 @@ def execute_model_output(model_output: Any, allowed_root: str | os.PathLike[str]
         return _abstain("model_output_invalid_json")
     if not isinstance(proposal, dict):
         return _abstain("model_output_not_object")
+    # Preserve the request's search semantics at the verifier boundary. A
+    # model must not turn an explicitly requested regex search into a safe-
+    # looking literal search simply by omitting the mode field.
+    if (
+        isinstance(request_prompt, str)
+        and "regex" in request_prompt.lower()
+        and proposal.get("action") == "literal_search"
+        and proposal.get("mode", "literal") == "literal"
+    ):
+        return _abstain("literal_mode_required")
     result = execute_proposal(proposal, allowed_root)
     result["model_output_validated"] = True
     return result

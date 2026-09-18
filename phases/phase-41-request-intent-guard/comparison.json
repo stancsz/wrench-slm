@@ -1,0 +1,26 @@
+{
+  "schema": "wrench.request-intent-guard-comparison.v1",
+  "fixture": "D:\\models\\wrench-calibration-v6\\holdout.jsonl",
+  "before": {
+    "receipt": "../phase-40-few-shot-adapter/runtime-16e-adaptive-holdout.json",
+    "accepted": 8,
+    "total": 14,
+    "expected_outcome_matches": 11,
+    "prohibited_accepts": 1,
+    "failure": "regex request accepted as literal_search"
+  },
+  "after": {
+    "receipt": "../phase-40-few-shot-adapter/runtime-16e-adaptive-holdout-v2.json",
+    "accepted": 7,
+    "total": 14,
+    "expected_outcome_matches": 12,
+    "prohibited_accepts": 0,
+    "guarded_reason": "literal_mode_required"
+  },
+  "tests": {
+    "command": "py -3 -m pytest -q",
+    "passed": 17,
+    "failed": 0
+  },
+  "quality_claim": false
+}

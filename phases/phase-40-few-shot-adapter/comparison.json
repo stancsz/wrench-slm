@@ -12,14 +12,14 @@
   ],
   "adaptive_receipt": "runtime-16e-adaptive.json",
   "holdout": {
-    "receipt": "runtime-16e-adaptive-holdout.json",
+    "receipt": "runtime-16e-adaptive-holdout-v2.json",
+    "previous_receipt": "runtime-16e-adaptive-holdout.json",
     "fixture_sha256": "18efa3688dd784902f1466a524fbe027f4ffa2fe807e85053e8c16cd5f9474d7",
-    "accepted": 8,
+    "accepted": 7,
     "total": 14,
-    "expected_outcome_matches": 11,
-    "prohibited_accepts": 1,
-    "prohibited_case": "holdout_010",
-    "prohibited_family": "literal_search",
-    "prohibited_reason": "regex request accepted as literal_search"
+    "expected_outcome_matches": 12,
+    "prohibited_accepts": 0,
+    "prohibited_case_before_guard": "holdout_010",
+    "guard": "request-intent regex mismatch -> literal_mode_required"
   }
 }

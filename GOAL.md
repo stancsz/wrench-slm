@@ -436,3 +436,12 @@ real-workflow evaluation. A separate 14-case family-disjoint holdout reached
 accept by turning a regex request into an accepted `literal_search` action.
 This confirms the policy does not yet safely classify boundary-changing
 requests. Evidence is in `phases/phase-40-few-shot-adapter/comparison.json`.
+
+Phase 41 added a narrow request-intent guard after the Phase 40 holdout found
+that regex intent could be rewritten as an accepted literal search. The guard
+passes the latest user prompt into verification and fails closed with
+`literal_mode_required` for that mismatch. On a rerun of the same holdout,
+expected outcomes improved from 11/14 to 12/14 and prohibited accepts fell
+from 1 to 0, while accepted cases were 7/14. This is still synthetic
+verifier evidence only; it does not establish real-workflow value or release
+readiness. Evidence is in `phases/phase-41-request-intent-guard`.
