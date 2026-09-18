@@ -310,3 +310,17 @@ incomplete JSON fence. This is evidence that the current structural prune and
 quantization preserve loadability, not Wrench behavior. The result is
 explicitly provisional and does not replace the human-approved held-out gate,
 teacher comparison, or calibration work.
+
+Phase 27 added an experimental calibration path using synthetic Wrench proposal
+rows, frozen pruned checkpoints, router and shared-expert gate updates, and a
+small output adapter. The calibration restored valid proposal behavior on
+narrow probes, but it is not a production fine-tune or a human-approved data
+set.
+
+Phase 28 reran both calibrated tiers against the same corrected 14-case
+synthetic holdout. The 8-expert and 16-expert tiers each scored 9/14 in BF16
+and 7/14 after NVFP4 packing. The corrected text-only FTW directories are
+3,426,514,763 bytes for 8 experts and 3,996,022,974 bytes for 16 experts.
+This closes the direct size comparison, but broader held-out quality,
+human portfolio approval, matched workflow value, and production enablement
+remain open.
