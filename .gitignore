@@ -11,3 +11,19 @@ models/
 *.gguf
 *.exl2
 phases/**/*.log
+
+# Keep exploratory runtime captures local; committed phase receipts are curated.
+phases/phase-27-calibrated-prompt/runtime-*.raw.json
+phases/phase-27-calibrated-prompt/runtime-8*.json
+phases/phase-27-calibrated-prompt/runtime-calibrated-probe.json
+phases/phase-27-calibrated-prompt/runtime-32-bf16.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated.raw.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated-ftw.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated-ftw.raw.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated-v1b-corrected.raw.json
+phases/phase-28-calibrated-tier-eval/runtime-16-calibrated-v1b-ftw-corrected.raw.json
+phases/phase-28-calibrated-tier-eval/runtime-8*.json
+phases/phase-28-calibrated-tier-eval/score-16-calibrated.json
+phases/phase-28-calibrated-tier-eval/score-16-calibrated-ftw.json
+phases/phase-28-calibrated-tier-eval/score-8*.json
