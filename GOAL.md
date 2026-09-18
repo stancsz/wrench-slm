@@ -107,3 +107,9 @@ parse as JSONL, but the corpus is not approved for Wrench training: the audit
 shows broad web/research and finance/crypto content outside the narrow developer
 tool contract. The files remain ignored and local; filtering and license/task-
 family review are required before they can enter calibration or SFT.
+
+Phase 3 identified the official unquantized Qwen source at revision
+`995ad96eacd98c81ed38be0c5b274b04031597b0`. Its verified metadata declares an
+Apache-2.0 model with 26 safetensor shards totaling 71,903,645,408 bytes. The
+unquantized checkpoint is not present locally, so structural pruning remains
+disabled pending an explicitly authorized acquisition and local inspection.

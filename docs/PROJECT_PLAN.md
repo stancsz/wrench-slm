@@ -22,8 +22,12 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   data. The audit reports substantial web/research and finance/crypto content,
   so filtering, licensing review, and Wrench task-family labeling are required
   before calibration or SFT.
-- **Next gate:** identify and verify an unquantized Qwen source, then freeze the
-  task portfolio and calibration/evaluation split before router profiling.
+- **Phase 3, source feasibility:** official source identified and hash-bound at
+  revision `995ad96eacd98c81ed38be0c5b274b04031597b0`; 71.9 GB of unquantized
+  safetensors are still absent locally.
+- **Next gate:** authorize acquisition of the unquantized source, verify it
+  against the official index, then freeze the task portfolio and
+  calibration/evaluation split before router profiling.
 
 ## 1. Executive Summary & Core Objective
 
