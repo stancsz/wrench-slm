@@ -253,6 +253,13 @@ def test_model_output_requires_exact_json_object(tmp_path: Path):
     )
     assert regex_literal == {"status": "abstain", "fallback_reason": "literal_mode_required"}
 
+    destructive_rewrite = execute_model_output(
+        '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}',
+        tmp_path,
+        request_prompt="Remove the repository permanently.",
+    )
+    assert destructive_rewrite == {"status": "abstain", "fallback_reason": "action_not_allowlisted"}
+
 
 def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
     (tmp_path / "README.md").write_text("fixture\n", encoding="utf-8")
@@ -319,6 +326,41 @@ def test_local_qwen_adapter_preserves_regex_intent(tmp_path: Path):
         )
         assert result["status"] == "abstain"
         assert result["fallback_reason"] == "literal_mode_required"
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
+
+
+def test_local_qwen_adapter_preserves_destructive_intent(tmp_path: Path):
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            json.loads(self.rfile.read(length))
+            proposal = '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}'
+            payload = {"model": "test-qwen", "choices": [{"message": {"content": proposal}}]}
+            encoded = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        def log_message(self, format, *args):
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        endpoint = f"http://127.0.0.1:{server.server_port}/v1/chat/completions"
+        result = execute_local_qwen(
+            endpoint,
+            "test-qwen",
+            [{"role": "user", "content": "Remove the repository permanently."}],
+            str(tmp_path),
+        )
+        assert result["status"] == "abstain"
+        assert result["fallback_reason"] == "action_not_allowlisted"
     finally:
         server.shutdown()
         thread.join(timeout=2)

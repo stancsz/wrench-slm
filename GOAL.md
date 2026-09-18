@@ -467,3 +467,12 @@ package and CUDA-enabled PyTorch, and the editable build stopped because
 `CUDA_HOME` was unset. No weights were loaded and no request was served. This
 is a runtime-prerequisite diagnostic, not a model-quality result. Evidence is
 in `phases/phase-44-compact-runtime-prerequisite/diagnostic.json`.
+
+Phase 45 restored the CUDA FreeToken environment and evaluated the compact 8E
+artifact on the same 14-case adaptive holdout as the larger tier. Before the
+destructive-intent guard it accepted 4/14 cases, matched 7/14 outcomes, and
+had 1 prohibited accept. After the guard it accepted 3/14, matched 8/14, and
+had 0 prohibited accepts. The larger 16E reference remains stronger on this
+holdout at 7/14 accepted and 12/14 expected outcomes with zero prohibited
+accepts. This is synthetic runtime evidence only. Evidence is in
+`phases/phase-45-compact-holdout/comparison.json`.

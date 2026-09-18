@@ -247,6 +247,13 @@ def execute_model_output(
         and proposal.get("mode", "literal") == "literal"
     ):
         return _abstain("literal_mode_required")
+    if (
+        isinstance(request_prompt, str)
+        and any(marker in request_prompt.lower().split() for marker in ("delete", "remove", "destroy", "erase"))
+        and any(marker in request_prompt.lower() for marker in ("repository", "file", "permanently", "now"))
+        and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
+    ):
+        return _abstain("action_not_allowlisted")
     result = execute_proposal(proposal, allowed_root)
     result["model_output_validated"] = True
     return result
