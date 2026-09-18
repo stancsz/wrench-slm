@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.runtime-prerequisite-diagnostic.v1",
+  "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF",
+  "status": "BLOCKED_RUNTIME_PREREQUISITE",
+  "checks": {
+    "freetoken_import_in_shell_interpreter": false,
+    "cuda_pytorch_in_shell_interpreter": false,
+    "cuda_home_for_editable_build": false,
+    "weights_loaded": false,
+    "requests_served": false
+  },
+  "observed_errors": [
+    "ModuleNotFoundError: No module named 'freetoken'",
+    "ModuleNotFoundError: No module named 'torch'",
+    "RuntimeError: CUDA_HOME is required to build freetoken.kernel._pinned_tensor because it links against the CUDA runtime API"
+  ],
+  "quality_claim": false
+}

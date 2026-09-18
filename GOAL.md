@@ -460,3 +460,10 @@ on disk with 3.697 GiB of packed weights and 4,888,532,336 parameters. Both
 still pass the export and text-only receipts, while the catalog continues to
 make no quality or production claim. Evidence is in
 `phases/phase-43-artifact-reverification/catalog.json`.
+
+Phase 44 attempted to rerun the compact 8E adaptive holdout, but the available
+FreeToken environment could not be restored: the shell interpreter lacked the
+package and CUDA-enabled PyTorch, and the editable build stopped because
+`CUDA_HOME` was unset. No weights were loaded and no request was served. This
+is a runtime-prerequisite diagnostic, not a model-quality result. Evidence is
+in `phases/phase-44-compact-runtime-prerequisite/diagnostic.json`.
