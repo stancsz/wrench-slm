@@ -61,6 +61,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   cases pass through the verifier with zero prohibited accepts. This validates
   the execution boundary only; the portfolio remains pending human approval
   and no model-quality claim is made.
+- **Phase 14, model-output parser:** exact JSON-only model responses now route
+  through the verifier; decorated or malformed responses abstain. The full
+  test suite passes 6 tests. This is a parser-boundary result, not a model
+  quality result.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

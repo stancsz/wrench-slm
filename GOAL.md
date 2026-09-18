@@ -192,3 +192,10 @@ outcome, with zero prohibited accepts. The receipt is at
 `phases/phase-13-portfolio-boundary-eval/evaluation.json`. The portfolio is
 still marked `pending_human_approval`, and this boundary-only result is not
 model-quality or workflow-success evidence.
+
+Phase 14 added strict model-output parsing through
+`execute_model_output`. Exact JSON objects route to the existing verifier;
+markdown, prose, malformed JSON, arrays, and empty output abstain. The full
+test suite passes 6 tests. The parser receipt is at
+`phases/phase-14-model-output-parser/parser-tests.json`. This closes a text
+boundary only and does not establish proposal quality.

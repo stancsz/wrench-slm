@@ -4,7 +4,7 @@ import subprocess
 import json
 from pathlib import Path
 
-from wrench_harness import execute_proposal
+from wrench_harness import execute_model_output, execute_proposal
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -97,3 +97,20 @@ def test_pruning_source_rejects_packed_ftw(tmp_path: Path):
     assert result["eligible"] is False
     assert "packed_ftw_not_sliceable" in result["rejection_reasons"]
     assert "safetensors_index_missing" in result["rejection_reasons"]
+
+
+def test_model_output_requires_exact_json_object(tmp_path: Path):
+    (tmp_path / "README.md").write_text("fixture\n", encoding="utf-8")
+    valid = '{"schema":"wrench.proposal.v1","action":"read_file","path":"README.md","max_bytes":4096}'
+    result = execute_model_output(valid, tmp_path)
+    assert result["status"] == "accepted"
+    assert result["model_output_validated"] is True
+
+    for invalid, reason in (
+        ("```json\n" + valid + "\n```", "model_output_invalid_json"),
+        ("Here is the proposal: " + valid, "model_output_invalid_json"),
+        ("[1, 2, 3]", "model_output_not_object"),
+        ("not json", "model_output_invalid_json"),
+    ):
+        rejected = execute_model_output(invalid, tmp_path)
+        assert rejected["fallback_reason"] == reason

@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.model-output-parser-tests.v1",
+  "observed_at": "2026-09-17",
+  "status": "PASS_PARSER_BOUNDARY_ONLY",
+  "command": "py -3 -m pytest -q",
+  "result": "6 passed",
+  "accepted_shape": "exact JSON object matching wrench.proposal.v1",
+  "rejected_shapes": [
+    "markdown fenced JSON",
+    "prose plus JSON",
+    "JSON array",
+    "malformed JSON",
+    "empty or non-text output"
+  ],
+  "limits": [
+    "This validates parsing and verifier routing only.",
+    "It does not establish model proposal quality or workflow success.",
+    "Source acquisition, pruning, calibration, and comparative evaluation remain open."
+  ]
+}

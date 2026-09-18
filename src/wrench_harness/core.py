@@ -217,6 +217,26 @@ def execute_proposal(proposal: Any, allowed_root: str | os.PathLike[str]) -> dic
     return handler(proposal, root)
 
 
+def execute_model_output(model_output: Any, allowed_root: str | os.PathLike[str]) -> dict[str, Any]:
+    """Parse one model response strictly, then route it through the verifier.
+
+    Surrounding prose and markdown are rejected rather than heuristically
+    extracted. This keeps the model outside the authority boundary.
+    """
+
+    if not isinstance(model_output, str) or not model_output.strip():
+        return _abstain("model_output_not_text")
+    try:
+        proposal = json.loads(model_output)
+    except json.JSONDecodeError:
+        return _abstain("model_output_invalid_json")
+    if not isinstance(proposal, dict):
+        return _abstain("model_output_not_object")
+    result = execute_proposal(proposal, allowed_root)
+    result["model_output_validated"] = True
+    return result
+
+
 def json_result(result: dict[str, Any]) -> str:
     """Stable JSON rendering for receipts and callers."""
 
