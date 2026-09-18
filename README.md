@@ -24,6 +24,12 @@ packing. Exact proposal-object matches are lower, at 6/14 for 8E BF16 and
 4/14 for 16E BF16. These are development-only verifier receipts, not
 production quality evidence.
 
+The latest corrected calibration lineage now records hash-stable training
+bytes and fresh packed receipts. On the separate 28-case unseen fixture, the
+new 8E pack scored 9/28 exact proposal objects and the new 16E pack scored
+7/28. The 8E artifact remains the smaller option; neither tier is production
+enabled.
+
 See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
 implementation is outside this repository under
 `C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`.

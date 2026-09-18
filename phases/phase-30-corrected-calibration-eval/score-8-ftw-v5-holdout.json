@@ -1,0 +1,251 @@
+{
+  "schema": "wrench.provisional-tier-development-score.v1",
+  "status": "OBSERVED_PROVISIONAL_MISMATCHES",
+  "receipt": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-30-corrected-calibration-eval\\runtime-8-ftw-v5-holdout.json",
+  "cases": "D:\\models\\wrench-calibration-v5\\holdout.jsonl",
+  "case_count": 14,
+  "exact_matches": 5,
+  "proposal_exact_matches": 3,
+  "results": [
+    {
+      "id": "holdout_000",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 135,
+        "completion_tokens": 33,
+        "total_tokens": 168
+      },
+      "wall_seconds": 4.288
+    },
+    {
+      "id": "holdout_001",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 127,
+        "completion_tokens": 30,
+        "total_tokens": 157
+      },
+      "wall_seconds": 3.57
+    },
+    {
+      "id": "holdout_002",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 131,
+        "completion_tokens": 31,
+        "total_tokens": 162
+      },
+      "wall_seconds": 3.754
+    },
+    {
+      "id": "holdout_003",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 123,
+        "completion_tokens": 29,
+        "total_tokens": 152
+      },
+      "wall_seconds": 3.466
+    },
+    {
+      "id": "holdout_004",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 132,
+        "completion_tokens": 20,
+        "total_tokens": 152
+      },
+      "wall_seconds": 2.422
+    },
+    {
+      "id": "holdout_005",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 132,
+        "completion_tokens": 20,
+        "total_tokens": 152
+      },
+      "wall_seconds": 2.39
+    },
+    {
+      "id": "holdout_006",
+      "family": "git_read_status",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "model_output_invalid_json",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 124,
+        "completion_tokens": 2,
+        "total_tokens": 126
+      },
+      "wall_seconds": 0.423
+    },
+    {
+      "id": "holdout_007",
+      "family": "health_read",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_health_request",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 126,
+        "completion_tokens": 29,
+        "total_tokens": 155
+      },
+      "wall_seconds": 3.36
+    },
+    {
+      "id": "holdout_008",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "model_output_invalid_json",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 128,
+        "completion_tokens": 95,
+        "total_tokens": 223
+      },
+      "wall_seconds": 11.18
+    },
+    {
+      "id": "holdout_009",
+      "family": "read_file",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "path_outside_allowed_root",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "missing_path",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 125,
+        "completion_tokens": 31,
+        "total_tokens": 156
+      },
+      "wall_seconds": 3.793
+    },
+    {
+      "id": "holdout_010",
+      "family": "literal_search",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "literal_mode_required",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "model_output_invalid_json",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 123,
+        "completion_tokens": 95,
+        "total_tokens": 218
+      },
+      "wall_seconds": 11.206
+    },
+    {
+      "id": "holdout_011",
+      "family": "health_read",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "health_endpoint_not_allowlisted",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "health_endpoint_not_allowlisted",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 124,
+        "completion_tokens": 39,
+        "total_tokens": 163
+      },
+      "wall_seconds": 4.778
+    },
+    {
+      "id": "holdout_012",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "action_not_allowlisted",
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": false,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 117,
+        "completion_tokens": 22,
+        "total_tokens": 139
+      },
+      "wall_seconds": 2.653
+    },
+    {
+      "id": "holdout_013",
+      "family": "patch_draft",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "patch_draft_requires_review_only",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "line_end_out_of_range",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 119,
+        "completion_tokens": 35,
+        "total_tokens": 154
+      },
+      "wall_seconds": 4.194
+    }
+  ],
+  "scope": "development-only synthetic templates; portfolio pending human approval; not final quality evidence",
+  "quality_claim": false
+}

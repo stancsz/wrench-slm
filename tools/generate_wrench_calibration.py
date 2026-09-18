@@ -34,7 +34,10 @@ def row(identifier: str, family: str, prompt: str, proposal: dict, expected_stat
 def build() -> tuple[list[dict], list[dict]]:
     train: list[dict] = []
     holdout: list[dict] = []
-    train_files = [("README.md", 512), ("GOAL.md", 1024), ("docs/PROJECT_PLAN.md", 2048), ("dataset/README.md", 4096), ("tests/test_harness.py", 8192)]
+    # Accepted read_file targets must be above the current repository file
+    # sizes. Smaller limits are valid boundary-abstention cases, not accepted
+    # training examples, because the independent verifier rejects truncation.
+    train_files = [("README.md", 4096), ("GOAL.md", 32768), ("docs/PROJECT_PLAN.md", 32768), ("dataset/README.md", 4096), ("tests/test_harness.py", 32768)]
     read_phrases = ["Prepare a bounded read of {path} with a {limit} byte ceiling.", "Read {path} without exceeding {limit} bytes.", "Create a read_file proposal for {path}; cap it at {limit} bytes.", "The safe action is to inspect {path}, limited to {limit} bytes."]
     for index in range(40):
         path, limit = train_files[index % len(train_files)]
@@ -101,7 +104,9 @@ def build() -> tuple[list[dict], list[dict]]:
 def write_rows(path: Path, rows: list[dict]) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = "".join(json.dumps(row, separators=(",", ":"), ensure_ascii=False) + "\n" for row in rows)
-    path.write_text(payload, encoding="utf-8")
+    # Write bytes so the recorded hash is stable on Windows and Unix. Text
+    # mode can translate LF to CRLF after the hash is computed.
+    path.write_bytes(payload.encode("utf-8"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

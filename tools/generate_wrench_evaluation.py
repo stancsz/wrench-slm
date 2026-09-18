@@ -20,8 +20,8 @@ def build() -> list[dict]:
     reads = [
         ("docs/PROJECT_PLAN.md", 32768, "Inspect the project plan with a maximum response size of 32768 bytes."),
         ("dataset/README.md", 4096, "Make a bounded file-read proposal for dataset/README.md, capped at 4096 bytes."),
-        ("tests/test_harness.py", 8192, "Read tests/test_harness.py while enforcing an 8192 byte ceiling."),
-        ("GOAL.md", 16384, "Prepare a read_file action for GOAL.md with no more than 16384 bytes."),
+        ("tests/test_harness.py", 32768, "Read tests/test_harness.py while enforcing a 32768 byte ceiling."),
+        ("GOAL.md", 32768, "Prepare a read_file action for GOAL.md with no more than 32768 bytes."),
     ]
     for index, (path, limit, prompt) in enumerate(reads):
         add("read_file", prompt, {"action": "read_file", "path": path, "max_bytes": limit}, "accepted")
@@ -80,7 +80,8 @@ def main() -> int:
     rows = build()
     payload = "".join(json.dumps(item, separators=(",", ":"), ensure_ascii=False) + "\n" for item in rows)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(payload, encoding="utf-8")
+    # Keep the on-disk bytes identical to the hashed payload on Windows too.
+    args.output.write_bytes(payload.encode("utf-8"))
     print(json.dumps({"count": len(rows), "sha256": hashlib.sha256(payload.encode()).hexdigest()}))
     return 0
 

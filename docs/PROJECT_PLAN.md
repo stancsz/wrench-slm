@@ -148,6 +148,12 @@ release-ready.
   fixture with unique IDs, 8E scored 8/28 verifier outcomes and 7/28 exact
   proposal objects; 16E scored 9/28 and 7/28. The 16E edge is small and does
   not establish usefulness, workflow value, or release readiness.
+- **Phase 30 corrected calibration lineage:** accepted read limits were fixed
+  to exceed current file sizes, and both generators now write hash-stable bytes
+  on Windows. Fresh packed results on the corrected 14-case holdout are 5/14
+  verifier and 3/14 exact proposals for 8E, versus 7/14 and 5/14 for 16E.
+  On the corrected 28-case unseen fixture they are 9/28 and 9/28 for 8E,
+  versus 10/28 and 7/28 for 16E. The result remains development-only.
 
 ## 1. Executive Summary & Core Objective
 

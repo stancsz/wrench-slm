@@ -1,0 +1,41 @@
+{
+  "schema": "wrench.corrected-calibration-tier-comparison.v1",
+  "status": "PASS_SIZE_GATE_QUALITY_GATE_OPEN",
+  "lineage": {
+    "train_path": "D:\\models\\wrench-calibration-v5\\train.jsonl",
+    "train_sha256": "9020d5cfb9ad7ede43e5880db1d1200d46f6e20ddc1c52610f4fdd51d325d49c",
+    "holdout_sha256": "628b9633352e3d4457a3e3c511d6c299bda9b833634eeba46d56eba7285940dd",
+    "unseen_sha256": "56bb3d875d8b94fff1b5b43c289a2c009830dc9a1a081b52d74e16430254c1a2"
+  },
+  "tiers": [
+    {
+      "tier": "8E",
+      "parameters": 3881244016,
+      "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v5-TextOnly-FTW",
+      "directory_bytes": 3426514765,
+      "packed_weight_bytes": 3406319616,
+      "holdout_verifier_exact": 5,
+      "holdout_proposal_exact": 3,
+      "unseen_verifier_exact": 9,
+      "unseen_proposal_exact": 9,
+      "holdout_score": "score-8-ftw-v5-holdout.json",
+      "unseen_score": "score-8-ftw-v5.json"
+    },
+    {
+      "tier": "16E",
+      "parameters": 4888532336,
+      "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v2-TextOnly-FTW",
+      "directory_bytes": 3996022971,
+      "packed_weight_bytes": 3975827456,
+      "holdout_verifier_exact": 7,
+      "holdout_proposal_exact": 5,
+      "unseen_verifier_exact": 10,
+      "unseen_proposal_exact": 7,
+      "holdout_score": "score-16-ftw-v2-holdout.json",
+      "unseen_score": "score-16-ftw-v2.json"
+    }
+  ],
+  "quality_claim": false,
+  "human_approval": "pending",
+  "production_enablement": false
+}

@@ -327,7 +327,16 @@ but broader held-out quality, human portfolio approval, matched workflow value,
 and production enablement remain open.
 
 Phase 29 added a separate 28-case unseen synthetic evaluation fixture. The
-the corrected fixture has unique IDs. The 8E packed tier scored 8/28 verifier
+corrected fixture has unique IDs. The 8E packed tier scored 8/28 verifier
 outcomes and 7/28 exact proposal objects; the 16E packed tier scored 9/28 and
 7/28. This gives the larger tier only a small provisional edge and confirms
 that neither packed tier has yet met a usefulness or release gate.
+
+Phase 30 corrected the calibration data lineage itself: accepted byte limits
+now exceed the current file sizes, and the generators write hash-stable bytes
+on Windows. Fresh 500-step calibrations were quantized into new text-only FTW
+packs. On the corrected 14-case holdout, 8E scored 5/14 verifier outcomes and
+3/14 exact proposal objects; 16E scored 7/14 and 5/14. On the corrected
+28-case unseen fixture, 8E scored 9/28 and 9/28; 16E scored 10/28 and 7/28.
+The size gate is met, but usefulness, human approval, matched workflow value,
+and production enablement remain open.
