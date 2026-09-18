@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from wrench_harness import CancellationToken, ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
+from tools.inspect_qwen_checkpoint import inspect_checkpoint
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -99,6 +100,25 @@ def test_pruning_source_rejects_packed_ftw(tmp_path: Path):
     assert result["eligible"] is False
     assert "packed_ftw_not_sliceable" in result["rejection_reasons"]
     assert "safetensors_index_missing" in result["rejection_reasons"]
+
+
+def test_checkpoint_inspection_distinguishes_unquantized_safetensors(tmp_path: Path):
+    (tmp_path / "config.json").write_text(
+        json.dumps({"model_type": "qwen3_5_moe", "text_config": {"num_hidden_layers": 40}}),
+        encoding="utf-8",
+    )
+    (tmp_path / "model.safetensors.index.json").write_text(
+        json.dumps({"metadata": {"total_size": 4}, "weight_map": {"layer.weight": "model-00001-of-00001.safetensors"}}),
+        encoding="utf-8",
+    )
+    (tmp_path / "model-00001-of-00001.safetensors").write_bytes(b"1234")
+    receipt = inspect_checkpoint(tmp_path, hash_weights=False)
+    assert receipt["pruning_assessment"] == {
+        "source_is_packed_quantized": False,
+        "safe_for_structural_tensor_slicing": True,
+        "reason": "Unquantized safetensors with a local tensor index are eligible for structural slicing after architecture checks.",
+        "required_source": "verified unquantized checkpoint with matching architecture and license",
+    }
 
 
 def test_model_output_requires_exact_json_object(tmp_path: Path):

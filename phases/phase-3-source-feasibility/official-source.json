@@ -22,9 +22,12 @@
     "index_url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/resolve/main/model.safetensors.index.json"
   },
   "local_state": {
-    "unquantized_checkpoint_present": false,
-    "download_required": true,
-    "structural_pruning_allowed": false
+    "unquantized_checkpoint_present": true,
+    "download_required": false,
+    "checkpoint_path": "D:\\models\\Qwen3.6-35B-A3B",
+    "source_inspection_receipt": "phases/phase-22-source-inspection/checkpoint-facts.json",
+    "source_validation_receipt": "phases/phase-22-source-inspection/pruning-source-validation.json",
+    "structural_pruning_allowed": true
   },
   "evidence_links": {
     "model_card": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/README.md",

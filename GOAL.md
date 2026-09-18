@@ -1,7 +1,7 @@
 # Goal: prove useful local selective offload for routine developer-tool work
 
 Status: active
-Updated: 2026-09-17
+Updated: 2026-09-18
 Owner: repository agent
 
 ## Outcome
@@ -243,3 +243,13 @@ through the real local Qwen runtime, adapter, and verifier. All five were
 accepted; per-case usage and wall time are recorded in
 `phases/phase-21-qwen-shadow-eval/shadow-receipt.json`. This remains shadow
 observation only, not calibration, final evaluation, or a quality claim.
+
+Phase 22 acquired the explicitly authorized official unquantized source at the
+pinned revision and validated its local metadata against the official
+safetensors index. The checkpoint is at `D:\\models\\Qwen3.6-35B-A3B`; the
+receipts are `phases/phase-22-source-inspection/checkpoint-facts.json` and
+`phases/phase-22-source-inspection/pruning-source-validation.json`. The
+validator reports 26 present safetensors shards, 1,045 mapped tensors, the
+exact 71,903,645,408-byte index total, and `eligible: true`. This permits
+profiling and pruning design, but does not establish loadability, quality,
+throughput, or production value.

@@ -100,6 +100,25 @@ def inspect_checkpoint(root: Path, hash_weights: bool) -> dict[str, Any]:
             entry["sha256"] = None
         files.append(entry)
 
+    weight_paths = [
+        path
+        for path in root.iterdir()
+        if path.is_file() and path.suffix.lower() in {".ftw", ".safetensors", ".bin", ".gguf"}
+    ]
+    has_safetensors_index = (root / "model.safetensors.index.json").is_file()
+    source_is_packed_quantized = bool(hf_quant) or any(
+        path.suffix.lower() in {".ftw", ".gguf"} for path in weight_paths
+    )
+    safe_for_structural_tensor_slicing = bool(weight_paths) and not source_is_packed_quantized and (
+        has_safetensors_index or any(path.suffix.lower() == ".safetensors" for path in weight_paths)
+    )
+    if safe_for_structural_tensor_slicing:
+        pruning_reason = "Unquantized safetensors with a local tensor index are eligible for structural slicing after architecture checks."
+    elif source_is_packed_quantized:
+        pruning_reason = "This local candidate contains packed or quantized weights; obtain and verify an unquantized checkpoint before slicing tensors."
+    else:
+        pruning_reason = "A verified unquantized safetensors checkpoint with a matching tensor index is required before slicing tensors."
+
     return {
         "schema": "wrench.qwen-checkpoint-facts.v1",
         "observed_at": datetime.now(timezone.utc).isoformat(),
@@ -130,13 +149,9 @@ def inspect_checkpoint(root: Path, hash_weights: bool) -> dict[str, Any]:
         "quantization": quantization_summary(config, hf_quant),
         "files": files,
         "pruning_assessment": {
-            "source_is_packed_quantized": any(
-                path.suffix.lower() in {".ftw", ".safetensors", ".bin", ".gguf"}
-                for path in root.iterdir()
-                if path.is_file()
-            ),
-            "safe_for_structural_tensor_slicing": False,
-            "reason": "This local candidate is an NVFP4/FP8 ModelOpt package; obtain and verify an unquantized checkpoint before slicing tensors.",
+            "source_is_packed_quantized": source_is_packed_quantized,
+            "safe_for_structural_tensor_slicing": safe_for_structural_tensor_slicing,
+            "reason": pruning_reason,
             "required_source": "verified unquantized checkpoint with matching architecture and license",
         },
     }

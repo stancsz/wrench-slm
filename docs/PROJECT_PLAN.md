@@ -23,8 +23,8 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   so filtering, licensing review, and Wrench task-family labeling are required
   before calibration or SFT.
 - **Phase 3, source feasibility:** official source identified and hash-bound at
-  revision `995ad96eacd98c81ed38be0c5b274b04031597b0`; 71.9 GB of unquantized
-  safetensors are still absent locally.
+  revision `995ad96eacd98c81ed38be0c5b274b04031597b0`; the local-state record
+  now points to the acquired checkpoint and Phase 22 validation receipts.
 - **Phase 4, task portfolio:** proposed family-disjoint scope is frozen in
   `phases/phase-4-task-portfolio/portfolio.json`; human approval is pending.
 - **Phase 6, runtime compatibility:** the current global Transformers 4.57.1
@@ -88,9 +88,16 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   through the real local Qwen runtime, adapter, and verifier. This is shadow
   observation only; the portfolio remains pending approval and no quality
   claim is made.
-- **Next gate:** obtain explicit portfolio approval and authorization for the
-  pinned unquantized source, then verify that source against its official
-  index. Only after those gates may router profiling or pruning begin.
+- **Phase 22, source inspection:** the explicitly authorized acquisition
+  fetched all 38 requested files to `D:\\models\\Qwen3.6-35B-A3B`. The local
+  checkpoint contains 26 safetensors shards with the exact official index total
+  of 71,903,645,408 bytes. Metadata validation reports `eligible: true`, no
+  missing shards, and no rejection reasons. This permits architecture-aware
+  router profiling design; it does not prove pruning quality, loadability,
+  throughput, or workflow value.
+- **Next gate:** obtain explicit human approval for the frozen task portfolio,
+  then run a reproducible router-profile pass on an approved calibration corpus
+  without modifying the source checkpoint.
 
 ## 1. Executive Summary & Core Objective
 
