@@ -23,10 +23,11 @@ Results:
 
 The new 8E BF16 checkpoint scored 9/14 verifier outcomes and 8/14 exact
 proposals on the holdout before packing. Packing reduced that to 6/14 and
-5/14. The 16E packed tier is slightly stronger on holdout verifier outcomes,
-while both tiers tie on the explicit-schema unseen fixture.
+5/14. The 16E BF16 checkpoint scored 9/14 verifier outcomes and 7/14 exact
+proposals; packing reduced that to 8/14 and 4/14. The 16E packed tier is
+slightly stronger on holdout verifier outcomes, while both tiers tie on the
+explicit-schema unseen fixture.
 
 This is a development comparison, not a production-quality claim. The
 portfolio is still pending human approval, real workflow traces, uncertainty
 analysis, and no-mutation release gates.
-

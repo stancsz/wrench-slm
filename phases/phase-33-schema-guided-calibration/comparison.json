@@ -45,6 +45,8 @@
       "holdout_proposal_exact": 4,
       "unseen_verifier_exact": 12,
       "unseen_proposal_exact": 8,
+      "bf16_holdout_verifier_exact": 9,
+      "bf16_holdout_proposal_exact": 7,
       "holdout_score": "score-16-ftw-holdout.json",
       "unseen_score": "score-16-ftw-unseen.json"
     }
@@ -53,6 +55,7 @@
     "eight_expert_bf16_holdout_mean_wall_seconds": 3.528,
     "eight_expert_ftw_holdout_mean_wall_seconds": 4.507,
     "eight_expert_ftw_unseen_mean_wall_seconds": 5.390,
+    "sixteen_expert_bf16_holdout_mean_wall_seconds": 3.821,
     "sixteen_expert_ftw_holdout_mean_wall_seconds": 4.599,
     "sixteen_expert_ftw_unseen_mean_wall_seconds": 5.781
   },

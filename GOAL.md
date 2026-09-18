@@ -362,6 +362,8 @@ artifacts are 3,423,498,137 bytes and 3,991,755,140 bytes. On the explicit
 14-case holdout they scored 6/14 and 8/14 verifier outcomes, with 5/14 and
 4/14 exact proposal objects. On the separate 28-case explicit-schema unseen
 fixture both scored 12/28 verifier outcomes and 8/28 exact proposal objects.
+The corresponding 16E BF16 holdout scored 9/14 verifier outcomes and 7/14
+exact proposals before packing, making the packing loss explicit.
 This is a provisional behavior improvement, not a quality or release claim.
 The lineage and receipts are in
 `phases/phase-33-schema-guided-calibration/comparison.json`.

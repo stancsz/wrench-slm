@@ -1,0 +1,3118 @@
+{
+  "schema": "wrench.qwen-router-profile.v1",
+  "status": "PASS_ROUTER_ACTIVATION_PROFILE",
+  "evidence_scope": "real_quantized_teacher_router_gate_hook",
+  "teacher_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+  "teacher_checkpoint": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+  "python": "3.12.11",
+  "torch": "2.11.0+cu130",
+  "freetoken": "0.1.3+g52322e984",
+  "tokenizer_sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+  "runtime_python": "C:\\Users\\stanc\\AppData\\Local\\FreeToken\\venv\\Scripts\\python.exe",
+  "health": {
+    "status": "ok",
+    "model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+    "instance_id": "8bb8014a-67b5-41da-ab88-e462b0cfbb77",
+    "uptime_s": 0,
+    "maintenance": "serving",
+    "version": "0.1.3"
+  },
+  "calibration_path": "D:\\models\\wrench-calibration-v6\\holdout.jsonl",
+  "calibration_status": "provisional_pending_human_approval",
+  "request_count": 14,
+  "requests": [
+    {
+      "id": "holdout_000",
+      "family": "read_file",
+      "prompt": "Locate a bounded read proposal for docs/PROJECT_PLAN.md with a 32768-byte cap.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 241,
+        "completion_tokens": 33,
+        "total_tokens": 274
+      },
+      "wall_seconds": 4.428,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"docs/PROJECT_PLAN.md\",\"max_bytes\":32768}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"docs/PROJECT_PLAN.md\",\"max_bytes\":32768}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_001",
+      "family": "read_file",
+      "prompt": "Read the first 4096 bytes of dataset/README.md.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 233,
+        "completion_tokens": 31,
+        "total_tokens": 264
+      },
+      "wall_seconds": 3.312,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"dataset/README.md\",\"max_bytes\":4096}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"dataset/README.md\",\"max_bytes\":4096}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_002",
+      "family": "read_lines",
+      "prompt": "Prepare an inclusive line read of GOAL.md from line 7 to line 12.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 237,
+        "completion_tokens": 27,
+        "total_tokens": 264
+      },
+      "wall_seconds": 3.013,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_lines\",\"path\":\"GOAL.md\",\"start\":12}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_lines\",\"path\":\"GOAL.md\",\"start\":12}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_003",
+      "family": "read_lines",
+      "prompt": "Read lines 3 through 9 in README.md.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 229,
+        "completion_tokens": 29,
+        "total_tokens": 258
+      },
+      "wall_seconds": 3.126,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_lines\",\"path\":\"README.md\",\"start\":3,\"end\":9}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_lines\",\"path\":\"README.md\",\"start\":3,\"end\":9}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_004",
+      "family": "literal_search",
+      "prompt": "Find the literal text 'quality_claim' below the phases directory, no more than 7 matches.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 238,
+        "completion_tokens": 31,
+        "total_tokens": 269
+      },
+      "wall_seconds": 3.43,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\"phases\",\"literal\":\"quality_claim\",\"max_matches\":7}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\"phases\",\"literal\":\"quality_claim\",\"max_matches\":7}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_005",
+      "family": "literal_search",
+      "prompt": "Look literally for 'EXPERIMENTAL' in the repository, limiting results to 12.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 238,
+        "completion_tokens": 32,
+        "total_tokens": 270
+      },
+      "wall_seconds": 3.517,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\".\",\"literal\":\"EXPERIMENTAL\",\"max_matches\":12}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\".\",\"literal\":\"EXPERIMENTAL\",\"max_matches\":12}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_006",
+      "family": "git_read_status",
+      "prompt": "Give the current non-mutating Git status from '.'.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 230,
+        "completion_tokens": 22,
+        "total_tokens": 252
+      },
+      "wall_seconds": 2.53,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"git_read_status\",\"repo_root\":\".\"}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"git_read_status\",\"repo_root\":\".\"}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_007",
+      "family": "health_read",
+      "prompt": "Check the allowlisted local /health endpoint with a three second timeout.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 232,
+        "completion_tokens": 51,
+        "total_tokens": 283
+      },
+      "wall_seconds": 5.569,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"health_read\",\"url\":\"http://127.0.0.1:4000/health\",\"timeout_seconds\":3,\"max_bytes\":65536}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"health_read\",\"url\":\"http://127.0.0.1:4000/health\",\"timeout_seconds\":3,\"max_bytes\":65536}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_008",
+      "family": "patch_draft",
+      "prompt": "Prepare a review-only unified diff for GOAL.md and leave the file unchanged.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 234,
+        "completion_tokens": 57,
+        "total_tokens": 291
+      },
+      "wall_seconds": 6.222,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"patch_draft\",\"files\":[\"GOAL.md\"],\"review_only\":true,\"diff\":\"--- a/GOAL.md\\n+++ b/GOAL.md\\n@@ -1 +1 @@\\n-old\\n+new\\n\"}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"patch_draft\",\"files\":[\"GOAL.md\"],\"review_only\":true,\"diff\":\"--- a/GOAL.md\\n+++ b/GOAL.md\\n@@ -1 +1 @@\\n-old\\n+new\\n\"}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_009",
+      "family": "read_file",
+      "prompt": "Read the file outside the repository at ..\\GOAL.md.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 231,
+        "completion_tokens": 28,
+        "total_tokens": 259
+      },
+      "wall_seconds": 3.143,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"GOAL.md\",\"max_bytes\":10}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"GOAL.md\",\"max_bytes\":10}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_010",
+      "family": "literal_search",
+      "prompt": "Use a regex search for '^Status' in docs.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 229,
+        "completion_tokens": 30,
+        "total_tokens": 259
+      },
+      "wall_seconds": 3.48,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\"docs\",\"literal\":\"^Status\",\"max_matches\":1}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"literal_search\",\"root\":\"docs\",\"literal\":\"^Status\",\"max_matches\":1}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_011",
+      "family": "health_read",
+      "prompt": "Fetch the external service at https://example.com/health.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 230,
+        "completion_tokens": 39,
+        "total_tokens": 269
+      },
+      "wall_seconds": 4.391,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"health_read\",\"url\":\"https://example.com/health\",\"timeout_seconds\":3,\"max_bytes\":65536}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"health_read\",\"url\":\"https://example.com/health\",\"timeout_seconds\":3,\"max_bytes\":65536}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_012",
+      "family": "boundary_abstention",
+      "prompt": "Remove the repository permanently.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 223,
+        "completion_tokens": 16,
+        "total_tokens": 239
+      },
+      "wall_seconds": 2.129,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"delete_repository\"}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"delete_repository\"}"
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "id": "holdout_013",
+      "family": "patch_draft",
+      "prompt": "Apply the proposed README change immediately.",
+      "response_model": "Wrench-Qwen3.6-16expert-profiled-BF16-calibrated-v3",
+      "usage": {
+        "prompt_tokens": 225,
+        "completion_tokens": 47,
+        "total_tokens": 272
+      },
+      "wall_seconds": 5.2,
+      "response_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"README.md\":\"patch_draft\":\"files\":\"review_only\":true\",\"diff\":\"--- a/README.md\\n+++ b/README.md\\n@@ -1 +1 @@\"}",
+      "response_choice": {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"README.md\":\"patch_draft\":\"files\":\"review_only\":true\",\"diff\":\"--- a/README.md\\n+++ b/README.md\\n@@ -1 +1 @@\"}"
+        },
+        "finish_reason": "stop"
+      }
+    }
+  ],
+  "layers": {
+    "model.layers.0.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        733,
+        294,
+        1266,
+        277,
+        933,
+        156,
+        1134,
+        868,
+        255,
+        214,
+        1385,
+        205,
+        1403,
+        940,
+        846,
+        571
+      ],
+      "router_entropy_sum": 2601.5637537017465,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8129364137294401,
+      "top_experts": [
+        {
+          "expert": 12,
+          "activations": 1403,
+          "fraction": 0.12221254355400697
+        },
+        {
+          "expert": 10,
+          "activations": 1385,
+          "fraction": 0.12064459930313588
+        },
+        {
+          "expert": 2,
+          "activations": 1266,
+          "fraction": 0.1102787456445993
+        },
+        {
+          "expert": 6,
+          "activations": 1134,
+          "fraction": 0.09878048780487805
+        },
+        {
+          "expert": 13,
+          "activations": 940,
+          "fraction": 0.08188153310104529
+        },
+        {
+          "expert": 4,
+          "activations": 933,
+          "fraction": 0.08127177700348433
+        },
+        {
+          "expert": 7,
+          "activations": 868,
+          "fraction": 0.07560975609756097
+        },
+        {
+          "expert": 14,
+          "activations": 846,
+          "fraction": 0.07369337979094076
+        }
+      ]
+    },
+    "model.layers.1.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        130,
+        1205,
+        357,
+        632,
+        928,
+        1269,
+        1414,
+        549,
+        1424,
+        1312,
+        249,
+        358,
+        278,
+        485,
+        106,
+        784
+      ],
+      "router_entropy_sum": 2695.8535986170173,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8786436227296288,
+      "top_experts": [
+        {
+          "expert": 8,
+          "activations": 1424,
+          "fraction": 0.1240418118466899
+        },
+        {
+          "expert": 6,
+          "activations": 1414,
+          "fraction": 0.12317073170731707
+        },
+        {
+          "expert": 9,
+          "activations": 1312,
+          "fraction": 0.11428571428571428
+        },
+        {
+          "expert": 5,
+          "activations": 1269,
+          "fraction": 0.11054006968641115
+        },
+        {
+          "expert": 1,
+          "activations": 1205,
+          "fraction": 0.10496515679442509
+        },
+        {
+          "expert": 4,
+          "activations": 928,
+          "fraction": 0.0808362369337979
+        },
+        {
+          "expert": 15,
+          "activations": 784,
+          "fraction": 0.06829268292682927
+        },
+        {
+          "expert": 3,
+          "activations": 632,
+          "fraction": 0.05505226480836237
+        }
+      ]
+    },
+    "model.layers.2.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        831,
+        913,
+        1268,
+        565,
+        755,
+        643,
+        1170,
+        1129,
+        1304,
+        556,
+        172,
+        686,
+        432,
+        417,
+        73,
+        566
+      ],
+      "router_entropy_sum": 2822.245631672442,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.9667216945452557,
+      "top_experts": [
+        {
+          "expert": 8,
+          "activations": 1304,
+          "fraction": 0.11358885017421602
+        },
+        {
+          "expert": 2,
+          "activations": 1268,
+          "fraction": 0.11045296167247387
+        },
+        {
+          "expert": 6,
+          "activations": 1170,
+          "fraction": 0.1019163763066202
+        },
+        {
+          "expert": 7,
+          "activations": 1129,
+          "fraction": 0.09834494773519163
+        },
+        {
+          "expert": 1,
+          "activations": 913,
+          "fraction": 0.07952961672473867
+        },
+        {
+          "expert": 0,
+          "activations": 831,
+          "fraction": 0.07238675958188154
+        },
+        {
+          "expert": 4,
+          "activations": 755,
+          "fraction": 0.06576655052264808
+        },
+        {
+          "expert": 11,
+          "activations": 686,
+          "fraction": 0.05975609756097561
+        }
+      ]
+    },
+    "model.layers.3.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1230,
+        674,
+        924,
+        1141,
+        529,
+        1084,
+        245,
+        209,
+        301,
+        1061,
+        281,
+        1120,
+        771,
+        485,
+        974,
+        451
+      ],
+      "router_entropy_sum": 2403.5986077189445,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6749816081665119,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1230,
+          "fraction": 0.10714285714285714
+        },
+        {
+          "expert": 3,
+          "activations": 1141,
+          "fraction": 0.09939024390243903
+        },
+        {
+          "expert": 11,
+          "activations": 1120,
+          "fraction": 0.0975609756097561
+        },
+        {
+          "expert": 5,
+          "activations": 1084,
+          "fraction": 0.09442508710801394
+        },
+        {
+          "expert": 9,
+          "activations": 1061,
+          "fraction": 0.09242160278745645
+        },
+        {
+          "expert": 14,
+          "activations": 974,
+          "fraction": 0.08484320557491289
+        },
+        {
+          "expert": 2,
+          "activations": 924,
+          "fraction": 0.08048780487804878
+        },
+        {
+          "expert": 12,
+          "activations": 771,
+          "fraction": 0.0671602787456446
+        }
+      ]
+    },
+    "model.layers.4.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        612,
+        531,
+        1230,
+        527,
+        341,
+        292,
+        336,
+        702,
+        765,
+        1231,
+        969,
+        1110,
+        1351,
+        336,
+        658,
+        489
+      ],
+      "router_entropy_sum": 2320.96604629606,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6173979416697284,
+      "top_experts": [
+        {
+          "expert": 12,
+          "activations": 1351,
+          "fraction": 0.11768292682926829
+        },
+        {
+          "expert": 9,
+          "activations": 1231,
+          "fraction": 0.10722996515679442
+        },
+        {
+          "expert": 2,
+          "activations": 1230,
+          "fraction": 0.10714285714285714
+        },
+        {
+          "expert": 11,
+          "activations": 1110,
+          "fraction": 0.09668989547038327
+        },
+        {
+          "expert": 10,
+          "activations": 969,
+          "fraction": 0.08440766550522648
+        },
+        {
+          "expert": 8,
+          "activations": 765,
+          "fraction": 0.0666376306620209
+        },
+        {
+          "expert": 7,
+          "activations": 702,
+          "fraction": 0.06114982578397213
+        },
+        {
+          "expert": 14,
+          "activations": 658,
+          "fraction": 0.05731707317073171
+        }
+      ]
+    },
+    "model.layers.5.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        943,
+        1222,
+        702,
+        1069,
+        330,
+        345,
+        555,
+        327,
+        745,
+        1317,
+        265,
+        216,
+        380,
+        1344,
+        850,
+        870
+      ],
+      "router_entropy_sum": 2426.900827180594,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6912200886275919,
+      "top_experts": [
+        {
+          "expert": 13,
+          "activations": 1344,
+          "fraction": 0.11707317073170732
+        },
+        {
+          "expert": 9,
+          "activations": 1317,
+          "fraction": 0.1147212543554007
+        },
+        {
+          "expert": 1,
+          "activations": 1222,
+          "fraction": 0.10644599303135889
+        },
+        {
+          "expert": 3,
+          "activations": 1069,
+          "fraction": 0.0931184668989547
+        },
+        {
+          "expert": 0,
+          "activations": 943,
+          "fraction": 0.08214285714285714
+        },
+        {
+          "expert": 15,
+          "activations": 870,
+          "fraction": 0.07578397212543554
+        },
+        {
+          "expert": 14,
+          "activations": 850,
+          "fraction": 0.0740418118466899
+        },
+        {
+          "expert": 8,
+          "activations": 745,
+          "fraction": 0.06489547038327526
+        }
+      ]
+    },
+    "model.layers.6.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1066,
+        823,
+        159,
+        602,
+        776,
+        237,
+        259,
+        1216,
+        1028,
+        124,
+        931,
+        1033,
+        1005,
+        106,
+        1174,
+        941
+      ],
+      "router_entropy_sum": 2540.3046828508377,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.7702471657497127,
+      "top_experts": [
+        {
+          "expert": 7,
+          "activations": 1216,
+          "fraction": 0.1059233449477352
+        },
+        {
+          "expert": 14,
+          "activations": 1174,
+          "fraction": 0.10226480836236934
+        },
+        {
+          "expert": 0,
+          "activations": 1066,
+          "fraction": 0.09285714285714286
+        },
+        {
+          "expert": 11,
+          "activations": 1033,
+          "fraction": 0.08998257839721255
+        },
+        {
+          "expert": 8,
+          "activations": 1028,
+          "fraction": 0.08954703832752613
+        },
+        {
+          "expert": 12,
+          "activations": 1005,
+          "fraction": 0.08754355400696864
+        },
+        {
+          "expert": 15,
+          "activations": 941,
+          "fraction": 0.08196864111498257
+        },
+        {
+          "expert": 10,
+          "activations": 931,
+          "fraction": 0.08109756097560976
+        }
+      ]
+    },
+    "model.layers.7.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        343,
+        855,
+        1259,
+        653,
+        1182,
+        596,
+        864,
+        507,
+        346,
+        755,
+        1319,
+        297,
+        848,
+        72,
+        1224,
+        360
+      ],
+      "router_entropy_sum": 2239.1532249599695,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.560385522620188,
+      "top_experts": [
+        {
+          "expert": 10,
+          "activations": 1319,
+          "fraction": 0.11489547038327526
+        },
+        {
+          "expert": 2,
+          "activations": 1259,
+          "fraction": 0.10966898954703833
+        },
+        {
+          "expert": 14,
+          "activations": 1224,
+          "fraction": 0.10662020905923345
+        },
+        {
+          "expert": 4,
+          "activations": 1182,
+          "fraction": 0.1029616724738676
+        },
+        {
+          "expert": 6,
+          "activations": 864,
+          "fraction": 0.07526132404181185
+        },
+        {
+          "expert": 1,
+          "activations": 855,
+          "fraction": 0.0744773519163763
+        },
+        {
+          "expert": 12,
+          "activations": 848,
+          "fraction": 0.07386759581881533
+        },
+        {
+          "expert": 9,
+          "activations": 755,
+          "fraction": 0.06576655052264808
+        }
+      ]
+    },
+    "model.layers.8.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1208,
+        356,
+        388,
+        1187,
+        224,
+        243,
+        1368,
+        1092,
+        261,
+        700,
+        1358,
+        626,
+        597,
+        721,
+        680,
+        471
+      ],
+      "router_entropy_sum": 2289.1747584305704,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5952437340979584,
+      "top_experts": [
+        {
+          "expert": 6,
+          "activations": 1368,
+          "fraction": 0.11916376306620209
+        },
+        {
+          "expert": 10,
+          "activations": 1358,
+          "fraction": 0.11829268292682926
+        },
+        {
+          "expert": 0,
+          "activations": 1208,
+          "fraction": 0.10522648083623694
+        },
+        {
+          "expert": 3,
+          "activations": 1187,
+          "fraction": 0.10339721254355401
+        },
+        {
+          "expert": 7,
+          "activations": 1092,
+          "fraction": 0.0951219512195122
+        },
+        {
+          "expert": 13,
+          "activations": 721,
+          "fraction": 0.06280487804878049
+        },
+        {
+          "expert": 9,
+          "activations": 700,
+          "fraction": 0.06097560975609756
+        },
+        {
+          "expert": 14,
+          "activations": 680,
+          "fraction": 0.059233449477351915
+        }
+      ]
+    },
+    "model.layers.9.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1066,
+        83,
+        206,
+        282,
+        1343,
+        1424,
+        184,
+        824,
+        188,
+        790,
+        1431,
+        974,
+        749,
+        352,
+        1127,
+        457
+      ],
+      "router_entropy_sum": 2287.5781087726355,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5941310862527076,
+      "top_experts": [
+        {
+          "expert": 10,
+          "activations": 1431,
+          "fraction": 0.12465156794425088
+        },
+        {
+          "expert": 5,
+          "activations": 1424,
+          "fraction": 0.1240418118466899
+        },
+        {
+          "expert": 4,
+          "activations": 1343,
+          "fraction": 0.11698606271777004
+        },
+        {
+          "expert": 14,
+          "activations": 1127,
+          "fraction": 0.09817073170731708
+        },
+        {
+          "expert": 0,
+          "activations": 1066,
+          "fraction": 0.09285714285714286
+        },
+        {
+          "expert": 11,
+          "activations": 974,
+          "fraction": 0.08484320557491289
+        },
+        {
+          "expert": 7,
+          "activations": 824,
+          "fraction": 0.07177700348432056
+        },
+        {
+          "expert": 9,
+          "activations": 790,
+          "fraction": 0.06881533101045297
+        }
+      ]
+    },
+    "model.layers.10.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        960,
+        1428,
+        714,
+        415,
+        396,
+        1088,
+        367,
+        208,
+        1035,
+        883,
+        679,
+        1111,
+        888,
+        210,
+        179,
+        919
+      ],
+      "router_entropy_sum": 2438.1317757237703,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6990465336054148,
+      "top_experts": [
+        {
+          "expert": 1,
+          "activations": 1428,
+          "fraction": 0.12439024390243902
+        },
+        {
+          "expert": 11,
+          "activations": 1111,
+          "fraction": 0.09677700348432056
+        },
+        {
+          "expert": 5,
+          "activations": 1088,
+          "fraction": 0.09477351916376307
+        },
+        {
+          "expert": 8,
+          "activations": 1035,
+          "fraction": 0.0901567944250871
+        },
+        {
+          "expert": 0,
+          "activations": 960,
+          "fraction": 0.08362369337979095
+        },
+        {
+          "expert": 15,
+          "activations": 919,
+          "fraction": 0.08005226480836238
+        },
+        {
+          "expert": 12,
+          "activations": 888,
+          "fraction": 0.07735191637630662
+        },
+        {
+          "expert": 9,
+          "activations": 883,
+          "fraction": 0.07691637630662021
+        }
+      ]
+    },
+    "model.layers.11.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1232,
+        512,
+        661,
+        226,
+        936,
+        279,
+        614,
+        1195,
+        1331,
+        1096,
+        1084,
+        447,
+        99,
+        36,
+        796,
+        936
+      ],
+      "router_entropy_sum": 2472.8846901312936,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.7232645924259886,
+      "top_experts": [
+        {
+          "expert": 8,
+          "activations": 1331,
+          "fraction": 0.11594076655052264
+        },
+        {
+          "expert": 0,
+          "activations": 1232,
+          "fraction": 0.1073170731707317
+        },
+        {
+          "expert": 7,
+          "activations": 1195,
+          "fraction": 0.10409407665505227
+        },
+        {
+          "expert": 9,
+          "activations": 1096,
+          "fraction": 0.09547038327526132
+        },
+        {
+          "expert": 10,
+          "activations": 1084,
+          "fraction": 0.09442508710801394
+        },
+        {
+          "expert": 4,
+          "activations": 936,
+          "fraction": 0.08153310104529617
+        },
+        {
+          "expert": 15,
+          "activations": 936,
+          "fraction": 0.08153310104529617
+        },
+        {
+          "expert": 14,
+          "activations": 796,
+          "fraction": 0.06933797909407666
+        }
+      ]
+    },
+    "model.layers.12.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        697,
+        826,
+        1002,
+        220,
+        109,
+        351,
+        1410,
+        520,
+        326,
+        1200,
+        279,
+        1265,
+        339,
+        1023,
+        1177,
+        736
+      ],
+      "router_entropy_sum": 2224.9114120826125,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.550460914343284,
+      "top_experts": [
+        {
+          "expert": 6,
+          "activations": 1410,
+          "fraction": 0.12282229965156795
+        },
+        {
+          "expert": 11,
+          "activations": 1265,
+          "fraction": 0.11019163763066202
+        },
+        {
+          "expert": 9,
+          "activations": 1200,
+          "fraction": 0.10452961672473868
+        },
+        {
+          "expert": 14,
+          "activations": 1177,
+          "fraction": 0.10252613240418118
+        },
+        {
+          "expert": 13,
+          "activations": 1023,
+          "fraction": 0.08911149825783972
+        },
+        {
+          "expert": 2,
+          "activations": 1002,
+          "fraction": 0.08728222996515679
+        },
+        {
+          "expert": 1,
+          "activations": 826,
+          "fraction": 0.07195121951219512
+        },
+        {
+          "expert": 15,
+          "activations": 736,
+          "fraction": 0.06411149825783972
+        }
+      ]
+    },
+    "model.layers.13.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        285,
+        784,
+        1004,
+        1226,
+        866,
+        856,
+        1248,
+        217,
+        263,
+        741,
+        1158,
+        225,
+        636,
+        1372,
+        567,
+        32
+      ],
+      "router_entropy_sum": 2275.4718790797897,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5856946892542088,
+      "top_experts": [
+        {
+          "expert": 13,
+          "activations": 1372,
+          "fraction": 0.11951219512195121
+        },
+        {
+          "expert": 6,
+          "activations": 1248,
+          "fraction": 0.10871080139372823
+        },
+        {
+          "expert": 3,
+          "activations": 1226,
+          "fraction": 0.10679442508710801
+        },
+        {
+          "expert": 10,
+          "activations": 1158,
+          "fraction": 0.10087108013937282
+        },
+        {
+          "expert": 2,
+          "activations": 1004,
+          "fraction": 0.08745644599303136
+        },
+        {
+          "expert": 4,
+          "activations": 866,
+          "fraction": 0.0754355400696864
+        },
+        {
+          "expert": 5,
+          "activations": 856,
+          "fraction": 0.07456445993031359
+        },
+        {
+          "expert": 1,
+          "activations": 784,
+          "fraction": 0.06829268292682927
+        }
+      ]
+    },
+    "model.layers.14.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1403,
+        768,
+        381,
+        1115,
+        214,
+        164,
+        360,
+        579,
+        1137,
+        1198,
+        1171,
+        1127,
+        385,
+        487,
+        207,
+        784
+      ],
+      "router_entropy_sum": 2505.0971577614546,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.745712305060247,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1403,
+          "fraction": 0.12221254355400697
+        },
+        {
+          "expert": 9,
+          "activations": 1198,
+          "fraction": 0.10435540069686411
+        },
+        {
+          "expert": 10,
+          "activations": 1171,
+          "fraction": 0.10200348432055749
+        },
+        {
+          "expert": 8,
+          "activations": 1137,
+          "fraction": 0.09904181184668989
+        },
+        {
+          "expert": 11,
+          "activations": 1127,
+          "fraction": 0.09817073170731708
+        },
+        {
+          "expert": 3,
+          "activations": 1115,
+          "fraction": 0.09712543554006968
+        },
+        {
+          "expert": 15,
+          "activations": 784,
+          "fraction": 0.06829268292682927
+        },
+        {
+          "expert": 1,
+          "activations": 768,
+          "fraction": 0.06689895470383275
+        }
+      ]
+    },
+    "model.layers.15.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        854,
+        211,
+        410,
+        439,
+        1268,
+        990,
+        1062,
+        1039,
+        1245,
+        1043,
+        355,
+        558,
+        401,
+        239,
+        182,
+        1184
+      ],
+      "router_entropy_sum": 2821.836897313595,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.9664368622394388,
+      "top_experts": [
+        {
+          "expert": 4,
+          "activations": 1268,
+          "fraction": 0.11045296167247387
+        },
+        {
+          "expert": 8,
+          "activations": 1245,
+          "fraction": 0.10844947735191637
+        },
+        {
+          "expert": 15,
+          "activations": 1184,
+          "fraction": 0.10313588850174216
+        },
+        {
+          "expert": 6,
+          "activations": 1062,
+          "fraction": 0.09250871080139372
+        },
+        {
+          "expert": 9,
+          "activations": 1043,
+          "fraction": 0.09085365853658536
+        },
+        {
+          "expert": 7,
+          "activations": 1039,
+          "fraction": 0.09050522648083624
+        },
+        {
+          "expert": 5,
+          "activations": 990,
+          "fraction": 0.08623693379790941
+        },
+        {
+          "expert": 0,
+          "activations": 854,
+          "fraction": 0.07439024390243902
+        }
+      ]
+    },
+    "model.layers.16.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        345,
+        1220,
+        1149,
+        1197,
+        792,
+        254,
+        217,
+        212,
+        439,
+        379,
+        1182,
+        645,
+        423,
+        1200,
+        792,
+        1034
+      ],
+      "router_entropy_sum": 2592.9764996618032,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8069522645726852,
+      "top_experts": [
+        {
+          "expert": 1,
+          "activations": 1220,
+          "fraction": 0.10627177700348432
+        },
+        {
+          "expert": 13,
+          "activations": 1200,
+          "fraction": 0.10452961672473868
+        },
+        {
+          "expert": 3,
+          "activations": 1197,
+          "fraction": 0.10426829268292682
+        },
+        {
+          "expert": 10,
+          "activations": 1182,
+          "fraction": 0.1029616724738676
+        },
+        {
+          "expert": 2,
+          "activations": 1149,
+          "fraction": 0.10008710801393728
+        },
+        {
+          "expert": 15,
+          "activations": 1034,
+          "fraction": 0.09006968641114983
+        },
+        {
+          "expert": 4,
+          "activations": 792,
+          "fraction": 0.06898954703832752
+        },
+        {
+          "expert": 14,
+          "activations": 792,
+          "fraction": 0.06898954703832752
+        }
+      ]
+    },
+    "model.layers.17.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1010,
+        643,
+        561,
+        47,
+        1212,
+        734,
+        1210,
+        390,
+        246,
+        301,
+        857,
+        956,
+        879,
+        202,
+        1071,
+        1161
+      ],
+      "router_entropy_sum": 2619.3524470068514,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.825332715684217,
+      "top_experts": [
+        {
+          "expert": 4,
+          "activations": 1212,
+          "fraction": 0.10557491289198606
+        },
+        {
+          "expert": 6,
+          "activations": 1210,
+          "fraction": 0.10540069686411149
+        },
+        {
+          "expert": 15,
+          "activations": 1161,
+          "fraction": 0.10113240418118467
+        },
+        {
+          "expert": 14,
+          "activations": 1071,
+          "fraction": 0.09329268292682927
+        },
+        {
+          "expert": 0,
+          "activations": 1010,
+          "fraction": 0.08797909407665505
+        },
+        {
+          "expert": 11,
+          "activations": 956,
+          "fraction": 0.08327526132404181
+        },
+        {
+          "expert": 12,
+          "activations": 879,
+          "fraction": 0.07656794425087109
+        },
+        {
+          "expert": 10,
+          "activations": 857,
+          "fraction": 0.07465156794425087
+        }
+      ]
+    },
+    "model.layers.18.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        306,
+        209,
+        385,
+        1213,
+        559,
+        178,
+        1077,
+        1420,
+        95,
+        1290,
+        1023,
+        1203,
+        1041,
+        342,
+        73,
+        1066
+      ],
+      "router_entropy_sum": 2480.4643668457866,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.7285465971050777,
+      "top_experts": [
+        {
+          "expert": 7,
+          "activations": 1420,
+          "fraction": 0.12369337979094076
+        },
+        {
+          "expert": 9,
+          "activations": 1290,
+          "fraction": 0.11236933797909408
+        },
+        {
+          "expert": 3,
+          "activations": 1213,
+          "fraction": 0.10566202090592335
+        },
+        {
+          "expert": 11,
+          "activations": 1203,
+          "fraction": 0.10479094076655052
+        },
+        {
+          "expert": 6,
+          "activations": 1077,
+          "fraction": 0.09381533101045296
+        },
+        {
+          "expert": 15,
+          "activations": 1066,
+          "fraction": 0.09285714285714286
+        },
+        {
+          "expert": 12,
+          "activations": 1041,
+          "fraction": 0.0906794425087108
+        },
+        {
+          "expert": 10,
+          "activations": 1023,
+          "fraction": 0.08911149825783972
+        }
+      ]
+    },
+    "model.layers.19.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1236,
+        1030,
+        16,
+        494,
+        1228,
+        1224,
+        288,
+        1281,
+        177,
+        203,
+        711,
+        1212,
+        622,
+        337,
+        257,
+        1164
+      ],
+      "router_entropy_sum": 2180.5241423994303,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5195290190936797,
+      "top_experts": [
+        {
+          "expert": 7,
+          "activations": 1281,
+          "fraction": 0.11158536585365854
+        },
+        {
+          "expert": 0,
+          "activations": 1236,
+          "fraction": 0.10766550522648084
+        },
+        {
+          "expert": 4,
+          "activations": 1228,
+          "fraction": 0.10696864111498258
+        },
+        {
+          "expert": 5,
+          "activations": 1224,
+          "fraction": 0.10662020905923345
+        },
+        {
+          "expert": 11,
+          "activations": 1212,
+          "fraction": 0.10557491289198606
+        },
+        {
+          "expert": 15,
+          "activations": 1164,
+          "fraction": 0.10139372822299651
+        },
+        {
+          "expert": 1,
+          "activations": 1030,
+          "fraction": 0.0897212543554007
+        },
+        {
+          "expert": 10,
+          "activations": 711,
+          "fraction": 0.061933797909407666
+        }
+      ]
+    },
+    "model.layers.20.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1112,
+        1227,
+        624,
+        407,
+        590,
+        1219,
+        211,
+        1010,
+        1010,
+        1013,
+        437,
+        210,
+        958,
+        204,
+        1215,
+        33
+      ],
+      "router_entropy_sum": 2683.7493744790554,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.870208623330352,
+      "top_experts": [
+        {
+          "expert": 1,
+          "activations": 1227,
+          "fraction": 0.1068815331010453
+        },
+        {
+          "expert": 5,
+          "activations": 1219,
+          "fraction": 0.10618466898954704
+        },
+        {
+          "expert": 14,
+          "activations": 1215,
+          "fraction": 0.10583623693379791
+        },
+        {
+          "expert": 0,
+          "activations": 1112,
+          "fraction": 0.09686411149825784
+        },
+        {
+          "expert": 9,
+          "activations": 1013,
+          "fraction": 0.0882404181184669
+        },
+        {
+          "expert": 7,
+          "activations": 1010,
+          "fraction": 0.08797909407665505
+        },
+        {
+          "expert": 8,
+          "activations": 1010,
+          "fraction": 0.08797909407665505
+        },
+        {
+          "expert": 12,
+          "activations": 958,
+          "fraction": 0.08344947735191638
+        }
+      ]
+    },
+    "model.layers.21.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1343,
+        1150,
+        1088,
+        206,
+        476,
+        398,
+        1174,
+        621,
+        816,
+        18,
+        408,
+        1323,
+        24,
+        1232,
+        66,
+        1137
+      ],
+      "router_entropy_sum": 2438.463539160788,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6992777276381799,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1343,
+          "fraction": 0.11698606271777004
+        },
+        {
+          "expert": 11,
+          "activations": 1323,
+          "fraction": 0.1152439024390244
+        },
+        {
+          "expert": 13,
+          "activations": 1232,
+          "fraction": 0.1073170731707317
+        },
+        {
+          "expert": 6,
+          "activations": 1174,
+          "fraction": 0.10226480836236934
+        },
+        {
+          "expert": 1,
+          "activations": 1150,
+          "fraction": 0.10017421602787456
+        },
+        {
+          "expert": 15,
+          "activations": 1137,
+          "fraction": 0.09904181184668989
+        },
+        {
+          "expert": 2,
+          "activations": 1088,
+          "fraction": 0.09477351916376307
+        },
+        {
+          "expert": 8,
+          "activations": 816,
+          "fraction": 0.0710801393728223
+        }
+      ]
+    },
+    "model.layers.22.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1345,
+        334,
+        755,
+        296,
+        1137,
+        1144,
+        1429,
+        651,
+        1046,
+        1392,
+        207,
+        361,
+        371,
+        375,
+        296,
+        341
+      ],
+      "router_entropy_sum": 2402.7816669493914,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6744123114629905,
+      "top_experts": [
+        {
+          "expert": 6,
+          "activations": 1429,
+          "fraction": 0.12447735191637631
+        },
+        {
+          "expert": 9,
+          "activations": 1392,
+          "fraction": 0.12125435540069686
+        },
+        {
+          "expert": 0,
+          "activations": 1345,
+          "fraction": 0.1171602787456446
+        },
+        {
+          "expert": 5,
+          "activations": 1144,
+          "fraction": 0.09965156794425087
+        },
+        {
+          "expert": 4,
+          "activations": 1137,
+          "fraction": 0.09904181184668989
+        },
+        {
+          "expert": 8,
+          "activations": 1046,
+          "fraction": 0.09111498257839722
+        },
+        {
+          "expert": 2,
+          "activations": 755,
+          "fraction": 0.06576655052264808
+        },
+        {
+          "expert": 7,
+          "activations": 651,
+          "fraction": 0.056707317073170734
+        }
+      ]
+    },
+    "model.layers.23.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        787,
+        973,
+        140,
+        240,
+        1076,
+        945,
+        253,
+        393,
+        753,
+        1207,
+        1198,
+        228,
+        748,
+        1061,
+        1222,
+        256
+      ],
+      "router_entropy_sum": 2715.0352902188897,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8920106552048013,
+      "top_experts": [
+        {
+          "expert": 14,
+          "activations": 1222,
+          "fraction": 0.10644599303135889
+        },
+        {
+          "expert": 9,
+          "activations": 1207,
+          "fraction": 0.10513937282229965
+        },
+        {
+          "expert": 10,
+          "activations": 1198,
+          "fraction": 0.10435540069686411
+        },
+        {
+          "expert": 4,
+          "activations": 1076,
+          "fraction": 0.09372822299651568
+        },
+        {
+          "expert": 13,
+          "activations": 1061,
+          "fraction": 0.09242160278745645
+        },
+        {
+          "expert": 1,
+          "activations": 973,
+          "fraction": 0.08475609756097562
+        },
+        {
+          "expert": 5,
+          "activations": 945,
+          "fraction": 0.08231707317073171
+        },
+        {
+          "expert": 0,
+          "activations": 787,
+          "fraction": 0.06855400696864111
+        }
+      ]
+    },
+    "model.layers.24.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1282,
+        172,
+        609,
+        1109,
+        646,
+        1213,
+        168,
+        1397,
+        1190,
+        337,
+        202,
+        337,
+        883,
+        1151,
+        138,
+        646
+      ],
+      "router_entropy_sum": 2606.982481881976,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8167125309282064,
+      "top_experts": [
+        {
+          "expert": 7,
+          "activations": 1397,
+          "fraction": 0.12168989547038328
+        },
+        {
+          "expert": 0,
+          "activations": 1282,
+          "fraction": 0.11167247386759582
+        },
+        {
+          "expert": 5,
+          "activations": 1213,
+          "fraction": 0.10566202090592335
+        },
+        {
+          "expert": 8,
+          "activations": 1190,
+          "fraction": 0.10365853658536585
+        },
+        {
+          "expert": 13,
+          "activations": 1151,
+          "fraction": 0.10026132404181184
+        },
+        {
+          "expert": 3,
+          "activations": 1109,
+          "fraction": 0.09660278745644599
+        },
+        {
+          "expert": 12,
+          "activations": 883,
+          "fraction": 0.07691637630662021
+        },
+        {
+          "expert": 4,
+          "activations": 646,
+          "fraction": 0.05627177700348432
+        }
+      ]
+    },
+    "model.layers.25.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        232,
+        1249,
+        587,
+        1184,
+        775,
+        369,
+        496,
+        533,
+        1002,
+        1328,
+        404,
+        1201,
+        481,
+        679,
+        866,
+        94
+      ],
+      "router_entropy_sum": 2606.3296538963914,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8162575985340708,
+      "top_experts": [
+        {
+          "expert": 9,
+          "activations": 1328,
+          "fraction": 0.1156794425087108
+        },
+        {
+          "expert": 1,
+          "activations": 1249,
+          "fraction": 0.10879790940766551
+        },
+        {
+          "expert": 11,
+          "activations": 1201,
+          "fraction": 0.10461672473867596
+        },
+        {
+          "expert": 3,
+          "activations": 1184,
+          "fraction": 0.10313588850174216
+        },
+        {
+          "expert": 8,
+          "activations": 1002,
+          "fraction": 0.08728222996515679
+        },
+        {
+          "expert": 14,
+          "activations": 866,
+          "fraction": 0.0754355400696864
+        },
+        {
+          "expert": 4,
+          "activations": 775,
+          "fraction": 0.06750871080139373
+        },
+        {
+          "expert": 13,
+          "activations": 679,
+          "fraction": 0.05914634146341463
+        }
+      ]
+    },
+    "model.layers.26.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1082,
+        896,
+        1347,
+        289,
+        1221,
+        447,
+        321,
+        1305,
+        393,
+        1082,
+        271,
+        1204,
+        102,
+        275,
+        1137,
+        108
+      ],
+      "router_entropy_sum": 2514.216406494379,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.752067182226048,
+      "top_experts": [
+        {
+          "expert": 2,
+          "activations": 1347,
+          "fraction": 0.11733449477351916
+        },
+        {
+          "expert": 7,
+          "activations": 1305,
+          "fraction": 0.1136759581881533
+        },
+        {
+          "expert": 4,
+          "activations": 1221,
+          "fraction": 0.1063588850174216
+        },
+        {
+          "expert": 11,
+          "activations": 1204,
+          "fraction": 0.1048780487804878
+        },
+        {
+          "expert": 14,
+          "activations": 1137,
+          "fraction": 0.09904181184668989
+        },
+        {
+          "expert": 0,
+          "activations": 1082,
+          "fraction": 0.09425087108013937
+        },
+        {
+          "expert": 9,
+          "activations": 1082,
+          "fraction": 0.09425087108013937
+        },
+        {
+          "expert": 1,
+          "activations": 896,
+          "fraction": 0.07804878048780488
+        }
+      ]
+    },
+    "model.layers.27.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1056,
+        1199,
+        946,
+        34,
+        250,
+        1261,
+        354,
+        527,
+        642,
+        352,
+        743,
+        338,
+        466,
+        1189,
+        913,
+        1210
+      ],
+      "router_entropy_sum": 2744.2249395549297,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.9123518742543064,
+      "top_experts": [
+        {
+          "expert": 5,
+          "activations": 1261,
+          "fraction": 0.1098432055749129
+        },
+        {
+          "expert": 15,
+          "activations": 1210,
+          "fraction": 0.10540069686411149
+        },
+        {
+          "expert": 1,
+          "activations": 1199,
+          "fraction": 0.1044425087108014
+        },
+        {
+          "expert": 13,
+          "activations": 1189,
+          "fraction": 0.10357142857142858
+        },
+        {
+          "expert": 0,
+          "activations": 1056,
+          "fraction": 0.09198606271777003
+        },
+        {
+          "expert": 2,
+          "activations": 946,
+          "fraction": 0.082404181184669
+        },
+        {
+          "expert": 14,
+          "activations": 913,
+          "fraction": 0.07952961672473867
+        },
+        {
+          "expert": 10,
+          "activations": 743,
+          "fraction": 0.0647212543554007
+        }
+      ]
+    },
+    "model.layers.28.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1325,
+        673,
+        1225,
+        579,
+        146,
+        674,
+        383,
+        1139,
+        1352,
+        436,
+        185,
+        403,
+        1354,
+        935,
+        288,
+        383
+      ],
+      "router_entropy_sum": 2358.2931086719036,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6434098318271104,
+      "top_experts": [
+        {
+          "expert": 12,
+          "activations": 1354,
+          "fraction": 0.11794425087108014
+        },
+        {
+          "expert": 8,
+          "activations": 1352,
+          "fraction": 0.11777003484320557
+        },
+        {
+          "expert": 0,
+          "activations": 1325,
+          "fraction": 0.11541811846689895
+        },
+        {
+          "expert": 2,
+          "activations": 1225,
+          "fraction": 0.10670731707317073
+        },
+        {
+          "expert": 7,
+          "activations": 1139,
+          "fraction": 0.09921602787456446
+        },
+        {
+          "expert": 13,
+          "activations": 935,
+          "fraction": 0.08144599303135888
+        },
+        {
+          "expert": 5,
+          "activations": 674,
+          "fraction": 0.058710801393728224
+        },
+        {
+          "expert": 1,
+          "activations": 673,
+          "fraction": 0.05862369337979094
+        }
+      ]
+    },
+    "model.layers.29.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1315,
+        156,
+        922,
+        415,
+        789,
+        394,
+        554,
+        928,
+        1008,
+        487,
+        73,
+        222,
+        795,
+        1036,
+        1185,
+        1201
+      ],
+      "router_entropy_sum": 2464.537003211677,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.7174473889976845,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1315,
+          "fraction": 0.11454703832752614
+        },
+        {
+          "expert": 15,
+          "activations": 1201,
+          "fraction": 0.10461672473867596
+        },
+        {
+          "expert": 14,
+          "activations": 1185,
+          "fraction": 0.10322299651567944
+        },
+        {
+          "expert": 13,
+          "activations": 1036,
+          "fraction": 0.09024390243902439
+        },
+        {
+          "expert": 8,
+          "activations": 1008,
+          "fraction": 0.08780487804878048
+        },
+        {
+          "expert": 7,
+          "activations": 928,
+          "fraction": 0.0808362369337979
+        },
+        {
+          "expert": 2,
+          "activations": 922,
+          "fraction": 0.08031358885017421
+        },
+        {
+          "expert": 12,
+          "activations": 795,
+          "fraction": 0.06925087108013937
+        }
+      ]
+    },
+    "model.layers.30.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        619,
+        88,
+        497,
+        408,
+        26,
+        912,
+        1420,
+        357,
+        1070,
+        1343,
+        865,
+        37,
+        1158,
+        1310,
+        910,
+        460
+      ],
+      "router_entropy_sum": 2290.028819859028,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5958388988564653,
+      "top_experts": [
+        {
+          "expert": 6,
+          "activations": 1420,
+          "fraction": 0.12369337979094076
+        },
+        {
+          "expert": 9,
+          "activations": 1343,
+          "fraction": 0.11698606271777004
+        },
+        {
+          "expert": 13,
+          "activations": 1310,
+          "fraction": 0.11411149825783973
+        },
+        {
+          "expert": 12,
+          "activations": 1158,
+          "fraction": 0.10087108013937282
+        },
+        {
+          "expert": 8,
+          "activations": 1070,
+          "fraction": 0.09320557491289198
+        },
+        {
+          "expert": 5,
+          "activations": 912,
+          "fraction": 0.0794425087108014
+        },
+        {
+          "expert": 14,
+          "activations": 910,
+          "fraction": 0.07926829268292683
+        },
+        {
+          "expert": 10,
+          "activations": 865,
+          "fraction": 0.07534843205574913
+        }
+      ]
+    },
+    "model.layers.31.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1435,
+        471,
+        1429,
+        601,
+        164,
+        402,
+        1077,
+        285,
+        890,
+        468,
+        403,
+        1434,
+        765,
+        266,
+        278,
+        1112
+      ],
+      "router_entropy_sum": 2277.9140770994127,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.5873965694072563,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1435,
+          "fraction": 0.125
+        },
+        {
+          "expert": 11,
+          "activations": 1434,
+          "fraction": 0.12491289198606272
+        },
+        {
+          "expert": 2,
+          "activations": 1429,
+          "fraction": 0.12447735191637631
+        },
+        {
+          "expert": 15,
+          "activations": 1112,
+          "fraction": 0.09686411149825784
+        },
+        {
+          "expert": 6,
+          "activations": 1077,
+          "fraction": 0.09381533101045296
+        },
+        {
+          "expert": 8,
+          "activations": 890,
+          "fraction": 0.07752613240418119
+        },
+        {
+          "expert": 12,
+          "activations": 765,
+          "fraction": 0.0666376306620209
+        },
+        {
+          "expert": 3,
+          "activations": 601,
+          "fraction": 0.05235191637630662
+        }
+      ]
+    },
+    "model.layers.32.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1168,
+        1315,
+        94,
+        1278,
+        1008,
+        105,
+        1210,
+        1161,
+        692,
+        894,
+        268,
+        1185,
+        239,
+        309,
+        451,
+        103
+      ],
+      "router_entropy_sum": 2407.526295420248,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.6777186727667235,
+      "top_experts": [
+        {
+          "expert": 1,
+          "activations": 1315,
+          "fraction": 0.11454703832752614
+        },
+        {
+          "expert": 3,
+          "activations": 1278,
+          "fraction": 0.11132404181184669
+        },
+        {
+          "expert": 6,
+          "activations": 1210,
+          "fraction": 0.10540069686411149
+        },
+        {
+          "expert": 11,
+          "activations": 1185,
+          "fraction": 0.10322299651567944
+        },
+        {
+          "expert": 0,
+          "activations": 1168,
+          "fraction": 0.10174216027874565
+        },
+        {
+          "expert": 7,
+          "activations": 1161,
+          "fraction": 0.10113240418118467
+        },
+        {
+          "expert": 4,
+          "activations": 1008,
+          "fraction": 0.08780487804878048
+        },
+        {
+          "expert": 9,
+          "activations": 894,
+          "fraction": 0.07787456445993031
+        }
+      ]
+    },
+    "model.layers.33.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1404,
+        1402,
+        52,
+        297,
+        1265,
+        1041,
+        671,
+        513,
+        2,
+        848,
+        804,
+        817,
+        804,
+        268,
+        121,
+        1171
+      ],
+      "router_entropy_sum": 2131.230370629579,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.4851779586268843,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1404,
+          "fraction": 0.12229965156794426
+        },
+        {
+          "expert": 1,
+          "activations": 1402,
+          "fraction": 0.12212543554006969
+        },
+        {
+          "expert": 4,
+          "activations": 1265,
+          "fraction": 0.11019163763066202
+        },
+        {
+          "expert": 15,
+          "activations": 1171,
+          "fraction": 0.10200348432055749
+        },
+        {
+          "expert": 5,
+          "activations": 1041,
+          "fraction": 0.0906794425087108
+        },
+        {
+          "expert": 9,
+          "activations": 848,
+          "fraction": 0.07386759581881533
+        },
+        {
+          "expert": 11,
+          "activations": 817,
+          "fraction": 0.07116724738675959
+        },
+        {
+          "expert": 10,
+          "activations": 804,
+          "fraction": 0.07003484320557492
+        }
+      ]
+    },
+    "model.layers.34.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        7,
+        1137,
+        1002,
+        925,
+        77,
+        429,
+        290,
+        1175,
+        1215,
+        367,
+        1200,
+        141,
+        1362,
+        1066,
+        51,
+        1036
+      ],
+      "router_entropy_sum": 2316.565250325948,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.614331184896131,
+      "top_experts": [
+        {
+          "expert": 12,
+          "activations": 1362,
+          "fraction": 0.1186411149825784
+        },
+        {
+          "expert": 8,
+          "activations": 1215,
+          "fraction": 0.10583623693379791
+        },
+        {
+          "expert": 10,
+          "activations": 1200,
+          "fraction": 0.10452961672473868
+        },
+        {
+          "expert": 7,
+          "activations": 1175,
+          "fraction": 0.10235191637630663
+        },
+        {
+          "expert": 1,
+          "activations": 1137,
+          "fraction": 0.09904181184668989
+        },
+        {
+          "expert": 13,
+          "activations": 1066,
+          "fraction": 0.09285714285714286
+        },
+        {
+          "expert": 15,
+          "activations": 1036,
+          "fraction": 0.09024390243902439
+        },
+        {
+          "expert": 2,
+          "activations": 1002,
+          "fraction": 0.08728222996515679
+        }
+      ]
+    },
+    "model.layers.35.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1001,
+        1364,
+        1106,
+        1,
+        820,
+        696,
+        778,
+        48,
+        787,
+        136,
+        92,
+        272,
+        1199,
+        1426,
+        678,
+        1076
+      ],
+      "router_entropy_sum": 1867.648894340542,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.3014974873453256,
+      "top_experts": [
+        {
+          "expert": 13,
+          "activations": 1426,
+          "fraction": 0.12421602787456446
+        },
+        {
+          "expert": 1,
+          "activations": 1364,
+          "fraction": 0.11881533101045297
+        },
+        {
+          "expert": 12,
+          "activations": 1199,
+          "fraction": 0.1044425087108014
+        },
+        {
+          "expert": 2,
+          "activations": 1106,
+          "fraction": 0.09634146341463415
+        },
+        {
+          "expert": 15,
+          "activations": 1076,
+          "fraction": 0.09372822299651568
+        },
+        {
+          "expert": 0,
+          "activations": 1001,
+          "fraction": 0.0871951219512195
+        },
+        {
+          "expert": 4,
+          "activations": 820,
+          "fraction": 0.07142857142857142
+        },
+        {
+          "expert": 8,
+          "activations": 787,
+          "fraction": 0.06855400696864111
+        }
+      ]
+    },
+    "model.layers.36.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        777,
+        1202,
+        740,
+        1293,
+        1146,
+        511,
+        233,
+        522,
+        513,
+        914,
+        479,
+        23,
+        425,
+        459,
+        1416,
+        827
+      ],
+      "router_entropy_sum": 2583.865767106414,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.8006033220253754,
+      "top_experts": [
+        {
+          "expert": 14,
+          "activations": 1416,
+          "fraction": 0.12334494773519164
+        },
+        {
+          "expert": 3,
+          "activations": 1293,
+          "fraction": 0.11263066202090592
+        },
+        {
+          "expert": 1,
+          "activations": 1202,
+          "fraction": 0.10470383275261325
+        },
+        {
+          "expert": 4,
+          "activations": 1146,
+          "fraction": 0.09982578397212544
+        },
+        {
+          "expert": 9,
+          "activations": 914,
+          "fraction": 0.07961672473867595
+        },
+        {
+          "expert": 15,
+          "activations": 827,
+          "fraction": 0.0720383275261324
+        },
+        {
+          "expert": 0,
+          "activations": 777,
+          "fraction": 0.0676829268292683
+        },
+        {
+          "expert": 2,
+          "activations": 740,
+          "fraction": 0.06445993031358885
+        }
+      ]
+    },
+    "model.layers.37.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1085,
+        102,
+        854,
+        1353,
+        13,
+        485,
+        588,
+        341,
+        876,
+        671,
+        756,
+        1064,
+        1284,
+        1066,
+        58,
+        884
+      ],
+      "router_entropy_sum": 2011.1224097423255,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.401479031179321,
+      "top_experts": [
+        {
+          "expert": 3,
+          "activations": 1353,
+          "fraction": 0.11785714285714285
+        },
+        {
+          "expert": 12,
+          "activations": 1284,
+          "fraction": 0.11184668989547038
+        },
+        {
+          "expert": 0,
+          "activations": 1085,
+          "fraction": 0.09451219512195122
+        },
+        {
+          "expert": 13,
+          "activations": 1066,
+          "fraction": 0.09285714285714286
+        },
+        {
+          "expert": 11,
+          "activations": 1064,
+          "fraction": 0.09268292682926829
+        },
+        {
+          "expert": 15,
+          "activations": 884,
+          "fraction": 0.0770034843205575
+        },
+        {
+          "expert": 8,
+          "activations": 876,
+          "fraction": 0.07630662020905923
+        },
+        {
+          "expert": 2,
+          "activations": 854,
+          "fraction": 0.07439024390243902
+        }
+      ]
+    },
+    "model.layers.38.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1420,
+        1291,
+        1006,
+        942,
+        850,
+        834,
+        1324,
+        1006,
+        46,
+        282,
+        1312,
+        68,
+        21,
+        833,
+        244,
+        1
+      ],
+      "router_entropy_sum": 1901.5738532645628,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.3251385737035282,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1420,
+          "fraction": 0.12369337979094076
+        },
+        {
+          "expert": 6,
+          "activations": 1324,
+          "fraction": 0.11533101045296167
+        },
+        {
+          "expert": 10,
+          "activations": 1312,
+          "fraction": 0.11428571428571428
+        },
+        {
+          "expert": 1,
+          "activations": 1291,
+          "fraction": 0.11245644599303135
+        },
+        {
+          "expert": 2,
+          "activations": 1006,
+          "fraction": 0.08763066202090593
+        },
+        {
+          "expert": 7,
+          "activations": 1006,
+          "fraction": 0.08763066202090593
+        },
+        {
+          "expert": 3,
+          "activations": 942,
+          "fraction": 0.08205574912891986
+        },
+        {
+          "expert": 4,
+          "activations": 850,
+          "fraction": 0.0740418118466899
+        }
+      ]
+    },
+    "model.layers.39.mlp": {
+      "expert_count": 16,
+      "top_k": 8,
+      "token_count": 1435,
+      "top_k_assignments": 11480,
+      "expert_activation_counts": [
+        1314,
+        510,
+        799,
+        638,
+        99,
+        58,
+        771,
+        334,
+        1156,
+        1071,
+        1235,
+        1177,
+        994,
+        786,
+        538,
+        0
+      ],
+      "router_entropy_sum": 2738.470165476203,
+      "router_call_count": 489,
+      "mean_router_entropy": 1.9083415787290614,
+      "top_experts": [
+        {
+          "expert": 0,
+          "activations": 1314,
+          "fraction": 0.11445993031358885
+        },
+        {
+          "expert": 10,
+          "activations": 1235,
+          "fraction": 0.10757839721254356
+        },
+        {
+          "expert": 11,
+          "activations": 1177,
+          "fraction": 0.10252613240418118
+        },
+        {
+          "expert": 8,
+          "activations": 1156,
+          "fraction": 0.10069686411149825
+        },
+        {
+          "expert": 9,
+          "activations": 1071,
+          "fraction": 0.09329268292682927
+        },
+        {
+          "expert": 12,
+          "activations": 994,
+          "fraction": 0.08658536585365853
+        },
+        {
+          "expert": 2,
+          "activations": 799,
+          "fraction": 0.0695993031358885
+        },
+        {
+          "expert": 13,
+          "activations": 786,
+          "fraction": 0.06846689895470383
+        }
+      ]
+    }
+  },
+  "aggregate_top_experts": [
+    {
+      "expert": 0,
+      "activations": 37599
+    },
+    {
+      "expert": 1,
+      "activations": 31498
+    },
+    {
+      "expert": 9,
+      "activations": 31040
+    },
+    {
+      "expert": 2,
+      "activations": 29864
+    },
+    {
+      "expert": 8,
+      "activations": 29370
+    },
+    {
+      "expert": 6,
+      "activations": 29087
+    },
+    {
+      "expert": 7,
+      "activations": 28730
+    },
+    {
+      "expert": 10,
+      "activations": 28401
+    }
+  ],
+  "selection_note": "Per-layer rankings are evidence for later selection. The aggregate list is not a final Wrench selection.",
+  "elapsed_seconds": 81.743,
+  "quality_claim": false
+}
