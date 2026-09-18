@@ -2,8 +2,8 @@
   "schema": "wrench.unseen-packed-tier-comparison.v1",
   "status": "OBSERVED_PROVISIONAL_MISMATCHES",
   "fixture": {
-    "path": "D:\\models\\wrench-evaluation-v1.jsonl",
-    "sha256": "d84b9a4c4345d52c4518e7ec85b10ef47baf4cffe98c71983ec9a907f8d5e67f",
+    "path": "D:\\models\\wrench-evaluation-v2.jsonl",
+    "sha256": "fece7c33e933be21ac067aa0a21546654602b5cc6ef872920f1e5546647de87f",
     "case_count": 28
   },
   "tiers": [
@@ -12,18 +12,18 @@
       "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v3-TextOnly-FTW",
       "directory_bytes": 3426514763,
       "verifier_exact_matches": 8,
-      "proposal_exact_matches": 5,
-      "runtime_receipt": "runtime-8-ftw.json",
-      "score_receipt": "score-8-ftw.json"
+      "proposal_exact_matches": 7,
+      "runtime_receipt": "runtime-8-ftw-v2.json",
+      "score_receipt": "score-8-ftw-v2.json"
     },
     {
       "tier": "16E",
       "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v1b-TextOnly-FTW",
       "directory_bytes": 3996022974,
       "verifier_exact_matches": 9,
-      "proposal_exact_matches": 6,
-      "runtime_receipt": "runtime-16-ftw.json",
-      "score_receipt": "score-16-ftw.json"
+      "proposal_exact_matches": 7,
+      "runtime_receipt": "runtime-16-ftw-v2.json",
+      "score_receipt": "score-16-ftw-v2.json"
     }
   ],
   "quality_claim": false,

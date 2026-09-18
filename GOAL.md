@@ -327,7 +327,7 @@ but broader held-out quality, human portfolio approval, matched workflow value,
 and production enablement remain open.
 
 Phase 29 added a separate 28-case unseen synthetic evaluation fixture. The
-8E packed tier scored 8/28 verifier outcomes and 5/28 exact proposal objects;
-the 16E packed tier scored 9/28 and 6/28. This gives the larger tier only a
-small provisional edge and confirms that neither packed tier has yet met a
-usefulness or release gate.
+the corrected fixture has unique IDs. The 8E packed tier scored 8/28 verifier
+outcomes and 7/28 exact proposal objects; the 16E packed tier scored 9/28 and
+7/28. This gives the larger tier only a small provisional edge and confirms
+that neither packed tier has yet met a usefulness or release gate.
