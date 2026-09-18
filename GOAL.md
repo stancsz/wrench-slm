@@ -263,3 +263,12 @@ the 3 to 4B target. The receipt is
 `phases/phase-23-expert-size-estimate/size-estimate.json`. No expert set has
 been selected, no tensor has been sliced, and no quality or runtime claim is
 made.
+
+Phase 24 streamed a provisional structural prune retaining expert indices 0
+through 7 and the corresponding router rows. The resulting checkpoint at
+`D:\\models\\Wrench-Qwen3.6-8expert-BF16` loads on CUDA and reports
+3,881,244,016 actual parameters. The receipt is
+`phases/phase-24-structural-prune-baseline/prune-receipt.json`, with runtime
+evidence in `runtime-smoke.json`. The result is explicitly
+`EXPERIMENTAL_UNCALIBRATED`; its deterministic generation is not a quality
+pass, and the selected indices are not yet Wrench-specific.

@@ -101,6 +101,12 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   total parameters, while 16 estimates 4.978B. This is the first measured
   candidate inside the 3 to 4B target, but it is not a pruned or calibrated
   model.
+- **Phase 24, provisional structural prune:** a streaming pruner produced an
+  8-expert-per-MoE-block BF16 checkpoint outside Git. Transformers loaded it on
+  CUDA and counted 3,881,244,016 actual parameters. The deterministic smoke
+  generated 8 tokens, but its output is not a quality pass. Expert indices 0
+  through 7 are provisional until router profiling selects a Wrench-specific
+  set.
 - **Next gate:** obtain explicit human approval for the frozen task portfolio,
   then run a reproducible router-profile pass on an approved calibration corpus
   to select which 8 experts, if any, can be retained.

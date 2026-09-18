@@ -10,6 +10,7 @@ from pathlib import Path
 from wrench_harness import CancellationToken, ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
 from tools.inspect_qwen_checkpoint import inspect_checkpoint
 from tools.estimate_qwen_pruned_sizes import analyze_checkpoint
+from tools.prune_qwen_experts import prune_checkpoint
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -155,6 +156,41 @@ def test_qwen_pruned_size_estimate_uses_headers_only(tmp_path: Path):
     assert report["evidence_scope"] == "safetensors_headers_only_no_tensor_payload_loaded"
     assert report["tensor_inventory"]["tensor_elements"] == 78
     assert scenario["estimated_tensor_elements"] == 44
+
+
+def test_streaming_pruner_slices_experts_and_router_rows(tmp_path: Path):
+    import torch
+    from safetensors.torch import load_file, save_file
+
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "config.json").write_text(
+        json.dumps({"architectures": ["Qwen3_5MoeForConditionalGeneration"], "text_config": {"num_experts": 4, "num_experts_per_tok": 2}}),
+        encoding="utf-8",
+    )
+    tensors = {
+        "model.language_model.layers.0.mlp.experts.gate_up_proj": torch.arange(24, dtype=torch.bfloat16).reshape(4, 2, 3),
+        "model.language_model.layers.0.mlp.experts.down_proj": torch.arange(24, dtype=torch.bfloat16).reshape(4, 3, 2),
+        "model.language_model.layers.0.mlp.gate.weight": torch.arange(20, dtype=torch.bfloat16).reshape(4, 5),
+        "model.language_model.layers.0.input_layernorm.weight": torch.arange(10, dtype=torch.bfloat16),
+    }
+    shard = source / "model-00001-of-00001.safetensors"
+    save_file(tensors, str(shard))
+    (source / "model.safetensors.index.json").write_text(
+        json.dumps({"metadata": {"total_size": sum(t.numel() * t.element_size() for t in tensors.values())}, "weight_map": {name: shard.name for name in tensors}}),
+        encoding="utf-8",
+    )
+    output = tmp_path / "output"
+    receipt = prune_checkpoint(source, output, [0, 2], chunk_limit_bytes=1024)
+    assert receipt["status"] == "EXPERIMENTAL_UNCALIBRATED"
+    assert receipt["sliced_tensor_count"] == 3
+    assert json.loads((output / "config.json").read_text(encoding="utf-8"))["text_config"]["num_experts"] == 2
+    merged = {}
+    for path in output.glob("*.safetensors"):
+        merged.update(load_file(str(path)))
+    assert merged["model.language_model.layers.0.mlp.experts.gate_up_proj"].shape == (2, 2, 3)
+    assert merged["model.language_model.layers.0.mlp.gate.weight"].shape == (2, 5)
+    assert merged["model.language_model.layers.0.input_layernorm.weight"].shape == (10,)
 
 
 def test_model_output_requires_exact_json_object(tmp_path: Path):
