@@ -484,3 +484,12 @@ result of 3/14 accepted and 8/14 expected outcomes, the larger tier is the
 more useful experimental candidate while both remain behind fallback and real
 workflow gates. Evidence is in
 `phases/phase-46-larger-holdout/comparison.json`.
+
+Phase 47 summarized runtime and reported-token accounting from the paired
+guarded holdout. The 8E tier was faster at 25.390 seconds total, 1,813.6 ms
+mean, and 2,380.6 ms p95, with 4,542 reported tokens. The 16E tier took
+30.621 seconds total, 2,187.2 ms mean, and 3,262.0 ms p95, with 4,590
+reported tokens, while delivering the stronger acceptance result. This is
+local synthetic diagnostic evidence, not paid-token savings or production
+latency proof. Evidence is in
+`phases/phase-47-guarded-runtime-cost/comparison.json`.

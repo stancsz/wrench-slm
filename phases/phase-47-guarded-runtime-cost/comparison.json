@@ -1,0 +1,31 @@
+{
+  "schema": "wrench.guarded-runtime-cost-comparison.v1",
+  "fixture": "D:\\models\\wrench-calibration-v6\\holdout.jsonl",
+  "request_count": 14,
+  "compact_8e": {
+    "artifact_gib": 3.188,
+    "accepted": 3,
+    "expected_outcome_matches": 8,
+    "prohibited_accepts": 0,
+    "elapsed_seconds": 25.39,
+    "mean_wall_ms": 1813.6,
+    "nearest_rank_p95_wall_ms": 2380.6,
+    "reported_total_tokens": 4542,
+    "reported_mean_tokens": 324.4,
+    "receipt": "../phase-45-compact-holdout/runtime-8e-adaptive-holdout-v2.json"
+  },
+  "larger_16e": {
+    "artifact_gib": 3.718,
+    "accepted": 7,
+    "expected_outcome_matches": 12,
+    "prohibited_accepts": 0,
+    "elapsed_seconds": 30.621,
+    "mean_wall_ms": 2187.2,
+    "nearest_rank_p95_wall_ms": 3262.0,
+    "reported_total_tokens": 4590,
+    "reported_mean_tokens": 327.9,
+    "receipt": "../phase-46-larger-holdout/runtime-16e-adaptive-holdout-v3.json"
+  },
+  "scope": "paired synthetic holdout runtime and server-reported usage; not paid-token savings",
+  "quality_claim": false
+}
