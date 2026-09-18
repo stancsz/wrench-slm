@@ -29,7 +29,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   `phases/phase-4-task-portfolio/portfolio.json`; human approval is pending.
 - **Phase 6, runtime compatibility:** the current global Transformers 4.57.1
   cannot load the Qwen3.6 architecture. A project-scoped requirement and
-  non-mutating check report `NOT_READY`.
+  non-mutating check report global `NOT_READY`; an isolated Transformers 5.17.0
+  environment with the existing PyTorch reports runtime `READY` without loading
+  weights.
 - **Next gate:** authorize acquisition of the unquantized source, verify it
   against the official index, install and verify the project runtime, obtain
   portfolio approval, and only then begin router profiling.

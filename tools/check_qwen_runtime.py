@@ -32,6 +32,14 @@ def main() -> int:
         import_error = f"{type(exc).__name__}: {exc}"
     else:
         import_error = None
+    try:
+        import torch  # type: ignore
+    except Exception as exc:  # pragma: no cover - diagnostic path
+        torch_available = False
+        torch_error = f"{type(exc).__name__}: {exc}"
+    else:
+        torch_available = True
+        torch_error = None
 
     result = {
         "schema": "wrench.qwen-runtime-check.v1",
@@ -41,8 +49,15 @@ def main() -> int:
         "transformers_version": transformers_version,
         "transformers_class_available": class_available,
         "import_error": import_error,
-        "status": "READY" if class_available else "NOT_READY",
-        "reason": None if class_available else "Installed Transformers does not expose the Qwen3.6 architecture.",
+        "torch_available": torch_available,
+        "torch_error": torch_error,
+        "metadata_status": "READY" if class_available else "NOT_READY",
+        "inference_status": "READY" if class_available and torch_available else "NOT_READY",
+        "status": "READY" if class_available and torch_available else ("METADATA_READY_ONLY" if class_available else "NOT_READY"),
+        "reason": None if class_available and torch_available else (
+            "PyTorch is unavailable; metadata can be parsed but inference cannot run."
+            if class_available else "Installed Transformers does not expose the Qwen3.6 architecture."
+        ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

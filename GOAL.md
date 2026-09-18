@@ -126,5 +126,8 @@ mutation has occurred.
 
 Phase 6 found that the current global Transformers 4.57.1 cannot recognize the
 Qwen3.6 `qwen3_5_moe` architecture. A project-specific runtime requirement and
-non-mutating compatibility check are now recorded; runtime status remains
-`NOT_READY` until that environment is installed and verified.
+non-mutating compatibility check are now recorded. Transformers 5.17.0 parses
+the metadata in an isolated environment, but without PyTorch; inference status
+was then verified as `READY` in a second isolated environment that reused the
+existing system PyTorch. This proves runtime prerequisites only; no Qwen weights
+were loaded, and GPU inference remains unverified.

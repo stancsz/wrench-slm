@@ -1,0 +1,15 @@
+{
+  "schema": "wrench.qwen-runtime-check.v1",
+  "checkpoint": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4",
+  "model_type": "qwen3_5_moe",
+  "expected_transformers_class": "Qwen3_5MoeForConditionalGeneration",
+  "transformers_version": "5.17.0",
+  "transformers_class_available": true,
+  "import_error": null,
+  "torch_available": false,
+  "torch_error": "ModuleNotFoundError: No module named 'torch'",
+  "metadata_status": "READY",
+  "inference_status": "NOT_READY",
+  "status": "METADATA_READY_ONLY",
+  "reason": "PyTorch is unavailable; metadata can be parsed but inference cannot run."
+}
