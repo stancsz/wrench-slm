@@ -418,3 +418,10 @@ pack is the compact 3.188 GiB option, while the prior 16E pack is the larger
 candidate. Both remain experimental and must stay behind the strict verifier,
 fallback, and matched-workflow gates. The catalog is in
 `phases/phase-38-dual-tier-catalog/catalog.json`.
+
+Phase 39 tested a lighter safety-weighted 16E recalibration. The resulting
+3.718 GiB pack had zero prohibited boundary accepts but only 4/20 accepted task
+cases, versus 8/20 for the prior 16E pack. It is not promoted. This negative
+result keeps the larger tier recommendation evidence-bounded and leaves
+calibration tradeoffs open. Evidence is in
+`phases/phase-39-balanced-16e/comparison.json`.

@@ -211,6 +211,10 @@ release-ready.
   promoted because task acceptance regressed. This is artifact selection, not
   production enablement. Evidence is in
   `phases/phase-38-dual-tier-catalog/catalog.json`.
+- **Phase 39 balanced 16E calibration:** a lower safety-repeat calibration
+  removed prohibited accepts but reduced task acceptance to 4/20. It is not
+  promoted; the prior 16E remains the larger experimental candidate. Evidence
+  is in `phases/phase-39-balanced-16e/comparison.json`.
 
 ## 1. Executive Summary & Core Objective
 
