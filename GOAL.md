@@ -119,3 +119,7 @@ Phase 4 froze a proposed, family-disjoint portfolio in
 literal search, read-only Git status, allowlisted local health reads, and
 review-only patch drafts. Its approval status is intentionally pending human
 review; the final evaluation split must not be tuned after results are seen.
+
+Phase 5 provides a guarded acquisition command for the pinned 71.9 GB
+unquantized source. It has not been run; no large download or external model
+mutation has occurred.
