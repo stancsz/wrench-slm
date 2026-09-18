@@ -28,10 +28,24 @@ class RouterConfig:
         })
 
 
+class CancellationToken:
+    """Cooperative cancellation signal checked before and after one attempt."""
+
+    def __init__(self) -> None:
+        self._cancelled = False
+
+    def cancel(self) -> None:
+        self._cancelled = True
+
+    @property
+    def cancelled(self) -> bool:
+        return self._cancelled
+
+
 class ProposalRouter:
     """Run bounded proposal attempts and fail closed when the circuit opens."""
 
-    def __init__(self, config: RouterConfig = RouterConfig()):
+    def __init__(self, config: RouterConfig = RouterConfig(), event_sink: Callable[[dict[str, Any]], None] | None = None):
         if config.max_attempts < 1 or config.failure_threshold < 1:
             raise ValueError("router ceilings must be positive")
         self.config = config
@@ -40,8 +54,20 @@ class ProposalRouter:
         self.enabled = True
         self.circuit_open = False
         self.bypass_reason: str | None = None
+        self.event_sink = event_sink
 
-    def run(self, invoke: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    def _emit(self, event: str, **fields: Any) -> None:
+        if self.event_sink is None:
+            return
+        try:
+            self.event_sink({"event": event, **fields})
+        except Exception:  # noqa: BLE001
+            return
+
+    def run(self, invoke: Callable[[], dict[str, Any]], cancellation: CancellationToken | None = None) -> dict[str, Any]:
+        if cancellation is not None and cancellation.cancelled:
+            self._emit("cancelled", stage="before_attempt")
+            return {"status": "abstain", "fallback_reason": "cancelled"}
         if not self.enabled:
             return {"status": "abstain", "fallback_reason": "router_disabled", "circuit_open": self.circuit_open}
         if self.attempts >= self.config.max_attempts:
@@ -51,11 +77,15 @@ class ProposalRouter:
             result = invoke()
         except Exception as exc:  # noqa: BLE001
             result = {"status": "abstain", "fallback_reason": "router_invocation_error", "detail": type(exc).__name__}
+        if cancellation is not None and cancellation.cancelled:
+            self._emit("cancelled", stage="after_attempt")
+            return {"status": "abstain", "fallback_reason": "cancelled"}
         if not isinstance(result, dict) or result.get("status") != "accepted":
             self.failures += 1
             if self.failures >= self.config.failure_threshold:
                 self.enabled = False
                 self.circuit_open = True
+                self._emit("circuit_opened", failures=self.failures)
                 if isinstance(result, dict):
                     result = {**result, "circuit_opened": True}
         return result
@@ -63,6 +93,7 @@ class ProposalRouter:
     def bypass(self, reason: str = "operator_bypass") -> None:
         self.enabled = False
         self.bypass_reason = reason
+        self._emit("bypass", reason=reason)
 
     def reset(self, config_hash: str) -> bool:
         if config_hash != self.config.config_hash:
@@ -72,6 +103,7 @@ class ProposalRouter:
         self.enabled = True
         self.circuit_open = False
         self.bypass_reason = None
+        self._emit("reset")
         return True
 
     def status(self) -> dict[str, Any]:

@@ -75,6 +75,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 17, router state:** schema- and configuration-hash-bound state
   persistence and recovery are covered by 9 passing tests. Process-crash
   simulation, alerting, cancellation, and rollback evidence remain open.
+- **Phase 18, cancellation and events:** cooperative cancellation plus
+  circuit, reset, and bypass events are covered by 10 passing tests. Blocking
+  interruption and external alert delivery remain unproven.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

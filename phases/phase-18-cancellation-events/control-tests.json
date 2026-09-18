@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.cancellation-events-tests.v1",
+  "observed_at": "2026-09-17",
+  "status": "PASS_CONTROL_BOUNDARY_ONLY",
+  "command": "py -3 -m pytest -q",
+  "result": "10 passed",
+  "checks": [
+    "pre-attempt cooperative cancellation",
+    "post-attempt cancellation check",
+    "circuit-open event",
+    "reset event",
+    "bypass event",
+    "event-sink failure cannot change routing decision"
+  ],
+  "limits": [
+    "No blocking-kernel interruption was claimed.",
+    "No external alert delivery or model-quality claim is made."
+  ]
+}

@@ -218,3 +218,9 @@ Phase 17 added schema- and configuration-hash-bound router state persistence in
 configuration-mismatch rejection pass in the 9-test suite. The receipt is at
 `phases/phase-17-router-state/state-tests.json`. Process-crash simulation,
 cancellation, alert delivery, and rollback storage remain open.
+
+Phase 18 added cooperative cancellation and event hooks to the routing guard.
+The 10-test suite covers cancellation, circuit-open, reset, bypass, and
+observability-failure behavior. The receipt is at
+`phases/phase-18-cancellation-events/control-tests.json`. Blocking-kernel
+interruption and external alert delivery remain unproven.

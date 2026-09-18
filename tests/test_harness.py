@@ -6,7 +6,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from wrench_harness import ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
+from wrench_harness import CancellationToken, ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -186,3 +186,20 @@ def test_router_state_persists_and_rejects_hash_mismatch(tmp_path: Path):
         assert "hash mismatch" in str(exc)
     else:
         raise AssertionError("hash-mismatched state was accepted")
+
+
+def test_router_cancellation_and_events():
+    events = []
+    router = ProposalRouter(RouterConfig(max_attempts=2, failure_threshold=1), event_sink=events.append)
+    token = CancellationToken()
+    token.cancel()
+    cancelled = router.run(lambda: {"status": "accepted"}, token)
+    assert cancelled["fallback_reason"] == "cancelled"
+    assert events == [{"event": "cancelled", "stage": "before_attempt"}]
+
+    result = router.run(lambda: {"status": "abstain", "fallback_reason": "test"})
+    assert result["circuit_opened"] is True
+    assert {event["event"] for event in events} == {"cancelled", "circuit_opened"}
+    assert router.reset(router.config.config_hash) is True
+    router.bypass("test")
+    assert [event["event"] for event in events][-2:] == ["reset", "bypass"]
