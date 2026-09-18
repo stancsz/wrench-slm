@@ -6,7 +6,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from wrench_harness import ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal
+from wrench_harness import ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -167,3 +167,22 @@ def test_router_attempt_ceiling_circuit_bypass_and_hash_bound_reset():
     assert router.run(lambda: {"status": "accepted"})["status"] == "accepted"
     router.bypass("maintenance")
     assert router.run(lambda: {"status": "accepted"})["fallback_reason"] == "router_disabled"
+
+
+def test_router_state_persists_and_rejects_hash_mismatch(tmp_path: Path):
+    config = RouterConfig(max_attempts=3, failure_threshold=2)
+    router = ProposalRouter(config)
+    router.run(lambda: {"status": "abstain", "fallback_reason": "test"})
+    state_path = tmp_path / "router-state.json"
+    saved = save_router_state(router, state_path)
+    assert saved["schema"] == "wrench.router-state.v1"
+    restored = load_router_state(config, state_path)
+    assert restored.status()["attempts"] == 1
+    assert restored.status()["failures"] == 1
+
+    try:
+        load_router_state(RouterConfig(max_attempts=4, failure_threshold=2), state_path)
+    except ValueError as exc:
+        assert "hash mismatch" in str(exc)
+    else:
+        raise AssertionError("hash-mismatched state was accepted")

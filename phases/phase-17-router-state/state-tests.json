@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.router-state-tests.v1",
+  "observed_at": "2026-09-17",
+  "status": "PASS_STATE_BOUNDARY_ONLY",
+  "command": "py -3 -m pytest -q",
+  "result": "9 passed",
+  "checks": [
+    "atomic same-directory state write",
+    "schema validation",
+    "counter and flag restoration",
+    "configuration-hash mismatch rejection"
+  ],
+  "limits": [
+    "No process crash or host restart was simulated.",
+    "No model quality or production-readiness claim is made."
+  ]
+}

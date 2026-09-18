@@ -212,3 +212,9 @@ circuit opening after repeated abstentions, explicit operator bypass, and
 hash-bound reset. The full suite passes 8 tests. The receipt is at
 `phases/phase-16-routing-guard/guard-tests.json`. Cancellation, durable
 restart, alert delivery, and rollback storage remain open.
+
+Phase 17 added schema- and configuration-hash-bound router state persistence in
+`src/wrench_harness/state.py`. Save, restore, counter recovery, and
+configuration-mismatch rejection pass in the 9-test suite. The receipt is at
+`phases/phase-17-router-state/state-tests.json`. Process-crash simulation,
+cancellation, alert delivery, and rollback storage remain open.
