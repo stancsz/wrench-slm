@@ -25,9 +25,11 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 3, source feasibility:** official source identified and hash-bound at
   revision `995ad96eacd98c81ed38be0c5b274b04031597b0`; 71.9 GB of unquantized
   safetensors are still absent locally.
+- **Phase 4, task portfolio:** proposed family-disjoint scope is frozen in
+  `phases/phase-4-task-portfolio/portfolio.json`; human approval is pending.
 - **Next gate:** authorize acquisition of the unquantized source, verify it
-  against the official index, then freeze the task portfolio and
-  calibration/evaluation split before router profiling.
+  against the official index, obtain portfolio approval, and only then begin
+  router profiling.
 
 ## 1. Executive Summary & Core Objective
 
