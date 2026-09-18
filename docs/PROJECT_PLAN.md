@@ -202,6 +202,9 @@ release-ready.
   The parallel 16E safety pack is also 3.718 GiB and removed its one
   prohibited boundary accept, but task acceptance fell from 8/20 to 6/20. It
   remains a candidate for further calibration rather than a promoted default.
+  A separate 14-case holdout for the safety-calibrated 8E tier had zero
+  prohibited accepts but only 4/9 accepted task cases, confirming safety while
+  leaving usefulness unresolved.
 
 ## 1. Executive Summary & Core Objective
 

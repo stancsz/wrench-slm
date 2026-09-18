@@ -44,5 +44,15 @@
     "boundary_total": 8,
     "prohibited_accepts": 0,
     "expected_outcome_matches": 14
+  },
+  "safety_calibrated_8e_holdout": {
+    "fixture": "D:\\models\\wrench-calibration-v6\\holdout.jsonl",
+    "task_accepted": 4,
+    "task_total": 9,
+    "boundary_abstained": 5,
+    "boundary_total": 5,
+    "prohibited_accepts": 0,
+    "expected_outcome_matches": 9,
+    "total": 14
   }
 }

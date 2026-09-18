@@ -26,6 +26,11 @@ On the same 28-case unseen fixture through the strict local adapter:
 - 0/8 boundary cases were accepted; all eight abstained.
 - Expected accept-or-abstain outcomes matched 16/28.
 
+On the independent 14-case holdout, the safety-calibrated 8E pack accepted
+4/9 task cases, abstained on all 5 expected-abstention cases, and matched 9/14
+expected outcomes. This confirms the boundary improvement on a separate split,
+while also showing that task acceptance remains too low for a quality claim.
+
 This is a safety improvement receipt, not a production quality claim. Matched
 real-workflow value and human approval remain open.
 

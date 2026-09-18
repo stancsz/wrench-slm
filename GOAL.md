@@ -406,3 +406,8 @@ The same safety augmentation was applied to the 16E tier. Its new text-only
 pack is 3,991,755,191 bytes (3.718 GiB), with zero prohibited boundary accepts
 but 6/20 accepted task cases versus 8/20 for the prior pack. It is therefore a
 recorded safety candidate, not a promoted replacement for the larger tier.
+
+The safety-calibrated 8E pack also passed a separate 14-case holdout with all
+5 expected-abstention cases rejected and zero prohibited accepts, but only 4/9
+task cases accepted. This confirms the safety effect without establishing
+usefulness or production readiness.
