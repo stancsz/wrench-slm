@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import subprocess
+import json
 from pathlib import Path
 
 from wrench_harness import execute_proposal
+from tools.validate_pruning_source import validate_pruning_source
 
 
 def proposal(action: str, **fields):
@@ -66,3 +68,27 @@ def test_health_and_patch_fail_closed(tmp_path: Path):
 
     applied = execute_proposal(proposal("patch_draft", files=["note.txt"], review_only=False, diff="x"), tmp_path)
     assert applied["fallback_reason"] == "patch_draft_requires_review_only"
+
+
+def test_pruning_source_rejects_packed_ftw(tmp_path: Path):
+    (tmp_path / "config.json").write_text(
+        json.dumps(
+            {
+                "model_type": "qwen3_5_moe",
+                "architectures": ["Qwen3_5MoeForConditionalGeneration"],
+                "text_config": {
+                    "num_hidden_layers": 40,
+                    "hidden_size": 2048,
+                    "num_experts": 256,
+                    "num_experts_per_tok": 8,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "hf_quant_config.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "freetoken-00000.ftw").write_bytes(b"packed")
+    result = validate_pruning_source(tmp_path)
+    assert result["eligible"] is False
+    assert "packed_ftw_not_sliceable" in result["rejection_reasons"]
+    assert "safetensors_index_missing" in result["rejection_reasons"]

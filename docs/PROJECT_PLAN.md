@@ -54,6 +54,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   71.9 GB unquantized source is absent, sufficient target disk exists, and the
   command refuses transfer without `--confirm-71gb`. No output directory or
   network transfer was created.
+- **Phase 12, pruning-source validator:** an architecture-aware metadata gate
+  now rejects the local packed FTW/NVFP4 package before any tensor-slicing code
+  can run. The full test suite passes 5 tests; no weights were modified.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

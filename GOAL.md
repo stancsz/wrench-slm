@@ -177,3 +177,11 @@ directory. The preflight receipt is at
 `phases/phase-11-source-acquisition-gate/preflight.json`. Structural pruning
 remains disabled until that explicit operator confirmation and subsequent
 official-index verification occur.
+
+Phase 12 added `tools/validate_pruning_source.py`, a metadata-only gate that
+requires the expected Qwen3.6 MoE architecture and official safetensors index
+before pruning code can run. Against the real local package it returned
+`eligible: false` for packed FTW shards, quantization metadata, and a missing
+safetensors index. The receipt is at
+`phases/phase-12-pruning-source-validator/local-validation.json`; the test
+suite now passes 5 tests. No weight was loaded, sliced, or rewritten.
