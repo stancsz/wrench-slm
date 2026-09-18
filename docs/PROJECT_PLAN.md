@@ -124,8 +124,9 @@ quality-evaluated, or release-ready.
   20 provisional Wrench prompts across 40 routed layers. Per-layer selection
   receipts drive new 8-expert, 16-expert, and 32-expert BF16 candidates. All
   three load and forward on CUDA. ModelOpt produced packed W4A16 NVFP4 exports
-  for the 8- and 16-expert candidates, and the 16-expert export also passed a
-  bounded FreeToken FTW generation smoke.
+  for the 8- and 16-expert candidates. Removing unused vision tensors yields
+  text-only FTW packs of 3.19 GiB and 3.72 GiB, and both passed bounded
+  FreeToken generation smokes.
 - **Next gate:** obtain explicit human approval for the frozen task portfolio,
   then compare the 8- and 16-expert text-only packed artifacts on a held-out
   approved Wrench evaluation split. Quantized size, loadability, and quality
