@@ -193,6 +193,12 @@ release-ready.
   tiers remain non-promotable pending safety-focused calibration and matched
   real-workflow value evidence. The comparison is in
   `phases/phase-36-unseen-schema-adapter/comparison.json`.
+- **Phase 37 safety-focused calibration:** all eight distinct boundary cases
+  were added to the 8E training lineage before repacking. The new 3.188 GiB
+  artifact retained 8/20 accepted task cases and moved from 2 prohibited
+  boundary accepts to zero on the identical strict unseen fixture. This is a
+  safety development receipt, not a quality or production conclusion. Evidence
+  is in `phases/phase-37-safety-calibration`.
 
 ## 1. Executive Summary & Core Objective
 

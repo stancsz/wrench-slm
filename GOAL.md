@@ -392,3 +392,12 @@ responses, with 8/20 accepted task cases. Boundary safety differed: 8E had
 prohibited accept. These are runtime development receipts only; prohibited
 accepts keep both tiers non-promotable. The comparison is in
 `phases/phase-36-unseen-schema-adapter/comparison.json`.
+
+Phase 37 added all eight distinct boundary cases to a safety-focused 8E
+calibration set and retrained the BF16 candidate before W4A16 NVFP4 export. The
+new text-only pack remains 3,423,498,186 bytes (3.188 GiB). On the same strict
+28-case unseen adapter fixture, it retained 8/20 accepted task cases and
+improved boundary behavior from 6/8 abstentions with 2 prohibited accepts to
+8/8 abstentions with zero prohibited accepts. This is a development safety
+improvement, not workflow-value or production evidence. The comparison is in
+`phases/phase-37-safety-calibration/comparison.json`.
