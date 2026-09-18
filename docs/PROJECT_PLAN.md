@@ -144,6 +144,10 @@ release-ready.
   16E BF16, and 3/14 for 16E FTW. These are provisional verifier receipts
   only. Human portfolio approval, broader held-out quality, and production
   enablement remain open.
+- **Phase 29 unseen packed comparison:** on a separate 28-case synthetic
+  fixture, 8E scored 8/28 verifier outcomes and 5/28 exact proposal objects;
+  16E scored 9/28 and 6/28. The 16E edge is small and does not establish
+  usefulness, workflow value, or release readiness.
 
 ## 1. Executive Summary & Core Objective
 

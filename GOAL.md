@@ -325,3 +325,9 @@ Exact proposal-object matches are 6/14 for 8E BF16, 6/14 for 8E FTW, 4/14
 for 16E BF16, and 3/14 for 16E FTW. This closes the direct size comparison,
 but broader held-out quality, human portfolio approval, matched workflow value,
 and production enablement remain open.
+
+Phase 29 added a separate 28-case unseen synthetic evaluation fixture. The
+8E packed tier scored 8/28 verifier outcomes and 5/28 exact proposal objects;
+the 16E packed tier scored 9/28 and 6/28. This gives the larger tier only a
+small provisional edge and confirms that neither packed tier has yet met a
+usefulness or release gate.
