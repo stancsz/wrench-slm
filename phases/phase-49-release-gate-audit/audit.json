@@ -1,0 +1,63 @@
+{
+  "schema": "wrench.release-gate-audit.v1",
+  "audited_goal": "GOAL.md",
+  "overall_status": "NO_GO_EXPERIMENTAL_ONLY",
+  "quality_claim": false,
+  "gates": [
+    {
+      "id": "official_source_and_runtime",
+      "status": "PASS_DIAGNOSTIC",
+      "evidence": ["phases/phase-22-source-inspection/checkpoint-facts.json", "phases/phase-8-freetoken-runtime-smoke/runtime-smoke.json"]
+    },
+    {
+      "id": "human_reviewed_task_portfolio",
+      "status": "PENDING_HUMAN_APPROVAL",
+      "evidence": ["phases/phase-4-task-portfolio/portfolio.json"]
+    },
+    {
+      "id": "router_profile_receipt",
+      "status": "PASS_DIAGNOSTIC",
+      "evidence": ["phases/phase-25-router-profiling/router-profile.json"]
+    },
+    {
+      "id": "architecture_aware_structural_prune",
+      "status": "PASS_DIAGNOSTIC",
+      "evidence": ["phases/phase-24-structural-prune-baseline/prune-receipt.json", "phases/phase-25-router-profiling/tier-receipt.json"]
+    },
+    {
+      "id": "held_out_quality_and_runtime_comparison",
+      "status": "PASS_SYNTHETIC_ONLY",
+      "evidence": ["phases/phase-48-guarded-unseen/comparison.json", "phases/phase-47-guarded-runtime-cost/comparison.json"]
+    },
+    {
+      "id": "calibration_lineage_and_boundary",
+      "status": "PASS_SYNTHETIC_ONLY",
+      "evidence": ["phases/phase-37-safety-calibration/comparison.json", "phases/phase-39-balanced-16e/comparison.json"]
+    },
+    {
+      "id": "actual_quantized_candidate_tiers",
+      "status": "PASS_ARTIFACT_AND_LOAD_DIAGNOSTIC",
+      "evidence": ["phases/phase-43-artifact-reverification/catalog.json", "phases/phase-48-guarded-unseen/comparison.json"]
+    },
+    {
+      "id": "matched_real_workflow_arms_and_token_savings",
+      "status": "BLOCKED_TRACE_AUTHORIZATION",
+      "evidence": ["phases/phase-34-workflow-arm-protocol/protocol-receipt.json"]
+    },
+    {
+      "id": "bounded_shadow_controls",
+      "status": "PARTIAL_EXTERNAL_ALERT_AND_ROLLBACK_OPEN",
+      "evidence": ["phases/phase-42-router-recovery/router-control-receipt.json"]
+    },
+    {
+      "id": "learned_routing_enablement",
+      "status": "DISABLED_PENDING_APPROVAL",
+      "evidence": ["GOAL.md"]
+    }
+  ],
+  "next_required_authority": [
+    "human approval of the task portfolio",
+    "authorization for real workflow traces",
+    "explicit human approval for an exposure-limited pilot"
+  ]
+}
