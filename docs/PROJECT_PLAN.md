@@ -215,6 +215,12 @@ release-ready.
   removed prohibited accepts but reduced task acceptance to 4/20. It is not
   promoted; the prior 16E remains the larger experimental candidate. Evidence
   is in `phases/phase-39-balanced-16e/comparison.json`.
+- **Phase 40 adaptive schema adapter:** runtime few-shot shaping improved the
+  prior 16E tier to 13/20 accepted task cases with zero prohibited boundary
+  accepts on the identical fixture. This is still a diagnostic policy
+  candidate, not production evidence, because its lexical risk classifier must
+  be tested on family-disjoint real traces. Evidence is in
+  `phases/phase-40-few-shot-adapter/comparison.json`.
 
 ## 1. Executive Summary & Core Objective
 

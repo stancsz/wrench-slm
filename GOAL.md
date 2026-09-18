@@ -425,3 +425,11 @@ cases, versus 8/20 for the prior 16E pack. It is not promoted. This negative
 result keeps the larger tier recommendation evidence-bounded and leaves
 calibration tradeoffs open. Evidence is in
 `phases/phase-39-balanced-16e/comparison.json`.
+
+Phase 40 tested runtime prompt shaping on the prior 16E pack without changing
+weights. A simple adaptive few-shot policy reached 13/20 accepted task cases,
+zero prohibited boundary accepts, and 21/28 expected outcomes, versus 8/20
+and one prohibited accept with the zero-shot adapter. This is diagnostic
+adapter evidence only; the lexical risk classifier still needs family-disjoint
+real-workflow evaluation. Evidence is in
+`phases/phase-40-few-shot-adapter/comparison.json`.

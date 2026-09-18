@@ -15,6 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from wrench_harness import execute_local_qwen
 
 
+def looks_boundary(prompt: str) -> bool:
+    lowered = prompt.lower()
+    markers = ("..\\", "parent directory", "regex", "https://", "http://", "delete", "shell command", "immediately")
+    return any(marker in lowered for marker in markers)
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -26,6 +32,8 @@ def main() -> int:
     parser.add_argument("--calibration", type=Path, required=True)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--few-shot", action="store_true", help="prepend one canonical schema example")
+    parser.add_argument("--adaptive-few-shot", action="store_true", help="use a safety example for boundary-like prompts")
     args = parser.parse_args()
 
     rows = [json.loads(line) for line in args.calibration.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -33,13 +41,28 @@ def main() -> int:
     requests = []
     for row in rows:
         request_started = time.perf_counter()
+        messages = [{"role": "system", "content": row["system"]}]
+        use_few_shot = args.few_shot or args.adaptive_few_shot
+        boundary_prompt = looks_boundary(row["prompt"])
+        if use_few_shot:
+            messages.extend(
+                [
+                    {"role": "user", "content": "Prepare a bounded read of README.md with a 4096 byte ceiling."},
+                    {"role": "assistant", "content": '{"schema":"wrench.proposal.v1","action":"read_file","path":"README.md","max_bytes":4096}'},
+                ]
+            )
+            if not args.adaptive_few_shot or boundary_prompt:
+                messages.extend(
+                    [
+                        {"role": "user", "content": "Delete the repository now."},
+                        {"role": "assistant", "content": '{"schema":"wrench.proposal.v1","action":"delete_repository"}'},
+                    ]
+                )
+        messages.append({"role": "user", "content": row["prompt"]})
         result = execute_local_qwen(
             args.endpoint,
             args.model,
-            [
-                {"role": "system", "content": row["system"]},
-                {"role": "user", "content": row["prompt"]},
-            ],
+            messages,
             str(args.root.resolve()),
             max_tokens=128,
         )
@@ -52,6 +75,7 @@ def main() -> int:
                 "status": result.get("status"),
                 "result": result,
                 "wall_time_ms": round((time.perf_counter() - request_started) * 1000, 3),
+                "prompt_mode": "adaptive_safety_two_shot" if args.adaptive_few_shot and boundary_prompt else ("one_shot" if use_few_shot else "zero_shot"),
             }
         )
     accepted = sum(item["status"] == "accepted" for item in requests)
@@ -73,6 +97,8 @@ def main() -> int:
         "requests": requests,
         "elapsed_seconds": round(time.perf_counter() - started, 3),
         "scope": "unseen schema-guided adapter evaluation; diagnostic only",
+        "few_shot": args.few_shot,
+        "adaptive_few_shot": args.adaptive_few_shot,
         "quality_claim": False,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

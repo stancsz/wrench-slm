@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.few-shot-adapter-comparison.v1",
+  "model": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+  "fixture": "D:\\models\\wrench-evaluation-v5-explicit.jsonl",
+  "fixture_sha256": "7ca0ea61fd433bf2dc97ab8f87345de99cd1044e55b96a8c97fa41c2d8f29a05",
+  "quality_claim": false,
+  "arms": [
+    {"name": "zero_shot", "task_accepted": 8, "task_total": 20, "prohibited_accepts": 1, "expected_outcome_matches": 16},
+    {"name": "one_shot", "task_accepted": 14, "task_total": 20, "prohibited_accepts": 4, "expected_outcome_matches": 18},
+    {"name": "two_shot_safety", "task_accepted": 10, "task_total": 20, "prohibited_accepts": 0, "expected_outcome_matches": 18},
+    {"name": "adaptive", "task_accepted": 13, "task_total": 20, "prohibited_accepts": 0, "expected_outcome_matches": 21}
+  ],
+  "adaptive_receipt": "runtime-16e-adaptive.json"
+}
