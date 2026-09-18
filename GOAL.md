@@ -12,11 +12,20 @@ model path, without reducing final task success or weakening execution controls.
 Every uncertain, unsupported, risky, malformed, or failed case preserves the
 original request and falls back cleanly.
 
-The first candidate path is a task-specialized sparse coding model reduced from
-an officially licensed base checkpoint, if and only if the checkpoint's actual
-architecture supports safe structural pruning and the resulting candidate passes
-the gates below. Deterministic rules plus cloud fallback remains an acceptable
-final result.
+The candidate path is a task-specialized sparse coding model reduced from an
+officially licensed base checkpoint, if and only if the checkpoint's actual
+architecture supports safe structural pruning and the resulting candidates
+pass the gates below. We are evaluating three size tiers: a compact 8-expert
+path near 3.9B parameters, a practical 16-expert path near 4.9B parameters,
+and an expanded 32-expert path near 6.9B parameters whose ideal INT4 payload is
+near 3.3 GiB. The 16-expert tier is the current more-useful quality/size
+tradeoff candidate.
+Deterministic rules plus cloud fallback remains an acceptable final result.
+
+The current experimental candidate is **Wrench-Code-4B-Qwen3.6-8E**: a
+3,881,244,016-parameter checkpoint pruned from Qwen3.6-35B-A3B that retains
+eight experts per MoE block. `4B` is the stable parameter-class label, not a
+claim about a quantized download or runtime footprint.
 
 ## Why
 
@@ -48,7 +57,8 @@ and fallback are included in the full workflow cost and latency.
   calibration/evaluation split before profiling or pruning choices are made.
 - [ ] Create a reproducible router-profile receipt on the approved calibration
   corpus, including model hash, tokenizer/runtime versions, per-layer expert
-  usage, routing entropy, token counts, and retained-expert selection rule.
+  usage, routing entropy, token counts, and retained-expert selection rule for
+  both candidate tiers.
 - [ ] Implement structural pruning only from a verified unquantized checkpoint,
   with an architecture-aware loader, a manifest of every retained tensor, and
   load/forward parity checks. Packed quantized formats are never sliced as if
@@ -59,6 +69,12 @@ and fallback are included in the full workflow cost and latency.
 - [ ] If calibration is used, record its data lineage, teacher identity, budget,
   hyperparameters, held-out boundary, and before/after metrics. Do not use test
   results for tuning and then report them as final evidence.
+- [ ] Produce and load-test the quantized candidate tiers: the compact
+  approximately 1.8 GiB ideal-INT4 path and the practical approximately 2.3
+  GiB ideal-INT4 path. Record actual packed artifact bytes, runtime identity,
+  and load/forward evidence. An ideal estimate or BF16 conversion is not a
+  quantized artifact. The expanded 32-expert path remains an optional BF16
+  structural experiment until its packed export is justified.
 - [ ] Run cloud-only, rules-plus-identical-fallback, and learned-plus-identical-
   fallback arms on the same authorized real workflow traces. The learned arm
   must show at least 10% net stronger-model-token savings versus both comparators
@@ -265,10 +281,25 @@ been selected, no tensor has been sliced, and no quality or runtime claim is
 made.
 
 Phase 24 streamed a provisional structural prune retaining expert indices 0
-through 7 and the corresponding router rows. The resulting checkpoint at
-`D:\\models\\Wrench-Qwen3.6-8expert-BF16` loads on CUDA and reports
+through 7 and the corresponding router rows. The resulting checkpoint,
+**Wrench-Code-4B-Qwen3.6-8E**, is stored at
+`D:\\models\\Wrench-Qwen3.6-8expert-BF16`, loads on CUDA, and reports
 3,881,244,016 actual parameters. The receipt is
 `phases/phase-24-structural-prune-baseline/prune-receipt.json`, with runtime
 evidence in `runtime-smoke.json`. The result is explicitly
 `EXPERIMENTAL_UNCALIBRATED`; its deterministic generation is not a quality
 pass, and the selected indices are not yet Wrench-specific.
+
+Phase 25 profiled the real NVFP4 teacher through 20 provisional Wrench prompts
+across 40 routed MoE layers. The receipt is
+`phases/phase-25-router-profiling/router-profile.json`; per-layer selection
+receipts retain 8, 16, or 32 experts, with an aggregate fallback for the
+unprofiled MTP block. Profile-informed BF16 candidates load and forward on
+CUDA: they report 3,881,244,016, 4,888,532,336, and 6,903,108,976 parameters.
+ModelOpt produced actual W4A16 NVFP4 exports at 4,316,262,327 bytes for the
+8-expert tier and 4,884,519,327 bytes for the 16-expert tier. The 16-expert
+export was converted to a 4,889,203,342-byte FreeToken FTW checkpoint with
+`quant_format: nvfp4` and passed a bounded one-request CUDA load/generation
+smoke. Both the compact HF export and practical FTW export have equivalent
+one-request runtime receipts. These remain experimental and uncalibrated, and
+the 32-expert path is still BF16-only.

@@ -1,0 +1,250 @@
+{
+  "schema": "wrench.qwen-checkpoint-facts.v1",
+  "observed_at": "2026-09-18T13:52:11.632617+00:00",
+  "checkpoint_path": "D:\\models\\Wrench-Qwen3.6-32expert-profiled-BF16",
+  "evidence_scope": "local_metadata_and_file_identity",
+  "model_card_front_matter": {
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "license_link": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE",
+    "pipeline_tag": "image-text-to-text"
+  },
+  "config": {
+    "architectures": [
+      "Qwen3_5MoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5_moe",
+    "dtype": null,
+    "transformers_version": "4.57.1",
+    "text_config": {
+      "model_type": "qwen3_5_moe_text",
+      "num_hidden_layers": 40,
+      "hidden_size": 2048,
+      "num_experts": 32,
+      "num_experts_per_tok": 8,
+      "moe_intermediate_size": 512,
+      "shared_expert_intermediate_size": 512,
+      "vocab_size": 248320,
+      "max_position_embeddings": 262144,
+      "layer_types": [
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention",
+        "linear_attention",
+        "linear_attention",
+        "linear_attention",
+        "full_attention"
+      ]
+    }
+  },
+  "quantization": {
+    "producer": null,
+    "quant_algo": null,
+    "quantized_layer_count": 0,
+    "quantized_algorithm_counts": {},
+    "exclude_modules": []
+  },
+  "files": [
+    {
+      "name": "chat_template.jinja",
+      "bytes": 7764,
+      "kind": "metadata",
+      "sha256": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259"
+    },
+    {
+      "name": "config.json",
+      "bytes": 3259,
+      "kind": "metadata",
+      "sha256": "19eab1eac9ab8149341b319d12492c83c8650f65fc063b2eecb7d06a17f9e89a"
+    },
+    {
+      "name": "configuration.json",
+      "bytes": 58,
+      "kind": "metadata",
+      "sha256": "c1b09db419119513247e9b8b912c4b9897106c9b20c6cada7e107d993c5435eb"
+    },
+    {
+      "name": "generation_config.json",
+      "bytes": 202,
+      "kind": "metadata",
+      "sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e"
+    },
+    {
+      "name": "LICENSE",
+      "bytes": 11343,
+      "kind": "metadata",
+      "sha256": "50cbab8a892c5f2993b8c7351a99182507472def3b1374558308605d99b86b32"
+    },
+    {
+      "name": "model-00001-of-00015.safetensors",
+      "bytes": 1067450800,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00002-of-00015.safetensors",
+      "bytes": 1069651104,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00003-of-00015.safetensors",
+      "bytes": 995640240,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00004-of-00015.safetensors",
+      "bytes": 1020450416,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00005-of-00015.safetensors",
+      "bytes": 1014346424,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00006-of-00015.safetensors",
+      "bytes": 1064350552,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00007-of-00015.safetensors",
+      "bytes": 1044329280,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00008-of-00015.safetensors",
+      "bytes": 966252928,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00009-of-00015.safetensors",
+      "bytes": 946909944,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00010-of-00015.safetensors",
+      "bytes": 1014019008,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00011-of-00015.safetensors",
+      "bytes": 1027881104,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00012-of-00015.safetensors",
+      "bytes": 1071115200,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00013-of-00015.safetensors",
+      "bytes": 492971480,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00014-of-00015.safetensors",
+      "bytes": 1017123072,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model-00015-of-00015.safetensors",
+      "bytes": 272934616,
+      "kind": "weight",
+      "sha256": null
+    },
+    {
+      "name": "model.safetensors.index.json",
+      "bytes": 99433,
+      "kind": "metadata",
+      "sha256": "31e20007948fb44397b01a5cb2bbfa642c904ca8cf1739d8122fb733ead4d73a"
+    },
+    {
+      "name": "preprocessor_config.json",
+      "bytes": 390,
+      "kind": "metadata",
+      "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+    },
+    {
+      "name": "README.md",
+      "bytes": 64550,
+      "kind": "metadata",
+      "sha256": "c4ddaa065649ff6352648f64747a16eda31726f3e34add94ce04abb461c77b75"
+    },
+    {
+      "name": "tokenizer.json",
+      "bytes": 12807982,
+      "kind": "metadata",
+      "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "bytes": 16718,
+      "kind": "metadata",
+      "sha256": "5186f0defcd7f232382c7f0aebcd2252d073bb921ab240e407b7ae8745d2b29b"
+    },
+    {
+      "name": "video_preprocessor_config.json",
+      "bytes": 385,
+      "kind": "metadata",
+      "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13"
+    },
+    {
+      "name": "vocab.json",
+      "bytes": 6722759,
+      "kind": "metadata",
+      "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003"
+    }
+  ],
+  "pruning_assessment": {
+    "source_is_packed_quantized": false,
+    "safe_for_structural_tensor_slicing": true,
+    "reason": "Unquantized safetensors with a local tensor index are eligible for structural slicing after architecture checks.",
+    "required_source": "verified unquantized checkpoint with matching architecture and license"
+  }
+}

@@ -1,4 +1,4 @@
-# Project Plan: Wrench SLM (<4B) - Distillation, Selective Offload & Escalation
+# Project Plan: Wrench Qwen3.6 Expert-Tier Evaluation - Selective Offload & Escalation
 
 > **Evidence status (2026-09-17):** This plan is an execution hypothesis, not a
 > release claim. The local Qwen3.6-35B-A3B artifact is an NVIDIA ModelOpt
@@ -11,6 +11,18 @@
 Wrench remains proposal-first and fail-closed. “Autonomous completion” below
 means an automatically proposed and independently verified result; it does not
 grant the model arbitrary shell access, credentials, or unsupervised writes.
+
+## Current model identity
+
+There are now three experimental checkpoints, all pruned from Qwen3.6-35B-A3B
+using real per-layer router telemetry. The compact 8-expert candidate reports
+3,881,244,016 parameters and has an ideal INT4 weight-only estimate of about
+1.84 GiB. The practical 16-expert candidate reports 4,888,532,336 parameters
+and has an ideal INT4 estimate of about 2.32 GiB. The expanded 32-expert
+candidate reports 6,903,108,976 parameters and has an ideal INT4 estimate of
+about 3.28 GiB. Real W4A16 NVFP4 exports are 4.02 GiB for 8 experts and 4.55
+GiB for 16 experts. The 16-expert FTW conversion passed a bounded CUDA smoke.
+None of these artifacts is calibrated, quality-evaluated, or release-ready.
 
 ## Execution status
 
@@ -107,13 +119,22 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   generated 8 tokens, but its output is not a quality pass. Expert indices 0
   through 7 are provisional until router profiling selects a Wrench-specific
   set.
+- **Phase 25, router profile and three tiers:** the real NVFP4 teacher completed
+  20 provisional Wrench prompts across 40 routed layers. Per-layer selection
+  receipts drive new 8-expert, 16-expert, and 32-expert BF16 candidates. All
+  three load and forward on CUDA. ModelOpt produced packed W4A16 NVFP4 exports
+  for the 8- and 16-expert candidates, and the 16-expert export also passed a
+  bounded FreeToken FTW generation smoke.
 - **Next gate:** obtain explicit human approval for the frozen task portfolio,
-  then run a reproducible router-profile pass on an approved calibration corpus
-  to select which 8 experts, if any, can be retained.
+  then compare the 8- and 16-expert packed artifacts on a held-out approved
+  Wrench evaluation split. Quantized size, loadability, and quality must be
+  recorded separately. The 32-expert candidate remains BF16-only for now.
 
 ## 1. Executive Summary & Core Objective
 
-The objective of **Wrench SLM** is to build a high-velocity, sub-4-billion parameter local model specialized in developer-tool workflows, repository navigation, noise compaction, and deterministic code repair. 
+The objective of **Wrench-Code-4B-Qwen3.6-8E** is to validate a high-velocity,
+sub-4-billion-parameter local model specialized in developer-tool workflows,
+repository navigation, noise compaction, and deterministic code repair.
 
 The Wrench operates as a **first-line defensive gateway**:
 1. **Autonomous Completion (Low-Level Tasks)**: Independently executes routine, mechanical code edits and tool sequences when verified by deterministic tests (
@@ -129,7 +150,7 @@ pm test, pytest, linter = 0), costing **0 cloud tokens**.
                                          │
                                          ▼
                  ┌───────────────────────────────────────────────┐
-                 │             WRENCH SLM (< 4B)                 │
+                 │       WRENCH-CODE-4B-QWEN3.6-8E               │
                  │   • Runtime: 4-bit / 8-bit (< 3 GB VRAM)      │
                  │   • Generation Speed: > 120 tokens/sec        │
                  └───────────────────────┬───────────────────────┘

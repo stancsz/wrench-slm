@@ -1,0 +1,60 @@
+{
+  "schema": "wrench.qwen-expert-tier.v2",
+  "status": "PASS_STRUCTURAL_TIERS_AND_PACKED_8_16_QUANTIZATION",
+  "profile_receipt": "phases/phase-25-router-profiling/router-profile.json",
+  "selection_rule": "per-route descending activation count, ties by lower source expert id; aggregate fallback for unprofiled MTP",
+  "tiers": [
+    {
+      "name": "compact",
+      "retained_experts_per_moe_block": 8,
+      "model_path": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-v2",
+      "selection_receipt": "phases/phase-25-router-profiling/selection-8.json",
+      "parameter_count": 3881244016,
+      "bf16_directory_bytes": 7910337713,
+      "ideal_int4_weight_bytes": 1972618168,
+      "ideal_int4_weight_gib": 1.83714383,
+      "quantized_hf_path": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-HF",
+      "quantized_hf_bytes": 4316262327,
+      "quantized_hf_gib": 4.019,
+      "quantization": "ModelOpt W4A16 NVFP4",
+      "runtime_smoke": "phases/phase-25-router-profiling/runtime-smoke-8.json",
+      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-8.json"
+    },
+    {
+      "name": "practical",
+      "retained_experts_per_moe_block": 16,
+      "model_path": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-BF16",
+      "selection_receipt": "phases/phase-25-router-profiling/selection-16.json",
+      "parameter_count": 4888532336,
+      "ideal_int4_weight_bytes": 2491536896,
+      "ideal_int4_weight_gib": 2.32,
+      "quantized_hf_path": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-HF",
+      "quantized_hf_bytes": 4884519327,
+      "quantized_hf_gib": 4.549,
+      "quantized_ftw_path": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-NVFP4-FTW",
+      "quantized_ftw_bytes": 4889203342,
+      "quantized_ftw_gib": 4.553,
+      "quantization": "ModelOpt W4A16 NVFP4, converted to FreeToken FTW quant_format nvfp4",
+      "runtime_smoke": "phases/phase-25-router-profiling/runtime-smoke-16.json",
+      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-16.json"
+    },
+    {
+      "name": "expanded",
+      "retained_experts_per_moe_block": 32,
+      "model_path": "D:\\models\\Wrench-Qwen3.6-32expert-profiled-BF16",
+      "selection_receipt": "phases/phase-25-router-profiling/selection-32.json",
+      "parameter_count": 6903108976,
+      "bf16_directory_bytes": 14105161011,
+      "ideal_int4_weight_bytes": 3521323960,
+      "ideal_int4_weight_gib": 3.2794885,
+      "runtime_smoke": "phases/phase-25-router-profiling/runtime-smoke-32.json",
+      "quantized_export": "not produced"
+    }
+  ],
+  "quantized_export": {
+    "status": "PASS_MODELOPT_W4A16_NVFP4_FOR_8_AND_16",
+    "runtime_status": "PASS_ROUTER_ACTIVATION_PROFILE",
+    "quality_claim": false,
+    "note": "Packed size is larger than ideal INT4 because the W4A16 export does not quantize every tensor and includes runtime metadata. This is packaging and runtime evidence, not quality or production value evidence."
+  }
+}
