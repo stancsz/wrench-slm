@@ -1,0 +1,62 @@
+{
+  "schema": "wrench.qwen-freetoken-runtime-smoke.v1",
+  "observed_at": "2026-09-17T21:23:00-06:00",
+  "status": "PASS_RUNTIME_SMOKE_ONLY",
+  "checkpoint": {
+    "model_path": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4",
+    "format": "freetoken_ftw",
+    "phase_1_receipt": "phases/phase-1-checkpoint-facts/checkpoint-facts.json",
+    "weights_modified": false
+  },
+  "runtime": {
+    "runtime": "FreeToken",
+    "runtime_python": "C:\\Users\\stanc\\AppData\\Local\\FreeToken\\venv\\Scripts\\python.exe",
+    "server_version_observed": "local package; version not asserted",
+    "host": "127.0.0.1",
+    "port": 8000,
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "max_seq_len": 2048,
+    "max_output_tokens": 64,
+    "memory_ratio": 0.8,
+    "moe_strategy": "offload",
+    "attention_backend": "triton",
+    "nvfp4_backend": "auto",
+    "text_model_only": true,
+    "multimodal_disabled": ["vision", "audio"],
+    "reasoning_parser": "qwen3"
+  },
+  "startup_evidence": {
+    "ftw_weights_loaded": true,
+    "expert_banks_loaded": true,
+    "cuda_graph_warmup": true,
+    "prefill_warmup": true,
+    "api_ready": true,
+    "served_model_id": "Qwen3.6-35B-A3B-NVFP4",
+    "served_by": "FreeToken",
+    "reported_context_length": 2048
+  },
+  "request": {
+    "endpoint": "/v1/chat/completions",
+    "model": "Qwen3.6-35B-A3B-NVFP4",
+    "prompt": "Return exactly one line: WRENCH_RUNTIME_OK",
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    },
+    "temperature": 0,
+    "max_tokens": 64,
+    "http_status": 200,
+    "response_content": "WRENCH_RUNTIME_OK",
+    "finish_reason": "stop",
+    "usage": {
+      "prompt_tokens": 22,
+      "completion_tokens": 6,
+      "total_tokens": 28
+    }
+  },
+  "limits": [
+    "This is a single local smoke request, not a quality or benchmark result.",
+    "No structural pruning or unquantized checkpoint acquisition was performed.",
+    "Latency, throughput, memory headroom under workload, and recovery remain unmeasured.",
+    "Learned routing remains disabled pending the GOAL.md acceptance gates."
+  ]
+}

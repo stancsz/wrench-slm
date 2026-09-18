@@ -36,9 +36,14 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 7, NVFP4 runtime smoke:** Docker CUDA and Qwen/ModelOpt resolution
   pass, but vLLM 0.29 engine startup stops on unavailable UVA before loading
   weights. No generation evidence exists yet.
-- **Next gate:** authorize acquisition of the unquantized source, verify it
-  against the official index, install and verify the project runtime, obtain
-  portfolio approval, and only then begin router profiling.
+- **Phase 8, FreeToken runtime smoke:** the matching FreeToken runtime loaded
+  the local `.ftw` weights and expert banks with bounded offload, completed
+  warmup, and returned the exact bounded `WRENCH_RUNTIME_OK` response through
+  `/v1/chat/completions`. This is runtime evidence only, not quality,
+  throughput, pruning, or release evidence.
+- **Next gate:** obtain explicit portfolio approval and authorization for the
+  pinned unquantized source, then verify that source against its official
+  index. Only after those gates may router profiling or pruning begin.
 
 ## 1. Executive Summary & Core Objective
 

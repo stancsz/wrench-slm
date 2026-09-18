@@ -142,3 +142,12 @@ the RTX 5070 Ti, Qwen architecture resolution, and ModelOpt detection passed;
 engine startup then failed before weight load with `UVA is not available` in the
 vLLM V1 engine. No request or token was generated. The diagnostic receipt is at
 `phases/phase-7-nvfp4-runtime-smoke/runtime-smoke.json`.
+
+Phase 8 used the artifact's matching FreeToken runtime instead of the default
+vLLM loader. FreeToken loaded the `.ftw` weights and expert banks with bounded
+expert offload, completed CUDA-graph and prefill warmup, exposed the served
+model `Qwen3.6-35B-A3B-NVFP4`, and returned the exact bounded response
+`WRENCH_RUNTIME_OK` from `/v1/chat/completions`. The receipt is at
+`phases/phase-8-freetoken-runtime-smoke/runtime-smoke.json`. This closes only
+the local checkpoint-load and one-request runtime gate; pruning, quality,
+throughput, recovery, and release gates remain open.
