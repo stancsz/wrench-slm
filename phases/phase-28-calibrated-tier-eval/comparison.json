@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.calibrated-tier-comparison.v1",
+  "status": "PASS_SIZE_GATE_QUALITY_GATE_OPEN",
+  "holdout": {
+    "path": "D:\\models\\wrench-calibration-v3b\\holdout.jsonl",
+    "sha256": "628b9633352e3d4457a3e3c511d6c299bda9b833634eeba46d56eba7285940dd",
+    "case_count": 14,
+    "scope": "development-only synthetic templates"
+  },
+  "tiers": [
+    {
+      "tier": "8E",
+      "parameters": 3881244016,
+      "packed_model": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v3-TextOnly-FTW",
+      "packed_weight_bytes": 3406319616,
+      "packed_weight_gib": 3.172,
+      "directory_bytes": 3426514763,
+      "directory_gib": 3.191,
+      "prior_bf16_exact_matches": 7,
+      "prior_ftw_exact_matches": 5,
+      "prior_score_fixture": "D:\\models\\wrench-calibration-v2\\holdout.jsonl",
+      "quality_status": "PROVISIONAL_RERUN_PENDING"
+    },
+    {
+      "tier": "16E",
+      "parameters": 4888532336,
+      "packed_model": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v1b-TextOnly-FTW",
+      "packed_weight_bytes": 3975827456,
+      "packed_weight_gib": 3.703,
+      "directory_bytes": 3996022974,
+      "directory_gib": 3.722,
+      "bf16_exact_matches": 9,
+      "ftw_exact_matches": 7,
+      "bf16_receipt": "score-16-calibrated-v1b-corrected.json",
+      "ftw_receipt": "score-16-calibrated-v1b-ftw-corrected.json",
+      "quality_status": "PROVISIONAL"
+    }
+  ],
+  "quality_claim": false,
+  "production_enablement": false,
+  "human_approval": "pending"
+}

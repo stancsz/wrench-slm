@@ -101,8 +101,10 @@ def profile(args: argparse.Namespace) -> dict[str, Any]:
         "--moe-strategy", "offload", "--max-running-requests", "1",
         "--max-seq-len-override", str(args.max_seq_len_override), "--memory-ratio", "0.8",
         "--cuda-graph-max-bs", "0", "--text-model-only",
-        "--mm-disable", "vision", "audio", "--reasoning-parser", "qwen3",
+        "--mm-disable", "vision", "audio",
     ]
+    if args.reasoning_parser:
+        command.extend(["--reasoning-parser", args.reasoning_parser])
     if args.moe_cache_size is not None:
         command.extend(["--moe-cache-size", str(args.moe_cache_size)])
     if args.kv_reserve_tokens is not None:
@@ -122,11 +124,18 @@ def profile(args: argparse.Namespace) -> dict[str, Any]:
     try:
         for row in prompts:
             request_started = time.perf_counter()
+            messages = row.get("messages")
+            if not isinstance(messages, list) or not messages:
+                messages = []
+                system = row.get("system")
+                if isinstance(system, str) and system.strip():
+                    messages.append({"role": "system", "content": system})
+                messages.append({"role": "user", "content": row["prompt"]})
             response = _json_request(
                 f"{origin}/v1/chat/completions",
                 {
                     "model": model_id,
-                    "messages": [{"role": "user", "content": row["prompt"]}],
+                    "messages": messages,
                     "temperature": 0,
                     "max_tokens": args.max_tokens,
                     "chat_template_kwargs": {"enable_thinking": False},
@@ -141,7 +150,14 @@ def profile(args: argparse.Namespace) -> dict[str, Any]:
                     "response_model": response.get("model"),
                     "usage": response.get("usage"),
                     "wall_seconds": round(time.perf_counter() - request_started, 3),
-                    **({"response_content": response.get("choices", [{}])[0].get("message", {}).get("content", "")} if args.capture_content else {}),
+                    **(
+                        {
+                            "response_content": response.get("choices", [{}])[0].get("message", {}).get("content", ""),
+                            "response_choice": response.get("choices", [{}])[0],
+                        }
+                        if args.capture_content
+                        else {}
+                    ),
                 }
             )
     finally:
@@ -208,6 +224,7 @@ def main() -> int:
     parser.add_argument("--kv-reserve-tokens", type=int, default=None)
     parser.add_argument("--num-token-override", type=int, default=None)
     parser.add_argument("--quant-backend", default=None)
+    parser.add_argument("--reasoning-parser", default="qwen3")
     parser.add_argument("--capture-content", action="store_true")
     parser.add_argument("--startup-timeout", type=float, default=600)
     parser.add_argument("--request-timeout", type=float, default=180)

@@ -29,7 +29,19 @@ def quantize(model_path: Path, output: Path, calibration: Path, limit: int, conf
     def forward_loop(quantized_model) -> None:
         with torch.inference_mode():
             for row in rows:
-                batch = tokenizer(row["prompt"], return_tensors="pt", truncation=True, max_length=512).to("cuda")
+                messages = row.get("messages")
+                if not isinstance(messages, list) or not messages:
+                    messages = []
+                    if isinstance(row.get("system"), str) and row["system"].strip():
+                        messages.append({"role": "system", "content": row["system"]})
+                    messages.append({"role": "user", "content": row["prompt"]})
+                text = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                    enable_thinking=False,
+                )
+                batch = tokenizer(text, return_tensors="pt", truncation=True, max_length=512).to("cuda")
                 quantized_model(**batch, use_cache=False)
 
     if config_name == "experts-only":

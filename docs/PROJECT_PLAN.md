@@ -22,8 +22,9 @@ and has an ideal INT4 estimate of about 2.32 GiB. The expanded 32-expert
 candidate reports 6,903,108,976 parameters and has an ideal INT4 estimate of
 about 3.28 GiB. Removing unused vision tensors yields text-only W4A16 NVFP4
 FTW artifacts of 3.19 GiB for 8 experts and 3.72 GiB for 16 experts; both
-passed bounded CUDA smokes. None of these artifacts is calibrated,
-quality-evaluated, or release-ready.
+passed bounded CUDA smokes. The latest 16-expert artifact has an experimental
+calibration pass, but neither tier is approved, quality-evaluated, or
+release-ready.
 
 ## Execution status
 
@@ -137,6 +138,10 @@ quality-evaluated, or release-ready.
   matches. Captured outputs repeatedly looped on malformed JSON. This is a
   provisional behavior signal only, not a final quality result or approval to
   favor the larger tier without calibration.
+- **Phase 28 calibration probe:** a corrected 14-case synthetic holdout scores
+  the calibrated 16-expert tier 9/14 in BF16 and 7/14 after NVFP4 packing.
+  These are provisional verifier receipts only. Human portfolio approval,
+  broader held-out quality, and production enablement remain open.
 
 ## 1. Executive Summary & Core Objective
 
