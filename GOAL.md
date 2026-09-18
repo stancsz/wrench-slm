@@ -452,3 +452,11 @@ rejection, hash-bound reset, and cooperative cancellation all passed in a
 bounded local receipt. External alert delivery, blocking-kernel interruption,
 and production rollback storage remain unproven. Evidence is in
 `phases/phase-42-router-recovery/router-control-receipt.json`.
+
+Phase 43 re-verified the live quantized artifacts and their manifests. The
+compact 8E safety tier remains 3.188 GiB on disk with 3.169 GiB of packed
+weights and 3,881,244,016 parameters. The larger 16E tier remains 3.718 GiB
+on disk with 3.697 GiB of packed weights and 4,888,532,336 parameters. Both
+still pass the export and text-only receipts, while the catalog continues to
+make no quality or production claim. Evidence is in
+`phases/phase-43-artifact-reverification/catalog.json`.
