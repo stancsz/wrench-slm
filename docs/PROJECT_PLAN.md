@@ -181,10 +181,11 @@ release-ready.
   manifest correctly returns `BLOCKED_TRACE_AUTHORIZATION`; no real trace or
   production conclusion has been created.
 - **Phase 35 new-tier adapter smoke:** the new 8E 3.188 GiB NVFP4 pack loaded
-  through FreeToken and answered diagnostic requests at the local endpoint.
-  Both the legacy and explicit-schema adapter probes abstained at the strict
-  boundary, so this is wiring evidence only, not a quality or release claim.
-  Receipts are in `phases/phase-35-new-tier-adapter-smoke`.
+  through FreeToken and answered a calibration-shaped request at the local
+  endpoint. The legacy prompt abstained, while the exact schema-guided prompt
+  produced one accepted, verified bounded README read. This remains one-shape
+  diagnostic evidence, not a quality or release claim. Receipts are in
+  `phases/phase-35-new-tier-adapter-smoke`.
 
 ## 1. Executive Summary & Core Objective
 

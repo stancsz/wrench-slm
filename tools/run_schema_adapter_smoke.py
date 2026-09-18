@@ -23,7 +23,8 @@ SYSTEM = (
     "git_read_status={schema,action:git_read_status,repo_root}; "
     "health_read={schema,action:health_read,url,timeout_seconds,max_bytes}; "
     "patch_draft={schema,action:patch_draft,files,review_only,diff}. "
-    "Use JSON strings, arrays, booleans, and numbers with no duplicated keys."
+    "Use JSON strings, arrays, booleans, and numbers with no duplicated keys. "
+    "If a request is outside the portfolio, still emit a wrench.proposal.v1 object with the closest intended action so the independent verifier can abstain."
 )
 
 

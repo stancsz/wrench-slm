@@ -380,8 +380,7 @@ or workflow-value claim were introduced.
 
 Phase 35 loaded the new 8E 3.188 GiB NVFP4 pack through FreeToken and sent
 diagnostic requests through the local adapter. The legacy prompt abstained on a
-missing path, and the explicit schema-guided adapter probe abstained because
-the returned content failed strict JSON parsing. These receipts prove model
-loading and request wiring only; they are not a quality, workflow-value, or
-release claim. The receipts are in
+missing path, while the exact calibration system prompt produced one accepted,
+verified bounded README read. This is one trained prompt shape only and is not
+a broad quality, workflow-value, or release claim. The receipts are in
 `phases/phase-35-new-tier-adapter-smoke`.

@@ -2,20 +2,26 @@
   "schema": "wrench.schema-guided-adapter-smoke.v1",
   "endpoint": "http://127.0.0.1:28180/v1/chat/completions",
   "model": "Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v6-ExplicitSchema-TextOnly-FTW",
-  "wall_time_ms": 2221.468,
+  "wall_time_ms": 2082.422,
   "request": {
     "path": "README.md",
     "max_bytes": 4096,
     "thinking_disabled": true
   },
   "result": {
-    "status": "abstain",
-    "fallback_reason": "model_output_invalid_json",
+    "status": "accepted",
+    "action": "read_file",
+    "observation": {
+      "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\README.md",
+      "bytes": 2339,
+      "text": "# Wrench Qwen3.6 Expert-Tier Evaluation\n\nWrench's experimental specialized execution SLM targets narrowly defined,\nindependently verifiable developer-tool work. The project now evaluates two\nper-layer router-selected candidates pruned from Qwen3.6-35B-A3B: an 8-expert\ncompact tier, a 16-expert practical tier, and a 32-expert expanded tier.\n\nThe compact BF16 checkpoint reports 3,881,244,016 actual parameters, the\npractical 16-expert checkpoint reports 4,888,532,336, and the expanded\ncheckpoint reports 6,903,108,976. Their ideal INT4 weight-only estimates are\nabout 1.84 GiB, 2.32 GiB, and 3.28 GiB respectively. Text-only W4A16 NVFP4\nFTW artifacts are 3.19 GiB for 8 experts and 3.72 GiB for 16 experts. Both\npassed bounded CUDA load and generation smokes. These are experimental\nartifacts, not quality or production claims.\n\nIt may propose a bounded action or abstain. A separate verifier and router own\nexecution, fallback, accounting, circuit breaking, and rollback. The project is\nnot a general coding agent and has no autonomous-write authority.\n\nThe current investigation is whether either sparse candidate can meet the\nquality gate after calibration. A corrected synthetic holdout currently scores\nboth the 8-expert and 16-expert tiers 9/14 in BF16 and 7/14 after NVFP4\npacking. Exact proposal-object matches are lower, at 6/14 for 8E BF16 and\n4/14 for 16E BF16. These are development-only verifier receipts, not\nproduction quality evidence.\n\nThe latest corrected calibration lineage now records hash-stable training\nbytes and fresh packed receipts. On the separate 28-case unseen fixture, the\nnew 8E pack scored 9/28 exact proposal objects and the new 16E pack scored\n7/28. The 8E artifact remains the smaller option; neither tier is production\nenabled.\n\nThe original 35B teacher baseline scored 12/28 verifier outcomes and 7/28\nexact proposals after a receipt-visible generic-tool schema adapter. The\nadapter is baseline-only and is not part of Wrench runtime.\n\nSee [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart\nimplementation is outside this repository under\n`C:\\Users\\stanc\\github\\portfolio\\archives\\wrench-slm-2026-09-17-pre-restart`.\n\nThe phased execution plan is in [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).\nPhase evidence is kept under `phases/`; large local datasets remain outside Git.\n"
+    },
+    "model_output_validated": true,
     "model": "Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v6-ExplicitSchema-TextOnly-FTW",
     "usage": {
-      "prompt_tokens": 205,
-      "completion_tokens": 30,
-      "total_tokens": 235
+      "prompt_tokens": 235,
+      "completion_tokens": 29,
+      "total_tokens": 264
     }
   },
   "scope": "one schema-guided local adapter request; diagnostic only",
