@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.schema-guided-adapter-smoke.v1",
+  "endpoint": "http://127.0.0.1:28180/v1/chat/completions",
+  "model": "Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v6-ExplicitSchema-TextOnly-FTW",
+  "wall_time_ms": 2221.468,
+  "request": {
+    "path": "README.md",
+    "max_bytes": 4096,
+    "thinking_disabled": true
+  },
+  "result": {
+    "status": "abstain",
+    "fallback_reason": "model_output_invalid_json",
+    "model": "Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v6-ExplicitSchema-TextOnly-FTW",
+    "usage": {
+      "prompt_tokens": 205,
+      "completion_tokens": 30,
+      "total_tokens": 235
+    }
+  },
+  "scope": "one schema-guided local adapter request; diagnostic only",
+  "quality_claim": false
+}
