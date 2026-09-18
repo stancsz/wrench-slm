@@ -30,6 +30,9 @@ it uses the aggregate profile ranking and is called out in each receipt.
 - `inspect-8.json` and `inspect-32.json`: checkpoint metadata checks.
 - `runtime-quantized-8.json` and `runtime-quantized-16.json`: one-request CUDA
   smokes through the packed quantized artifacts.
+- `runtime-quantized-8-text-only-ftw.json` and
+  `runtime-quantized-16-text-only-ftw-default.json`: one-request CUDA smokes
+  for the final text-only FTW packs in the 3--4 GiB range.
 
 ## Measured size
 
@@ -39,13 +42,18 @@ it uses the aggregate profile ranking and is called out in each receipt.
 | More useful | 16 | 4,888,532,336 | about 2.32 GiB | `D:\models\Wrench-Qwen3.6-16expert-profiled-BF16` |
 | Expanded | 32 | 6,903,108,976 | about 3.28 GiB | `D:\models\Wrench-Qwen3.6-32expert-profiled-BF16` |
 
-ModelOpt produced real W4A16 NVFP4 HF exports. The 8-expert artifact is
-4,316,262,327 bytes (about 4.02 GiB) and the 16-expert artifact is
-4,884,519,327 bytes (about 4.55 GiB). The 16-expert export was also converted
-to FreeToken FTW: 4,889,203,342 bytes (about 4.55 GiB), with
-`quant_format: nvfp4`, and passed a one-request load/generation smoke. The
-larger on-disk size versus the ideal INT4 estimate is expected because this
-W4A16 export does not quantize every tensor, and includes runtime metadata.
+ModelOpt produced real W4A16 NVFP4 HF exports. The original multimodal 8-expert
+artifact is 4,316,262,327 bytes (about 4.02 GiB), and the original 16-expert
+artifact is 4,884,519,327 bytes (about 4.55 GiB). Wrench is text-only, so a
+reproducible pack removes only the `model.visual.*` tensors, 333 tensors shared
+by both exports. The resulting self-contained FTW artifacts are:
+
+- 8 experts: 3,426,071,712 bytes (about 3.19 GiB), `quant_format: nvfp4`.
+- 16 experts: 3,995,579,915 bytes (about 3.72 GiB), `quant_format: nvfp4`.
+
+Both text-only FTW artifacts passed one-request CUDA load/generation smokes.
+The larger on-disk size versus the ideal INT4 estimate is expected because this
+W4A16 export does not quantize every text tensor and includes runtime metadata.
 
 The 32-expert candidate remains a BF16 structural experiment. Its ideal INT4
 estimate is not an actual packed artifact yet.

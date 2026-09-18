@@ -296,10 +296,9 @@ across 40 routed MoE layers. The receipt is
 receipts retain 8, 16, or 32 experts, with an aggregate fallback for the
 unprofiled MTP block. Profile-informed BF16 candidates load and forward on
 CUDA: they report 3,881,244,016, 4,888,532,336, and 6,903,108,976 parameters.
-ModelOpt produced actual W4A16 NVFP4 exports at 4,316,262,327 bytes for the
-8-expert tier and 4,884,519,327 bytes for the 16-expert tier. The 16-expert
-export was converted to a 4,889,203,342-byte FreeToken FTW checkpoint with
-`quant_format: nvfp4` and passed a bounded one-request CUDA load/generation
-smoke. Both the compact HF export and practical FTW export have equivalent
-one-request runtime receipts. These remain experimental and uncalibrated, and
+ModelOpt produced actual W4A16 NVFP4 exports. After removing only the unused
+vision tensors for Wrench's text-only runtime, the self-contained FreeToken FTW
+artifacts are 3,426,071,712 bytes for 8 experts and 3,995,579,915 bytes for
+16 experts. Both report `quant_format: nvfp4` and passed bounded one-request
+CUDA load/generation smokes. These remain experimental and uncalibrated, and
 the 32-expert path is still BF16-only.

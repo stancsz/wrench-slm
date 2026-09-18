@@ -99,10 +99,18 @@ def profile(args: argparse.Namespace) -> dict[str, Any]:
         "--model", str(Path(args.model).resolve()),
         "--host", args.host, "--port", str(args.port),
         "--moe-strategy", "offload", "--max-running-requests", "1",
-        "--max-seq-len-override", "2048", "--memory-ratio", "0.8",
+        "--max-seq-len-override", str(args.max_seq_len_override), "--memory-ratio", "0.8",
         "--cuda-graph-max-bs", "0", "--text-model-only",
         "--mm-disable", "vision", "audio", "--reasoning-parser", "qwen3",
     ]
+    if args.moe_cache_size is not None:
+        command.extend(["--moe-cache-size", str(args.moe_cache_size)])
+    if args.kv_reserve_tokens is not None:
+        command.extend(["--kv-reserve-tokens", str(args.kv_reserve_tokens)])
+    if args.num_token_override is not None:
+        command.extend(["--num-tokens", str(args.num_token_override)])
+    if args.quant_backend is not None:
+        command.extend(["--quant-backend", args.quant_backend])
     started = time.perf_counter()
     with log_path.open("w", encoding="utf-8", errors="replace") as log:
         process = subprocess.Popen(command, env=env, stdout=log, stderr=subprocess.STDOUT)
@@ -194,6 +202,11 @@ def main() -> int:
     parser.add_argument("--keep", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=8)
     parser.add_argument("--limit-requests", type=int, default=None)
+    parser.add_argument("--max-seq-len-override", type=int, default=2048)
+    parser.add_argument("--moe-cache-size", type=int, default=None)
+    parser.add_argument("--kv-reserve-tokens", type=int, default=None)
+    parser.add_argument("--num-token-override", type=int, default=None)
+    parser.add_argument("--quant-backend", default=None)
     parser.add_argument("--startup-timeout", type=float, default=600)
     parser.add_argument("--request-timeout", type=float, default=180)
     args = parser.parse_args()

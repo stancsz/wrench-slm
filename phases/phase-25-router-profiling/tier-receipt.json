@@ -1,7 +1,9 @@
 {
   "schema": "wrench.qwen-expert-tier.v2",
-  "status": "PASS_STRUCTURAL_TIERS_AND_PACKED_8_16_QUANTIZATION",
+  "status": "PASS_STRUCTURAL_TIERS_AND_TEXT_ONLY_PACKED_QUANTIZATION",
   "profile_receipt": "phases/phase-25-router-profiling/router-profile.json",
+  "text_only_pack_tool": "tools/strip_qwen_vision.py",
+  "text_only_removal_rule": "remove only model.visual.* tensors; retain all text weights and routing tensors",
   "selection_rule": "per-route descending activation count, ties by lower source expert id; aggregate fallback for unprofiled MTP",
   "tiers": [
     {
@@ -18,7 +20,13 @@
       "quantized_hf_gib": 4.019,
       "quantization": "ModelOpt W4A16 NVFP4",
       "runtime_smoke": "phases/phase-25-router-profiling/runtime-smoke-8.json",
-      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-8.json"
+      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-8.json",
+      "text_only_hf_path": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-TextOnly-HF",
+      "text_only_hf_bytes": 3423055009,
+      "text_only_ftw_path": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-TextOnly-FTW",
+      "text_only_ftw_bytes": 3426071712,
+      "text_only_ftw_gib": 3.191,
+      "text_only_quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-8-text-only-ftw.json"
     },
     {
       "name": "practical",
@@ -36,7 +44,14 @@
       "quantized_ftw_gib": 4.553,
       "quantization": "ModelOpt W4A16 NVFP4, converted to FreeToken FTW quant_format nvfp4",
       "runtime_smoke": "phases/phase-25-router-profiling/runtime-smoke-16.json",
-      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-16.json"
+      "quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-16.json",
+      "text_only_hf_path": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-TextOnly-HF",
+      "text_only_hf_bytes": 3991312011,
+      "text_only_hf_gib": 3.717,
+      "text_only_ftw_path": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-TextOnly-FTW",
+      "text_only_ftw_bytes": 3995579915,
+      "text_only_ftw_gib": 3.721,
+      "text_only_quantized_runtime_smoke": "phases/phase-25-router-profiling/runtime-quantized-16-text-only-ftw-default.json"
     },
     {
       "name": "expanded",

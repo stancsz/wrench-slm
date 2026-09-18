@@ -20,9 +20,10 @@ using real per-layer router telemetry. The compact 8-expert candidate reports
 1.84 GiB. The practical 16-expert candidate reports 4,888,532,336 parameters
 and has an ideal INT4 estimate of about 2.32 GiB. The expanded 32-expert
 candidate reports 6,903,108,976 parameters and has an ideal INT4 estimate of
-about 3.28 GiB. Real W4A16 NVFP4 exports are 4.02 GiB for 8 experts and 4.55
-GiB for 16 experts. The 16-expert FTW conversion passed a bounded CUDA smoke.
-None of these artifacts is calibrated, quality-evaluated, or release-ready.
+about 3.28 GiB. Removing unused vision tensors yields text-only W4A16 NVFP4
+FTW artifacts of 3.19 GiB for 8 experts and 3.72 GiB for 16 experts; both
+passed bounded CUDA smokes. None of these artifacts is calibrated,
+quality-evaluated, or release-ready.
 
 ## Execution status
 
@@ -126,9 +127,10 @@ None of these artifacts is calibrated, quality-evaluated, or release-ready.
   for the 8- and 16-expert candidates, and the 16-expert export also passed a
   bounded FreeToken FTW generation smoke.
 - **Next gate:** obtain explicit human approval for the frozen task portfolio,
-  then compare the 8- and 16-expert packed artifacts on a held-out approved
-  Wrench evaluation split. Quantized size, loadability, and quality must be
-  recorded separately. The 32-expert candidate remains BF16-only for now.
+  then compare the 8- and 16-expert text-only packed artifacts on a held-out
+  approved Wrench evaluation split. Quantized size, loadability, and quality
+  must be recorded separately. The 32-expert candidate remains BF16-only for
+  now.
 
 ## 1. Executive Summary & Core Objective
 

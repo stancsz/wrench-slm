@@ -8,10 +8,10 @@ compact tier, a 16-expert practical tier, and a 32-expert expanded tier.
 The compact BF16 checkpoint reports 3,881,244,016 actual parameters, the
 practical 16-expert checkpoint reports 4,888,532,336, and the expanded
 checkpoint reports 6,903,108,976. Their ideal INT4 weight-only estimates are
-about 1.84 GiB, 2.32 GiB, and 3.28 GiB respectively. Real W4A16 NVFP4 exports
-are currently about 4.02 GiB for 8 experts and 4.55 GiB for 16 experts. The
-16-expert FTW artifact passed a bounded CUDA load and generation smoke. These
-are experimental artifacts, not quality or production claims.
+about 1.84 GiB, 2.32 GiB, and 3.28 GiB respectively. Text-only W4A16 NVFP4
+FTW artifacts are 3.19 GiB for 8 experts and 3.72 GiB for 16 experts. Both
+passed bounded CUDA load and generation smokes. These are experimental
+artifacts, not quality or production claims.
 
 It may propose a bounded action or abstain. A separate verifier and router own
 execution, fallback, accounting, circuit breaking, and rollback. The project is
