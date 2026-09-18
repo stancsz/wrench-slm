@@ -141,6 +141,7 @@ def profile(args: argparse.Namespace) -> dict[str, Any]:
                     "response_model": response.get("model"),
                     "usage": response.get("usage"),
                     "wall_seconds": round(time.perf_counter() - request_started, 3),
+                    **({"response_content": response.get("choices", [{}])[0].get("message", {}).get("content", "")} if args.capture_content else {}),
                 }
             )
     finally:
@@ -207,6 +208,7 @@ def main() -> int:
     parser.add_argument("--kv-reserve-tokens", type=int, default=None)
     parser.add_argument("--num-token-override", type=int, default=None)
     parser.add_argument("--quant-backend", default=None)
+    parser.add_argument("--capture-content", action="store_true")
     parser.add_argument("--startup-timeout", type=float, default=600)
     parser.add_argument("--request-timeout", type=float, default=180)
     args = parser.parse_args()

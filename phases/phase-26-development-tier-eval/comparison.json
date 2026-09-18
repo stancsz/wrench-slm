@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.provisional-tier-development-comparison.v1",
+  "status": "OBSERVED_PROVISIONAL_MISMATCHES",
+  "scope": "development-only synthetic templates; portfolio pending human approval; not final quality evidence",
+  "quality_claim": false,
+  "case_count": 10,
+  "tiers": [
+    {
+      "tier": "8-expert-text-only-ftw",
+      "artifact_bytes": 3426071712,
+      "artifact_gib": 3.191,
+      "runtime_receipt": "runtime-8.json",
+      "score_receipt": "score-8.json",
+      "exact_matches": 0,
+      "observed_status": "OBSERVED_PROVISIONAL_MISMATCHES"
+    },
+    {
+      "tier": "16-expert-text-only-ftw",
+      "artifact_bytes": 3995579915,
+      "artifact_gib": 3.721,
+      "runtime_receipt": "runtime-16.json",
+      "score_receipt": "score-16.json",
+      "exact_matches": 0,
+      "observed_status": "OBSERVED_PROVISIONAL_MISMATCHES"
+    }
+  ],
+  "interpretation": "Both packed tiers loaded and served all ten prompts, but neither preserved strict Wrench proposal behavior on this fresh development split. The observed outputs repeatedly produced malformed or looping JSON text. This is a real development signal, not a final quality decision; the approved held-out split and teacher comparison remain open."
+}

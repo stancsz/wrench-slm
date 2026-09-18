@@ -302,3 +302,11 @@ artifacts are 3,426,071,712 bytes for 8 experts and 3,995,579,915 bytes for
 16 experts. Both report `quant_format: nvfp4` and passed bounded one-request
 CUDA load/generation smokes. These remain experimental and uncalibrated, and
 the 32-expert path is still BF16-only.
+
+Phase 26 ran a development-only, fresh-wording comparison through the
+independent verifier. Both final text-only FTW packs served all 10 cases, but
+both scored 0/10 exact matches. Their captured outputs repeatedly looped on an
+incomplete JSON fence. This is evidence that the current structural prune and
+quantization preserve loadability, not Wrench behavior. The result is
+explicitly provisional and does not replace the human-approved held-out gate,
+teacher comparison, or calibration work.

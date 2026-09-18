@@ -132,6 +132,11 @@ quality-evaluated, or release-ready.
   approved Wrench evaluation split. Quantized size, loadability, and quality
   must be recorded separately. The 32-expert candidate remains BF16-only for
   now.
+- **Phase 26 development comparison:** on ten fresh synthetic cases, both
+  text-only FTW packs served every request but scored 0/10 exact verifier
+  matches. Captured outputs repeatedly looped on malformed JSON. This is a
+  provisional behavior signal only, not a final quality result or approval to
+  favor the larger tier without calibration.
 
 ## 1. Executive Summary & Core Objective
 
