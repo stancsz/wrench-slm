@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.router-control-receipt.v1",
+  "status": "PASS_BOUNDED_LOCAL_CONTROL_RECEIPT",
+  "checks": {
+    "circuit_opened": true,
+    "state_saved": true,
+    "restart_restored_disabled_state": true,
+    "hash_mismatch_rejected": true,
+    "hash_bound_reset": true,
+    "cooperative_cancellation": true
+  },
+  "events": [
+    "circuit_opened"
+  ],
+  "cancellation_events": [
+    "cancelled"
+  ],
+  "scope": "local no-mutation control evidence; external alert delivery not exercised",
+  "quality_claim": false,
+  "all_checks_pass": true
+}

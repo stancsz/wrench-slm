@@ -445,3 +445,10 @@ expected outcomes improved from 11/14 to 12/14 and prohibited accepts fell
 from 1 to 0, while accepted cases were 7/14. This is still synthetic
 verifier evidence only; it does not establish real-workflow value or release
 readiness. Evidence is in `phases/phase-41-request-intent-guard`.
+
+Phase 42 exercised the existing router controls across a persisted-state
+boundary. Circuit opening, state save and reload, configuration-hash mismatch
+rejection, hash-bound reset, and cooperative cancellation all passed in a
+bounded local receipt. External alert delivery, blocking-kernel interruption,
+and production rollback storage remain unproven. Evidence is in
+`phases/phase-42-router-recovery/router-control-receipt.json`.
