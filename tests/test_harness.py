@@ -6,7 +6,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from wrench_harness import execute_local_qwen, execute_model_output, execute_proposal
+from wrench_harness import ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -151,3 +151,19 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
     finally:
         server.shutdown()
         thread.join(timeout=2)
+
+
+def test_router_attempt_ceiling_circuit_bypass_and_hash_bound_reset():
+    router = ProposalRouter(RouterConfig(max_attempts=2, failure_threshold=2))
+    rejected = lambda: {"status": "abstain", "fallback_reason": "model_output_invalid_json"}
+    first = router.run(rejected)
+    second = router.run(rejected)
+    assert first["status"] == "abstain"
+    assert second["circuit_opened"] is True
+    assert router.run(lambda: {"status": "accepted"})["fallback_reason"] == "router_disabled"
+
+    assert router.reset("wrong-hash") is False
+    assert router.reset(router.config.config_hash) is True
+    assert router.run(lambda: {"status": "accepted"})["status"] == "accepted"
+    router.bypass("maintenance")
+    assert router.run(lambda: {"status": "accepted"})["fallback_reason"] == "router_disabled"

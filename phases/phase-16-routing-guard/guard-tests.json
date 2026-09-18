@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.routing-guard-tests.v1",
+  "observed_at": "2026-09-17",
+  "status": "PASS_CONTROL_BOUNDARY_ONLY",
+  "command": "py -3 -m pytest -q",
+  "result": "8 passed",
+  "checks": [
+    "positive attempt ceiling",
+    "circuit opening after repeated abstentions",
+    "disabled routing after circuit open",
+    "operator bypass",
+    "hash-mismatched reset rejection",
+    "hash-matched reset recovery"
+  ],
+  "limits": [
+    "No model quality, latency, or workflow-success claim is made.",
+    "Cancellation, durable restart, alert delivery, and rollback storage remain open."
+  ]
+}

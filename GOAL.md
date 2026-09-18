@@ -206,3 +206,9 @@ returned model identity, and routes content through the strict parser. The
 local mock-server integration suite passes 7 tests; its receipt is at
 `phases/phase-15-local-qwen-adapter/adapter-tests.json`. This proves adapter
 boundary behavior only, not Qwen quality or production readiness.
+
+Phase 16 added `ProposalRouter` and `RouterConfig` for finite attempt ceilings,
+circuit opening after repeated abstentions, explicit operator bypass, and
+hash-bound reset. The full suite passes 8 tests. The receipt is at
+`phases/phase-16-routing-guard/guard-tests.json`. Cancellation, durable
+restart, alert delivery, and rollback storage remain open.

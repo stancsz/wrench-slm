@@ -69,6 +69,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   now checks endpoint policy, response bounds, model identity, and strict
   parser routing. The mock-server suite passes 7 tests. This is adapter-boundary
   evidence only.
+- **Phase 16, routing guard:** finite attempts, circuit opening, operator
+  bypass, and hash-bound reset are implemented and covered by 8 passing tests.
+  Durable restart, alerting, cancellation, and rollback evidence remain open.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.
