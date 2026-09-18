@@ -533,3 +533,8 @@ while verified packed weights are 3.169 GiB and 3.697 GiB, with full text-only
 directories at 3.188 GiB and 3.718 GiB. The practical 3–4 GiB artifact target
 is met; the ideal estimates are not download-size claims. Evidence is in
 `phases/phase-54-ideal-vs-packed-size/comparison.json`.
+
+Phase 55 added the current tier-selection guide at
+`docs/WRENCH_MODEL_TIERS.md`. It makes the 8E compact and 16E larger artifacts
+usable as explicit experimental choices while preserving the strict verifier,
+stronger-model fallback, and disabled learned-routing policy.
