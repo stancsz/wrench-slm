@@ -384,3 +384,11 @@ missing path, while the exact calibration system prompt produced one accepted,
 verified bounded README read. This is one trained prompt shape only and is not
 a broad quality, workflow-value, or release claim. The receipts are in
 `phases/phase-35-new-tier-adapter-smoke`.
+
+Phase 36 ran the same 28-case explicit-schema unseen fixture through the strict
+local adapter for both packed tiers. The 8E and 16E tiers each accepted 10/28
+responses, with 8/20 accepted task cases. Boundary safety differed: 8E had
+6/8 abstentions and 2 prohibited accepts, while 16E had 7/8 abstentions and 1
+prohibited accept. These are runtime development receipts only; prohibited
+accepts keep both tiers non-promotable. The comparison is in
+`phases/phase-36-unseen-schema-adapter/comparison.json`.

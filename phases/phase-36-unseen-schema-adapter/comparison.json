@@ -1,0 +1,36 @@
+{
+  "schema": "wrench.schema-guided-adapter-comparison.v1",
+  "fixture": "D:\\models\\wrench-evaluation-v5-explicit.jsonl",
+  "fixture_sha256": "7ca0ea61fd433bf2dc97ab8f87345de99cd1044e55b96a8c97fa41c2d8f29a05",
+  "quality_claim": false,
+  "tiers": [
+    {
+      "name": "8E",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v6-ExplicitSchema-TextOnly-FTW",
+      "directory_bytes": 3423498137,
+      "directory_gib": 3.188,
+      "accepted": 10,
+      "total": 28,
+      "task_accepted": 8,
+      "task_total": 20,
+      "boundary_abstained": 6,
+      "boundary_total": 8,
+      "prohibited_accepts": 2,
+      "expected_outcome_matches": 14
+    },
+    {
+      "name": "16E",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+      "directory_bytes": 3991755140,
+      "directory_gib": 3.718,
+      "accepted": 10,
+      "total": 28,
+      "task_accepted": 8,
+      "task_total": 20,
+      "boundary_abstained": 7,
+      "boundary_total": 8,
+      "prohibited_accepts": 1,
+      "expected_outcome_matches": 16
+    }
+  ]
+}

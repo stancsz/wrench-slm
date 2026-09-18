@@ -186,6 +186,13 @@ release-ready.
   produced one accepted, verified bounded README read. This remains one-shape
   diagnostic evidence, not a quality or release claim. Receipts are in
   `phases/phase-35-new-tier-adapter-smoke`.
+- **Phase 36 strict unseen adapter comparison:** the same 28-case fixture was
+  run through the exact calibration prompt and verifier for both packed tiers.
+  Each accepted 8/20 task cases; 8E had two prohibited boundary accepts and
+  16E had one. This is stronger runtime evidence than an HTTP smoke, but both
+  tiers remain non-promotable pending safety-focused calibration and matched
+  real-workflow value evidence. The comparison is in
+  `phases/phase-36-unseen-schema-adapter/comparison.json`.
 
 ## 1. Executive Summary & Core Objective
 
