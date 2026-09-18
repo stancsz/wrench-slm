@@ -88,5 +88,16 @@ modify external model assets without explicit authorization.
 ## Current evidence
 
 This is a clean restart. The prior implementation and all local artifacts are
-preserved in the archive named in `ARCHIVE.md`; none are evidence for this new
-candidate.
+preserved under
+`C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`;
+none are evidence for this new candidate.
+
+Phase 1 has now inspected the local
+`Qwen3.6-35B-A3B-NVFP4` package without loading or modifying its weights. The
+receipt at
+`phases/phase-1-checkpoint-facts/checkpoint-facts.json` records 40 text layers,
+256 routed experts, top-8 routing, 2,048 hidden size, 291 quantized modules,
+and SHA-256 identities for all four `.ftw` shards (21,785,153,536 bytes total).
+It also records the required stop: this packed NVFP4/FP8 artifact is not a
+structural-pruning source. The next phase must obtain or identify a verified
+unquantized checkpoint before any tensor slicing is attempted.

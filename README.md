@@ -15,3 +15,6 @@ verified from the actual licensed checkpoint and measured on the target runtime.
 See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
 implementation is outside this repository under
 `C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`.
+
+The phased execution plan is in [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
+Phase evidence is kept under `phases/`; large local datasets remain outside Git.

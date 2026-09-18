@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 artifacts/
 data/private/
+dataset/*.jsonl
 models/
 *.pt
 *.bin
