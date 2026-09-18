@@ -8,14 +8,14 @@ import hashlib
 import json
 from pathlib import Path
 
-from generate_wrench_calibration import SYSTEM, row
+from generate_wrench_calibration import SYSTEM, SYSTEM_EXPLICIT, row
 
 
-def build() -> list[dict]:
+def build(system: str = SYSTEM) -> list[dict]:
     cases: list[dict] = []
 
     def add(family: str, prompt: str, proposal: dict, expected_status: str, reason: str | None = None) -> None:
-        cases.append(row(f"eval_{len(cases):03d}", family, prompt, proposal, expected_status, reason))
+        cases.append(row(f"eval_{len(cases):03d}", family, prompt, proposal, expected_status, reason, system=system))
 
     reads = [
         ("docs/PROJECT_PLAN.md", 32768, "Inspect the project plan with a maximum response size of 32768 bytes."),
@@ -76,13 +76,15 @@ def build() -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--system-style", choices=("legacy", "explicit-schema"), default="legacy")
     args = parser.parse_args()
-    rows = build()
+    system = SYSTEM_EXPLICIT if args.system_style == "explicit-schema" else SYSTEM
+    rows = build(system)
     payload = "".join(json.dumps(item, separators=(",", ":"), ensure_ascii=False) + "\n" for item in rows)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     # Keep the on-disk bytes identical to the hashed payload on Windows too.
     args.output.write_bytes(payload.encode("utf-8"))
-    print(json.dumps({"count": len(rows), "sha256": hashlib.sha256(payload.encode()).hexdigest()}))
+    print(json.dumps({"count": len(rows), "system_style": args.system_style, "sha256": hashlib.sha256(payload.encode()).hexdigest()}))
     return 0
 
 

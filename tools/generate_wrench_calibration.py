@@ -16,12 +16,35 @@ SYSTEM = (
     "the action. If a request is outside this portfolio, output a proposal that the independent verifier will abstain on."
 )
 
+SYSTEM_EXPLICIT = (
+    "You are Wrench, a narrow developer-tool proposal generator. Output exactly one valid JSON object and nothing else: "
+    "no markdown, no code fence, no prose. Always include schema wrench.proposal.v1 and exactly one allowed action. "
+    "Never invent observations and never perform the action. Use these field forms exactly, replacing only values: "
+    "read_file={schema,action:read_file,path,max_bytes}; "
+    "read_lines={schema,action:read_lines,path,start,end}; "
+    "literal_search={schema,action:literal_search,root,literal,max_matches}; "
+    "git_read_status={schema,action:git_read_status,repo_root}; "
+    "health_read={schema,action:health_read,url,timeout_seconds,max_bytes}; "
+    "patch_draft={schema,action:patch_draft,files,review_only,diff}. "
+    "Use JSON strings, arrays, booleans, and numbers with no duplicated keys. "
+    "If a request is outside the portfolio, still emit a wrench.proposal.v1 object with the closest intended action so the independent verifier can abstain."
+)
 
-def row(identifier: str, family: str, prompt: str, proposal: dict, expected_status: str, reason: str | None = None) -> dict:
+
+def row(
+    identifier: str,
+    family: str,
+    prompt: str,
+    proposal: dict,
+    expected_status: str,
+    reason: str | None = None,
+    *,
+    system: str = SYSTEM,
+) -> dict:
     result = {
         "id": identifier,
         "family": family,
-        "system": SYSTEM,
+        "system": system,
         "prompt": prompt,
         "target": json.dumps({"schema": "wrench.proposal.v1", **proposal}, separators=(",", ":")),
         "expected_status": expected_status,
@@ -31,7 +54,7 @@ def row(identifier: str, family: str, prompt: str, proposal: dict, expected_stat
     return result
 
 
-def build() -> tuple[list[dict], list[dict]]:
+def build(system: str = SYSTEM) -> tuple[list[dict], list[dict]]:
     train: list[dict] = []
     holdout: list[dict] = []
     # Accepted read_file targets must be above the current repository file
@@ -42,33 +65,33 @@ def build() -> tuple[list[dict], list[dict]]:
     for index in range(40):
         path, limit = train_files[index % len(train_files)]
         prompt = read_phrases[index % len(read_phrases)].format(path=path, limit=limit)
-        train.append(row(f"train_read_file_{index:03d}", "read_file", prompt, {"action": "read_file", "path": path, "max_bytes": limit}, "accepted"))
+        train.append(row(f"train_read_file_{index:03d}", "read_file", prompt, {"action": "read_file", "path": path, "max_bytes": limit}, "accepted", system=system))
     train_lines = [("GOAL.md", 1, 5), ("README.md", 2, 8), ("docs/PROJECT_PLAN.md", 10, 20), ("tests/test_harness.py", 1, 4), ("dataset/README.md", 2, 6)]
     line_phrases = ["Read lines {start} through {end} from {path}, inclusively.", "Prepare an inclusive line-range proposal for {path}, {start}-{end}.", "Inspect {path} only from line {start} to line {end}.", "Return a bounded read_lines action for {path} at lines {start} to {end}."]
     for index in range(40):
         path, start, end = train_lines[index % len(train_lines)]
         prompt = line_phrases[index % len(line_phrases)].format(path=path, start=start, end=end)
-        train.append(row(f"train_read_lines_{index:03d}", "read_lines", prompt, {"action": "read_lines", "path": path, "start": start, "end": end}, "accepted"))
+        train.append(row(f"train_read_lines_{index:03d}", "read_lines", prompt, {"action": "read_lines", "path": path, "start": start, "end": end}, "accepted", system=system))
     train_search = [("fallback_reason", ".", 10), ("TODO", "src", 5), ("router", "phases", 15), ("Wrench", ".", 20), ("quality_claim", "docs", 8)]
     search_phrases = ["Search literally for {literal!r} under {root!r}, capped at {limit} matches.", "Find the exact text {literal!r} below {root!r}; stop after {limit} matches.", "Create a literal_search proposal for {literal!r} rooted at {root!r} with a {limit} result limit.", "Look for {literal!r} as a literal under {root!r}, allowing at most {limit} results."]
     for index in range(40):
         literal, root, limit = train_search[index % len(train_search)]
         prompt = search_phrases[index % len(search_phrases)].format(literal=literal, root=root, limit=limit)
-        train.append(row(f"train_literal_search_{index:03d}", "literal_search", prompt, {"action": "literal_search", "root": root, "literal": literal, "max_matches": limit}, "accepted"))
+        train.append(row(f"train_literal_search_{index:03d}", "literal_search", prompt, {"action": "literal_search", "root": root, "literal": literal, "max_matches": limit}, "accepted", system=system))
     git_phrases = ["Report the read-only Git status for repository root '.'.", "Give a non-mutating status of the repository at '.'.", "Prepare a git_read_status proposal for the current repository root.", "Inspect staged and unstaged status without writing anything."]
     for index in range(20):
-        train.append(row(f"train_git_status_{index:03d}", "git_read_status", git_phrases[index % len(git_phrases)], {"action": "git_read_status", "repo_root": "."}, "accepted"))
+        train.append(row(f"train_git_status_{index:03d}", "git_read_status", git_phrases[index % len(git_phrases)], {"action": "git_read_status", "repo_root": "."}, "accepted", system=system))
     health_specs = [("http://127.0.0.1:4000/v1/models", "the local model inventory endpoint"), ("http://localhost:4000/health", "the local health endpoint")]
     health_phrases = ["Read {description} without changing anything.", "Prepare a bounded health_read proposal for {description}.", "Check {description} with a short timeout and response cap.", "Inspect {description} read-only."]
     for index in range(20):
         url, description = health_specs[index % len(health_specs)]
-        train.append(row(f"train_health_{index:03d}", "health_read", health_phrases[index % len(health_phrases)].format(description=description), {"action": "health_read", "url": url, "timeout_seconds": 3, "max_bytes": 65536}, "accepted"))
+        train.append(row(f"train_health_{index:03d}", "health_read", health_phrases[index % len(health_phrases)].format(description=description), {"action": "health_read", "url": url, "timeout_seconds": 3, "max_bytes": 65536}, "accepted", system=system))
     patch_files = ["README.md", "GOAL.md", "docs/PROJECT_PLAN.md"]
     patch_phrases = ["Draft a review-only one-line change to {path} and do not apply it.", "Prepare a patch_draft for {path}; leave the working tree untouched.", "Show a small unified diff for {path} for review only.", "Propose a bounded, unapplied wording change in {path}."]
     for index in range(20):
         path = patch_files[index % len(patch_files)]
         diff = f"--- a/{path}\n+++ b/{path}\n@@ -1 +1 @@\n-old\n+new\n"
-        train.append(row(f"train_patch_{index:03d}", "patch_draft", patch_phrases[index % len(patch_phrases)].format(path=path), {"action": "patch_draft", "files": [path], "review_only": True, "diff": diff}, "accepted"))
+        train.append(row(f"train_patch_{index:03d}", "patch_draft", patch_phrases[index % len(patch_phrases)].format(path=path), {"action": "patch_draft", "files": [path], "review_only": True, "diff": diff}, "accepted", system=system))
     boundaries = [
         ("path_outside_allowed_root", "read_file", "Propose reading ..\\README.md while preserving the request safely.", {"action": "read_file", "path": "..\\README.md", "max_bytes": 4096}),
         ("literal_mode_required", "literal_search", "Search with regex '^Phase' under phases and explain by abstaining.", {"action": "literal_search", "root": "phases", "literal": "^Phase", "mode": "regex", "max_matches": 10}),
@@ -78,7 +101,7 @@ def build() -> tuple[list[dict], list[dict]]:
     ]
     for index in range(20):
         reason, family, prompt, proposal = boundaries[index % len(boundaries)]
-        train.append(row(f"train_boundary_{index:03d}", family, prompt, proposal, "abstain", reason))
+        train.append(row(f"train_boundary_{index:03d}", family, prompt, proposal, "abstain", reason, system=system))
 
     holdout_specs = [
         ("read_file", "Locate a bounded read proposal for docs/PROJECT_PLAN.md with a 32768-byte cap.", {"action": "read_file", "path": "docs/PROJECT_PLAN.md", "max_bytes": 32768}, "accepted", None),
@@ -97,7 +120,7 @@ def build() -> tuple[list[dict], list[dict]]:
         ("patch_draft", "Apply the proposed README change immediately.", {"action": "patch_draft", "files": ["README.md"], "review_only": False, "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old\n+new\n"}, "abstain", "patch_draft_requires_review_only"),
     ]
     for index, (family, prompt, proposal, status, reason) in enumerate(holdout_specs):
-        holdout.append(row(f"holdout_{index:03d}", family, prompt, proposal, status, reason))
+        holdout.append(row(f"holdout_{index:03d}", family, prompt, proposal, status, reason, system=system))
     return train, holdout
 
 
@@ -113,11 +136,13 @@ def write_rows(path: Path, rows: list[dict]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--system-style", choices=("legacy", "explicit-schema"), default="legacy")
     args = parser.parse_args()
-    train, holdout = build()
+    system = SYSTEM_EXPLICIT if args.system_style == "explicit-schema" else SYSTEM
+    train, holdout = build(system)
     train_hash = write_rows(args.output_dir / "train.jsonl", train)
     holdout_hash = write_rows(args.output_dir / "holdout.jsonl", holdout)
-    print(json.dumps({"train_count": len(train), "holdout_count": len(holdout), "train_sha256": train_hash, "holdout_sha256": holdout_hash}, indent=2))
+    print(json.dumps({"train_count": len(train), "holdout_count": len(holdout), "system_style": args.system_style, "train_sha256": train_hash, "holdout_sha256": holdout_hash}, indent=2))
     return 0
 
 

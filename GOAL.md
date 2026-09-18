@@ -355,3 +355,13 @@ for 16E, and 9.852 seconds for the teacher. The nearest-rank p95 values were
 11.275, 11.357, and 17.398 seconds respectively. This is local diagnostic
 evidence only; it does not establish throughput, workflow value, or release
 readiness. The receipt is `phases/phase-32-runtime-comparison/comparison.json`.
+
+Phase 33 added an explicit action-to-field schema to the calibration prompt and
+retrained both tiers without changing the verifier. The new 8E and 16E packed
+artifacts are 3,423,498,137 bytes and 3,991,755,140 bytes. On the explicit
+14-case holdout they scored 6/14 and 8/14 verifier outcomes, with 5/14 and
+4/14 exact proposal objects. On the separate 28-case explicit-schema unseen
+fixture both scored 12/28 verifier outcomes and 8/28 exact proposal objects.
+This is a provisional behavior improvement, not a quality or release claim.
+The lineage and receipts are in
+`phases/phase-33-schema-guided-calibration/comparison.json`.

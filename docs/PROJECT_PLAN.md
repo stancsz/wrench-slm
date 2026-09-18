@@ -166,6 +166,13 @@ release-ready.
   seconds respectively. The receipt is
   `phases/phase-32-runtime-comparison/comparison.json`. This remains local
   diagnostic evidence, not a throughput, workflow-value, or release claim.
+- **Phase 33 schema-guided calibration:** an explicit action-to-field schema in
+  the calibration prompt improved the new packed 8E and 16E tiers on the
+  explicit-schema unseen fixture to 12/28 verifier outcomes and 8/28 exact
+  proposals each. Their text-only packed sizes are 3.188 GiB and 3.718 GiB.
+  Holdout results are 6/14 and 8/14 verifier outcomes respectively. The full
+  lineage is recorded in `phases/phase-33-schema-guided-calibration`; this is
+  still development evidence, not workflow value or release evidence.
 
 ## 1. Executive Summary & Core Objective
 
