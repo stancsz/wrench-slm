@@ -41,6 +41,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   warmup, and returned the exact bounded `WRENCH_RUNTIME_OK` response through
   `/v1/chat/completions`. This is runtime evidence only, not quality,
   throughput, pruning, or release evidence.
+- **Phase 9, execution boundary:** `src/wrench_harness/core.py` now provides a
+  fail-closed, read-only verifier for the six proposed portfolio actions. Its
+  boundary suite passes 4 tests and proves no patch application or generic
+  shell capability.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

@@ -151,3 +151,12 @@ model `Qwen3.6-35B-A3B-NVFP4`, and returned the exact bounded response
 `phases/phase-8-freetoken-runtime-smoke/runtime-smoke.json`. This closes only
 the local checkpoint-load and one-request runtime gate; pruning, quality,
 throughput, recovery, and release gates remain open.
+
+Phase 9 added the independent read-only execution boundary in
+`src/wrench_harness/core.py`. It accepts only the versioned portfolio actions,
+enforces bounded paths and reads, invokes a fixed read-only Git command,
+allowlists local health endpoints, and keeps patch drafts review-only. The
+boundary suite passes 4 tests, including traversal, external-health, and
+automatic-application abstentions. The receipt is at
+`phases/phase-9-execution-boundary/boundary-tests.json`. This proves the
+verifier contract, not that the Qwen model can produce correct proposals.
