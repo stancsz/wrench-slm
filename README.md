@@ -12,5 +12,6 @@ be structurally reduced and calibrated for this narrow role. No model identity,
 architecture, performance claim, or release decision is assumed until it is
 verified from the actual licensed checkpoint and measured on the target runtime.
 
-See [GOAL.md](GOAL.md) for the governing contract and [ARCHIVE.md](ARCHIVE.md)
-for the preserved pre-restart implementation.
+See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
+implementation is outside this repository under
+`C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`.
