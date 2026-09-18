@@ -84,6 +84,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 20, performance smoke:** one loose prompt abstained on invalid JSON;
   an exact-schema retry passed in 1,923.364 ms with 112 reported total tokens.
   The paired attempt receipt is diagnostic only, not a throughput benchmark.
+- **Phase 21, Qwen shadow portfolio:** five accepted-action shapes passed
+  through the real local Qwen runtime, adapter, and verifier. This is shadow
+  observation only; the portfolio remains pending approval and no quality
+  claim is made.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

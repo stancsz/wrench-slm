@@ -237,3 +237,9 @@ abstained on invalid JSON after 4,986.808 ms; an exact-schema retry was
 accepted after 1,923.364 ms with 72 prompt and 40 completion tokens. Both
 attempts are preserved in `phases/phase-20-performance-smoke/performance-
 receipt.json`. This is a two-attempt diagnostic, not a throughput benchmark.
+
+Phase 21 sent five accepted-action proposal shapes from the pending portfolio
+through the real local Qwen runtime, adapter, and verifier. All five were
+accepted; per-case usage and wall time are recorded in
+`phases/phase-21-qwen-shadow-eval/shadow-receipt.json`. This remains shadow
+observation only, not calibration, final evaluation, or a quality claim.

@@ -1,0 +1,75 @@
+{
+  "schema": "wrench.qwen-shadow-portfolio-eval.v1",
+  "status": "PASS_SHADOW_ONLY",
+  "case_count": 5,
+  "accepted": 5,
+  "results": [
+    {
+      "id": "read_file_valid",
+      "family": "read_file",
+      "status": "accepted",
+      "fallback_reason": null,
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "usage": {
+        "prompt_tokens": 77,
+        "completion_tokens": 40,
+        "total_tokens": 117
+      },
+      "wall_time_ms": 1986.031
+    },
+    {
+      "id": "read_lines_valid",
+      "family": "read_lines",
+      "status": "accepted",
+      "fallback_reason": null,
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "usage": {
+        "prompt_tokens": 77,
+        "completion_tokens": 40,
+        "total_tokens": 117
+      },
+      "wall_time_ms": 1357.781
+    },
+    {
+      "id": "literal_search_valid",
+      "family": "literal_search",
+      "status": "accepted",
+      "fallback_reason": null,
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "usage": {
+        "prompt_tokens": 72,
+        "completion_tokens": 35,
+        "total_tokens": 107
+      },
+      "wall_time_ms": 1284.968
+    },
+    {
+      "id": "git_status_valid",
+      "family": "git_read_status",
+      "status": "accepted",
+      "fallback_reason": null,
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "usage": {
+        "prompt_tokens": 59,
+        "completion_tokens": 22,
+        "total_tokens": 81
+      },
+      "wall_time_ms": 1274.01
+    },
+    {
+      "id": "patch_review_only",
+      "family": "patch_draft",
+      "status": "accepted",
+      "fallback_reason": null,
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "usage": {
+        "prompt_tokens": 96,
+        "completion_tokens": 59,
+        "total_tokens": 155
+      },
+      "wall_time_ms": 1667.137
+    }
+  ],
+  "scope": "real local Qwen shadow proposals; not approved final evaluation",
+  "quality_claim": false
+}
