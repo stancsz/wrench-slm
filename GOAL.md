@@ -493,3 +493,12 @@ reported tokens, while delivering the stronger acceptance result. This is
 local synthetic diagnostic evidence, not paid-token savings or production
 latency proof. Evidence is in
 `phases/phase-47-guarded-runtime-cost/comparison.json`.
+
+Phase 48 ran the broader 28-case explicit-schema fixture through both guarded
+tiers. The 16E tier accepted 14/28, matched 22/28 outcomes, and had zero
+prohibited accepts. The 8E tier moved from 12/28 accepted and one prohibited
+traversal rewrite to 11/28 accepted, 19/28 matches, and zero prohibited
+accepts after the traversal guard. This confirms the larger tier is the more
+useful experimental candidate, while the compact tier remains the faster,
+smaller safety option. Evidence is in
+`phases/phase-48-guarded-unseen/comparison.json`.

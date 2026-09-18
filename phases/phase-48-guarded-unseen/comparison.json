@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.guarded-broad-unseen-comparison.v1",
+  "fixture": "D:\\models\\wrench-evaluation-v5-explicit.jsonl",
+  "request_count": 28,
+  "compact_8e_before_traversal_guard": {
+    "accepted": 12,
+    "expected_outcome_matches": 18,
+    "prohibited_accepts": 1,
+    "elapsed_seconds": 54.78,
+    "reported_total_tokens": 9095,
+    "receipt": "runtime-8e-adaptive.json"
+  },
+  "compact_8e_after_traversal_guard": {
+    "accepted": 11,
+    "expected_outcome_matches": 19,
+    "prohibited_accepts": 0,
+    "elapsed_seconds": 54.202,
+    "reported_total_tokens": 9095,
+    "receipt": "runtime-8e-adaptive-v2.json"
+  },
+  "larger_16e_after_all_guards": {
+    "accepted": 14,
+    "expected_outcome_matches": 22,
+    "prohibited_accepts": 0,
+    "elapsed_seconds": 71.416,
+    "reported_total_tokens": 9370,
+    "receipt": "runtime-16e-adaptive.json"
+  },
+  "quality_claim": false
+}

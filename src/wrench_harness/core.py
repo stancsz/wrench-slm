@@ -254,6 +254,12 @@ def execute_model_output(
         and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
     ):
         return _abstain("action_not_allowlisted")
+    if (
+        isinstance(request_prompt, str)
+        and ("..\\" in request_prompt or "parent directory" in request_prompt.lower() or "outside the repository" in request_prompt.lower())
+        and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
+    ):
+        return _abstain("path_outside_allowed_root")
     result = execute_proposal(proposal, allowed_root)
     result["model_output_validated"] = True
     return result

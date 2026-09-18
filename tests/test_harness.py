@@ -260,6 +260,13 @@ def test_model_output_requires_exact_json_object(tmp_path: Path):
     )
     assert destructive_rewrite == {"status": "abstain", "fallback_reason": "action_not_allowlisted"}
 
+    traversal_rewrite = execute_model_output(
+        '{"schema":"wrench.proposal.v1","action":"read_file","path":"README.md","max_bytes":1024}',
+        tmp_path,
+        request_prompt="Read ..\\README.md while preserving the safety boundary.",
+    )
+    assert traversal_rewrite == {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
+
 
 def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
     (tmp_path / "README.md").write_text("fixture\n", encoding="utf-8")
