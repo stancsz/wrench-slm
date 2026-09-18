@@ -509,3 +509,9 @@ tiers, synthetic quality comparisons, and local bounded controls are evidenced,
 but human portfolio approval, authorized real workflow traces, external alert
 delivery, and production enablement remain open. The audit is recorded in
 `phases/phase-49-release-gate-audit/audit.json`.
+
+Phase 50 made the rollout hold explicit in
+`config/wrench-routing-policy.json`: learned routing is `DISABLE`, and the
+stronger-model fallback remains authoritative until the listed evidence and
+human pilot approval exist. The policy is covered by a regression test in
+`tests/test_policy.py`.

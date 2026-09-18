@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.routing-policy.v1",
+  "learned_routing": "DISABLE",
+  "fallback": "stronger_model_path",
+  "enablement_requires": [
+    "human_reviewed_task_portfolio",
+    "approved_real_workflow_traces",
+    "paired_token_savings_with_uncertainty",
+    "zero_prohibited_accepts",
+    "zero_unexpected_mutations",
+    "explicit_human_pilot_approval"
+  ],
+  "quality_claim": false
+}
