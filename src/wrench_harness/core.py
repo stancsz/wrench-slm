@@ -105,6 +105,8 @@ def _literal_search(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     search_root = _bounded_path(proposal.get("root"), root)
     literal = proposal.get("literal")
     limit = proposal.get("max_matches", MAX_MATCHES)
+    if proposal.get("mode", "literal") != "literal":
+        return _abstain("literal_mode_required")
     if search_root is None:
         return _abstain("search_root_outside_allowed_root")
     if not isinstance(literal, str) or not literal or len(literal) > 4096:

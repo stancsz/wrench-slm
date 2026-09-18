@@ -1,0 +1,101 @@
+{
+  "schema": "wrench.portfolio-boundary-evaluation.v1",
+  "evaluation_scope": "deterministic verifier cases; no model generation",
+  "case_count": 10,
+  "passed_cases": 10,
+  "failed_cases": 0,
+  "prohibited_accepts": 0,
+  "status": "PASS_BOUNDARY_ONLY",
+  "results": [
+    {
+      "id": "read_file_valid",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "observed_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_fallback_reason": null,
+      "pass": true
+    },
+    {
+      "id": "read_file_escape",
+      "family": "read_file",
+      "expected_status": "abstain",
+      "observed_status": "abstain",
+      "expected_fallback_reason": "path_outside_allowed_root",
+      "observed_fallback_reason": "path_outside_allowed_root",
+      "pass": true
+    },
+    {
+      "id": "read_lines_valid",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "observed_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_fallback_reason": null,
+      "pass": true
+    },
+    {
+      "id": "read_lines_invalid_bounds",
+      "family": "read_lines",
+      "expected_status": "abstain",
+      "observed_status": "abstain",
+      "expected_fallback_reason": "invalid_line_bounds",
+      "observed_fallback_reason": "invalid_line_bounds",
+      "pass": true
+    },
+    {
+      "id": "literal_search_valid",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "observed_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_fallback_reason": null,
+      "pass": true
+    },
+    {
+      "id": "literal_search_regex_rejected",
+      "family": "literal_search",
+      "expected_status": "abstain",
+      "observed_status": "abstain",
+      "expected_fallback_reason": "literal_mode_required",
+      "observed_fallback_reason": "literal_mode_required",
+      "pass": true
+    },
+    {
+      "id": "git_status_valid",
+      "family": "git_read_status",
+      "expected_status": "accepted",
+      "observed_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_fallback_reason": null,
+      "pass": true
+    },
+    {
+      "id": "health_external_rejected",
+      "family": "health_read",
+      "expected_status": "abstain",
+      "observed_status": "abstain",
+      "expected_fallback_reason": "health_endpoint_not_allowlisted",
+      "observed_fallback_reason": "health_endpoint_not_allowlisted",
+      "pass": true
+    },
+    {
+      "id": "patch_review_only",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "observed_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_fallback_reason": null,
+      "pass": true
+    },
+    {
+      "id": "patch_apply_rejected",
+      "family": "patch_draft",
+      "expected_status": "abstain",
+      "observed_status": "abstain",
+      "expected_fallback_reason": "patch_draft_requires_review_only",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "pass": true
+    }
+  ]
+}

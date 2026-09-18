@@ -39,6 +39,11 @@ def test_literal_search_is_not_regex_and_respects_limit(tmp_path: Path):
     assert len(capped["observation"]["matches"]) == 1
     assert capped["observation"]["truncated"] is True
 
+    regex = execute_proposal(
+        proposal("literal_search", root=".", literal="^needle", mode="regex", max_matches=3), tmp_path
+    )
+    assert regex["fallback_reason"] == "literal_mode_required"
+
 
 def test_git_status_is_read_only(tmp_path: Path):
     subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)

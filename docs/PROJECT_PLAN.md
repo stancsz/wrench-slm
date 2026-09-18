@@ -57,6 +57,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
 - **Phase 12, pruning-source validator:** an architecture-aware metadata gate
   now rejects the local packed FTW/NVFP4 package before any tensor-slicing code
   can run. The full test suite passes 5 tests; no weights were modified.
+- **Phase 13, portfolio boundary evaluation:** 10 deterministic portfolio
+  cases pass through the verifier with zero prohibited accepts. This validates
+  the execution boundary only; the portfolio remains pending human approval
+  and no model-quality claim is made.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

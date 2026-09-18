@@ -185,3 +185,10 @@ before pruning code can run. Against the real local package it returned
 safetensors index. The receipt is at
 `phases/phase-12-pruning-source-validator/local-validation.json`; the test
 suite now passes 5 tests. No weight was loaded, sliced, or rewritten.
+
+Phase 13 ran 10 deterministic cases from the proposed task portfolio through
+the independent verifier. All 10 matched their expected accept or fallback
+outcome, with zero prohibited accepts. The receipt is at
+`phases/phase-13-portfolio-boundary-eval/evaluation.json`. The portfolio is
+still marked `pending_human_approval`, and this boundary-only result is not
+model-quality or workflow-success evidence.

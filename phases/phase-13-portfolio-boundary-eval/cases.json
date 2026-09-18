@@ -1,0 +1,71 @@
+{
+  "schema": "wrench.portfolio-boundary-cases.v1",
+  "status": "pending_human_approval",
+  "cases": [
+    {
+      "id": "read_file_valid",
+      "family": "read_file",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "read_file", "path": "phases/phase-9-execution-boundary/README.md", "max_bytes": 4096},
+      "expected_status": "accepted"
+    },
+    {
+      "id": "read_file_escape",
+      "family": "read_file",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "read_file", "path": "..\\README.md", "max_bytes": 4096},
+      "expected_status": "abstain",
+      "expected_fallback_reason": "path_outside_allowed_root"
+    },
+    {
+      "id": "read_lines_valid",
+      "family": "read_lines",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "read_lines", "path": "phases/phase-9-execution-boundary/README.md", "start": 1, "end": 2},
+      "expected_status": "accepted"
+    },
+    {
+      "id": "read_lines_invalid_bounds",
+      "family": "read_lines",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "read_lines", "path": "phases/phase-9-execution-boundary/README.md", "start": 0, "end": 2},
+      "expected_status": "abstain",
+      "expected_fallback_reason": "invalid_line_bounds"
+    },
+    {
+      "id": "literal_search_valid",
+      "family": "literal_search",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "literal_search", "root": "phases", "literal": "Phase", "mode": "literal", "max_matches": 20},
+      "expected_status": "accepted"
+    },
+    {
+      "id": "literal_search_regex_rejected",
+      "family": "literal_search",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "literal_search", "root": "phases", "literal": "^Phase", "mode": "regex", "max_matches": 20},
+      "expected_status": "abstain",
+      "expected_fallback_reason": "literal_mode_required"
+    },
+    {
+      "id": "git_status_valid",
+      "family": "git_read_status",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "git_read_status", "repo_root": "."},
+      "expected_status": "accepted"
+    },
+    {
+      "id": "health_external_rejected",
+      "family": "health_read",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "health_read", "url": "https://example.com/health", "timeout_seconds": 1, "max_bytes": 1024},
+      "expected_status": "abstain",
+      "expected_fallback_reason": "health_endpoint_not_allowlisted"
+    },
+    {
+      "id": "patch_review_only",
+      "family": "patch_draft",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "patch_draft", "files": ["README.md"], "review_only": true, "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Wrench\n+# Wrench review\n"},
+      "expected_status": "accepted"
+    },
+    {
+      "id": "patch_apply_rejected",
+      "family": "patch_draft",
+      "proposal": {"schema": "wrench.proposal.v1", "action": "patch_draft", "files": ["README.md"], "review_only": false, "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Wrench\n+# Wrench changed\n"},
+      "expected_status": "abstain",
+      "expected_fallback_reason": "patch_draft_requires_review_only"
+    }
+  ]
+}
