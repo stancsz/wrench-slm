@@ -538,3 +538,8 @@ Phase 55 added the current tier-selection guide at
 `docs/WRENCH_MODEL_TIERS.md`. It makes the 8E compact and 16E larger artifacts
 usable as explicit experimental choices while preserving the strict verifier,
 stronger-model fallback, and disabled learned-routing policy.
+
+Phase 56 added a fail-closed tier resolver in `src/wrench_harness/tier.py`.
+It selects only the verified compact or larger catalog entry, requires the
+learned-routing policy to remain `DISABLE`, rejects missing artifacts, and
+labels every result `EXPERIMENTAL_ONLY`.
