@@ -101,3 +101,9 @@ and SHA-256 identities for all four `.ftw` shards (21,785,153,536 bytes total).
 It also records the required stop: this packed NVFP4/FP8 artifact is not a
 structural-pruning source. The next phase must obtain or identify a verified
 unquantized checkpoint before any tensor slicing is attempted.
+
+Phase 2 mechanically audited the locally staged dataset files. All 5,000 rows
+parse as JSONL, but the corpus is not approved for Wrench training: the audit
+shows broad web/research and finance/crypto content outside the narrow developer
+tool contract. The files remain ignored and local; filtering and license/task-
+family review are required before they can enter calibration or SFT.

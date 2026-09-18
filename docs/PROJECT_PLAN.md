@@ -12,6 +12,19 @@ Wrench remains proposal-first and fail-closed. “Autonomous completion” below
 means an automatically proposed and independently verified result; it does not
 grant the model arbitrary shell access, credentials, or unsupervised writes.
 
+## Execution status
+
+- **Phase 1, checkpoint facts:** complete for the local NVFP4 artifact. The
+  receipt is hash-bound, and structural slicing is explicitly rejected for this
+  packed source.
+- **Phase 2, dataset audit:** complete as a mechanical audit. The three local
+  JSONL files contain 5,000 parseable rows, but they are not approved training
+  data. The audit reports substantial web/research and finance/crypto content,
+  so filtering, licensing review, and Wrench task-family labeling are required
+  before calibration or SFT.
+- **Next gate:** identify and verify an unquantized Qwen source, then freeze the
+  task portfolio and calibration/evaluation split before router profiling.
+
 ## 1. Executive Summary & Core Objective
 
 The objective of **Wrench SLM** is to build a high-velocity, sub-4-billion parameter local model specialized in developer-tool workflows, repository navigation, noise compaction, and deterministic code repair. 

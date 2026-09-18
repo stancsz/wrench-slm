@@ -1,0 +1,32 @@
+{
+  "name": "wrench_slm_training_bundle",
+  "version": "1.1.0",
+  "status": "audit_only_not_approved",
+  "audit_receipt": "../phases/phase-2-dataset-audit/dataset-audit.json",
+  "license_review": "pending",
+  "target_architecture": "sub-4b-wrench",
+  "datasets": [
+    {
+      "file": "agentic_tool_call_short_2k.jsonl",
+      "samples": 2000,
+      "source": "pyromind/agentic-tool-call-dataset-12k (short)",
+      "source_url": "https://huggingface.co/datasets/pyromind/agentic-tool-call-dataset-12k",
+      "role": "deterministic-single-step-tool-execution"
+    },
+    {
+      "file": "agentic_tool_call_long_1k.jsonl",
+      "samples": 1000,
+      "source": "pyromind/agentic-tool-call-dataset-12k (long)",
+      "source_url": "https://huggingface.co/datasets/pyromind/agentic-tool-call-dataset-12k",
+      "role": "multi-turn-repository-navigation-error-recovery"
+    },
+    {
+      "file": "glaive_function_calling_2k.jsonl",
+      "samples": 2000,
+      "source": "glaiveai/glaive-function-calling-v2",
+      "source_url": "https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2",
+      "role": "schema-precision-and-structured-output"
+    }
+  ],
+  "created_at": "2026-09-17T20:34:40Z"
+}

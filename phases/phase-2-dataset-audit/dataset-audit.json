@@ -1,0 +1,58 @@
+{
+  "schema": "wrench.dataset-audit.v1",
+  "dataset_dir": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\dataset",
+  "files": [
+    {
+      "file": "agentic_tool_call_long_1k.jsonl",
+      "bytes": 225883611,
+      "sha256": "b717a1970f527398a328990759b0b12848f650b7416697875dfc60763935a858",
+      "lines": 1000,
+      "parse_errors": 0,
+      "max_line_bytes": 769988,
+      "top_level_key_counts": {
+        "messages": 1000
+      },
+      "keyword_group_hits": {
+        "finance_or_crypto": 386,
+        "repository_work": 508,
+        "tool_execution": 1000,
+        "web_or_research": 1000
+      }
+    },
+    {
+      "file": "agentic_tool_call_short_2k.jsonl",
+      "bytes": 46876061,
+      "sha256": "be29de7eb7101ec057ec273ec5447c09f7754fd604903c2aeedb18b590888196",
+      "lines": 2000,
+      "parse_errors": 0,
+      "max_line_bytes": 258119,
+      "top_level_key_counts": {
+        "messages": 2000
+      },
+      "keyword_group_hits": {
+        "finance_or_crypto": 193,
+        "repository_work": 204,
+        "tool_execution": 2000,
+        "web_or_research": 183
+      }
+    },
+    {
+      "file": "glaive_function_calling_2k.jsonl",
+      "bytes": 4815209,
+      "sha256": "7a709ec6c9182a6f7b471419d08b64beed1a4012f1989f81305ad72a456003aa",
+      "lines": 2000,
+      "parse_errors": 0,
+      "max_line_bytes": 14032,
+      "top_level_key_counts": {
+        "chat": 2000,
+        "system": 2000
+      },
+      "keyword_group_hits": {
+        "finance_or_crypto": 24,
+        "repository_work": 17,
+        "tool_execution": 1100,
+        "web_or_research": 45
+      }
+    }
+  ]
+}
