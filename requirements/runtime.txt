@@ -1,0 +1,4 @@
+# Qwen3.6 requires a Transformers release exposing qwen3_5_moe.
+# Install in a project environment after reviewing the dependency change.
+transformers>=5.17.0,<6
+huggingface_hub>=0.36.0

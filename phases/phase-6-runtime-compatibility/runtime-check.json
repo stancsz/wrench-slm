@@ -1,0 +1,11 @@
+{
+  "schema": "wrench.qwen-runtime-check.v1",
+  "checkpoint": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4",
+  "model_type": "qwen3_5_moe",
+  "expected_transformers_class": "Qwen3_5MoeForConditionalGeneration",
+  "transformers_version": "4.57.1",
+  "transformers_class_available": false,
+  "import_error": null,
+  "status": "NOT_READY",
+  "reason": "Installed Transformers does not expose the Qwen3.6 architecture."
+}

@@ -27,9 +27,12 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   safetensors are still absent locally.
 - **Phase 4, task portfolio:** proposed family-disjoint scope is frozen in
   `phases/phase-4-task-portfolio/portfolio.json`; human approval is pending.
+- **Phase 6, runtime compatibility:** the current global Transformers 4.57.1
+  cannot load the Qwen3.6 architecture. A project-scoped requirement and
+  non-mutating check report `NOT_READY`.
 - **Next gate:** authorize acquisition of the unquantized source, verify it
-  against the official index, obtain portfolio approval, and only then begin
-  router profiling.
+  against the official index, install and verify the project runtime, obtain
+  portfolio approval, and only then begin router profiling.
 
 ## 1. Executive Summary & Core Objective
 

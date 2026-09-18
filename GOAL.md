@@ -123,3 +123,8 @@ review; the final evaluation split must not be tuned after results are seen.
 Phase 5 provides a guarded acquisition command for the pinned 71.9 GB
 unquantized source. It has not been run; no large download or external model
 mutation has occurred.
+
+Phase 6 found that the current global Transformers 4.57.1 cannot recognize the
+Qwen3.6 `qwen3_5_moe` architecture. A project-specific runtime requirement and
+non-mutating compatibility check are now recorded; runtime status remains
+`NOT_READY` until that environment is installed and verified.
