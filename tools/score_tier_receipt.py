@@ -22,10 +22,19 @@ def score(receipt_path: Path, cases_path: Path, root: Path, output: Path) -> dic
         if case is None:
             continue
         parsed = execute_model_output(observed.get("response_content", ""), str(root.resolve()))
+        try:
+            observed_proposal = json.loads(observed.get("response_content", ""))
+        except (TypeError, json.JSONDecodeError):
+            observed_proposal = None
+        try:
+            expected_proposal = json.loads(case["target"])
+        except (KeyError, TypeError, json.JSONDecodeError):
+            expected_proposal = None
         expected_status = case["expected_status"]
         expected_reason = case.get("expected_fallback_reason")
         status_match = parsed.get("status") == expected_status
         reason_match = expected_reason is None or parsed.get("fallback_reason") == expected_reason
+        proposal_match = observed_proposal == expected_proposal
         results.append(
             {
                 "id": observed["id"],
@@ -36,11 +45,13 @@ def score(receipt_path: Path, cases_path: Path, root: Path, output: Path) -> dic
                 "observed_fallback_reason": parsed.get("fallback_reason"),
                 "status_match": status_match,
                 "reason_match": reason_match,
+                "proposal_match": proposal_match,
                 "usage": observed.get("usage"),
                 "wall_seconds": observed.get("wall_seconds"),
             }
         )
     exact = sum(item["status_match"] and item["reason_match"] for item in results)
+    proposal_exact = sum(item["proposal_match"] for item in results)
     result = {
         "schema": "wrench.provisional-tier-development-score.v1",
         "status": "PASS_PROVISIONAL_VERIFIER_SCORE" if exact == len(results) else "OBSERVED_PROVISIONAL_MISMATCHES",
@@ -48,6 +59,7 @@ def score(receipt_path: Path, cases_path: Path, root: Path, output: Path) -> dic
         "cases": str(cases_path.resolve()),
         "case_count": len(results),
         "exact_matches": exact,
+        "proposal_exact_matches": proposal_exact,
         "results": results,
         "scope": "development-only synthetic templates; portfolio pending human approval; not final quality evidence",
         "quality_claim": False,
@@ -65,7 +77,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     result = score(args.receipt.resolve(), args.cases.resolve(), args.root.resolve(), args.output.resolve())
-    print(json.dumps({"status": result["status"], "case_count": result["case_count"], "exact_matches": result["exact_matches"]}))
+    print(json.dumps({"status": result["status"], "case_count": result["case_count"], "exact_matches": result["exact_matches"], "proposal_exact_matches": result["proposal_exact_matches"]}))
     return 0
 
 

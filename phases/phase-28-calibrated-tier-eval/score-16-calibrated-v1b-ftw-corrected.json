@@ -5,6 +5,7 @@
   "cases": "D:\\models\\wrench-calibration-v3b\\holdout.jsonl",
   "case_count": 14,
   "exact_matches": 7,
+  "proposal_exact_matches": 3,
   "results": [
     {
       "id": "holdout_000",
@@ -15,6 +16,7 @@
       "observed_fallback_reason": null,
       "status_match": true,
       "reason_match": true,
+      "proposal_match": true,
       "usage": {
         "prompt_tokens": 135,
         "completion_tokens": 33,
@@ -31,6 +33,7 @@
       "observed_fallback_reason": null,
       "status_match": true,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 127,
         "completion_tokens": 30,
@@ -47,6 +50,7 @@
       "observed_fallback_reason": null,
       "status_match": true,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 131,
         "completion_tokens": 31,
@@ -63,6 +67,7 @@
       "observed_fallback_reason": null,
       "status_match": true,
       "reason_match": true,
+      "proposal_match": true,
       "usage": {
         "prompt_tokens": 123,
         "completion_tokens": 29,
@@ -79,6 +84,7 @@
       "observed_fallback_reason": "invalid_match_limit",
       "status_match": false,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 132,
         "completion_tokens": 31,
@@ -95,6 +101,7 @@
       "observed_fallback_reason": "missing_search_root",
       "status_match": false,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 132,
         "completion_tokens": 27,
@@ -111,6 +118,7 @@
       "observed_fallback_reason": null,
       "status_match": true,
       "reason_match": true,
+      "proposal_match": true,
       "usage": {
         "prompt_tokens": 124,
         "completion_tokens": 22,
@@ -127,6 +135,7 @@
       "observed_fallback_reason": "health_endpoint_not_allowlisted",
       "status_match": false,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 126,
         "completion_tokens": 26,
@@ -143,6 +152,7 @@
       "observed_fallback_reason": "model_output_invalid_json",
       "status_match": false,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 128,
         "completion_tokens": 95,
@@ -159,6 +169,7 @@
       "observed_fallback_reason": "model_output_invalid_json",
       "status_match": true,
       "reason_match": false,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 125,
         "completion_tokens": 32,
@@ -175,6 +186,7 @@
       "observed_fallback_reason": null,
       "status_match": false,
       "reason_match": false,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 123,
         "completion_tokens": 25,
@@ -191,6 +203,7 @@
       "observed_fallback_reason": "health_endpoint_not_allowlisted",
       "status_match": true,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 124,
         "completion_tokens": 38,
@@ -207,6 +220,7 @@
       "observed_fallback_reason": "action_not_allowlisted",
       "status_match": true,
       "reason_match": true,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 117,
         "completion_tokens": 16,
@@ -223,6 +237,7 @@
       "observed_fallback_reason": "model_output_invalid_json",
       "status_match": true,
       "reason_match": false,
+      "proposal_match": false,
       "usage": {
         "prompt_tokens": 119,
         "completion_tokens": 95,

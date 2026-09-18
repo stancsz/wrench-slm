@@ -16,14 +16,18 @@ file sizes so the verifier does not manufacture false abstentions.
 Current 16E evidence:
 
 - BF16 calibrated checkpoint: 9/14 exact verifier outcomes on the corrected
-  holdout (`score-16-calibrated-v1b-corrected.json`).
+  holdout, with 4/14 exact proposal objects
+  (`score-16-calibrated-v1b-corrected.json`).
 - NVFP4 FTW checkpoint: 7/14 exact verifier outcomes on the same holdout
+  and 3/14 exact proposal objects
   (`score-16-calibrated-v1b-ftw-corrected.json`).
 - Packed FTW model-weight bytes: 3,975,827,456 bytes, about 3.70 GiB. The
   complete text-only directory is 3,996,022,974 bytes, about 3.72 GiB.
 
 The compact 8E calibrated FTW artifact remains 3,406,319,616 packed weight
 bytes, about 3.17 GiB, with a complete directory size of 3,426,514,763 bytes,
-about 3.19 GiB. On the corrected holdout it scores 9/14 in BF16 and 7/14
-after NVFP4 packing, matching the 16E tier on these provisional measures. No
-score here is a production-quality claim.
+about 3.19 GiB. On the corrected holdout it scores 9/14 verifier outcomes and
+6/14 exact proposal objects in BF16, then 7/14 and 6/14 respectively after
+NVFP4 packing. The verifier score is a safety/status measure, while proposal
+exactness is the stricter behavior measure. No score here is a
+production-quality claim.

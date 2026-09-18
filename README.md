@@ -20,8 +20,9 @@ not a general coding agent and has no autonomous-write authority.
 The current investigation is whether either sparse candidate can meet the
 quality gate after calibration. A corrected synthetic holdout currently scores
 both the 8-expert and 16-expert tiers 9/14 in BF16 and 7/14 after NVFP4
-packing. These are development-only verifier receipts, not production quality
-evidence.
+packing. Exact proposal-object matches are lower, at 6/14 for 8E BF16 and
+4/14 for 16E BF16. These are development-only verifier receipts, not
+production quality evidence.
 
 See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
 implementation is outside this repository under

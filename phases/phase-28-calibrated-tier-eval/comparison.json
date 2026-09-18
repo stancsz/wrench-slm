@@ -18,6 +18,8 @@
       "directory_gib": 3.191,
       "bf16_exact_matches": 9,
       "ftw_exact_matches": 7,
+      "bf16_proposal_exact_matches": 6,
+      "ftw_proposal_exact_matches": 6,
       "bf16_receipt": "score-8-calibrated-v3-corrected.json",
       "ftw_receipt": "score-8-calibrated-v3-ftw-corrected.json",
       "quality_status": "PROVISIONAL"
@@ -32,6 +34,8 @@
       "directory_gib": 3.722,
       "bf16_exact_matches": 9,
       "ftw_exact_matches": 7,
+      "bf16_proposal_exact_matches": 4,
+      "ftw_proposal_exact_matches": 3,
       "bf16_receipt": "score-16-calibrated-v1b-corrected.json",
       "ftw_receipt": "score-16-calibrated-v1b-ftw-corrected.json",
       "quality_status": "PROVISIONAL"

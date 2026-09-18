@@ -139,9 +139,11 @@ release-ready.
   provisional behavior signal only, not a final quality result or approval to
   favor the larger tier without calibration.
 - **Phase 28 calibration probe:** a corrected 14-case synthetic holdout scores
-  both calibrated tiers 9/14 in BF16 and 7/14 after NVFP4 packing. These are
-  provisional verifier receipts only. Human portfolio approval, broader
-  held-out quality, and production enablement remain open.
+  both calibrated tiers 9/14 in BF16 and 7/14 after NVFP4 packing. Exact
+  proposal-object matches are 6/14 for 8E BF16, 6/14 for 8E FTW, 4/14 for
+  16E BF16, and 3/14 for 16E FTW. These are provisional verifier receipts
+  only. Human portfolio approval, broader held-out quality, and production
+  enablement remain open.
 
 ## 1. Executive Summary & Core Objective
 

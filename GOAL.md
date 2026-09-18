@@ -321,6 +321,7 @@ Phase 28 reran both calibrated tiers against the same corrected 14-case
 synthetic holdout. The 8-expert and 16-expert tiers each scored 9/14 in BF16
 and 7/14 after NVFP4 packing. The corrected text-only FTW directories are
 3,426,514,763 bytes for 8 experts and 3,996,022,974 bytes for 16 experts.
-This closes the direct size comparison, but broader held-out quality,
-human portfolio approval, matched workflow value, and production enablement
-remain open.
+Exact proposal-object matches are 6/14 for 8E BF16, 6/14 for 8E FTW, 4/14
+for 16E BF16, and 3/14 for 16E FTW. This closes the direct size comparison,
+but broader held-out quality, human portfolio approval, matched workflow value,
+and production enablement remain open.
