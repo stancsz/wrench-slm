@@ -65,6 +65,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   through the verifier; decorated or malformed responses abstain. The full
   test suite passes 6 tests. This is a parser-boundary result, not a model
   quality result.
+- **Phase 15, local Qwen adapter:** a localhost-only OpenAI-compatible client
+  now checks endpoint policy, response bounds, model identity, and strict
+  parser routing. The mock-server suite passes 7 tests. This is adapter-boundary
+  evidence only.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.

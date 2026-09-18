@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.local-qwen-adapter-tests.v1",
+  "observed_at": "2026-09-17",
+  "status": "PASS_ADAPTER_BOUNDARY_ONLY",
+  "command": "py -3 -m pytest -q",
+  "result": "7 passed",
+  "checks": [
+    "localhost endpoint allowlist",
+    "redirect rejection",
+    "response size and token bounds",
+    "returned model identity check",
+    "strict JSON parser routing",
+    "accepted bounded read through a local mock server",
+    "remote endpoint abstention"
+  ],
+  "limits": [
+    "The test server is synthetic and does not measure Qwen quality.",
+    "No provider or external network call was used.",
+    "Unquantized source acquisition and pruning remain gated."
+  ]
+}

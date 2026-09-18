@@ -199,3 +199,10 @@ markdown, prose, malformed JSON, arrays, and empty output abstain. The full
 test suite passes 6 tests. The parser receipt is at
 `phases/phase-14-model-output-parser/parser-tests.json`. This closes a text
 boundary only and does not establish proposal quality.
+
+Phase 15 added a bounded localhost-only adapter in
+`src/wrench_harness/client.py`. It checks endpoint policy, response size,
+returned model identity, and routes content through the strict parser. The
+local mock-server integration suite passes 7 tests; its receipt is at
+`phases/phase-15-local-qwen-adapter/adapter-tests.json`. This proves adapter
+boundary behavior only, not Qwen quality or production readiness.

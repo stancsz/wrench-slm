@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import subprocess
 import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from wrench_harness import execute_model_output, execute_proposal
+from wrench_harness import execute_local_qwen, execute_model_output, execute_proposal
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -114,3 +116,38 @@ def test_model_output_requires_exact_json_object(tmp_path: Path):
     ):
         rejected = execute_model_output(invalid, tmp_path)
         assert rejected["fallback_reason"] == reason
+
+
+def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
+    (tmp_path / "README.md").write_text("fixture\n", encoding="utf-8")
+    expected = '{"schema":"wrench.proposal.v1","action":"read_file","path":"README.md","max_bytes":4096}'
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            json.loads(self.rfile.read(length))
+            payload = {"model": "test-qwen", "choices": [{"message": {"content": expected}}], "usage": {"total_tokens": 9}}
+            encoded = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        def log_message(self, format, *args):
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        endpoint = f"http://127.0.0.1:{server.server_port}/v1/chat/completions"
+        result = execute_local_qwen(endpoint, "test-qwen", [{"role": "user", "content": "proposal"}], str(tmp_path))
+        assert result["status"] == "accepted"
+        assert result["usage"]["total_tokens"] == 9
+
+        remote = execute_local_qwen("https://example.com/v1/chat/completions", "test-qwen", [], str(tmp_path))
+        assert remote["fallback_reason"] == "qwen_endpoint_not_allowlisted"
+    finally:
+        server.shutdown()
+        thread.join(timeout=2)
