@@ -543,3 +543,9 @@ Phase 56 added a fail-closed tier resolver in `src/wrench_harness/tier.py`.
 It selects only the verified compact or larger catalog entry, requires the
 learned-routing policy to remain `DISABLE`, rejects missing artifacts, and
 labels every result `EXPERIMENTAL_ONLY`.
+
+Phase 57 verified that resolver against the live Phase 43 catalog, routing
+policy, and both external quantized artifact directories. Both compact and
+larger selections resolved as `EXPERIMENTAL_ONLY` with learned routing
+`DISABLE`. Evidence is in
+`phases/phase-57-live-tier-resolution/live-tier-resolver-receipt.json`.

@@ -1,0 +1,31 @@
+{
+  "schema": "wrench.live-tier-resolver-receipt.v1",
+  "status": "PASS_LIVE_EXPERIMENTAL_TIER_RESOLUTION",
+  "selections": [
+    {
+      "status": "EXPERIMENTAL_ONLY",
+      "label": "compact_8E_safety",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF",
+      "parameter_count": 3881244016,
+      "packed_weight_gib": 3.169,
+      "directory_gib": 3.188,
+      "num_experts": 8,
+      "fallback": "stronger_model_path",
+      "learned_routing": "DISABLE",
+      "quality_claim": false
+    },
+    {
+      "status": "EXPERIMENTAL_ONLY",
+      "label": "larger_16E",
+      "artifact": "D:\\models\\Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v3-ExplicitSchema-TextOnly-FTW",
+      "parameter_count": 4888532336,
+      "packed_weight_gib": 3.697,
+      "directory_gib": 3.718,
+      "num_experts": 16,
+      "fallback": "stronger_model_path",
+      "learned_routing": "DISABLE",
+      "quality_claim": false
+    }
+  ],
+  "quality_claim": false
+}
