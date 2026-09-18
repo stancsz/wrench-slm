@@ -1,0 +1,51 @@
+{
+  "schema": "wrench.matched-runtime-comparison.v1",
+  "status": "PASS_RUNTIME_DIAGNOSTIC_QUALITY_GATE_OPEN",
+  "fixture": {
+    "path": "D:\\models\\wrench-evaluation-v4.jsonl",
+    "sha256": "56bb3d875d8b94fff1b5b43c289a2c009830dc9a1a081b52d74e16430254c1a2",
+    "cases": 28
+  },
+  "p95_definition": "nearest_rank",
+  "sources": {
+    "8E": "phases/phase-30-corrected-calibration-eval/runtime-8-ftw-v5.json",
+    "16E": "phases/phase-30-corrected-calibration-eval/runtime-16-ftw-v2.json",
+    "teacher": "phases/phase-31-teacher-baseline/runtime-teacher-v4.json"
+  },
+  "runtimes": [
+    {
+      "id": "8E",
+      "model": "Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v5-TextOnly-FTW",
+      "request_count": 28,
+      "mean_wall_seconds": 6.076,
+      "p95_wall_seconds": 11.275,
+      "mean_completion_tokens": 51.1,
+      "mean_total_tokens": 176.7,
+      "elapsed_seconds": 195.495
+    },
+    {
+      "id": "16E",
+      "model": "Wrench-Qwen3.6-16expert-profiled-W4A16-NVFP4-calibrated-v2-TextOnly-FTW",
+      "request_count": 28,
+      "mean_wall_seconds": 4.271,
+      "p95_wall_seconds": 11.357,
+      "mean_completion_tokens": 34.5,
+      "mean_total_tokens": 160.0,
+      "elapsed_seconds": 145.035
+    },
+    {
+      "id": "teacher",
+      "model": "Qwen3.6-35B-A3B-NVFP4",
+      "request_count": 28,
+      "mean_wall_seconds": 9.852,
+      "p95_wall_seconds": 17.398,
+      "mean_completion_tokens": 45.1,
+      "mean_total_tokens": 170.6,
+      "elapsed_seconds": 336.416
+    }
+  ],
+  "quality_claim": false,
+  "workflow_value_claim": false,
+  "human_approval": "pending",
+  "production_enablement": false
+}

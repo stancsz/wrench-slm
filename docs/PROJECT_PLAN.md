@@ -160,6 +160,12 @@ release-ready.
   outcomes and 7/28 exact proposal objects. This separates source-model
   capability from schema serialization while keeping the adapter out of Wrench
   runtime.
+- **Phase 32 matched runtime comparison:** on the same 28-case fixture, mean
+  wall time was 6.076 seconds for 8E, 4.271 seconds for 16E, and 9.852 seconds
+  for the original teacher. Nearest-rank p95 was 11.275, 11.357, and 17.398
+  seconds respectively. The receipt is
+  `phases/phase-32-runtime-comparison/comparison.json`. This remains local
+  diagnostic evidence, not a throughput, workflow-value, or release claim.
 
 ## 1. Executive Summary & Core Objective
 

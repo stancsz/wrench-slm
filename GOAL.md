@@ -348,3 +348,10 @@ for semantic baseline comparison. The adapted teacher scored 12/28 verifier
 outcomes and 7/28 exact proposal objects. This is a baseline, not a release
 claim; the 3--4 GiB Wrench packs remain materially smaller and still require
 matched workflow evidence.
+
+Phase 32 compared the latest 8E and 16E packed tiers with that teacher on the
+same 28-case fixture. Mean wall time was 6.076 seconds for 8E, 4.271 seconds
+for 16E, and 9.852 seconds for the teacher. The nearest-rank p95 values were
+11.275, 11.357, and 17.398 seconds respectively. This is local diagnostic
+evidence only; it does not establish throughput, workflow value, or release
+readiness. The receipt is `phases/phase-32-runtime-comparison/comparison.json`.
