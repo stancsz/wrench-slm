@@ -168,3 +168,12 @@ receipt is at `phases/phase-10-qwen-shadow-proposal/shadow-receipt.json`.
 FreeToken does not support constrained JSON decoding, so schema validation and
 fail-closed execution remain authoritative. This is one integration smoke
 case, not a proposal-quality or workflow-success result.
+
+Phase 11 ran the guarded preflight for the official unquantized source. The
+checkpoint is absent at `D:\\models\\Qwen3.6-35B-A3B`, and the target drive has
+544,558,661,632 free bytes against the 82,641,063,648-byte guard requirement.
+The command refused to download without `--confirm-71gb` and created no output
+directory. The preflight receipt is at
+`phases/phase-11-source-acquisition-gate/preflight.json`. Structural pruning
+remains disabled until that explicit operator confirmation and subsequent
+official-index verification occur.

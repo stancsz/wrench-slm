@@ -50,6 +50,10 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   without mutation. FreeToken lacks constrained JSON decoding, so schema
   validation remains the safety gate. This is one integration smoke case, not
   a quality or workflow benchmark.
+- **Phase 11, source acquisition gate:** the guarded preflight confirmed the
+  71.9 GB unquantized source is absent, sufficient target disk exists, and the
+  command refuses transfer without `--confirm-71gb`. No output directory or
+  network transfer was created.
 - **Next gate:** obtain explicit portfolio approval and authorization for the
   pinned unquantized source, then verify that source against its official
   index. Only after those gates may router profiling or pruning begin.
