@@ -1,0 +1,92 @@
+{
+  "schema": "wrench.qwen-pruned-size-estimate.v1",
+  "checkpoint_path": "D:\\models\\Qwen3.6-35B-A3B",
+  "evidence_scope": "safetensors_headers_only_no_tensor_payload_loaded",
+  "architecture": {
+    "num_hidden_layers": 40,
+    "moe_block_count_from_headers": 41,
+    "num_experts": 256,
+    "num_experts_per_tok": 8
+  },
+  "tensor_inventory": {
+    "mapped_tensor_count": 1045,
+    "dtype_counts": {
+      "BF16": 1045
+    },
+    "tensor_elements": 35951822704,
+    "tensor_data_bytes": 71903645408,
+    "official_index_total_bytes": 71903645408,
+    "index_total_matches_header_sum": true
+  },
+  "prunable_groups": {
+    "routed_expert_tensor_count": 82,
+    "routed_expert_elements": 33017561088,
+    "routed_expert_bytes": 66035122176,
+    "routed_expert_elements_per_expert": 128974848,
+    "router_tensor_count": 41,
+    "router_elements": 21495808,
+    "router_bytes": 42991616,
+    "router_elements_per_expert_row": 83968,
+    "combined_prunable_elements": 33039056896,
+    "combined_prunable_bytes": 66078113792
+  },
+  "scenarios": [
+    {
+      "keep_experts_per_moe_block": 8,
+      "removed_experts_per_moe_block": 248,
+      "retained_expert_fraction": 0.03125,
+      "estimated_tensor_elements": 3945236336,
+      "estimated_parameters_billions": 3.945236336,
+      "estimated_bf16_weight_bytes": 7890472672,
+      "estimated_bf16_weight_gib": 7.348575323820114,
+      "ideal_int4_weight_bytes": 1972618168,
+      "ideal_int4_weight_gib": 1.8371438309550285,
+      "removed_tensor_elements": 32006586368,
+      "removed_weight_bytes_bf16": 64013172736
+    },
+    {
+      "keep_experts_per_moe_block": 16,
+      "removed_experts_per_moe_block": 240,
+      "retained_expert_fraction": 0.0625,
+      "estimated_tensor_elements": 4977706864,
+      "estimated_parameters_billions": 4.977706864,
+      "estimated_bf16_weight_bytes": 9955413728,
+      "estimated_bf16_weight_gib": 9.27170154452324,
+      "ideal_int4_weight_bytes": 2488853432,
+      "ideal_int4_weight_gib": 2.31792538613081,
+      "removed_tensor_elements": 30974115840,
+      "removed_weight_bytes_bf16": 61948231680
+    },
+    {
+      "keep_experts_per_moe_block": 32,
+      "removed_experts_per_moe_block": 224,
+      "retained_expert_fraction": 0.125,
+      "estimated_tensor_elements": 7042647920,
+      "estimated_parameters_billions": 7.04264792,
+      "estimated_bf16_weight_bytes": 14085295840,
+      "estimated_bf16_weight_gib": 13.11795398592949,
+      "ideal_int4_weight_bytes": 3521323960,
+      "ideal_int4_weight_gib": 3.2794884964823723,
+      "removed_tensor_elements": 28909174784,
+      "removed_weight_bytes_bf16": 57818349568
+    },
+    {
+      "keep_experts_per_moe_block": 64,
+      "removed_experts_per_moe_block": 192,
+      "retained_expert_fraction": 0.25,
+      "estimated_tensor_elements": 11172530032,
+      "estimated_parameters_billions": 11.172530032,
+      "estimated_bf16_weight_bytes": 22345060064,
+      "estimated_bf16_weight_gib": 20.81045886874199,
+      "ideal_int4_weight_bytes": 5586265016,
+      "ideal_int4_weight_gib": 5.202614717185497,
+      "removed_tensor_elements": 24779292672,
+      "removed_weight_bytes_bf16": 49558585344
+    }
+  ],
+  "limitations": [
+    "This is a structural size estimate, not a pruning operation.",
+    "It excludes quantization scales, metadata, alignment, and runtime overhead from ideal int4 bytes.",
+    "It does not select experts, measure routing, prove loadability, or establish task quality."
+  ]
+}

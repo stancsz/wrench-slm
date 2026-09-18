@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import subprocess
 import json
+import struct
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from wrench_harness import CancellationToken, ProposalRouter, RouterConfig, execute_local_qwen, execute_model_output, execute_proposal, load_router_state, save_router_state
 from tools.inspect_qwen_checkpoint import inspect_checkpoint
+from tools.estimate_qwen_pruned_sizes import analyze_checkpoint
 from tools.validate_pruning_source import validate_pruning_source
 
 
@@ -119,6 +121,40 @@ def test_checkpoint_inspection_distinguishes_unquantized_safetensors(tmp_path: P
         "reason": "Unquantized safetensors with a local tensor index are eligible for structural slicing after architecture checks.",
         "required_source": "verified unquantized checkpoint with matching architecture and license",
     }
+
+
+def test_qwen_pruned_size_estimate_uses_headers_only(tmp_path: Path):
+    (tmp_path / "config.json").write_text(
+        json.dumps({"text_config": {"num_hidden_layers": 1, "num_experts": 4, "num_experts_per_tok": 2}}),
+        encoding="utf-8",
+    )
+    tensors = {
+        "model.language_model.layers.0.mlp.experts.gate_up_proj": ([4, 2, 3], "BF16"),
+        "model.language_model.layers.0.mlp.experts.down_proj": ([4, 3, 2], "BF16"),
+        "model.language_model.layers.0.mlp.gate.weight": ([4, 5], "BF16"),
+        "model.language_model.layers.0.input_layernorm.weight": ([10], "BF16"),
+    }
+    header = {
+        name: {"dtype": dtype, "shape": shape, "data_offsets": [0, 0]}
+        for name, (shape, dtype) in tensors.items()
+    }
+    encoded = json.dumps(header, separators=(",", ":")).encode("utf-8")
+    shard = tmp_path / "model-00001-of-00001.safetensors"
+    shard.write_bytes(struct.pack("<Q", len(encoded)) + encoded)
+    (tmp_path / "model.safetensors.index.json").write_text(
+        json.dumps(
+            {
+                "metadata": {"total_size": 156},
+                "weight_map": {name: shard.name for name in tensors},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = analyze_checkpoint(tmp_path, [2])
+    scenario = report["scenarios"][0]
+    assert report["evidence_scope"] == "safetensors_headers_only_no_tensor_payload_loaded"
+    assert report["tensor_inventory"]["tensor_elements"] == 78
+    assert scenario["estimated_tensor_elements"] == 44
 
 
 def test_model_output_requires_exact_json_object(tmp_path: Path):

@@ -95,9 +95,15 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   missing shards, and no rejection reasons. This permits architecture-aware
   router profiling design; it does not prove pruning quality, loadability,
   throughput, or workflow value.
+- **Phase 23, expert size estimate:** a header-only scan of all 1,045
+  safetensors reports 35,951,822,704 BF16 tensor elements and 33,017,561,088
+  routed-expert elements. Retaining 8 experts per MoE block estimates 3.945B
+  total parameters, while 16 estimates 4.978B. This is the first measured
+  candidate inside the 3 to 4B target, but it is not a pruned or calibrated
+  model.
 - **Next gate:** obtain explicit human approval for the frozen task portfolio,
   then run a reproducible router-profile pass on an approved calibration corpus
-  without modifying the source checkpoint.
+  to select which 8 experts, if any, can be retained.
 
 ## 1. Executive Summary & Core Objective
 

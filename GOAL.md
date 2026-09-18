@@ -253,3 +253,13 @@ validator reports 26 present safetensors shards, 1,045 mapped tensors, the
 exact 71,903,645,408-byte index total, and `eligible: true`. This permits
 profiling and pruning design, but does not establish loadability, quality,
 throughput, or production value.
+
+Phase 23 read only the safetensors headers and measured the structural expert
+footprint. The source contains 35,951,822,704 BF16 tensor elements, including
+33,017,561,088 routed-expert elements and 21,495,808 router elements. Keeping
+8 experts per MoE block estimates 3.945B total parameters; keeping 16 estimates
+4.978B. The 8-expert scenario is therefore the first measured candidate inside
+the 3 to 4B target. The receipt is
+`phases/phase-23-expert-size-estimate/size-estimate.json`. No expert set has
+been selected, no tensor has been sliced, and no quality or runtime claim is
+made.
