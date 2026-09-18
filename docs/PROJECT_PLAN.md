@@ -33,6 +33,9 @@ grant the model arbitrary shell access, credentials, or unsupervised writes.
   environment with the existing PyTorch reports runtime `READY` without loading
   weights. Meta-tensor instantiation of `Qwen3_5MoeForConditionalGeneration`
   also passes; actual weight loading and GPU execution remain unverified.
+- **Phase 7, NVFP4 runtime smoke:** Docker CUDA and Qwen/ModelOpt resolution
+  pass, but vLLM 0.29 engine startup stops on unavailable UVA before loading
+  weights. No generation evidence exists yet.
 - **Next gate:** authorize acquisition of the unquantized source, verify it
   against the official index, install and verify the project runtime, obtain
   portfolio approval, and only then begin router profiling.

@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.qwen-nvfp4-runtime-smoke.v1",
+  "observed_at": "2026-09-18",
+  "status": "BLOCKED_BEFORE_WEIGHT_LOAD",
+  "runtime": {
+    "container_image": "vllm/vllm-openai:latest",
+    "vllm_version": "0.29.0",
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "gpu_memory_mib": 16303,
+    "host_path": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4"
+  },
+  "startup_evidence": {
+    "architecture_resolved": "Qwen3_5MoeForConditionalGeneration",
+    "modelopt_fp8_detected": true,
+    "modelopt_nvfp4_detected": true,
+    "language_model_only": true,
+    "max_model_len": 2048,
+    "cpu_offload_gb": 8
+  },
+  "failure": {
+    "stage": "vllm_v1_engine_initialization",
+    "error_type": "RuntimeError",
+    "error": "UVA is not available",
+    "source": "vllm/v1/worker/gpu/buffer_utils.py UvaBuffer",
+    "http_request_made": false,
+    "tokens_generated": false
+  },
+  "fallback_attempt": {
+    "environment": "VLLM_USE_V1=0",
+    "result": "unsupported_environment_variable_and_same_v1_failure"
+  },
+  "interpretation": "CUDA visibility and architecture resolution passed; serving, weight loading, generation, latency, and quality remain unverified."
+}

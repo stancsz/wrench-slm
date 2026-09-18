@@ -136,3 +136,9 @@ The same isolated environment successfully instantiated
 `Qwen3_5MoeForConditionalGeneration` on meta tensors from the local config,
 without allocating weights. This closes architecture-instantiation evidence,
 but not checkpoint loading, GPU execution, latency, or quality evidence.
+
+Phase 7 exercised the local NVFP4 artifact through Docker vLLM 0.29.0. CUDA,
+the RTX 5070 Ti, Qwen architecture resolution, and ModelOpt detection passed;
+engine startup then failed before weight load with `UVA is not available` in the
+vLLM V1 engine. No request or token was generated. The diagnostic receipt is at
+`phases/phase-7-nvfp4-runtime-smoke/runtime-smoke.json`.
