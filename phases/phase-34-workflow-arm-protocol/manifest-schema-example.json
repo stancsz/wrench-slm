@@ -2,6 +2,12 @@
   "schema": "wrench.workflow-arm-traces.v1",
   "authorization": "pending_human_approval",
   "trace_set_sha256": null,
+  "provenance": {
+    "capture_id": "replace-with-capture-id",
+    "captured_at": "replace-with-utc-timestamp",
+    "reviewer": "replace-with-human-reviewer",
+    "source_scope": "replace-with-approved-workflow-scope"
+  },
   "traces": [
     {
       "id": "replace-with-approved-trace-id",

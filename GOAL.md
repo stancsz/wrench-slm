@@ -515,3 +515,9 @@ Phase 50 made the rollout hold explicit in
 stronger-model fallback remains authoritative until the listed evidence and
 human pilot approval exist. The policy is covered by a regression test in
 `tests/test_policy.py`.
+
+Phase 51 tightened the real-workflow protocol. An approved trace manifest now
+requires a trace-set SHA-256 plus capture ID, timestamp, reviewer, and source
+scope before paired savings are computed. Missing provenance is explicitly
+blocked, and no real trace data was added. Evidence is in
+`phases/phase-51-trace-provenance-gate`.

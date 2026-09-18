@@ -13,12 +13,14 @@ import argparse
 import hashlib
 import json
 import random
+import re
 from pathlib import Path
 from typing import Any
 
 
 ARMS = ("cloud_only", "rules_plus_identical_fallback", "learned_plus_identical_fallback")
 AUTHORIZATION = "approved_real_workflow"
+PROVENANCE_FIELDS = ("capture_id", "captured_at", "reviewer", "source_scope")
 
 
 def _percentile(values: list[float], fraction: float) -> float | None:
@@ -123,6 +125,25 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             "status": "BLOCKED_TRACE_AUTHORIZATION",
             "paired_savings": [],
             "reason": f"authorization must equal {AUTHORIZATION!r}; no release conclusion is permitted",
+        }
+    trace_hash = manifest.get("trace_set_sha256")
+    provenance = manifest.get("provenance")
+    if not isinstance(trace_hash, str) or re.fullmatch(r"[0-9a-f]{64}", trace_hash) is None:
+        return {
+            **base,
+            "status": "BLOCKED_TRACE_PROVENANCE",
+            "paired_savings": [],
+            "reason": "approved real workflow manifests require a 64-character trace_set_sha256",
+        }
+    if not isinstance(provenance, dict) or any(
+        not isinstance(provenance.get(field), str) or not provenance[field].strip()
+        for field in PROVENANCE_FIELDS
+    ):
+        return {
+            **base,
+            "status": "BLOCKED_TRACE_PROVENANCE",
+            "paired_savings": [],
+            "reason": f"approved real workflow manifests require provenance fields: {', '.join(PROVENANCE_FIELDS)}",
         }
     comparisons = [_paired_savings(traces, arm) for arm in ("cloud_only", "rules_plus_identical_fallback")]
     learned = base["arms"]["learned_plus_identical_fallback"]
