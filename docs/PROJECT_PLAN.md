@@ -154,6 +154,12 @@ release-ready.
   verifier and 3/14 exact proposals for 8E, versus 7/14 and 5/14 for 16E.
   On the corrected 28-case unseen fixture they are 9/28 and 9/28 for 8E,
   versus 10/28 and 7/28 for 16E. The result remains development-only.
+- **Phase 31 teacher baseline:** the original 35B NVFP4 teacher served the same
+  corrected fixture. Its raw generic-tool serialization scored 0/28 under the
+  strict Wrench schema; an explicit semantic adapter scored 12/28 verifier
+  outcomes and 7/28 exact proposal objects. This separates source-model
+  capability from schema serialization while keeping the adapter out of Wrench
+  runtime.
 
 ## 1. Executive Summary & Core Objective
 

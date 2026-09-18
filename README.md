@@ -30,6 +30,10 @@ new 8E pack scored 9/28 exact proposal objects and the new 16E pack scored
 7/28. The 8E artifact remains the smaller option; neither tier is production
 enabled.
 
+The original 35B teacher baseline scored 12/28 verifier outcomes and 7/28
+exact proposals after a receipt-visible generic-tool schema adapter. The
+adapter is baseline-only and is not part of Wrench runtime.
+
 See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
 implementation is outside this repository under
 `C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`.

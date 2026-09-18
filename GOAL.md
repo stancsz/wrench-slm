@@ -340,3 +340,11 @@ packs. On the corrected 14-case holdout, 8E scored 5/14 verifier outcomes and
 28-case unseen fixture, 8E scored 9/28 and 9/28; 16E scored 10/28 and 7/28.
 The size gate is met, but usefulness, human approval, matched workflow value,
 and production enablement remain open.
+
+Phase 31 served the original Qwen3.6-35B-A3B NVFP4 teacher on the same
+28-case fixture. The teacher's raw generic tool-call dialect scores 0/28 under
+the strict Wrench schema, so a receipt-visible deterministic adapter was used
+for semantic baseline comparison. The adapted teacher scored 12/28 verifier
+outcomes and 7/28 exact proposal objects. This is a baseline, not a release
+claim; the 3--4 GiB Wrench packs remain materially smaller and still require
+matched workflow evidence.

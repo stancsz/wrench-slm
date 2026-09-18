@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.teacher-baseline-comparison.v1",
+  "status": "PASS_BASELINE_SEMANTIC_ADAPTER",
+  "fixture": {
+    "path": "D:\\models\\wrench-evaluation-v4.jsonl",
+    "sha256": "56bb3d875d8b94fff1b5b43c289a2c009830dc9a1a081b52d74e16430254c1a2",
+    "case_count": 28
+  },
+  "teacher": {
+    "artifact": "D:\\Users\\stanc\\.freetoken\\models\\Qwen3.6-35B-A3B-NVFP4",
+    "directory_bytes": 21809952707,
+    "raw_strict_verifier_exact": 0,
+    "adapted_verifier_exact": 12,
+    "adapted_proposal_exact": 7,
+    "raw_score": "score-teacher-v4.json",
+    "adapted_score": "score-teacher-v4-adapted.json",
+    "adapter": "generic-tool"
+  },
+  "quality_claim": false,
+  "production_enablement": false,
+  "human_approval": "pending"
+}

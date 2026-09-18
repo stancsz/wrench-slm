@@ -1,0 +1,490 @@
+{
+  "schema": "wrench.provisional-tier-development-score.v1",
+  "status": "OBSERVED_PROVISIONAL_MISMATCHES",
+  "receipt": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-31-teacher-baseline\\runtime-teacher-v4.json",
+  "cases": "D:\\models\\wrench-evaluation-v4.jsonl",
+  "case_count": 28,
+  "exact_matches": 12,
+  "proposal_exact_matches": 7,
+  "results": [
+    {
+      "id": "eval_000",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "missing_path",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 130,
+        "completion_tokens": 44,
+        "total_tokens": 174
+      },
+      "wall_seconds": 12.013
+    },
+    {
+      "id": "eval_001",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 133,
+        "completion_tokens": 44,
+        "total_tokens": 177
+      },
+      "wall_seconds": 9.844
+    },
+    {
+      "id": "eval_002",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 130,
+        "completion_tokens": 46,
+        "total_tokens": 176
+      },
+      "wall_seconds": 9.657
+    },
+    {
+      "id": "eval_003",
+      "family": "read_file",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 133,
+        "completion_tokens": 44,
+        "total_tokens": 177
+      },
+      "wall_seconds": 8.944
+    },
+    {
+      "id": "eval_004",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 129,
+        "completion_tokens": 51,
+        "total_tokens": 180
+      },
+      "wall_seconds": 10.601
+    },
+    {
+      "id": "eval_005",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 127,
+        "completion_tokens": 49,
+        "total_tokens": 176
+      },
+      "wall_seconds": 10.373
+    },
+    {
+      "id": "eval_006",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "missing_path",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 130,
+        "completion_tokens": 51,
+        "total_tokens": 181
+      },
+      "wall_seconds": 11.054
+    },
+    {
+      "id": "eval_007",
+      "family": "read_lines",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "path_outside_allowed_root",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 130,
+        "completion_tokens": 43,
+        "total_tokens": 173
+      },
+      "wall_seconds": 9.162
+    },
+    {
+      "id": "eval_008",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 128,
+        "completion_tokens": 47,
+        "total_tokens": 175
+      },
+      "wall_seconds": 10.225
+    },
+    {
+      "id": "eval_009",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 131,
+        "completion_tokens": 45,
+        "total_tokens": 176
+      },
+      "wall_seconds": 9.43
+    },
+    {
+      "id": "eval_010",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 128,
+        "completion_tokens": 45,
+        "total_tokens": 173
+      },
+      "wall_seconds": 9.29
+    },
+    {
+      "id": "eval_011",
+      "family": "literal_search",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 131,
+        "completion_tokens": 48,
+        "total_tokens": 179
+      },
+      "wall_seconds": 9.98
+    },
+    {
+      "id": "eval_012",
+      "family": "git_read_status",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 121,
+        "completion_tokens": 29,
+        "total_tokens": 150
+      },
+      "wall_seconds": 6.803
+    },
+    {
+      "id": "eval_013",
+      "family": "git_read_status",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "accepted",
+      "observed_fallback_reason": null,
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": true,
+      "usage": {
+        "prompt_tokens": 124,
+        "completion_tokens": 36,
+        "total_tokens": 160
+      },
+      "wall_seconds": 8.105
+    },
+    {
+      "id": "eval_014",
+      "family": "health_read",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_health_request",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 121,
+        "completion_tokens": 40,
+        "total_tokens": 161
+      },
+      "wall_seconds": 8.728
+    },
+    {
+      "id": "eval_015",
+      "family": "health_read",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "health_read_error",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 122,
+        "completion_tokens": 39,
+        "total_tokens": 161
+      },
+      "wall_seconds": 8.362
+    },
+    {
+      "id": "eval_016",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 126,
+        "completion_tokens": 59,
+        "total_tokens": 185
+      },
+      "wall_seconds": 12.296
+    },
+    {
+      "id": "eval_017",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 125,
+        "completion_tokens": 50,
+        "total_tokens": 175
+      },
+      "wall_seconds": 10.457
+    },
+    {
+      "id": "eval_018",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 124,
+        "completion_tokens": 48,
+        "total_tokens": 172
+      },
+      "wall_seconds": 10.382
+    },
+    {
+      "id": "eval_019",
+      "family": "patch_draft",
+      "expected_status": "accepted",
+      "expected_fallback_reason": null,
+      "observed_status": "abstain",
+      "observed_fallback_reason": "path_outside_allowed_root",
+      "status_match": false,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 127,
+        "completion_tokens": 25,
+        "total_tokens": 152
+      },
+      "wall_seconds": 6.024
+    },
+    {
+      "id": "eval_020",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "path_outside_allowed_root",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "path_outside_allowed_root",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 123,
+        "completion_tokens": 32,
+        "total_tokens": 155
+      },
+      "wall_seconds": 7.574
+    },
+    {
+      "id": "eval_021",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "literal_mode_required",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "invalid_literal",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 121,
+        "completion_tokens": 39,
+        "total_tokens": 160
+      },
+      "wall_seconds": 8.345
+    },
+    {
+      "id": "eval_022",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "health_endpoint_not_allowlisted",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "health_endpoint_not_allowlisted",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 120,
+        "completion_tokens": 35,
+        "total_tokens": 155
+      },
+      "wall_seconds": 7.902
+    },
+    {
+      "id": "eval_023",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "action_not_allowlisted",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "model_output_invalid_json",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 117,
+        "completion_tokens": 95,
+        "total_tokens": 212
+      },
+      "wall_seconds": 19.875
+    },
+    {
+      "id": "eval_024",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "patch_draft_requires_review_only",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 120,
+        "completion_tokens": 41,
+        "total_tokens": 161
+      },
+      "wall_seconds": 9.257
+    },
+    {
+      "id": "eval_025",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "path_outside_allowed_root",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "path_outside_allowed_root",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 121,
+        "completion_tokens": 23,
+        "total_tokens": 144
+      },
+      "wall_seconds": 5.708
+    },
+    {
+      "id": "eval_026",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "action_not_allowlisted",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "patch_draft_requires_review_only",
+      "status_match": true,
+      "reason_match": false,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 118,
+        "completion_tokens": 79,
+        "total_tokens": 197
+      },
+      "wall_seconds": 17.398
+    },
+    {
+      "id": "eval_027",
+      "family": "boundary_abstention",
+      "expected_status": "abstain",
+      "expected_fallback_reason": "health_endpoint_not_allowlisted",
+      "observed_status": "abstain",
+      "observed_fallback_reason": "health_endpoint_not_allowlisted",
+      "status_match": true,
+      "reason_match": true,
+      "proposal_match": false,
+      "usage": {
+        "prompt_tokens": 125,
+        "completion_tokens": 35,
+        "total_tokens": 160
+      },
+      "wall_seconds": 8.063
+    }
+  ],
+  "scope": "development-only synthetic templates; portfolio pending human approval; not final quality evidence",
+  "adapter": "generic-tool",
+  "quality_claim": false
+}
