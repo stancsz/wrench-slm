@@ -13,7 +13,10 @@ quality-trained for 4M tokens.
 from __future__ import annotations
 
 import os
+import sys
+import asyncio
 from dataclasses import replace
+from pathlib import Path
 
 
 if os.name == "nt" and not hasattr(os, "posix_fadvise"):
@@ -22,6 +25,16 @@ if os.name == "nt" and not hasattr(os, "posix_fadvise"):
     # portable behavior is a no-op.
     os.posix_fadvise = lambda fd, offset, length, advice: None
     os.POSIX_FADV_DONTNEED = 0
+
+if os.name == "nt":
+    # pyzmq requires selector-style add_reader support on Windows.
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    try:
+        import uvicorn.loops.asyncio as uvicorn_asyncio
+
+        uvicorn_asyncio.asyncio_loop_factory = lambda use_subprocess=False: asyncio.SelectorEventLoop
+    except Exception:
+        pass
 
 
 def _csv_ints(value: str) -> tuple[int, ...]:
@@ -45,6 +58,14 @@ def _resolve_global_ids(full_ids: tuple[int, ...], requested: str) -> tuple[int,
 def _install_qwen_long_context_overlay() -> None:
     if os.environ.get("WRENCH_LONG_CONTEXT_OVERLAY", "0") != "1":
         return
+
+    # The editable FreeToken checkout supplies Python sources while the venv
+    # supplies compiled CUDA extensions. Make the namespace package see both.
+    import freetoken.kernel as kernel_package
+
+    installed_kernel = Path(sys.prefix) / "Lib" / "site-packages" / "freetoken" / "kernel"
+    if installed_kernel.is_dir() and str(installed_kernel) not in kernel_package.__path__:
+        kernel_package.__path__.append(str(installed_kernel))
 
     if os.environ.get("WRENCH_FREETOKEN_TCP_ZMQ") == "1":
         from freetoken.scheduler.config import SchedulerConfig
@@ -133,5 +154,72 @@ def _install_qwen_long_context_overlay() -> None:
 
     qwen_attention.Qwen3_5Attention.__init__ = init_with_attention_spec
     qwen_attention.Qwen3_5Attention.forward = forward_with_attention_spec
+
+    if os.environ.get("WRENCH_FREETOKEN_NO_JIT") == "1":
+        import torch
+        import freetoken.kernel as kernel
+        import freetoken.kernel.fast_index_copy as fast_index_copy
+        import freetoken.moe.offload_cache as offload_cache
+
+        def torch_indexing(weights, indices, *, output=None, vocab_range=None):
+            selected = weights.index_select(0, indices.to(device=weights.device, dtype=torch.long))
+            if output is not None:
+                output.copy_(selected)
+                return output
+            return selected
+
+        kernel.indexing = torch_indexing
+
+        def torch_store_cache(k_cache, v_cache, indices, k, v):
+            locations = indices.to(device=k_cache.device, dtype=torch.long)
+            k_cache.reshape(k_cache.shape[0], -1).index_copy_(
+                0, locations, k.reshape(k.shape[0], -1).to(device=k_cache.device, dtype=k_cache.dtype)
+            )
+            v_cache.reshape(v_cache.shape[0], -1).index_copy_(
+                0, locations, v.reshape(v.shape[0], -1).to(device=v_cache.device, dtype=v_cache.dtype)
+            )
+
+        kernel.store_cache = torch_store_cache
+
+        def torch_fast_index_copy(dst, dst_indices, src, src_indices, num_indices=None, **kwargs):
+            count = int(num_indices.reshape(-1)[0].item()) if num_indices is not None else int(dst_indices.numel())
+            if count <= 0:
+                return
+            destinations = dst_indices[:count].to(device=dst.device, dtype=torch.long)
+            sources = src_indices[:count].to(device=src.device, dtype=torch.long)
+            # Expert banks may use float8 storage, so copy raw bytes rather than
+            # relying on index_copy_ supporting the storage dtype directly.
+            dst_bytes = dst.view(torch.uint8).reshape(dst.shape[0], -1)
+            src_bytes = src.view(torch.uint8).reshape(src.shape[0], -1)
+            rows = src_bytes.index_select(0, sources).to(device=dst.device)
+            dst_bytes.index_copy_(0, destinations, rows)
+
+        kernel.fast_index_copy_jit = torch_fast_index_copy
+        fast_index_copy.fast_index_copy_jit = torch_fast_index_copy
+
+        # The fused implementation stores raw CUDA pointers in descriptor tensors,
+        # so it cannot have a faithful torch-only fallback. Force the existing
+        # per-bank path, which is slower but does not require a CUDA toolkit or JIT.
+        original_build_fused_copy_plan = offload_cache.OffloadMoeCache._build_fused_copy_plan
+
+        def build_fused_copy_plan_without_jit(self, *args, **kwargs):
+            original_build_fused_copy_plan(self, *args, **kwargs)
+            self._copy_fused_ok = False
+            self._gather_dst_ptrs = None
+            self._gather_feat_bytes = None
+
+        offload_cache.OffloadMoeCache._build_fused_copy_plan = build_fused_copy_plan_without_jit
+
+        def torch_fast_compare_key(x, y):
+            left = x.detach().to(device="cpu", dtype=torch.int64).reshape(-1)
+            right = y.detach().to(device="cpu", dtype=torch.int64).reshape(-1)
+            limit = min(left.numel(), right.numel())
+            if limit:
+                mismatch = torch.nonzero(left[:limit] != right[:limit], as_tuple=False)
+                if mismatch.numel():
+                    return int(mismatch[0, 0].item())
+            return limit
+
+        kernel.fast_compare_key = torch_fast_compare_key
 
 _install_qwen_long_context_overlay()

@@ -814,8 +814,12 @@ matched MiniMax workflow savings before publication or learned routing.
 overlay so all ten gated-attention layers can use a bounded 65,536-token
 sliding window with zero global full-attention layers. The real FreeToken
 config parser resolved 30 linear layers plus 10 SWA layers under
-`WRENCH_GLOBAL_FULL_LAYERS=none`; this removes the known O(n^2) global layer
-from the native probe path. A weight-bearing native probe remains incomplete
-because the current Windows NVFP4/offload installation lacks
-`freetoken.kernel._pinned_tensor`. Receipt:
-`phases/phase-77-long-context-overlay/long-context-overlay-policy.json`.
+`WRENCH_GLOBAL_FULL_LAYERS=none`. A BF16 direct native probe then completed
+with 65,448 actual prompt tokens, no truncation, HTTP 200, and
+`native_context_pass=true` in 244,524.717 ms. The Windows runtime needed a
+torch-only per-bank MoE copy fallback because the optional FreeToken JIT kernel
+requires a CUDA toolkit that is not installed. This is native correctness
+evidence only, not release-speed evidence. The current 2M/4M native release
+gate and retrieval quality gate remain open. Receipts:
+`phases/phase-77-long-context-overlay/long-context-overlay-policy.json` and
+`phases/phase-77-long-context-overlay/native-64k-swa8k-rerun.json`.

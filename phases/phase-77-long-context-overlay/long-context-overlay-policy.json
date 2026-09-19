@@ -1,6 +1,6 @@
 {
   "schema": "wrench.long-context-overlay-policy.v1",
-  "status": "PASS_POLICY_RESOLUTION_NATIVE_RUNTIME_BLOCKED",
+  "status": "PASS_POLICY_NATIVE_64K_REFERENCE_SLOW",
   "model": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
   "configured_context_tokens": 2000000,
   "requested_global_full_layers": "none",
@@ -18,9 +18,23 @@
     }
   ],
   "native_prefill_probe": {
-    "status": "NOT_COMPLETED",
-    "reason": "current Windows FreeToken NVFP4/offload installation lacks freetoken.kernel._pinned_tensor",
-    "native_attention_claim": false
+    "status": "PASS_REFERENCE_SLOW",
+    "receipt": "native-64k-swa8k-rerun.json",
+    "requested_target_tokens": 65536,
+    "actual_prompt_tokens": 65448,
+    "truncated": false,
+    "http_status": 200,
+    "elapsed_ms": 244524.717,
+    "input_tokens_per_second": 267.64,
+    "native_attention_claim": true,
+    "release_speed_claim": false,
+    "release_context_claim": false
+  },
+  "runtime_compatibility": {
+    "installed_pinned_extension_visible": true,
+    "cuda_toolkit_jit_required": false,
+    "moe_copy_path": "torch_only_per_bank_fallback",
+    "native_2m_or_4m_probe": false
   },
   "quality_claim": false
 }
