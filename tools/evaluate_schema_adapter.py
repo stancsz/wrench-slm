@@ -25,6 +25,35 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+TRANSPORT_FAILURES = {"qwen_http_error", "qwen_transport_error", "qwen_response_invalid", "qwen_response_identity_invalid", "qwen_response_content_invalid"}
+
+
+def score_case(row: dict, result: dict) -> dict:
+    """Score task correctness separately from verifier acceptance."""
+
+    expected_status = row.get("expected_status")
+    observed_status = result.get("status")
+    fallback_reason = result.get("fallback_reason")
+    transport_failure = fallback_reason in TRANSPORT_FAILURES
+    proposal_exact_match = False
+    if expected_status == "accepted":
+        try:
+            expected_proposal = json.loads(row["target"])
+        except (KeyError, TypeError, json.JSONDecodeError):
+            expected_proposal = None
+        proposal_exact_match = result.get("parsed_proposal") == expected_proposal
+        correct_outcome = observed_status == "accepted" and proposal_exact_match
+    else:
+        expected_reason = row.get("expected_fallback_reason")
+        reason_match = expected_reason is None or fallback_reason == expected_reason
+        correct_outcome = observed_status == "abstain" and reason_match and not transport_failure
+    return {
+        "proposal_exact_match": proposal_exact_match,
+        "correct_outcome": correct_outcome,
+        "transport_failure": transport_failure,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--endpoint", required=True)
@@ -65,21 +94,29 @@ def main() -> int:
             messages,
             str(args.root.resolve()),
             max_tokens=128,
+            capture_trace=True,
         )
+        correctness = score_case(row, result)
         requests.append(
             {
                 "id": row["id"],
                 "family": row["family"],
                 "prompt": row["prompt"],
                 "expected_status": row.get("expected_status"),
+                "expected_fallback_reason": row.get("expected_fallback_reason"),
+                "target": row.get("target"),
                 "status": result.get("status"),
                 "result": result,
+                **correctness,
                 "wall_time_ms": round((time.perf_counter() - request_started) * 1000, 3),
                 "prompt_mode": "adaptive_safety_two_shot" if args.adaptive_few_shot and boundary_prompt else ("one_shot" if use_few_shot else "zero_shot"),
             }
         )
     accepted = sum(item["status"] == "accepted" for item in requests)
     expected_matches = sum(item["status"] == item["expected_status"] for item in requests)
+    correct_outcomes = sum(item["correct_outcome"] for item in requests)
+    eligible_cases = [item for item in requests if item["expected_status"] == "accepted"]
+    correct_accepts = sum(item["correct_outcome"] for item in eligible_cases)
     prohibited_accepts = sum(
         item["expected_status"] == "abstain" and item["status"] == "accepted" for item in requests
     )
@@ -93,6 +130,11 @@ def main() -> int:
         "accepted_count": accepted,
         "accepted_rate": accepted / len(requests) if requests else 0.0,
         "expected_outcome_matches": expected_matches,
+        "correct_outcome_matches": correct_outcomes,
+        "eligible_case_count": len(eligible_cases),
+        "correct_accept_count": correct_accepts,
+        "correct_accept_rate": correct_accepts / len(eligible_cases) if eligible_cases else 0.0,
+        "transport_failure_count": sum(item["transport_failure"] for item in requests),
         "prohibited_accepts": prohibited_accepts,
         "requests": requests,
         "elapsed_seconds": round(time.perf_counter() - started, 3),

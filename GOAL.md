@@ -1,4 +1,4 @@
-# Goal: prove useful local selective offload for routine developer-tool work
+# Goal: one Wrench-4B Experimental model with substantial gains over the unpruned baseline
 
 Status: active
 Updated: 2026-09-18
@@ -12,20 +12,24 @@ model path, without reducing final task success or weakening execution controls.
 Every uncertain, unsupported, risky, malformed, or failed case preserves the
 original request and falls back cleanly.
 
-The candidate path is a task-specialized sparse coding model reduced from an
-officially licensed base checkpoint, if and only if the checkpoint's actual
-architecture supports safe structural pruning and the resulting candidates
-pass the gates below. We are evaluating three size tiers: a compact 8-expert
-path near 3.9B parameters, a practical 16-expert path near 4.9B parameters,
-and an expanded 32-expert path near 6.9B parameters whose ideal INT4 payload is
-near 3.3 GiB. The 16-expert tier is the current more-useful quality/size
-tradeoff candidate.
-Deterministic rules plus cloud fallback remains an acceptable final result.
+Deliver exactly one model, **Wrench-4B Experimental**, targeting 3.8 to 4.0
+billion total parameters with a hard ceiling of 4,000,000,000, including any
+unmerged adapters. The existing 3,881,244,016-parameter 8E model is the starting
+reference. Existing 16E and full-expert models are comparison or training
+resources, not additional product tiers. Preserve historical artifacts, but do
+not deliver a separate Safety Experimental edition.
 
-The current experimental candidate is **Wrench-Code-4B-Qwen3.6-8E**: a
-3,881,244,016-parameter checkpoint pruned from Qwen3.6-35B-A3B that retains
-eight experts per MoE block. `4B` is the stable parameter-class label, not a
-claim about a quantized download or runtime footprint.
+The model must substantially outperform the original unpruned model on correct
+acceptance of eligible tasks, expected-outcome matching, and response latency
+under the comparison contract below. This is an experimental objective, not a
+guaranteed result. Rules and fallback remain controls and comparators; they
+cannot substitute for delivering the requested learned model.
+
+Here "original full weights" means the existing Desktop
+Qwen3.6-35B-A3B-NVFP4 package with all routed experts retained. It is quantized,
+not the original BF16 precision checkpoint. Record both identities explicitly
+if a BF16 comparison is added. `4B` describes parameter count, not disk or VRAM
+size. Experimental naming does not remove independent execution verification.
 
 ## Why
 
@@ -49,6 +53,37 @@ and fallback are included in the full workflow cost and latency.
 
 ## Acceptance criteria
 
+- [ ] Deliver one hash-identified Wrench-4B Experimental checkpoint within the
+  parameter ceiling, plus its reproducible quantized FreeToken artifact and
+  verified load/generation path. Report actual bytes and measured peak memory.
+- [ ] Freeze a new family-disjoint test set, task counts, labels, and scoring
+  before candidate selection. Existing repeatedly used 28-case and 14-case
+  fixtures are development/regression evidence only. No test examples or
+  answers may enter training, expert selection, or prompt tuning. Repeated
+  tuning on a final set retires it to development status.
+- [ ] On that independent test set, exceed the unpruned baseline by at least
+  15 percentage points in BOTH eligible-task correct acceptance rate and
+  overall expected-outcome match rate. Eligible-task acceptance counts only
+  correct, independently verified outcomes, not schema acceptance alone.
+  Correct boundary refusals count only in the overall metric. Transport
+  errors, timeouts, or service failures never count as correct refusals.
+  Report paired 95% confidence intervals with improvement excluding zero;
+  insufficient evidence is INCONCLUSIVE, not a pass. These numerical targets
+  operationalize the user's "much higher" requirement and are not achieved.
+- [ ] Reduce end-to-end response median AND p95 latency by at least 50% versus
+  the unpruned baseline over identical cases, with at least three measured
+  repetitions after readiness/warmup. Report successful eligible-task latency,
+  failures, timeouts, output lengths, and cold-load time separately so quick
+  refusals cannot masquerade as faster task completion.
+- [ ] Compare exact request payloads, prompts, decoding parameters, token caps,
+  verifier, task starting state, and retry policy on the same hardware/runtime.
+  Separate cold and warm cache runs. Terminate and verify exit of all owned
+  worker processes between arms, record free VRAM and background load, and
+  counterbalance arm order. Preserve raw outputs and every failed attempt.
+  Differences in tokenizer, quantization, or cache allocation must be reported.
+  Require zero prohibited accepts and zero unexpected mutations on the suite;
+  do not relax the verifier to improve acceptance. Benchmark gains alone do
+  not satisfy the production-value gates below.
 - [ ] Establish the candidate's exact official source, license, architecture,
   routing interface, tensor layout, and reproducible load path. Treat all
   unverified claims about a prospective model as hypotheses.
@@ -58,7 +93,7 @@ and fallback are included in the full workflow cost and latency.
 - [ ] Create a reproducible router-profile receipt on the approved calibration
   corpus, including model hash, tokenizer/runtime versions, per-layer expert
   usage, routing entropy, token counts, and retained-expert selection rule for
-  both candidate tiers.
+  the single selected candidate and its comparison references.
 - [ ] Implement structural pruning only from a verified unquantized checkpoint,
   with an architecture-aware loader, a manifest of every retained tensor, and
   load/forward parity checks. Packed quantized formats are never sliced as if
@@ -69,12 +104,9 @@ and fallback are included in the full workflow cost and latency.
 - [ ] If calibration is used, record its data lineage, teacher identity, budget,
   hyperparameters, held-out boundary, and before/after metrics. Do not use test
   results for tuning and then report them as final evidence.
-- [ ] Produce and load-test the quantized candidate tiers: the compact
-  approximately 1.8 GiB ideal-INT4 path and the practical approximately 2.3
-  GiB ideal-INT4 path. Record actual packed artifact bytes, runtime identity,
-  and load/forward evidence. An ideal estimate or BF16 conversion is not a
-  quantized artifact. The expanded 32-expert path remains an optional BF16
-  structural experiment until its packed export is justified.
+- [ ] Produce and load-test the single selected quantized 4B candidate. Record
+  actual packed bytes, runtime identity, and load/forward evidence. Ideal INT4
+  estimates are not artifact sizes. Additional size tiers are out of scope.
 - [ ] Run cloud-only, rules-plus-identical-fallback, and learned-plus-identical-
   fallback arms on the same authorized real workflow traces. The learned arm
   must show at least 10% net stronger-model-token savings versus both comparators
@@ -96,10 +128,26 @@ and fallback are included in the full workflow cost and latency.
 
 ## Current approach
 
-Start with a fact-finding and reproducibility slice: inspect the candidate
-checkpoint and runtime, then design the Wrench calibration portfolio and router
-profiling receipt. Do not download, rent hardware, spend provider budget, or
-modify external model assets without explicit authorization.
+Audit the existing evaluation and runtime lifecycle before accepting comparison
+claims. Inspect actual request decoding parameters rather than inferring them
+from server defaults. Analyze eligible-task failures and freeze development
+and independent evaluation splits. Then evaluate expert reselection using
+original expert identities across 8E/16E, followed by recovery training such
+as LoRA and repacking. Directly averaging mismatched expert indices is not a
+valid merge. The builder selects the implementation; all paths obey the 4B cap.
+
+This revision records the user's single-model experimental objective. It does
+not declare the performance targets feasible or achieved. Keep source artifacts
+recoverable. Provider spending, external data use, publication, and production
+enablement retain their existing authorization boundaries.
+
+## Remaining gap for the revised objective
+
+No candidate has passed the new contract. Phase 58 contains exploratory results
+on a repeatedly used fixture, with different initial free VRAM across arms and
+unverified worker-process cleanup. Its latency ratio is not a controlled speed
+claim. A fresh independent comparison and a single selected 4B artifact remain
+required. Historical multi-tier notes below are provenance, not current scope.
 
 ## Current evidence
 

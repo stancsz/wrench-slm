@@ -35,6 +35,7 @@ def execute_local_qwen(
     *,
     max_tokens: int = 256,
     timeout_seconds: float = 10,
+    capture_trace: bool = False,
 ) -> dict[str, Any]:
     """Call one local proposal endpoint and pass its text through the verifier."""
 
@@ -86,6 +87,18 @@ def execute_local_qwen(
     request_prompt = user_prompts[-1] if user_prompts else None
     result = execute_model_output(content, allowed_root, request_prompt=request_prompt)
     result["model"] = response_model
+    if capture_trace:
+        result["raw_model_output"] = content
+        try:
+            parsed_proposal = json.loads(content)
+        except json.JSONDecodeError:
+            parsed_proposal = None
+        result["parsed_proposal"] = parsed_proposal
+        result["request_parameters"] = {
+            "temperature": 0,
+            "max_tokens": max_tokens,
+            "enable_thinking": False,
+        }
     if isinstance(payload.get("usage"), dict):
         result["usage"] = payload["usage"]
     return result

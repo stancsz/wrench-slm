@@ -296,6 +296,17 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
         assert result["status"] == "accepted"
         assert result["usage"]["total_tokens"] == 9
 
+        traced = execute_local_qwen(
+            endpoint,
+            "test-qwen",
+            [{"role": "user", "content": "proposal"}],
+            str(tmp_path),
+            capture_trace=True,
+        )
+        assert traced["raw_model_output"] == expected
+        assert traced["parsed_proposal"] == json.loads(expected)
+        assert traced["request_parameters"] == {"temperature": 0, "max_tokens": 256, "enable_thinking": False}
+
         remote = execute_local_qwen("https://example.com/v1/chat/completions", "test-qwen", [], str(tmp_path))
         assert remote["fallback_reason"] == "qwen_endpoint_not_allowlisted"
     finally:

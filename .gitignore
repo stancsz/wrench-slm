@@ -1,4 +1,6 @@
 .venv/
+.env
+AGENTS.local.md
 __pycache__/
 .pytest_cache/
 artifacts/
