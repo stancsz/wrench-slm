@@ -71,8 +71,8 @@
       "sha256": "ade84ac5655ae45708afd998ad8718b9bd327628566b7ceb733e59e242fda431"
     },
     "wrench-package.json": {
-      "bytes": 1007,
-      "sha256": "4a1e53c788482a112ddc66b3fe0413352287adcf33c4295fff5d181aa4fdb6ae"
+      "bytes": 1166,
+      "sha256": "c8b286addcecaae1f099bda09f94584b12191d86133f7c3459b2c8efad42c9e6"
     }
   },
   "quality_claim": false,
