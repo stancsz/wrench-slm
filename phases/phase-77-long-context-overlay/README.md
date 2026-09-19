@@ -15,9 +15,12 @@ the editable checkout, and use a torch-only per-bank copy fallback when the
 host has no CUDA toolkit for FreeToken's optional JIT kernel.
 
 The direct 64K probe completed with 65,448 actual model-side prompt tokens,
-`truncated: false`, HTTP 200, and `native_context_pass: true`. Elapsed time was
-244,524.717 ms, or about 267 input tokens/s. This is native context correctness
-evidence, not a release-speed claim. The torch-only MoE copy fallback is a
+`truncated: false`, HTTP 200, and `native_context_pass: true`. The probe used
+`WRENCH_SWA_WINDOW=8192` to keep the reference run bounded, while the policy
+manifest retains the 65,536-token SWA target for the intended overlay. Elapsed
+time was 244,524.717 ms, or about 267 input tokens/s. This is native context
+correctness evidence for the 8K probe configuration, not a release-speed claim
+or a proof of the 65K SWA target. The torch-only MoE copy fallback is a
 reference path and is too slow to serve as the final portable backend.
 
 The earlier 256K attempt with the 65,536-token window was stopped after the

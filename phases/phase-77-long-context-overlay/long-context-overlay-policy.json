@@ -26,6 +26,14 @@
     "http_status": 200,
     "elapsed_ms": 244524.717,
     "input_tokens_per_second": 267.64,
+    "runtime_probe_env": {
+      "WRENCH_LONG_CONTEXT_OVERLAY": "1",
+      "WRENCH_GLOBAL_FULL_LAYERS": "none",
+      "WRENCH_SWA_WINDOW": "8192",
+      "WRENCH_FREETOKEN_NO_JIT": "1"
+    },
+    "policy_manifest_swa_window_tokens": 65536,
+    "probe_runtime_swa_window_tokens": 8192,
     "native_attention_claim": true,
     "release_speed_claim": false,
     "release_context_claim": false
