@@ -16,6 +16,8 @@ Wrench/
   tokenizer_config.json
   model.safetensors or model-*.safetensors
   model.safetensors.index.json       # when sharded
+  tokenization_wrench.py              # bundled long-context tokenizer hook
+  wrench_prefill.py                   # dynamic-module-local dependency
   modeling_wrench.py                  # only when the architecture is custom
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime
@@ -27,6 +29,17 @@ Wrench/
 The user-facing path is one model name and one command. The runtime may contain
 regex, AST, hashing, indexing, and retrieval code, but these files are shipped
 inside the model package and are not a separate user-installed harness.
+
+For a local Hugging Face directory, the embedded hook is loaded through the
+normal Transformers API:
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "./Wrench", trust_remote_code=True, local_files_only=True
+)
+```
 
 ## Backend boundaries
 

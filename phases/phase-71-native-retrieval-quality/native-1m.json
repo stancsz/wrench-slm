@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.native-attention-probe.v1",
+  "status": "FAIL_NATIVE_1M_PERFORMANCE",
+  "model": "wrench-native-attention-probe",
+  "endpoint": "http://127.0.0.1:28180/v1/chat/completions",
+  "configured_max_model_len": 4000000,
+  "target_prompt_tokens": 1000000,
+  "reducer_bypassed": true,
+  "exact_model_prompt_tokens": null,
+  "http_status": null,
+  "observed": {
+    "probe_started_at": "2026-09-19T13:16:15-06:00",
+    "probe_stopped_at": "2026-09-19T13:25:42-06:00",
+    "elapsed_seconds_at_stop": 567,
+    "gpu_was_saturated": true,
+    "response_received": false,
+    "truncation_observed": false
+  },
+  "reason": "Reducer-bypassed native 1M prefill produced no HTTP response within the bounded probe window. GPU work was active, but this is not an acceptable fast native-attention result.",
+  "quality_claim": false,
+  "effective_working_context_verified_tokens": 64000,
+  "next_step": "Keep the 4M raw-input mechanical reducer as the supported fast path; do not advertise native 1M or 2M attention until a bounded latency and exact-token receipt passes."
+}

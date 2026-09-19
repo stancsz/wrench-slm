@@ -25,7 +25,14 @@ def main() -> int:
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     errors: list[str] = []
-    required = ["config.json", "tokenizer.json", "tokenizer_config.json"]
+    required = [
+        "config.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "tokenization_wrench.py",
+        "wrench_prefill.py",
+        "wrench_runtime/prefill.py",
+    ]
     for name in required:
         if not (args.model_dir / name).is_file():
             errors.append(f"missing:{name}")
@@ -44,7 +51,16 @@ def main() -> int:
     if not package_manifest.is_file():
         errors.append("missing:wrench-package.json")
     files = {}
-    for path in [config_path, args.model_dir / "tokenizer.json", args.model_dir / "tokenizer_config.json", *safetensors, package_manifest]:
+    for path in [
+        config_path,
+        args.model_dir / "tokenizer.json",
+        args.model_dir / "tokenizer_config.json",
+        args.model_dir / "tokenization_wrench.py",
+        args.model_dir / "wrench_prefill.py",
+        args.model_dir / "wrench_runtime" / "prefill.py",
+        *safetensors,
+        package_manifest,
+    ]:
         if path.is_file():
             files[str(path.relative_to(args.model_dir)).replace("\\", "/")] = {
                 "bytes": path.stat().st_size,

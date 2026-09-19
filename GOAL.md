@@ -767,3 +767,16 @@ estimate of 4,000,023 tokens and produced an exact 1,278-token model prefill;
 the reducer reported 123.772 ms cold ingestion and 0.245 ms hot selection.
 This is runtime integration evidence only. Native 4M attention, retrieval
 recall, worker quality, and production release gates remain open.
+
+2026-09-19 native retrieval and portable package evidence: the deterministic
+220-case mechanical retrieval diagnostic passed with 1.0 target-reference
+recall, 1.0 current-intent preservation, and 1.0 hash-bound reference rate;
+receipt: `phases/phase-71-native-retrieval-quality/retrieval-220.json`. The
+reducer-bypassed native 1M probe on the 4M-configured endpoint was stopped
+after 567 seconds without an HTTP response while GPU work remained saturated;
+receipt: `phases/phase-71-native-retrieval-quality/native-1m.json`. Native 1M
+and 2M attention are therefore not release claims. A portable package now
+bundles the custom tokenizer hook and mechanical prefill dependency so a local
+Transformers loader can stage long input without a separately installed
+harness. Structural validation passes, but the package remains experimental
+and public upload is not authorized.

@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.portable-package-runtime.v1",
+  "status": "PASS_AUTO_TOKENIZER_BUNDLED_HOOK",
+  "model_dir": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Wrench-portable-4M-v4",
+  "loader": "transformers.AutoTokenizer.from_pretrained",
+  "trust_remote_code": true,
+  "local_files_only": true,
+  "loaded_class": "WrenchTokenizer",
+  "model_max_length": 4000000,
+  "mechanical_prefill_receipt": {
+    "model_prefill_token_count": 4,
+    "hot_token_budget": 48000,
+    "model_prefill_budget": 64000,
+    "native_input_claim": false
+  },
+  "model_calls_for_mechanical_lookup": 0,
+  "quality_claim": false
+}

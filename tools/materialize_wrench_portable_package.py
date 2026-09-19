@@ -31,9 +31,22 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 os.link(item, target / item.name)
             elif item.is_file():
                 shutil.copy2(item, target / item.name)
+        tokenizer_config_path = target / "tokenizer_config.json"
+        if tokenizer_config_path.is_file():
+            tokenizer_config = json.loads(tokenizer_config_path.read_text(encoding="utf-8"))
+            tokenizer_config["tokenizer_class"] = "WrenchTokenizer"
+            tokenizer_config["auto_map"] = {
+                "AutoTokenizer": ["tokenization_wrench.WrenchTokenizer", None]
+            }
+            tokenizer_config_path.write_text(
+                json.dumps(tokenizer_config, indent=2) + "\n", encoding="utf-8"
+            )
         runtime_dir = target / "wrench_runtime"
         runtime_dir.mkdir()
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", runtime_dir / "prefill.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
+        shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
+        (runtime_dir / "__init__.py").write_text("\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n", encoding="utf-8")
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
@@ -52,7 +65,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             },
             "runtime": {
                 "bundled": True,
-                "entrypoint": "wrench_runtime/prefill.py",
+                "entrypoint": "tokenization_wrench.py",
                 "model_calls_for_mechanical_lookup": 0,
             },
             "backends": {
@@ -70,7 +83,12 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "source": str(source.resolve()),
             "target": str(target.resolve()),
             "weight_link_count": len(list(target.glob("*.safetensors"))),
-            "runtime_files": ["wrench_runtime/prefill.py"],
+            "runtime_files": [
+                "tokenization_wrench.py",
+                "wrench_prefill.py",
+                "wrench_runtime/__init__.py",
+                "wrench_runtime/prefill.py",
+            ],
             "quality_claim": False,
             "native_attention_claim": False,
             "next_required": [

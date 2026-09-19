@@ -17,6 +17,9 @@
     "config.json",
     "tokenizer.json",
     "tokenizer_config.json",
+    "tokenization_wrench.py",
+    "wrench_prefill.py",
+    "wrench_runtime/prefill.py",
     "model.safetensors or model-*.safetensors",
     "wrench-package.json"
   ],
@@ -25,6 +28,7 @@
     "model.safetensors.index.json",
     "modeling_wrench.py",
     "configuration_wrench.py",
+    "tokenization_wrench.py",
     "wrench_runtime/"
   ],
   "backends": {
