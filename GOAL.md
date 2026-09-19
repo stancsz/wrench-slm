@@ -832,3 +832,23 @@ this backend is not yet the fast native release path. The native probe builder
 was corrected to avoid tokenizing the entire synthetic payload locally; server
 reported prompt usage remains authoritative. Receipt:
 `phases/phase-77-long-context-overlay/native-16k-nvfp4-swa8k-fastprobe.json`.
+
+2026-09-19 native capacity and portable package refinement: fixed the
+FreeToken package-level Qwen parser alias, added a pure-SWA pool path with a
+zero-layer full-token bookkeeping slab, and added an explicit runtime rotary
+table extension for the 4M capacity probe. The BF16 candidate then started
+with a 2M KV address space at 0.64 GiB and a 4M KV address space at 0.66 GiB;
+both completed warmup and served an HTTP 200 smoke request. These are startup
+capacity receipts, not reducer-bypassed 2M or 4M payload passes. The 4M probe
+also uses runtime RoPE extension while the checkpoint config remains at 2M
+positions, so no 4M quality claim is made. Receipts:
+`phases/phase-77-long-context-overlay/native-2m-swa-only-startup.json`,
+`phases/phase-77-long-context-overlay/native-4m-swa-only-startup.json`.
+
+The portable package materializer now handles cross-volume Windows copies,
+embeds the native and fast mode contract, bundles the long-context overlay, and
+ships a `serve_freetoken.ps1` entrypoint. The v2 package passed structural
+validation with nine Safetensors shards. The package remains experimental and
+not publishable because direct 4M payload, standard vLLM or Ollama adapters,
+long-context retrieval quality, and the matched MiniMax North Star gates are
+still open. Receipt: `phases/phase-77-long-context-overlay/portable-package-validation.json`.
