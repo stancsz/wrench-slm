@@ -826,6 +826,20 @@ gate and retrieval quality gate remain open. Receipts:
 `phases/phase-77-long-context-overlay/long-context-overlay-policy.json` and
 `phases/phase-77-long-context-overlay/native-64k-swa8k-rerun.json`.
 
+The same BF16 native endpoint was then measured with a 32K prefill chunk. A
+fresh 64K probe completed with 65,448 actual prompt tokens in 20,492.372 ms,
+and a 256K probe completed with 262,070 actual prompt tokens in 85,748.418 ms;
+both were HTTP 200 with no truncation. A direct 2M probe completed with
+1,999,912 actual prompt tokens, HTTP 200, no truncation, and 1,189,092.628 ms
+elapsed. A 64K prefill chunk was slower at 218,836.114 ms for the same 64K
+payload, so 32K is the current measured launcher setting. This closes the
+native 2M input correctness milestone, but not the 4M gate, retrieval quality,
+or the fast-serving target. Receipts:
+`phases/phase-77-long-context-overlay/native-64k-bf16-maxprefill32768.json`,
+`phases/phase-77-long-context-overlay/native-256k-bf16-maxprefill32768.json`,
+`phases/phase-77-long-context-overlay/native-2m-bf16-maxprefill32768.json`,
+and `phases/phase-77-long-context-overlay/native-64k-bf16-maxprefill65536.json`.
+
 The same phase then loaded the 4M-configured NVFP4 candidate with Triton
 experts and completed a warm 16K direct probe at 16,318 actual prompt tokens,
 without truncation, in 6,021.138 ms. Cold offload chunks were only about 28 to
@@ -850,7 +864,7 @@ positions, so no 4M quality claim is made. Receipts:
 The portable package materializer now handles cross-volume Windows copies,
 embeds the native and fast mode contract, bundles the long-context overlay, and
 ships a `serve_freetoken.ps1` entrypoint. The v2 package passed structural
-validation with nine Safetensors shards. The package remains experimental and
-not publishable because direct 4M payload, standard vLLM or Ollama adapters,
-long-context retrieval quality, and the matched MiniMax North Star gates are
-still open. Receipt: `phases/phase-77-long-context-overlay/portable-package-validation.json`.
+validation with nine Safetensors shards and is published as a public
+experimental artifact. Direct 4M payload, standard vLLM or Ollama adapters,
+long-context retrieval quality, and the matched MiniMax North Star gates remain
+open. Receipt: `phases/phase-77-long-context-overlay/portable-package-validation.json`.

@@ -23,6 +23,20 @@ correctness evidence for the 8K probe configuration, not a release-speed claim
 or a proof of the 65K SWA target. The torch-only MoE copy fallback is a
 reference path and is too slow to serve as the final portable backend.
 
+Using the same BF16 candidate and a 32,768-token prefill chunk, a fresh direct
+64K probe completed with 65,448 actual model-side prompt tokens, no truncation,
+HTTP 200, and 20,492.372 ms elapsed. A 256K probe then completed with 262,070
+actual prompt tokens, no truncation, HTTP 200, and 85,748.418 ms elapsed. The
+larger prefill chunk is therefore a measured serving improvement, not merely a
+configuration change. These are native-input latency receipts, not retrieval
+quality receipts.
+
+The same 32,768-token launcher then completed a direct 2M probe with 1,999,912
+actual model-side prompt tokens, no truncation, HTTP 200, and 1,189,092.628 ms
+elapsed, about 19.8 minutes. A 65,536-token chunk was also tested at 64K and
+was slower at 218,836.114 ms, so the portable launcher keeps the measured 32K
+chunk rather than assuming the largest chunk is fastest.
+
 The earlier 256K attempt with the 65,536-token window was stopped after the
 same backend showed unacceptable latency. After fixing the package-level
 FreeToken parser alias and adding a pure-SWA bookkeeping path, BF16 startup
@@ -58,6 +72,10 @@ required before trusting 2M stress timings.
 
 Receipts: `long-context-overlay-policy.json`,
 `native-64k-swa8k-rerun.json`,
+`native-64k-bf16-maxprefill32768.json`,
+`native-256k-bf16-maxprefill32768.json`,
+`native-2m-bf16-maxprefill32768.json`,
+`native-64k-bf16-maxprefill65536.json`,
 `native-2m-swa-only-startup.json`,
 `native-4m-swa-only-startup.json`,
 `native-16k-nvfp4-swa8k-fastprobe.json`, and

@@ -79,6 +79,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                         "swa_window_tokens": 8192,
                         "swa_pool_tokens": 8192,
                         "rope_max_position_runtime": 4000000,
+                        "max_prefill_length_tokens": 32768,
                         "native_direct_payload_verified": False,
                     },
                     "launch_note": "Native mode requires the bundled runtime overlay and a compatible FreeToken build.",
@@ -92,11 +93,19 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             """param(\n    [string]$FreeTokenPython = \"python\",\n    [int]$Port = 28900\n)\n\n$env:PYTHONPATH = \"$PSScriptRoot\\wrench_runtime;$env:PYTHONPATH\"\n$env:WRENCH_LONG_CONTEXT_OVERLAY = \"1\"\n$env:WRENCH_GLOBAL_FULL_LAYERS = \"none\"\n$env:WRENCH_SWA_WINDOW = \"8192\"\n$env:WRENCH_SWA_POOL_TOKENS = \"8192\"\n$env:WRENCH_ROPE_MAX_POSITION = \"4000000\"\n$env:WRENCH_NATIVE_DIRECT_INPUT = \"1\"\n& $FreeTokenPython -m freetoken.cli serve `\n    --model-path $PSScriptRoot `\n    --host 127.0.0.1 `\n    --port $Port `\n    --moe-strategy fused `\n    --max-running-requests 1 `\n    --max-seq-len-override 4000000 `\n    --num-tokens 4000000 `\n    --memory-ratio 0.9 `\n    --cuda-graph-max-bs 0 `\n    --text-model-only `\n    --mm-disable vision audio `\n    --max-prefill-length 8192\n""",
             encoding="utf-8",
         )
+        launcher_path = target / "serve_freetoken.ps1"
+        launcher_path.write_text(
+            launcher_path.read_text(encoding="utf-8").replace(
+                "--max-prefill-length 8192", "--max-prefill-length 32768"
+            ),
+            encoding="utf-8",
+        )
+        shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", target / "README.md")
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
             "package_name": "Wrench",
-            "release_status": "EXPERIMENTAL_NOT_PUBLISHABLE",
+            "release_status": "EXPERIMENTAL_PUBLIC_ARTIFACT",
             "canonical_format": "huggingface-safetensors",
             "verified_total_parameters": PARAMETER_COUNT,
             "hard_parameter_ceiling": PARAMETER_CEILING,
@@ -119,7 +128,11 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "vllm": "requires registered Wrench architecture",
                 "ollama_gguf": "not verified",
             },
-            "publication": {"public_upload_authorized": False},
+            "publication": {
+                "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E",
+                "public_upload_authorized": True,
+                "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E",
+            },
         }
         (target / "wrench-package.json").write_text(json.dumps(package_manifest, indent=2) + "\n", encoding="utf-8")
         receipt = {

@@ -1,6 +1,6 @@
 {
   "schema": "wrench.long-context-overlay-policy.v1",
-  "status": "PASS_STARTUP_CAPACITY_4M_NATIVE_INPUT_PENDING",
+  "status": "PASS_NATIVE_2M_INPUT_SLOW_4M_INPUT_PENDING",
   "model": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
   "configured_context_tokens": 2000000,
   "requested_global_full_layers": "none",
@@ -18,19 +18,20 @@
     }
   ],
   "native_prefill_probe": {
-    "status": "PASS_REFERENCE_SLOW",
-    "receipt": "native-64k-bf16-fused-cold.json",
+    "status": "PASS_NATIVE_2M_DIRECT_INPUT_SLOW",
+    "receipt": "native-2m-bf16-maxprefill32768.json",
     "requested_target_tokens": 65536,
     "actual_prompt_tokens": 65448,
     "truncated": false,
     "http_status": 200,
-    "elapsed_ms": 189647.111,
-    "input_tokens_per_second": 345.13,
+    "elapsed_ms": 1189092.628,
+    "input_tokens_per_second": 1681.75,
     "runtime_probe_env": {
       "WRENCH_LONG_CONTEXT_OVERLAY": "1",
       "WRENCH_GLOBAL_FULL_LAYERS": "none",
       "WRENCH_SWA_WINDOW": "8192",
-      "WRENCH_FREETOKEN_NO_JIT": "1"
+      "WRENCH_FREETOKEN_NO_JIT": "1",
+      "max_prefill_length": "32768"
     },
     "policy_manifest_swa_window_tokens": 65536,
     "probe_runtime_swa_window_tokens": 8192,
@@ -42,7 +43,16 @@
     "installed_pinned_extension_visible": true,
     "cuda_toolkit_jit_required": false,
     "moe_copy_path": "torch_only_per_bank_fallback",
-    "native_2m_or_4m_probe": false,
+    "native_2m_or_4m_probe": true,
+    "native_2m_direct_receipt": "native-2m-bf16-maxprefill32768.json",
+    "native_2m_actual_prompt_tokens": 1999912,
+    "native_2m_elapsed_ms": 1189092.628,
+    "native_2m_truncated": false,
+    "native_4m_direct_receipt": null,
+    "native_4m_direct_input_pending": true,
+    "native_64k_32k_chunk_receipt": "native-64k-bf16-maxprefill32768.json",
+    "native_256k_32k_chunk_receipt": "native-256k-bf16-maxprefill32768.json",
+    "native_64k_64k_chunk_receipt": "native-64k-bf16-maxprefill65536.json",
     "native_64k_fused_receipt": "native-64k-bf16-fused-cold.json",
     "native_2m_startup_receipt": "native-2m-swa-only-startup.json",
     "native_4m_startup_receipt": "native-4m-swa-only-startup.json",
@@ -68,7 +78,7 @@
   "portable_package": {
     "directory": "artifacts/Wrench-Qwen3.6-8expert-BF16-native4M-portable-v2",
     "validation_receipt": "portable-package-validation.json",
-    "status": "PASS_STRUCTURAL_PACKAGE_NOT_PUBLISHABLE",
+    "status": "PASS_STRUCTURAL_PUBLIC_EXPERIMENTAL",
     "canonical_format": "huggingface-safetensors",
     "gguf_or_ollama_verified": false
   },
