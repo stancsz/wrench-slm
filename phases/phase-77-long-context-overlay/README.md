@@ -28,5 +28,20 @@ same backend showed unacceptable latency. No 2M or 4M native performance claim
 is made by this phase. The mechanical 4M-to-effective-context reducer remains
 the practical fast path while native attention is optimized separately.
 
+The 4M-configured NVFP4 candidate also loaded successfully with Triton NVFP4
+experts and a roughly 428K-token KV allocation. A warm repeated 16K native
+probe passed with 16,318 actual prompt tokens, no truncation, HTTP 200, and
+6,021.138 ms elapsed. Its cold offload chunks measured roughly 28 to 67 input
+tokens/s, so it is still not a release-speed path. FreeToken rejects
+`moe-strategy=fused` for NVFP4 experts, which leaves offload or CPU as the
+available serving choices on this runtime.
+
+The native probe tool was also fixed to tokenize only one prompt unit when
+building large synthetic payloads. The model endpoint's reported
+`usage.prompt_tokens` remains authoritative. This removed an approximately
+200-second self-inflicted tokenizer delay from the 16K measurement and is
+required before trusting 2M stress timings.
+
 Receipts: `long-context-overlay-policy.json` and
-`native-64k-swa8k-rerun.json`.
+`native-64k-swa8k-rerun.json`, plus
+`native-16k-nvfp4-swa8k-fastprobe.json`.

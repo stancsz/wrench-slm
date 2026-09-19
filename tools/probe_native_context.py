@@ -61,8 +61,12 @@ def _build_prompt(path: Path | None, target_tokens: int, tokenizer_path: Path | 
         content_target = max(1, target_tokens - 128)
         repetitions = max(1, (content_target + unit_tokens - 1) // unit_tokens)
         prompt = PROMPT_UNIT * repetitions
-        estimated = len(tokenizer(prompt, add_special_tokens=False).input_ids)
-        return prompt, "local_tokenizer", estimated
+        # Do not tokenize the complete generated payload here. Some local
+        # tokenizers take superlinear time on multi-million-token strings, which
+        # would make the probe measure prompt construction instead of serving.
+        # The endpoint's usage.prompt_tokens remains the authoritative count.
+        estimated = unit_tokens * repetitions
+        return prompt, "local_tokenizer_unit_estimate", estimated
     repetitions = max(1, (target_tokens * 5 + len(PROMPT_UNIT) - 1) // len(PROMPT_UNIT))
     return PROMPT_UNIT * repetitions, "character_estimate", None
 

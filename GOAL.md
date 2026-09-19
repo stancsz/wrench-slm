@@ -823,3 +823,12 @@ evidence only, not release-speed evidence. The current 2M/4M native release
 gate and retrieval quality gate remain open. Receipts:
 `phases/phase-77-long-context-overlay/long-context-overlay-policy.json` and
 `phases/phase-77-long-context-overlay/native-64k-swa8k-rerun.json`.
+
+The same phase then loaded the 4M-configured NVFP4 candidate with Triton
+experts and completed a warm 16K direct probe at 16,318 actual prompt tokens,
+without truncation, in 6,021.138 ms. Cold offload chunks were only about 28 to
+67 input tokens/s, and FreeToken rejects resident fused serving for NVFP4, so
+this backend is not yet the fast native release path. The native probe builder
+was corrected to avoid tokenizing the entire synthetic payload locally; server
+reported prompt usage remains authoritative. Receipt:
+`phases/phase-77-long-context-overlay/native-16k-nvfp4-swa8k-fastprobe.json`.

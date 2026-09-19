@@ -44,5 +44,21 @@
     "moe_copy_path": "torch_only_per_bank_fallback",
     "native_2m_or_4m_probe": false
   },
+  "nvfp4_backend_probe": {
+    "status": "PASS_16K_WARM_REFERENCE",
+    "receipt": "native-16k-nvfp4-swa8k-fastprobe.json",
+    "model": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF-native4M-candidate",
+    "configured_context_tokens": 4000000,
+    "moe_strategy": "offload",
+    "moe_cache_size": 320,
+    "actual_prompt_tokens": 16318,
+    "truncated": false,
+    "http_status": 200,
+    "elapsed_ms": 6021.138,
+    "cold_chunk_input_tokens_per_second_observed": [28.36, 67.54],
+    "fused_strategy": "rejected_by_runtime_for_nvfp4",
+    "release_speed_claim": false,
+    "release_context_claim": false
+  },
   "quality_claim": false
 }
