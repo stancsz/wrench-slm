@@ -93,6 +93,19 @@ manifest hash check, a named GPU and runtime, and nonnegative load and memory
 metrics. A pass is an integrity and runtime preflight only, not a quality or
 production-value claim.
 
+For an unattended worker run, the same sequence is wrapped by the guarded
+PowerShell entry point below. It stops before changing a dirty source checkout
+and writes all receipts and the worker log under the requested receipt folder:
+
+```powershell
+& .\tools\run_5060ti_preflight.ps1 `
+  -SourceRoot C:\Users\stanc\github\portfolio\wrench-slm `
+  -ArtifactRoot C:\models\wrench-slm-artifacts `
+  -ExpectedSourceCommit $ExpectedSourceCommit `
+  -ExpectedArtifactCommit e0ebd6f3762e30a118ade6bc47e01fc65d8e3eea `
+  -ReceiptRoot C:\wrench-receipts
+```
+
 ## Execution boundary
 
 Wrench remains proposal-only and fail-closed. Keep learned routing `DISABLE`, preserve the stronger-model fallback, and do not treat a local load or one-request smoke as evidence of production value.
