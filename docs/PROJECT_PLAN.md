@@ -1,12 +1,14 @@
-# Project Plan: Wrench Qwen3.6 Expert-Tier Evaluation - Selective Offload & Escalation
+# Project Plan: Wrench Architecture-Tier Evaluation - Selective Offload & Escalation
 
 > **Evidence status (2026-09-17):** This plan is an execution hypothesis, not a
 > release claim. The local Qwen3.6-35B-A3B artifact is an NVIDIA ModelOpt
 > NVFP4/FP8 package. Its verified checkpoint receipt is
 > [`phases/phase-1-checkpoint-facts/checkpoint-facts.json`](../phases/phase-1-checkpoint-facts/checkpoint-facts.json).
-> It is not a safe source for tensor slicing. Any `<4B`, VRAM, throughput,
-> quality, or token-savings target remains unearned until the named measurement
-> gate for that phase passes.
+> It is not a safe source for tensor slicing. Any approximately 4B parameter,
+> VRAM, throughput, quality, or token-savings target remains unearned until the
+> named measurement gate for that phase passes. The preferred parameter range
+> is 3.8 to 4.1 billion, with a hard ceiling of 4.25 billion including
+> unmerged adapters. Expert count is not fixed.
 
 Wrench remains proposal-first and fail-closed. “Autonomous completion” below
 means an automatically proposed and independently verified result; it does not
@@ -25,6 +27,20 @@ FTW artifacts of 3.19 GiB for 8 experts and 3.72 GiB for 16 experts; both
 passed bounded CUDA smokes. The latest 16-expert artifact has an experimental
 calibration pass, but neither tier is approved, quality-evaluated, or
 release-ready.
+
+## Parameter-budget policy
+
+The final product is one approximately 4B model. The preferred range is 3.8 to
+4.1 billion total parameters. Candidates between 4.1 and 4.25 billion may be
+considered when the extra capacity produces a measured quality or workflow
+benefit, but 4,250,000,000 total parameters is a hard ceiling including
+unmerged adapters. Candidates above that ceiling are not Wrench-4B candidates.
+
+The number of experts is deliberately unconstrained. Candidate search may
+include dense models, different MoE expert counts, or other architecture
+changes. Selection is based on measured total parameters, quality, safety,
+latency, memory, and workflow value rather than on matching the current 8E or
+16E layouts.
 
 ## Execution status
 
@@ -270,7 +286,9 @@ pm test, pytest, linter = 0), costing **0 cloud tokens**.
                          └───────────────────────────────┘
 `
 
-* **Parameter Ceiling**: < 4.0 Billion parameters.
+* **Parameter Budget**: Preferred 3.8 to 4.1 billion total parameters, with a
+  hard ceiling of 4.25 billion including unmerged adapters. Expert count is an
+  open search variable.
 * **Serving Footprint**: < 3.0 GB VRAM (allowing full co-existence on a 16 GB RTX 5070 Ti).
 * **Base Architecture**: Pruned/distilled from state-of-the-art coding teachers (Qwen3.6-35B-A3B / Qwen2.5-Coder-32B / Phi-4).
 
@@ -282,7 +300,7 @@ pm test, pytest, linter = 0), costing **0 cloud tokens**.
 * **Target Teacher**: Official frontier coding model / Qwen3.6-35B-A3B / Qwen2.5-Coder-32B.
 * **Shrinkage Methodology**:
   - **Sequence-Level Distillation**: Feed curated agentic trajectories (pyromind/agentic-tool-call and glaive-function-calling) to the teacher to generate gold-standard, zero-fluff tool calls and repair diffs.
-  - **Task-Guided Pruning (If MoE)**: Hook router logits on Qwen3.6-35B-A3B across 1,000 coding calibration tasks; isolate the top 16-32 hot coding experts per layer and excise the dormant ~224 non-coding experts, leaving a ~3.2B parameter dense/sparse core.
+  - **Task-Guided Architecture Search**: Profile router logits on Qwen3.6-35B-A3B across coding calibration tasks, then evaluate retained-expert counts and other dense or MoE architecture changes against the measured 4.25B ceiling. Do not assume a fixed expert count before quality, safety, latency, memory, and workflow-value comparison.
   - **Direct Base Downspring**: Alternatively, anchor on Qwen2.5-Coder-3B or Phi-4-mini as the pre-distilled base architecture.
 
 ### Phase 2: Supervised Fine-Tuning (SFT) & Specialization
@@ -333,4 +351,4 @@ The Wrench must not get trapped in hallucination loops. It must recognize its li
 | **Training Datasets** | dataset/ | Multi-turn tool calling, coding diffs, and schema enforcement JSONLs. |
 | **Dataset Manifest** | manifest.json | Provenance, checksums, and dataset metadata. |
 | **Execution Harness** | src/harness/ | Local test-gating, sandboxed tool runner, and escalation router. |
-| **Trained Adapters** | weights/ | 4-bit LoRA adapter weights for the sub-4B base. |
+| **Trained Adapters** | weights/ | 4-bit LoRA adapter weights for the approximately 4B base, counted within the 4.25B ceiling. |

@@ -12,12 +12,16 @@ model path, without reducing final task success or weakening execution controls.
 Every uncertain, unsupported, risky, malformed, or failed case preserves the
 original request and falls back cleanly.
 
-Deliver exactly one model, **Wrench-4B Experimental**, targeting 3.8 to 4.0
-billion total parameters with a hard ceiling of 4,000,000,000, including any
-unmerged adapters. The existing 3,881,244,016-parameter 8E model is the starting
-reference. Existing 16E and full-expert models are comparison or training
-resources, not additional product tiers. Preserve historical artifacts, but do
-not deliver a separate Safety Experimental edition.
+Deliver exactly one model, **Wrench-4B Experimental**, with a preferred target
+of 3.8 to 4.1 billion total parameters, an acceptable flexibility band through
+4.25 billion, and a hard ceiling of 4,250,000,000, including any unmerged
+adapters. Expert count is an open architecture variable, not a product
+constraint. The final candidate may be dense, MoE, or another architecture if
+its measured total stays within the budget and it passes the same evaluation.
+The existing 3,881,244,016-parameter 8E model is a starting reference, not a
+presumed final design. Existing 16E and full-expert models are comparison or
+training resources, not additional product tiers. Preserve historical
+artifacts, but do not deliver a separate Safety Experimental edition.
 
 The model must substantially outperform the original unpruned model on correct
 acceptance of eligible tasks, expected-outcome matching, and response latency
@@ -28,8 +32,9 @@ cannot substitute for delivering the requested learned model.
 Here "original full weights" means the existing Desktop
 Qwen3.6-35B-A3B-NVFP4 package with all routed experts retained. It is quantized,
 not the original BF16 precision checkpoint. Record both identities explicitly
-if a BF16 comparison is added. `4B` describes parameter count, not disk or VRAM
-size. Experimental naming does not remove independent execution verification.
+if a BF16 comparison is added. `4B` describes the approximately 4-billion
+parameter budget, not disk or VRAM size. Experimental naming does not remove
+independent execution verification.
 
 ## Why
 
@@ -53,9 +58,10 @@ and fallback are included in the full workflow cost and latency.
 
 ## Acceptance criteria
 
-- [ ] Deliver one hash-identified Wrench-4B Experimental checkpoint within the
-  parameter ceiling, plus its reproducible quantized FreeToken artifact and
-  verified load/generation path. Report actual bytes and measured peak memory.
+- [ ] Deliver one hash-identified Wrench-4B Experimental checkpoint at or below
+  4,250,000,000 measured total parameters, plus its reproducible quantized
+  FreeToken artifact and verified load/generation path. Report actual bytes and
+  measured peak memory.
 - [ ] Freeze a new family-disjoint test set, task counts, labels, and scoring
   before candidate selection. Existing repeatedly used 28-case and 14-case
   fixtures are development/regression evidence only. No test examples or
@@ -131,10 +137,13 @@ and fallback are included in the full workflow cost and latency.
 Audit the existing evaluation and runtime lifecycle before accepting comparison
 claims. Inspect actual request decoding parameters rather than inferring them
 from server defaults. Analyze eligible-task failures and freeze development
-and independent evaluation splits. Then evaluate expert reselection using
-original expert identities across 8E/16E, followed by recovery training such
-as LoRA and repacking. Directly averaging mismatched expert indices is not a
-valid merge. The builder selects the implementation; all paths obey the 4B cap.
+and independent evaluation splits. Then evaluate a candidate architecture
+matrix that may include dense and MoE alternatives, with expert count selected
+by measured parameter budget and task performance rather than fixed in advance.
+Follow selection with recovery training such as LoRA and repacking. Directly
+averaging mismatched expert indices is not a valid merge. The builder selects
+the implementation and expert count; all paths obey the 4,250,000,000-parameter
+cap.
 
 This revision records the user's single-model experimental objective. It does
 not declare the performance targets feasible or achieved. Keep source artifacts
