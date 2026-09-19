@@ -61,6 +61,38 @@ The worker should read:
 
 The worker must report the source commit, artifact commit, artifact hash verification result, runtime identity, GPU memory, wall-clock time, retries, and final job status. A downloaded file alone is not a completed run.
 
+## Cross-host preflight receipt
+
+After the pinned artifact loads and generates one bounded smoke response, use the
+checked-in receipt tools. `compose_cross_host_receipt.py` hashes every file in
+`artifact-manifest.json` before it sets `artifact_hash_verified` to true.
+
+```powershell
+py tools/smoke_pruned_qwen.py C:\models\wrench-slm-artifacts\models\Wrench-Qwen3.6-8expert-BF16 `
+  --output C:\wrench-receipts\runtime-smoke.json `
+  --prompt "Return only the word OK." --max-new-tokens 8
+
+py tools/compose_cross_host_receipt.py `
+  --host rtx-5060-ti `
+  --source-root C:\Users\stanc\github\portfolio\wrench-slm `
+  --artifact-root C:\models\wrench-slm-artifacts `
+  --source-commit $ExpectedSourceCommit `
+  --artifact-commit e0ebd6f3762e30a118ade6bc47e01fc65d8e3eea `
+  --runtime-smoke C:\wrench-receipts\runtime-smoke.json `
+  --output C:\wrench-receipts\cross-host-receipt.json
+
+py tools/verify_cross_host_receipt.py `
+  C:\wrench-receipts\cross-host-receipt.json `
+  --expected-source-commit $ExpectedSourceCommit `
+  --expected-artifact-commit e0ebd6f3762e30a118ade6bc47e01fc65d8e3eea `
+  --output C:\wrench-receipts\verified-receipt.json
+```
+
+The verifier accepts only the pinned source and artifact commits, a complete
+manifest hash check, a named GPU and runtime, and nonnegative load and memory
+metrics. A pass is an integrity and runtime preflight only, not a quality or
+production-value claim.
+
 ## Execution boundary
 
 Wrench remains proposal-only and fail-closed. Keep learned routing `DISABLE`, preserve the stronger-model fallback, and do not treat a local load or one-request smoke as evidence of production value.
