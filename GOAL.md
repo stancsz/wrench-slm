@@ -780,3 +780,16 @@ bundles the custom tokenizer hook and mechanical prefill dependency so a local
 Transformers loader can stage long input without a separately installed
 harness. Structural validation passes, but the package remains experimental
 and public upload is not authorized.
+
+2026-09-19 mechanical fast path and calibration evidence: added a conservative
+deterministic parser for high-confidence read_file, read_lines,
+literal_search, git_read_status, and explicitly bounded health requests. Its
+proposals still pass the existing verifier and multi-pass TTC guard; malformed
+or risky requests fail closed. On the historical 220-case diagnostic replay,
+the original v7 Safety model plus this fast path produced 156/220 correct
+outcomes, 80/120 exact eligible accepts, zero prohibited accepts, zero
+transport failures, and 137 mechanical fast-path requests. This is not the
+final matched MiniMax workflow score. The parser and runtime are also bundled
+into the portable package and verified through `AutoTokenizer` dynamic-module
+loading. A LoRA/router calibration probe was measured and rejected after it
+produced 86/220 correct outcomes and 24 prohibited accepts.

@@ -6,6 +6,7 @@ from .router import CancellationToken, ProposalRouter, RouterConfig
 from .state import load_router_state, save_router_state
 from .tier import TierSelectionError, select_experimental_tier
 from .context import ContextAdmissionError, ContextError, ContextLedger, ContextSegment, ContextSelectionError
+from .mechanical import mechanical_route
 
 __all__ = [
     "CancellationToken",
@@ -20,6 +21,7 @@ __all__ = [
     "execute_local_qwen",
     "execute_model_output",
     "execute_proposal",
+    "mechanical_route",
     "load_router_state",
     "save_router_state",
     "select_experimental_tier",

@@ -18,6 +18,7 @@ Wrench/
   model.safetensors.index.json       # when sharded
   tokenization_wrench.py              # bundled long-context tokenizer hook
   wrench_prefill.py                   # dynamic-module-local dependency
+  wrench_mechanical.py                # bundled high-confidence mechanical router
   modeling_wrench.py                  # only when the architecture is custom
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime

@@ -19,6 +19,7 @@
     "tokenizer_config.json",
     "tokenization_wrench.py",
     "wrench_prefill.py",
+    "wrench_mechanical.py",
     "wrench_runtime/prefill.py",
     "model.safetensors or model-*.safetensors",
     "wrench-package.json"

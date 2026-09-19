@@ -45,6 +45,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         runtime_dir.mkdir()
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", runtime_dir / "prefill.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
         (runtime_dir / "__init__.py").write_text("\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n", encoding="utf-8")
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
@@ -86,6 +87,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "runtime_files": [
                 "tokenization_wrench.py",
                 "wrench_prefill.py",
+                "wrench_mechanical.py",
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
             ],

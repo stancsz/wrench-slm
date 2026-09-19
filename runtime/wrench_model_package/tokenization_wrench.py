@@ -18,11 +18,13 @@ try:
     # Transformers dynamic modules preserve this relative dependency when the
     # model directory is downloaded from the Hub.
     from .wrench_prefill import MechanicalPrefillIndex, build_dynamic_prefill
+    from .wrench_mechanical import mechanical_route
 except ImportError:
     _SOURCE_ROOT = Path(__file__).resolve().parents[2] / "src"
     if str(_SOURCE_ROOT) not in sys.path:
         sys.path.insert(0, str(_SOURCE_ROOT))
     from wrench_harness.prefill import MechanicalPrefillIndex, build_dynamic_prefill
+    from wrench_harness.mechanical import mechanical_route
 
 
 class WrenchTokenizer(PreTrainedTokenizerFast):
@@ -58,3 +60,8 @@ class WrenchTokenizer(PreTrainedTokenizerFast):
             if entry["card"]["reference_id"] == reference_id:
                 return entry["content"]
         raise KeyError(reference_id)
+
+    def wrench_mechanical_route(self, prompt: str) -> dict[str, Any] | None:
+        """Return a high-confidence proposal without a model call, if any."""
+
+        return mechanical_route(prompt)

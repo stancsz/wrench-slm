@@ -31,6 +31,7 @@ def main() -> int:
         "tokenizer_config.json",
         "tokenization_wrench.py",
         "wrench_prefill.py",
+        "wrench_mechanical.py",
         "wrench_runtime/prefill.py",
     ]
     for name in required:
@@ -57,6 +58,7 @@ def main() -> int:
         args.model_dir / "tokenizer_config.json",
         args.model_dir / "tokenization_wrench.py",
         args.model_dir / "wrench_prefill.py",
+        args.model_dir / "wrench_mechanical.py",
         args.model_dir / "wrench_runtime" / "prefill.py",
         *safetensors,
         package_manifest,

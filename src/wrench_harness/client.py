@@ -13,6 +13,7 @@ from .context import ContextError, ContextLedger
 from .toolbelt import track_recent_intent
 from .ttc import run_ttc_verification
 from .prefill import build_dynamic_prefill, build_lossless_structured_prefill
+from .mechanical import mechanical_route
 
 
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -104,6 +105,7 @@ def execute_local_qwen(
     dynamic_prefill: bool = False,
     dynamic_prefill_budget: int = 64_000,
     dynamic_hot_budget: int = 48_000,
+    mechanical_fast_path: bool = True,
 ) -> dict[str, Any]:
     """Call one local proposal endpoint and pass its text through the verifier."""
 
@@ -130,6 +132,40 @@ def execute_local_qwen(
         if isinstance(bounded, dict):
             return bounded
         request_messages, context_receipt = bounded
+    if mechanical_fast_path:
+        user_prompts = [
+            message.get("content")
+            for message in request_messages
+            if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str)
+        ]
+        mechanical = mechanical_route(user_prompts[-1] if user_prompts else "")
+        if mechanical is not None:
+            if mechanical.get("status") == "abstain":
+                return mechanical | {"mechanical_fast_path": True}
+            result = execute_model_output(json.dumps(mechanical, ensure_ascii=False), allowed_root, request_prompt=user_prompts[-1] if user_prompts else None)
+            if result.get("status") == "accepted":
+                proposal = mechanical
+                verifier_receipt = run_ttc_verification(proposal, user_prompts[-1] if user_prompts else None, result)
+                result["multi_pass_verifier"] = verifier_receipt
+                if not verifier_receipt["passed"]:
+                    return _abstain("multi_pass_verifier_failed") | {"multi_pass_verifier": verifier_receipt, "mechanical_fast_path": True}
+            if context_receipt is not None:
+                result["context_receipt"] = context_receipt
+            if capture_trace:
+                result["raw_model_output"] = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
+                result["parsed_proposal"] = mechanical if mechanical.get("schema") else None
+                result["request_parameters"] = {
+                    "temperature": 0,
+                    "max_tokens": max_tokens,
+                    "enable_thinking": False,
+                    "mechanical_fast_path": True,
+                }
+                if context_receipt is not None:
+                    result["request_parameters"]["context_session_hash"] = context_receipt["session_hash"]
+                    result["request_parameters"]["active_context_token_budget"] = active_context_token_budget
+                    result["request_parameters"]["context_message_count"] = len(request_messages)
+            result["mechanical_fast_path"] = True
+            return result
     if native_structured_prefill:
         try:
             request_messages, prefill_receipt = build_lossless_structured_prefill(request_messages)
