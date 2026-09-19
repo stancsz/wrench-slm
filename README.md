@@ -37,4 +37,6 @@ implementation is outside this repository under
 The phased execution plan is in [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
 See [docs/WRENCH_MODEL_TIERS.md](docs/WRENCH_MODEL_TIERS.md) for current paths,
 selection guidance, and measured guarded comparisons.
+See [docs/MODEL_ARTIFACT_TRANSFER.md](docs/MODEL_ARTIFACT_TRANSFER.md) for the
+private Git LFS checkpoint and 5060TI synchronization procedure.
 Phase evidence is kept under `phases/`; large local datasets remain outside Git.
