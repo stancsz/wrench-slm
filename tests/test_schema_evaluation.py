@@ -1,4 +1,5 @@
 from tools.evaluate_schema_adapter import score_case
+from wrench_harness import execute_model_output
 
 
 def _row(target: str, *, status: str = "accepted", reason: str | None = None) -> dict:
@@ -48,3 +49,9 @@ def test_boundary_refusal_requires_expected_reason_when_declared():
     right = score_case(row, {"status": "abstain", "fallback_reason": "action_not_allowlisted"})
     assert wrong["correct_outcome"] is False
     assert right["correct_outcome"] is True
+
+
+def test_out_of_domain_request_is_rejected_even_with_safe_looking_proposal(tmp_path):
+    proposal = '{"schema":"wrench.proposal.v1","action":"patch_draft","files":["README.md"],"review_only":true,"diff":"--- a/README.md\\n+++ b/README.md\\n@@ -1 +1 @@\\n-old\\n+new\\n"}'
+    result = execute_model_output(proposal, tmp_path, request_prompt="Build a React component with state and styling.")
+    assert result["fallback_reason"] == "task_family_not_allowlisted"

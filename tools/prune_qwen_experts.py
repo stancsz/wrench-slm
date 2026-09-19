@@ -89,7 +89,10 @@ def prune_checkpoint(
         if len(counts) != 1:
             raise ValueError("all routes must retain the same expert count")
         retained_count = counts.pop()
-        if retained_count < top_k:
+        target_top_k = int(selection.get("target_num_experts_per_tok", top_k))
+        if target_top_k <= 0 or target_top_k > retained_count:
+            raise ValueError("target_num_experts_per_tok must be positive and no greater than retained experts")
+        if retained_count < top_k and "target_num_experts_per_tok" not in selection:
             raise ValueError("retained expert count must not be below num_experts_per_tok")
         if any(len(set(values)) != len(values) for values in route_selections.values()):
             raise ValueError("selection receipt contains duplicate expert indices")
@@ -102,6 +105,7 @@ def prune_checkpoint(
             raise ValueError("expert indices must be unique")
         if not expert_indices or min(expert_indices) < 0 or max(expert_indices) >= num_experts:
             raise ValueError("expert indices must be in the source expert range")
+        target_top_k = top_k
         if len(expert_indices) < top_k:
             raise ValueError("retained expert count must not be below num_experts_per_tok")
         retained_count = len(expert_indices)
@@ -172,7 +176,7 @@ def prune_checkpoint(
 
     output_config = copy.deepcopy(config)
     output_config.setdefault("text_config", {})["num_experts"] = retained_count
-    output_config["text_config"]["num_experts_per_tok"] = top_k
+    output_config["text_config"]["num_experts_per_tok"] = target_top_k
     (output / "config.json").write_text(json.dumps(output_config, indent=2) + "\n", encoding="utf-8")
     for path in source.iterdir():
         if not path.is_file() or path.name in {"config.json", "model.safetensors.index.json"} or path.suffix == ".safetensors":

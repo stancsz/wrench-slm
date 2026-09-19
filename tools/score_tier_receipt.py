@@ -76,7 +76,7 @@ def score(receipt_path: Path, cases_path: Path, root: Path, output: Path, adapte
             raw_proposal = None
         adapted_proposal = _adapt_generic_tool(raw_proposal) if adapter == "generic-tool" else raw_proposal
         adapted_content = json.dumps(adapted_proposal, separators=(",", ":")) if adapted_proposal is not None else raw_content
-        parsed = execute_model_output(adapted_content, str(root.resolve()))
+        parsed = execute_model_output(adapted_content, str(root.resolve()), request_prompt=case.get("prompt"))
         try:
             observed_proposal = adapted_proposal
         except (TypeError, json.JSONDecodeError):

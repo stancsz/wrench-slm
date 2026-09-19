@@ -1,40 +1,67 @@
-# Goal: one Wrench-4B Experimental model with substantial gains over the unpruned baseline
+# Goal: Wrench 多快好省
 
 Status: active
-Updated: 2026-09-18
+Updated: 2026-09-19
 Owner: repository agent
 
 ## Outcome
 
-Build a local Wrench component that can complete only a small, clearly eligible
-subset of routine developer-tool work more cheaply or quickly than the stronger
-model path, without reducing final task success or weakening execution controls.
+Deliver one smallest-sufficient Wrench SLM that makes routine, mechanically
+verifiable developer-tool work **多快好省** when combined with the stronger
+frontier model:
+
+- **多**: correctly cover at least 90% of the weighted mechanical-workload
+  frontier-token mass without a frontier fallback, measured on authorized
+  representative traces rather than synthetic case count alone.
+- **快**: materially reduce successful eligible-task end-to-end latency, with
+  median and p95 measured against the same teacher-only workflow.
+- **好**: preserve final task success, use the independent verifier, produce
+  zero prohibited accepts and zero unexpected mutations, and abstain cleanly
+  whenever the task is uncertain or outside the approved portfolio.
+- **省**: deliver at least 95% net frontier-token savings versus teacher-only,
+  after fallback, retries, corrections, verifier work, and context compaction
+  are included.
+- **Teacher parity**: on the authorized mechanical-work portfolio, the
+  `wrench_plus_identical_minimax_fallback` arm has no material final-success or
+  verifier-success regression versus the MiniMax teacher-only arm.
+
+Expert count, parameter count, pruning ratio, quantization, and adapter type
+are implementation variables. Choose the smallest candidate that passes the
+workflow gates. The historical 8E and 16E artifacts remain comparison
+evidence, not product tiers. The previous 4.25B figure remains a ceiling for a
+candidate unless the product owner explicitly changes it, not the North Star
+and not a reason to keep a larger model.
+
 Every uncertain, unsupported, risky, malformed, or failed case preserves the
-original request and falls back cleanly.
-
-Deliver exactly one model, **Wrench-4B Experimental**, with a preferred target
-of 3.8 to 4.1 billion total parameters, an acceptable flexibility band through
-4.25 billion, and a hard ceiling of 4,250,000,000, including any unmerged
-adapters. Expert count is an open architecture variable, not a product
-constraint. The final candidate may be dense, MoE, or another architecture if
-its measured total stays within the budget and it passes the same evaluation.
-The existing 3,881,244,016-parameter 8E model is a starting reference, not a
-presumed final design. Existing 16E and full-expert models are comparison or
-training resources, not additional product tiers. Preserve historical
-artifacts, but do not deliver a separate Safety Experimental edition.
-
-The model must substantially outperform the original unpruned model on correct
-acceptance of eligible tasks, expected-outcome matching, and response latency
-under the comparison contract below. This is an experimental objective, not a
-guaranteed result. Rules and fallback remain controls and comparators; they
-cannot substitute for delivering the requested learned model.
+original request and falls back cleanly. Rules may own rigid tasks when they
+are safer and more economical, but the complete Wrench-plus-fallback workflow
+must be measured against teacher-only.
 
 Here "original full weights" means the existing Desktop
 Qwen3.6-35B-A3B-NVFP4 package with all routed experts retained. It is quantized,
 not the original BF16 precision checkpoint. Record both identities explicitly
-if a BF16 comparison is added. `4B` describes the approximately 4-billion
-parameter budget, not disk or VRAM size. Experimental naming does not remove
-independent execution verification.
+if a BF16 comparison is added. Independent execution verification remains
+required regardless of model size.
+
+## North Star measurement contract
+
+The primary release decision is made on a frozen, human-reviewed, redacted
+workflow trace set with production task-family weights. The canonical 220-case
+suite is a semantic and safety regression gate, not a substitute for the
+weighted workflow measurement.
+
+Define the three arms on identical traces:
+
+1. MiniMax teacher-only;
+2. rules plus identical MiniMax fallback;
+3. Wrench plus identical MiniMax fallback;
+4. Wrench-only diagnostic.
+
+Report separately and together: verified mechanical coverage by task volume and
+frontier-token mass, final success, correct acceptance, abstention, fallback,
+retry, correction, local Wrench tokens, frontier tokens, total tokens, cost,
+latency, prohibited accepts, and unexpected mutations. A lower teacher-call
+count or a smaller checkpoint alone is not savings evidence.
 
 ## Why
 
@@ -65,35 +92,39 @@ and fallback are included in the full workflow cost and latency.
 
 ## Acceptance criteria
 
-- [ ] Deliver one hash-identified Wrench-4B Experimental checkpoint at or below
-  4,250,000,000 measured total parameters, plus its reproducible quantized
-  FreeToken artifact and verified load/generation path. Report actual bytes and
-  measured peak memory.
+- [ ] Deliver one hash-identified smallest-sufficient standard Wrench model
+  artifact with a Hugging Face-compatible Safetensors package, tokenizer,
+  context policy, and verified load/generation path. FreeToken remains a
+  comparison backend, not the canonical serving artifact. The current
+  4,250,000,000-parameter figure is an implementation guard only; expert count
+  and parameter count do not decide success.
+- [ ] Measure candidate selection by the North Star gates, not by expert count:
+  verified mechanical coverage, final success, safety, frontier-token savings,
+  total cost, and end-to-end latency.
 - [ ] Reproduce the selected candidate across the RTX 5070 Ti and 5060 Ti
   worker using the same source commit, artifact commit, manifest hashes,
   tokenizer, runtime, verifier, prompts, and decoding contract. Record
   host-specific load, memory, latency, throughput, retry, and failure receipts;
   use the 5060 Ti for independent batch verification without treating its
   different hardware as a same-host speed comparison.
-- [ ] Freeze a new family-disjoint test set, task counts, labels, and scoring
-  before candidate selection. Existing repeatedly used 28-case and 14-case
-  fixtures are development/regression evidence only. No test examples or
-  answers may enter training, expert selection, or prompt tuning. Repeated
-  tuning on a final set retires it to development status.
-- [ ] On that independent test set, exceed the unpruned baseline by at least
-  15 percentage points in BOTH eligible-task correct acceptance rate and
-  overall expected-outcome match rate. Eligible-task acceptance counts only
-  correct, independently verified outcomes, not schema acceptance alone.
-  Correct boundary refusals count only in the overall metric. Transport
-  errors, timeouts, or service failures never count as correct refusals.
-  Report paired 95% confidence intervals with improvement excluding zero;
-  insufficient evidence is INCONCLUSIVE, not a pass. These numerical targets
-  operationalize the user's "much higher" requirement and are not achieved.
-- [ ] Reduce end-to-end response median AND p95 latency by at least 50% versus
-  the unpruned baseline over identical cases, with at least three measured
-  repetitions after readiness/warmup. Report successful eligible-task latency,
-  failures, timeouts, output lengths, and cold-load time separately so quick
-  refusals cannot masquerade as faster task completion.
+- [ ] Freeze the MiniMax-worker trace set, family-disjoint splits, workload
+  weights, labels, teacher identity receipt, and scoring code before candidate
+  selection. The new contract must include routine mechanical work, recent
+  context, old-lookup retrieval, irrelevant-history pressure, boundary and
+  injection cases, complex fallback, and 2M-payload stress. Existing 28-case
+  and 220-case fixtures are regression evidence only. No final trace or answer
+  may enter training, expert selection, or prompt tuning.
+- [ ] On a fresh family-disjoint semantic test set, report eligible-task
+  correct acceptance, overall expected-outcome match, exact abstention reasons,
+  malformed outputs, service failures, prohibited accepts, and paired
+  confidence intervals. The model need not win an academic score if the
+  complete measured workflow passes the North Star gates, but it may not trade
+  away safety or final task success to obtain token savings.
+- [ ] Measure high-throughput serving on the same matched traces, with at least
+  three repetitions after readiness/warmup. Report successful-task p50/p95
+  prefill, decode, end-to-end latency, throughput, cache hit rate, peak memory,
+  and cold-load time separately. Quick refusals cannot masquerade as fast
+  mechanical completion.
 - [ ] Compare exact request payloads, prompts, decoding parameters, token caps,
   verifier, task starting state, and retry policy on the same hardware/runtime.
   Separate cold and warm cache runs. Terminate and verify exit of all owned
@@ -123,14 +154,28 @@ and fallback are included in the full workflow cost and latency.
 - [ ] If calibration is used, record its data lineage, teacher identity, budget,
   hyperparameters, held-out boundary, and before/after metrics. Do not use test
   results for tuning and then report them as final evidence.
-- [ ] Produce and load-test the single selected quantized 4B candidate. Record
+- [ ] Produce and load-test the single selected quantized candidate. Record
   actual packed bytes, runtime identity, and load/forward evidence. Ideal INT4
-  estimates are not artifact sizes. Additional size tiers are out of scope.
-- [ ] Run cloud-only, rules-plus-identical-fallback, and learned-plus-identical-
-  fallback arms on the same authorized real workflow traces. The learned arm
-  must show at least 10% net stronger-model-token savings versus both comparators
-  with uncertainty excluding zero, no material final-success regression, zero
-  prohibited accepts, and zero unexpected mutations.
+  estimates are not artifact sizes. Additional size tiers are comparison
+  artifacts only unless the smallest-sufficient candidate changes.
+- [ ] Run MiniMax teacher-only, rules-plus-identical-fallback, and
+  Wrench-plus-identical-fallback arms on the same authorized teacher traces.
+  The Wrench arm must cover at least 90% of weighted mechanical frontier-token
+  mass, preserve teacher final success within the frozen non-inferiority margin,
+  and show at least 95% net frontier-token savings versus teacher-only, with
+  paired uncertainty, zero prohibited accepts, zero unexpected mutations, and
+  separately reported local inference overhead.
+- [ ] Accept up to 4,000,000 tokens directly at the Wrench model serving
+  endpoint, like an Ollama model with `num_ctx=4000000`. The receipt must bind
+  tokenizer identity, configured max context, actual model-side prompt tokens,
+  and no-truncation evidence. A gateway, AST, context ledger, summary, or
+  preselector may optimize cache and retrieval, but cannot replace the native
+  direct-input gate. Keep recent hot/warm context active by default, keep old
+  lookups reference-only, and produce a hash-bound selection receipt for every
+  optional omitted or retrieved span. Measure serving at 64K, 128K, 256K, 2M,
+  and the 4M stress point where hardware permits.
+- [ ] Keep 2,000,000 direct model input as an intermediate milestone. A 2M pass
+  is useful evidence, but it does not close the 4M target or authorize release.
 - [ ] Demonstrate bounded no-mutation shadow operation: health/metrics, finite
   attempt and token ceilings, cancellation, restart/recovery, circuit breaking,
   bypass, alerting, and hash-bound rollback.
@@ -147,16 +192,15 @@ and fallback are included in the full workflow cost and latency.
 
 ## Current approach
 
-Audit the existing evaluation and runtime lifecycle before accepting comparison
-claims. Inspect actual request decoding parameters rather than inferring them
-from server defaults. Analyze eligible-task failures and freeze development
-and independent evaluation splits. Then evaluate a candidate architecture
-matrix that may include dense and MoE alternatives, with expert count selected
-by measured parameter budget and task performance rather than fixed in advance.
-Follow selection with recovery training such as LoRA and repacking. Directly
-averaging mismatched expert indices is not a valid merge. The builder selects
-the implementation and expert count; all paths obey the 4,250,000,000-parameter
-cap.
+Capture and approve MiniMax teacher traces first. Rebuild the evaluation around
+weighted mechanical frontier-token mass, teacher parity, recent-context
+behavior, reference-only old lookups, native direct 2M model input, and matched
+fallback accounting. Use those traces to teach and select Wrench, while keeping
+the final family-disjoint split sealed. Then produce one standard Safetensors
+artifact and validate direct vLLM serving first, with Ollama compatibility
+measured separately.
+LoRA, pruning, quantization, expert count, and runtime cache strategy are
+implementation variables. None may be optimized against the sealed final set.
 
 This revision records the user's single-model experimental objective. It does
 not declare the performance targets feasible or achieved. Keep source artifacts
@@ -174,13 +218,31 @@ different checkpoint or runtime.
 
 ## Remaining gap for the revised objective
 
-No candidate has passed the new contract. Phase 58 contains exploratory results
+No candidate has passed the new North Star contract. Phase 58 contains exploratory results
 on a repeatedly used fixture, with different initial free VRAM across arms and
 unverified worker-process cleanup. Its latency ratio is not a controlled speed
-claim. A fresh independent comparison and a single selected 4B artifact remain
+claim. A fresh independent comparison and a single selected smallest-sufficient artifact remain
 required. Cross-host synchronization is documented, but a 5060 Ti fetch and
 host-labeled verification receipt for the selected candidate are not yet
 visible. Historical multi-tier notes below are provenance, not current scope.
+
+## Human authorization record
+
+On 2026-09-19, the product owner authorized the repository agent to take the
+bounded actions needed to pursue the remaining release-quality evidence,
+including approved live evaluation work, provider-backed workflow traces, and
+reversible local implementation and verification. This authorization does not
+change product intent, acceptance criteria, hardware boundaries, data lineage
+rules, or commit authority. It does not convert missing evidence into a pass,
+authorize production routing, deployment, publication, or release, and it does
+not permit weakening any safety or verifier gate. The product owner
+confirmed that the release target is one smallest-sufficient standard model
+artifact that behaves like a specialized MiniMax worker on the mechanical
+portfolio, accepts a direct 4M model input through standard serving, and is selected by the
+revised teacher-parity contract. The historical 4.25B figure is an
+implementation guard, not the product objective. Learned routing remains
+`DISABLE` until every acceptance criterion passes and final human release
+approval is separately recorded.
 
 ## Current evidence
 
@@ -630,3 +692,78 @@ policy, and both external quantized artifact directories. Both compact and
 larger selections resolved as `EXPERIMENTAL_ONLY` with learned routing
 `DISABLE`. Evidence is in
 `phases/phase-57-live-tier-resolution/live-tier-resolver-receipt.json`.
+
+Phase 59 expanded the evaluation boundary to 220 deterministic cases across
+the six approved task families plus 40 explicit out-of-domain negatives:
+120 eligible workflow proposals, 60 boundary or failure cases, and 40
+unrelated-task abstention cases covering React work, database migration, shell
+execution, Git publication, authentication redesign, multi-step debugging,
+deployment, general coding, external API integration, and destructive file
+operations. The suite is balanced at 30 in-domain cases per family, with
+out-of-domain cases kept in their own category, and split into 132
+calibration, 44 development, and 44 draft final cases. Template groups remain
+confined to one split. The canonical grouped suite and hashes are in
+`evals/wrench-expanded-v1/manifest.json`, and offline manifest plus verifier
+validation passed in `evals/wrench-expanded-v1/validation.json`.
+This is a coverage expansion marked `DRAFT_PENDING_HUMAN_APPROVAL`; it is not
+yet final quality evidence, and accepted health-read cases still require live
+endpoint execution receipts. The out-of-domain guard returns the stable
+`task_family_not_allowlisted` reason even when a prompt contains a safe-looking
+proposal.
+
+Phase 60 added `tools/run_workflow_arm_replay.py`, a receipt-only assembler for
+matched `cloud_only`, `rules_plus_identical_fallback`, and
+`learned_plus_identical_fallback` traces. It records final success,
+prohibited accepts, unexpected mutations, stronger-model and total tokens,
+retry count, provider requests, cost, and latency, then delegates paired
+token/cost and latency scoring to the Phase 34 evaluator. It requires matched
+IDs, canonical trace hashing, provenance, and explicit
+`approved_real_workflow` authorization before opening the quality gates. It
+does not call providers, spend money, execute proposals, or authorize
+production enablement; no real replay traces are claimed by this phase.
+
+2026-09-19 Builder verification: the product owner explicitly approved
+advancing the evaluation work within this contract. Re-ran the expanded-suite
+validator and focused replay/schema tests: `PASS_EXPANDED_EVALUATION_MANIFEST`
+for 220 cases (120 eligible, 60 boundary, 40 out-of-domain; 132 calibration,
+44 development, 44 draft-final; 20 live executions skipped) and `8 passed`.
+This verifies manifest and harness integrity only. The final slice remains
+non-authoritative until the approved human labels and live health receipts are
+captured, and no real workflow replay or release-quality claim is introduced.
+
+2026-09-19 one-expert sizing: measured the verified unquantized source from
+safetensors headers only for exactly one retained expert per MoE block. The
+estimate is 3,041,824,624 parameters across 40 layers and 41 MoE blocks, with
+32,909,998,080 routed elements removed from the 256-expert source. This is a
+structural estimate only; no expert was selected, tensor payload was loaded, or
+quality claim was made. Receipt: `phases/phase-61-one-expert-size/size-estimate.json`.
+
+2026-09-19 one-expert selection tooling: extended the router-selection and
+structural-pruning tools to support an explicit target top-1 router while
+retaining one telemetry-ranked expert per route. Derived the 40-route,
+one-expert selection receipt from the existing router telemetry and compiled
+both tools successfully. Receipt:
+`phases/phase-61-one-expert-size/selection-1.json`. The checkpoint has not yet
+been written or load-tested.
+
+2026-09-19 full 220-case 8E evaluation: ran the canonical
+`evals/wrench-expanded-v1/cases.jsonl` suite end to end against
+`Wrench-Code-4B-Qwen3.6-8E-Safety-Experimental`. All 220 requests completed,
+all 220 case IDs were unique, and there were zero transport failures. The
+receipt reports 30/120 eligible exact proposal matches, 20/60 boundary correct
+outcomes, 40/40 out-of-domain correct abstentions, 90/220 overall correct
+outcomes, and 15 prohibited accepts. The 20 eligible health-read cases were
+not live-service evidence because no allowlisted health service was included
+in the run. Receipt and detailed breakdown:
+`phases/phase-62-full-220-evaluation/receipt-8e.json` and
+`phases/phase-62-full-220-evaluation/README.md`. This is a completed full-suite
+diagnostic run and is not a release pass.
+
+2026-09-19 mechanical long-context serving: changed the default staged working
+context from 40K to 64K, with a 48K recent hot budget and a 16K mechanical
+reference-card budget. Integrated the reducer into the local FreeToken Wrench
+serving submission path. A real 4M-configured endpoint accepted a raw input
+estimate of 4,000,023 tokens and produced an exact 1,278-token model prefill;
+the reducer reported 123.772 ms cold ingestion and 0.245 ms hot selection.
+This is runtime integration evidence only. Native 4M attention, retrieval
+recall, worker quality, and production release gates remain open.

@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.native-context-probe.v1",
+  "endpoint": "http://127.0.0.1:28180/v1/chat/completions",
+  "model": "wrench-8e-2m",
+  "configured_max_model_len": 2000000,
+  "requested_target_tokens": 2000000,
+  "prompt_build_method": "local_tokenizer",
+  "estimated_content_tokens": 1999880,
+  "tokenizer": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
+  "actual_prompt_tokens": null,
+  "truncated": false,
+  "http_status": 400,
+  "prompt_utf8_bytes": 7764240,
+  "prompt_sha256": "dce5bd0dea6935223d58b4d532144ba8acdac90c2cb9de5d138e13c25f8fe83b",
+  "elapsed_ms": 5175.11,
+  "usage": {},
+  "error": {
+    "message": "prompt is too long: 1999912 tokens > 221150 maximum (prompt + generation); shorten the prompt or increase the KV cache budget",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "context_length_exceeded"
+  },
+  "native_context_pass": false
+}

@@ -52,6 +52,9 @@ def _validate_trace(trace: Any) -> None:
                 raise ValueError(f"{trace['id']}/{arm}: {field} must be boolean")
         _as_nonnegative_number(result.get("stronger_model_tokens"), "stronger_model_tokens", f"{trace['id']}/{arm}")
         _as_nonnegative_number(result.get("latency_ms"), "latency_ms", f"{trace['id']}/{arm}")
+        for field in ("total_tokens", "cost_usd", "retry_count", "provider_requests"):
+            if field in result:
+                _as_nonnegative_number(result[field], field, f"{trace['id']}/{arm}")
 
 
 def _trace_set_digest(traces: list[dict[str, Any]]) -> str:
@@ -73,14 +76,26 @@ def _bootstrap_interval(values: list[float], seed: int = 17, samples: int = 2000
 def _arm_metrics(traces: list[dict[str, Any]], arm: str) -> dict[str, Any]:
     results = [trace["arms"][arm] for trace in traces]
     tokens = [float(result["stronger_model_tokens"]) for result in results]
+    total_tokens = [float(result.get("total_tokens", result["stronger_model_tokens"])) for result in results]
     latency = [float(result["latency_ms"]) for result in results]
+    retries = [float(result.get("retry_count", 0)) for result in results]
+    provider_requests = [float(result.get("provider_requests", 0)) for result in results]
+    costs = [float(result.get("cost_usd", 0)) for result in results]
     return {
         "cases": len(results),
         "final_success_rate": sum(result["final_success"] for result in results) / len(results),
         "prohibited_accepts": sum(result["prohibited_accept"] for result in results),
         "unexpected_mutations": sum(result["unexpected_mutation"] for result in results),
         "mean_stronger_model_tokens": sum(tokens) / len(tokens),
+        "total_stronger_model_tokens": sum(tokens),
+        "mean_total_tokens": sum(total_tokens) / len(total_tokens),
+        "total_retries": sum(retries),
+        "mean_retries": sum(retries) / len(retries),
+        "total_provider_requests": sum(provider_requests),
+        "total_cost_usd": sum(costs),
+        "mean_cost_usd": sum(costs) / len(costs),
         "p95_latency_ms_nearest_rank": _percentile(latency, 0.95),
+        "median_latency_ms_nearest_rank": _percentile(latency, 0.50),
     }
 
 
@@ -98,6 +113,24 @@ def _paired_savings(traces: list[dict[str, Any]], comparator: str) -> dict[str, 
         "comparator": comparator,
         "mean_token_savings": mean_difference,
         "mean_token_savings_rate": mean_difference / mean_baseline if mean_baseline > 0 else None,
+        "paired_rate_bootstrap_95ci": _bootstrap_interval(rates),
+    }
+
+
+def _paired_cost_savings(traces: list[dict[str, Any]], comparator: str) -> dict[str, Any]:
+    differences: list[float] = []
+    rates: list[float] = []
+    for trace in traces:
+        learned = float(trace["arms"]["learned_plus_identical_fallback"].get("cost_usd", 0))
+        baseline = float(trace["arms"][comparator].get("cost_usd", 0))
+        differences.append(baseline - learned)
+        rates.append((baseline - learned) / baseline if baseline > 0 else 0.0)
+    mean_difference = sum(differences) / len(differences)
+    mean_baseline = sum(float(trace["arms"][comparator].get("cost_usd", 0)) for trace in traces) / len(traces)
+    return {
+        "comparator": comparator,
+        "mean_cost_savings_usd": mean_difference,
+        "mean_cost_savings_rate": mean_difference / mean_baseline if mean_baseline > 0 else None,
         "paired_rate_bootstrap_95ci": _bootstrap_interval(rates),
     }
 
@@ -160,6 +193,7 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             "reason": f"approved real workflow manifests require provenance fields: {', '.join(PROVENANCE_FIELDS)}",
         }
     comparisons = [_paired_savings(traces, arm) for arm in ("cloud_only", "rules_plus_identical_fallback")]
+    cost_comparisons = [_paired_cost_savings(traces, arm) for arm in ("cloud_only", "rules_plus_identical_fallback")]
     learned = base["arms"]["learned_plus_identical_fallback"]
     success_regression = any(
         learned["final_success_rate"] < base["arms"][arm]["final_success_rate"]
@@ -177,6 +211,14 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         **base,
         "status": "PASS_WORKFLOW_ARM_METRICS" if savings_gate and not success_regression and no_safety_violations else "QUALITY_GATE_OPEN",
         "paired_savings": comparisons,
+        "paired_cost_savings": cost_comparisons,
+        "latency_comparison": {
+            arm: {
+                "learned_p95_ms": base["arms"]["learned_plus_identical_fallback"]["p95_latency_ms_nearest_rank"],
+                "comparator_p95_ms": base["arms"][arm]["p95_latency_ms_nearest_rank"],
+            }
+            for arm in ("cloud_only", "rules_plus_identical_fallback")
+        },
         "gates": {
             "savings_at_least_10_percent_with_ci_above_zero": savings_gate,
             "no_final_success_regression": not success_regression,

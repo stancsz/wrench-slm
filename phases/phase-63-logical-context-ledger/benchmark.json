@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.logical-context-ledger-benchmark.v1",
+  "status": "PASS_LOGICAL_CONTEXT_MECHANICS_ONLY",
+  "provider_called": false,
+  "model_called": false,
+  "native_attention_tested": false,
+  "materialized_content": false,
+  "token_counter_name": "caller_explicit_counts",
+  "segments": 20000,
+  "logical_token_count": 2000000,
+  "active_token_budget": 4000,
+  "selected_token_count": 4000,
+  "omitted_segment_count": 19960,
+  "top_match": "segment-00010000",
+  "session_hash": "aad03722d2435c58afc3b3beb6ca7c80fd93288f270dc1f1c1ec4cccf6f919f0",
+  "timing_ms": {
+    "ingest_and_index": 158.276,
+    "indexed_search": 0.061,
+    "cold_session_hash": 93.666,
+    "warm_bounded_assembly_and_receipt": 64.597
+  },
+  "evidence_boundary": [
+    "This is a provider-free ledger benchmark.",
+    "Explicit token counts represent logical accounting, not materialized tokenizer output.",
+    "It does not establish model quality, native 2M attention, provider latency, or production value."
+  ]
+}

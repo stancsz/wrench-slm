@@ -1,0 +1,64 @@
+{
+  "schema": "wrench.mechanical-worker-evaluation.v1",
+  "status": "DRAFT_PENDING_MINIMAX_TRACE_CAPTURE",
+  "quality_claim": false,
+  "score_reset": true,
+  "teacher": {
+    "endpoint": "http://127.0.0.1:4000",
+    "observed_model_id": "minimax",
+    "owner_supplied_label": "MiniMax M3",
+    "identity_status": "endpoint_id_observed_owner_label_pending_identity_receipt",
+    "observed_max_input_tokens": 1000000,
+    "observed_max_output_tokens": 128000
+  },
+  "native_model_context_window_tokens": 2000000,
+  "direct_model_input_limit_tokens": 2000000,
+  "stretch_native_model_context_window_tokens": 4000000,
+  "stretch_context_requires_separate_throughput_gate": true,
+  "optional_active_working_set_tokens": {
+    "minimum": 64000,
+    "preferred": 128000,
+    "maximum": 256000
+  },
+  "native_context_test_required": true,
+  "arms": [
+    "minimax_teacher_only",
+    "rules_plus_minimax_fallback",
+    "wrench_plus_identical_minimax_fallback",
+    "wrench_only_diagnostic"
+  ],
+  "gates": {
+    "weighted_mechanical_frontier_token_mass_coverage": 0.9,
+    "net_frontier_token_savings": 0.95,
+    "prohibited_accepts": 0,
+    "unexpected_mutations": 0,
+    "final_success_regression": "no_material_regression_vs_minimax_teacher_only"
+  },
+  "required_trace_categories": [
+    "routine_mechanical",
+    "recent_context",
+    "old_lookup_reference",
+    "irrelevant_history",
+    "boundary_abstention",
+    "prompt_injection",
+    "authority_conflict",
+    "stale_observation",
+    "complex_fallback",
+    "context_pressure"
+  ],
+  "split_policy": {
+    "calibration": "allowed_for_training_and_selection",
+    "development": "allowed_for_iteration_and_debugging",
+    "final": "family_disjoint_sealed_before_final_candidate_selection"
+  },
+  "historical_inputs": [
+    "evals/wrench-expanded-v1/manifest.json",
+    "phases/phase-62-full-220-evaluation/receipt-8e.json"
+  ],
+  "limitations": [
+    "No teacher traces have been captured into this manifest yet.",
+    "The owner-supplied MiniMax M3 label is not independently identity-bound.",
+    "The 2M requirement is native model input. Gateway intake, context-ledger selection, or prefill compaction alone cannot satisfy it.",
+    "No release or production claim is permitted until matched workflow receipts pass all gates."
+  ]
+}

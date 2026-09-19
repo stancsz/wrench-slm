@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.mechanical-map-reduce-receipt.v1",
+  "status": "IMPLEMENTED_TESTED_HOT_PATH_PROVISIONAL",
+  "raw_token_count": 4000013,
+  "model_prefill_token_count": 14879,
+  "compression_ratio": 0.00372,
+  "reference_card_count": 64,
+  "deduplicated_reference_count": 0,
+  "cold_ingest_ms": 5850.252,
+  "hot_selection_ms": 4.826,
+  "llm_used_for_reduction": false,
+  "quality_claim": false,
+  "native_4m_claim": false,
+  "next_required": [
+    "run against varied real or authorized redacted traces",
+    "measure false omission and lookup recall",
+    "bind the plan to direct serving and verifier receipts",
+    "measure model prefill and final mechanical-worker parity separately"
+  ]
+}

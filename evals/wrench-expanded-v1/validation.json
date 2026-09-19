@@ -1,0 +1,32 @@
+{
+  "schema": "wrench.expanded-evaluation-validation.v1",
+  "status": "PASS_EXPANDED_EVALUATION_MANIFEST",
+  "quality_claim": false,
+  "counts": {
+    "case_count": 220,
+    "eligible_case_count": 120,
+    "boundary_case_count": 60,
+    "out_of_domain_case_count": 40,
+    "family_counts": {
+      "git_read_status": 30,
+      "health_read": 30,
+      "literal_search": 30,
+      "out_of_domain": 40,
+      "patch_draft": 30,
+      "read_file": 30,
+      "read_lines": 30
+    },
+    "split_counts": {
+      "calibration": 132,
+      "development": 44,
+      "final": 44
+    },
+    "live_execution_skipped": 20,
+    "offline_execution_checked": 200
+  },
+  "errors": [],
+  "limitations": [
+    "Live health endpoints were not exercised by this offline validation.",
+    "Passing this validator proves manifest integrity and verifier behavior, not model quality."
+  ]
+}

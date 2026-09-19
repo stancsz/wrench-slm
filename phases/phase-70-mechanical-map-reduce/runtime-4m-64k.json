@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.runtime-mechanical-prefill-receipt.v1",
+  "status": "INTEGRATED_RUNTIME_PROVISIONAL",
+  "model": "wrench-8e-native4m",
+  "configured_context_tokens": 4000000,
+  "raw_input_tokens": 4000023,
+  "raw_input_tokens_kind": "word_estimate",
+  "model_prefill_tokens": 1278,
+  "effective_working_context_budget": 64000,
+  "hot_token_budget": 48000,
+  "reference_index_budget": 16000,
+  "compression_ratio": 0.000185,
+  "reference_card_count": 1,
+  "server_mechanical_ingest_ms": 123.772,
+  "server_hot_selection_ms": 0.245,
+  "full_request_latency_ms": 1115.18,
+  "completion_tokens": 7,
+  "transport_status": 200,
+  "native_input_claim": false,
+  "quality_claim": false,
+  "notes": [
+    "The raw payload was accepted by the 4M-configured endpoint.",
+    "The reducer ran inside the FreeToken serving submission path before TokenizeMsg.",
+    "The model saw the staged working set, not native 4M attention.",
+    "Cold ingestion is above the 100ms target in this multi-pass stress case; cached hot selection is below 100ms.",
+    "Raw token count remains an estimate until exact frontend accounting is added for the un-staged payload."
+  ]
+}

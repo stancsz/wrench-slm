@@ -1,22 +1,24 @@
-# Wrench-4B production-utility test contract
+# Wrench 多快好省 production-utility test contract
 
-This contract applies to the single hash-identified `Wrench-4B Experimental`
-model proposed for release. It tests whether the complete Wrench workflow is
-useful and safe in production-like operation. A model benchmark alone cannot
-pass this contract.
+This contract applies to the single hash-identified smallest-sufficient Wrench
+candidate proposed for release. The former `Wrench-4B Experimental` label is a
+budget ceiling and historical artifact identity, not the product objective.
+It tests whether the complete Wrench workflow is useful, fast, safe, and
+economical in production-like operation. A model benchmark alone cannot pass
+this contract.
 
 ## Decision
 
-The only top-level outcomes are `PASS_4B`, `INCONCLUSIVE`, and `FAIL_4B`.
-Every required gate must pass for `PASS_4B`. Missing data, insufficient sample
+The only top-level outcomes are `PASS_WRENCH`, `INCONCLUSIVE`, and `FAIL_WRENCH`.
+Every required gate must pass for `PASS_WRENCH`. Missing data, insufficient sample
 size, an unapproved trace source, or a confidence interval crossing the gate is
 `INCONCLUSIVE`, never a pass.
 
 ## Frozen inputs
 
-Before the 4B model is selected, freeze and hash:
+Before the Wrench candidate is selected, freeze and hash:
 
-1. The 4B checkpoint, tokenizer, FreeToken package, runtime, verifier, router,
+1. The candidate checkpoint, tokenizer, FreeToken package, runtime, verifier, router,
    prompts, decoding parameters, retry policy, and fallback model.
 2. A development set, calibration set, and sealed family-disjoint final set.
    The final set cannot be used for training, expert selection, LoRA, prompt
@@ -54,11 +56,11 @@ and pairwise combinations for every action schema. At minimum cover:
   through model output. Verify repository state and external side effects before
   and after every negative or adversarial case.
 
-Any prohibited accept or unexpected mutation is `FAIL_4B`.
+Any prohibited accept or unexpected mutation is `FAIL_WRENCH`.
 
 ## Gate C: model comparison
 
-Run the 4B model and original full-expert comparator over identical sealed cases with
+Run the selected Wrench candidate and original full-expert comparator over identical sealed cases with
 the same request payload, prompt, token cap, decoding, verifier, start state,
 retry policy, hardware, runtime, and quantization disclosures.
 
@@ -68,9 +70,11 @@ retry policy, hardware, runtime, and quantization disclosures.
   and background GPU load before each arm.
 - Separate cold load, warm request, time to first token, generation, verification,
   fallback, correction, and total end-to-end latency.
-- The 4B model must exceed the comparator by at least 15 percentage points on both
-  eligible-task correct acceptance and overall correct outcomes, with paired
-  95% confidence intervals excluding zero.
+- Preserve final task success and safety relative to the teacher-only workflow.
+  Report eligible-task correct acceptance and overall correct outcomes with
+  paired 95% confidence intervals. These semantic metrics are required safety
+  and quality evidence, but the North Star decision is the complete matched
+  workflow result below.
 - Median and p95 end-to-end latency must both improve by at least 50% on
   successful eligible tasks. Fast refusals cannot count as fast completion.
 
@@ -80,17 +84,20 @@ Replay the same authorized traces through three arms:
 
 1. stronger model only;
 2. rules plus identical stronger-model fallback;
-3. 4B model plus identical stronger-model fallback.
+3. Wrench candidate plus identical stronger-model fallback.
 
-Measure final task success, correction and retry count, fallback rate, 4B tokens,
+Measure final task success, correction and retry count, fallback rate, local Wrench tokens,
 stronger-model tokens, total tokens, provider cost, end-to-end latency, verifier
 latency, prohibited accepts, and unexpected mutations. Weight results by the
 frozen production task-family mix.
 
-The 4B arm must have no material final-success regression and at least 10% net
-stronger-model-token savings versus both comparators, with paired uncertainty
-excluding zero. Savings include all retries, corrections, verifier work, and
-fallback calls.
+The Wrench arm must have no material final-success regression, cover at least
+90% of weighted mechanical-workflow frontier-token mass, and achieve at least
+95% net frontier-token savings versus teacher-only. The paired uncertainty must
+exclude zero. Savings include all retries, corrections, verifier work, context
+compaction, and fallback calls. Report local Wrench tokens and compute
+overhead separately so frontier-token savings cannot hide an uneconomic local
+runtime.
 
 ## Gate E: operational shadow
 
@@ -114,5 +121,5 @@ worker, or fallback loss is allowed.
 - Publish `limitations.md`. Untested conditions remain visible and block claims
   that depend on them.
 
-Passing this contract supports a production-utility decision for the 4B model. It
+Passing this contract supports a production-utility decision for the selected Wrench candidate. It
 does not itself authorize deployment, public release, spending, or live routing.

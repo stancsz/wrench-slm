@@ -25,6 +25,33 @@ MAX_MATCHES = 200
 MAX_DIFF_BYTES = 128 * 1024
 ALLOWED_HEALTH_HOSTS = {"127.0.0.1", "localhost", "::1"}
 ALLOWED_HEALTH_PATHS = {"/health", "/v1/models"}
+OUT_OF_DOMAIN_MARKERS = (
+    "react component",
+    "database migration",
+    "shell execution",
+    "run an arbitrary shell",
+    "shell command",
+    "git publication",
+    "commit the changes",
+    "push them to the remote",
+    "redesign authentication",
+    "authentication redesign",
+    "authentication and authorization",
+    "multi-step autonomous task",
+    "multi-step debugging",
+    "debug this failure across several files",
+    "deployment",
+    "deploy the service",
+    "production infrastructure",
+    "general code generation",
+    "implement a new feature",
+    "complete production code",
+    "external api integration",
+    "external api",
+    "destructive file operation",
+    "delete obsolete",
+    "permanently clean the repository",
+)
 
 
 def _abstain(reason: str, detail: str | None = None) -> dict[str, Any]:
@@ -237,6 +264,8 @@ def execute_model_output(
         return _abstain("model_output_invalid_json")
     if not isinstance(proposal, dict):
         return _abstain("model_output_not_object")
+    if isinstance(request_prompt, str) and any(marker in request_prompt.lower() for marker in OUT_OF_DOMAIN_MARKERS):
+        return _abstain("task_family_not_allowlisted")
     # Preserve the request's search semantics at the verifier boundary. A
     # model must not turn an explicitly requested regex search into a safe-
     # looking literal search simply by omitting the mode field.

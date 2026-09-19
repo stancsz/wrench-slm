@@ -1,0 +1,15 @@
+{
+  "schema": "wrench.qwen-runtime-check.v1",
+  "checkpoint": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-66-native-2m-config",
+  "model_type": "qwen3_5_moe",
+  "expected_transformers_class": "Qwen3_5MoeForConditionalGeneration",
+  "transformers_version": "4.57.1",
+  "transformers_class_available": false,
+  "import_error": null,
+  "torch_available": true,
+  "torch_error": null,
+  "metadata_status": "NOT_READY",
+  "inference_status": "NOT_READY",
+  "status": "NOT_READY",
+  "reason": "Installed Transformers does not expose the Qwen3.6 architecture."
+}

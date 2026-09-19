@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.native-serving-accounting-receipt.v1",
+  "model": "wrench-8e-native4m",
+  "requested_probe_tokens": 65536,
+  "accounted_prompt_tokens": 69458,
+  "completion_tokens": 63,
+  "uptime_s": 365,
+  "status": "STOPPED_PERFORMANCE_FAILURE",
+  "reason": "bounded-window engine served the request but exceeded the practical latency budget",
+  "receipt_id": "0ba5f3d5-7557-5c4a-89a8-677a00976b03",
+  "quality_claim": false,
+  "native_4m_claim": false
+}

@@ -1,0 +1,119 @@
+{
+  "schema": "wrench.expanded-evaluation-suite.v1",
+  "status": "HISTORICAL_REGRESSION_ONLY_SUPERSEDED_BY_MECHANICAL_WORKER_V1",
+  "quality_claim": false,
+  "case_count": 220,
+  "eligible_case_count": 120,
+  "boundary_case_count": 60,
+  "out_of_domain_case_count": 40,
+  "family_counts": {
+    "git_read_status": 30,
+    "health_read": 30,
+    "literal_search": 30,
+    "out_of_domain": 40,
+    "patch_draft": 30,
+    "read_file": 30,
+    "read_lines": 30
+  },
+  "category_counts": {
+    "boundary": 60,
+    "eligible": 120,
+    "out_of_domain": 40
+  },
+  "split_counts": {
+    "calibration": 132,
+    "development": 44,
+    "final": 44
+  },
+  "family_split_counts": {
+    "read_file": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "read_lines": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "literal_search": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "git_read_status": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "health_read": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "patch_draft": {
+      "calibration": 18,
+      "development": 6,
+      "final": 6
+    },
+    "out_of_domain": {
+      "calibration": 24,
+      "development": 8,
+      "final": 8
+    }
+  },
+  "hashes": {
+    "cases.jsonl": "54d06dff69c2a330fbba5ed13ba22817c287cb7ec384a59458eb4f5e291bb45a",
+    "calibration.jsonl": "9765a2d59a596e410479e7f08336f6a9a6f3eae25da086e3d5ade0819948fd7e",
+    "development.jsonl": "4cacb0798e33f41be7bcfd16dda48932442566528e2802f93eb070a84345dace",
+    "final.jsonl": "ae75af5534428707640ea8835e24dec53ceca750338a0abbdbaff49b62df9ef5",
+    "eligible/read_file.jsonl": "abb942eda8e77257ec714db33acc97e8a5347cbcbc3647ecaa3a9cf6b8990093",
+    "eligible/read_lines.jsonl": "7c27652a7f8c016a5e3baaccb7d05ed914f91bc82b43365c2816dafce70dd730",
+    "eligible/literal_search.jsonl": "1688ea328427de977bfef9c54b5600ea7b43b9d3cf158a294d0a5292e175891f",
+    "eligible/git_read_status.jsonl": "206b8e7a54bd1733269e5e09cd390838520018091a437bbb3d12567a2ffd2a90",
+    "eligible/health_read.jsonl": "e15c47992af2f10a53502d60b3631de8091ff8b27eac83239d6d5cab3e0b1872",
+    "eligible/patch_draft.jsonl": "f4a4fc0dd61cc74757f466b81cdc1d0f496ea8a4b19ea1cb3c285f6a04331025",
+    "boundary/read_file.jsonl": "051f87dee5e38b3be625f47943201d3e4a4030af671e7d4783f90ca75eb48faf",
+    "boundary/read_lines.jsonl": "cb587d4f6f15118530c33a2b5061c22cdf047437804be7ece5096a1febf469a8",
+    "boundary/literal_search.jsonl": "ea744c70b7ae3df0650534b9b14d6ac39e8889566edb2891555274326c4f9176",
+    "boundary/git_read_status.jsonl": "f752a3f0258edb3aa16210f1db3c794368def384a810568475b50b1ec7791909",
+    "boundary/health_read.jsonl": "d04d9a539afc29d2d79b7894d2cf79fe883d41f6266c20fc8ef1afb3a6b5c362",
+    "boundary/patch_draft.jsonl": "d75c615aaa8d90dab5847cac7190c7d6a2fc7d5227b9c1765f2a656aa4ba2d2d",
+    "out_of_domain/out_of_domain.jsonl": "b4e8d259059cb19a6c5a995a91b8e39a4a30d85392d3cea776cd758080b60c75"
+  },
+  "design": {
+    "eligible_per_family": 20,
+    "boundary_per_family": 10,
+    "groups_per_family": 10,
+    "variants_per_group": 3,
+    "split_rule": "groups 0-5 calibration, 6-7 development, 8-9 final",
+    "families": [
+      "read_file",
+      "read_lines",
+      "literal_search",
+      "git_read_status",
+      "health_read",
+      "patch_draft"
+    ]
+  },
+  "layout": {
+    "canonical_cases": "cases.jsonl",
+    "category_directories": [
+      "eligible/<family>.jsonl",
+      "boundary/<family>.jsonl",
+      "out_of_domain/<family>.jsonl"
+    ],
+    "split_files": [
+      "calibration.jsonl",
+      "development.jsonl",
+      "final.jsonl"
+    ]
+  },
+  "limitations": [
+    "The final slice is not human-approved or release evidence.",
+    "Health-read eligible cases require a live allowlisted service for execution testing.",
+    "This suite is not the MiniMax-worker parity evaluation and does not carry the new weighted frontier-token score.",
+    "Scores from this suite are historical regression evidence only after the mechanical-worker reset.",
+    "No case may be used for training, routing selection, or prompt tuning after final approval."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.ttc-toolbelt-receipt.v1",
+  "status": "IMPLEMENTED_TESTED_NOT_MODEL_QUALITY",
+  "profiles": {
+    "fast": 1,
+    "guarded": 2,
+    "deep": 4
+  },
+  "focused_tests": "py -3 -m pytest -q tests/test_toolbelt.py tests/test_native_context_tools.py tests/test_mechanical_worker.py tests/test_context.py tests/test_context_client.py",
+  "focused_test_result": "25 passed",
+  "quality_claim": false,
+  "remaining_proof": [
+    "direct Wrench 2M model serving receipt",
+    "direct Wrench 4M stretch serving receipt if throughput permits",
+    "MiniMax matched workflow parity and weighted coverage",
+    "measured latency, memory, and frontier-token savings"
+  ]
+}
