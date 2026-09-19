@@ -15,6 +15,7 @@ def run_smoke(model_path: Path, prompt: str, max_new_tokens: int) -> dict:
 
     started = time.perf_counter()
     tokenizer = AutoTokenizer.from_pretrained(model_path)
+    torch.cuda.reset_peak_memory_stats()
     model = AutoModelForImageTextToText.from_pretrained(
         model_path,
         dtype=torch.bfloat16,
@@ -44,6 +45,13 @@ def run_smoke(model_path: Path, prompt: str, max_new_tokens: int) -> dict:
         "decoded_output": tokenizer.decode(generated[0], skip_special_tokens=True),
         "load_seconds": round(loaded_at - started, 3),
         "generation_seconds": round(finished - loaded_at, 3),
+        "peak_memory_bytes": int(torch.cuda.max_memory_allocated()),
+        "gpu_identity": torch.cuda.get_device_name(0),
+        "runtime_identity": {
+            "python": __import__("platform").python_version(),
+            "torch": torch.__version__,
+            "transformers": __import__("transformers").__version__,
+        },
         "status": "PASS_STRUCTURAL_LOAD_AND_FORWARD",
         "quality_claim": False,
     }
