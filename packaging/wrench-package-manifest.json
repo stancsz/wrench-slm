@@ -1,0 +1,53 @@
+{
+  "schema": "wrench.portable-model-package.v1",
+  "package_name": "Wrench",
+  "release_status": "EXPERIMENTAL_NOT_PUBLISHABLE",
+  "canonical_format": "huggingface-safetensors",
+  "verified_total_parameters": 3881244016,
+  "hard_parameter_ceiling": 4250000000,
+  "context": {
+    "declared_input_context_tokens": 4000000,
+    "native_attention_context_tokens_target": 2000000,
+    "native_attention_context_tokens_verified": null,
+    "effective_working_context_tokens_default": 64000,
+    "hot_context_tokens_default": 48000,
+    "reference_card_tokens_default": 16000
+  },
+  "required_files": [
+    "config.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "model.safetensors or model-*.safetensors",
+    "wrench-package.json"
+  ],
+  "optional_files": [
+    "generation_config.json",
+    "model.safetensors.index.json",
+    "modeling_wrench.py",
+    "configuration_wrench.py",
+    "wrench_runtime/"
+  ],
+  "backends": {
+    "transformers": "planned_custom_model_package",
+    "freetoken": "experimental_verified_local_backend",
+    "vllm": "requires_registered_wrench_architecture",
+    "ollama": "requires_validated_gguf_and_llama_cpp_backend",
+    "llama_cpp_gguf": "not_verified"
+  },
+  "retrieval": {
+    "runtime_is_bundled": true,
+    "model_calls_for_mechanical_lookup": 0,
+    "reference_only_old_context": true,
+    "hash_bound_receipts": true
+  },
+  "evidence": {
+    "mechanical_retrieval": "phases/phase-71-native-retrieval-quality/retrieval-220.json",
+    "long_context_runtime": "phases/phase-70-mechanical-map-reduce/runtime-4m-64k.json",
+    "native_attention_probe": "phases/phase-71-native-retrieval-quality/native-1m.json"
+  },
+  "publication": {
+    "huggingface_repo_id": null,
+    "public_upload_authorized": false,
+    "copy_paste_command": "huggingface-cli download <OWNER>/Wrench --local-dir Wrench"
+  }
+}
