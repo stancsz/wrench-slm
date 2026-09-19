@@ -45,7 +45,14 @@ def verify_receipt(
     if not HEX64.fullmatch(str(receipt.get("artifact_manifest_sha256", ""))):
         return _error("invalid_artifact_manifest_sha256")
     for field in ("runtime_identity", "gpu_identity"):
-        if not isinstance(receipt.get(field), str) or not receipt[field].strip():
+        value = receipt.get(field)
+        if isinstance(value, str):
+            valid = bool(value.strip())
+        elif isinstance(value, dict):
+            valid = bool(value)
+        else:
+            valid = False
+        if not valid:
             return _error(f"missing_{field}")
 
     metrics = receipt.get("metrics")

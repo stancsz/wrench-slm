@@ -32,6 +32,15 @@ def test_cross_host_receipt_passes_with_matching_pins():
     assert result["latency_scope"] == "host_specific_not_cross_host_comparable"
 
 
+def test_cross_host_receipt_accepts_structured_runtime_identity():
+    result = verify_receipt(
+        _receipt(runtime_identity={"python": "3.12.11", "torch": "2.11.0+cu130"}),
+        expected_source_commit=SOURCE,
+        expected_artifact_commit=ARTIFACT,
+    )
+    assert result["status"] == "PASS_CROSS_HOST_RECEIPT"
+
+
 def test_cross_host_receipt_blocks_commit_mismatch():
     result = verify_receipt(
         _receipt(source_commit="d" * 40),
