@@ -55,6 +55,13 @@ and fallback are included in the full workflow cost and latency.
   customer data stay outside Git unless explicitly authorized and reviewed.
 - A model's parameter count, quantization, benchmark result, or offline test
   cannot be presented as workflow value, production readiness, or token savings.
+- The RTX 5070 Ti workstation and 5060 Ti worker use the same hash-identified
+  source commit, artifact commit, tokenizer, runtime, verifier, and manifest
+  when they are evaluating the same candidate. The 5070 Ti owns interactive
+  development and same-host comparison; the 5060 Ti owns independently
+  reproducible batch evaluation and artifact re-verification. Host-specific
+  latency and memory results remain separate and are never merged into a
+  same-hardware claim.
 
 ## Acceptance criteria
 
@@ -62,6 +69,12 @@ and fallback are included in the full workflow cost and latency.
   4,250,000,000 measured total parameters, plus its reproducible quantized
   FreeToken artifact and verified load/generation path. Report actual bytes and
   measured peak memory.
+- [ ] Reproduce the selected candidate across the RTX 5070 Ti and 5060 Ti
+  worker using the same source commit, artifact commit, manifest hashes,
+  tokenizer, runtime, verifier, prompts, and decoding contract. Record
+  host-specific load, memory, latency, throughput, retry, and failure receipts;
+  use the 5060 Ti for independent batch verification without treating its
+  different hardware as a same-host speed comparison.
 - [ ] Freeze a new family-disjoint test set, task counts, labels, and scoring
   before candidate selection. Existing repeatedly used 28-case and 14-case
   fixtures are development/regression evidence only. No test examples or
@@ -150,13 +163,24 @@ not declare the performance targets feasible or achieved. Keep source artifacts
 recoverable. Provider spending, external data use, publication, and production
 enablement retain their existing authorization boundaries.
 
+The current worker split is deliberate: the RTX 5070 Ti remains the interactive
+builder and same-hardware comparison host, while the 5060 Ti is an asynchronous
+batch worker for independent evaluation, artifact integrity checks, and
+repeatable long-running jobs. Code and instructions synchronize through the
+source repository. Large checkpoints synchronize through the private Git LFS
+artifact repository. Job manifests, heartbeats, logs, and result receipts use
+the approved worker exchange channel. A worker must not silently substitute a
+different checkpoint or runtime.
+
 ## Remaining gap for the revised objective
 
 No candidate has passed the new contract. Phase 58 contains exploratory results
 on a repeatedly used fixture, with different initial free VRAM across arms and
 unverified worker-process cleanup. Its latency ratio is not a controlled speed
 claim. A fresh independent comparison and a single selected 4B artifact remain
-required. Historical multi-tier notes below are provenance, not current scope.
+required. Cross-host synchronization is documented, but a 5060 Ti fetch and
+host-labeled verification receipt for the selected candidate are not yet
+visible. Historical multi-tier notes below are provenance, not current scope.
 
 ## Current evidence
 
