@@ -1,7 +1,7 @@
 {
   "schema": "wrench.portable-model-package.v1",
   "package_name": "Wrench",
-  "release_status": "EXPERIMENTAL_NOT_PUBLISHABLE",
+  "release_status": "EXPERIMENTAL_PUBLIC_ARTIFACT",
   "canonical_format": "huggingface-safetensors",
   "verified_total_parameters": 3881244016,
   "hard_parameter_ceiling": 4250000000,
@@ -54,8 +54,8 @@
     "native_attention_probe": "phases/phase-71-native-retrieval-quality/native-1m.json"
   },
   "publication": {
-    "huggingface_repo_id": null,
-    "public_upload_authorized": false,
-    "copy_paste_command": "huggingface-cli download <OWNER>/Wrench --local-dir Wrench"
+    "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E",
+    "public_upload_authorized": true,
+    "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E"
   }
 }

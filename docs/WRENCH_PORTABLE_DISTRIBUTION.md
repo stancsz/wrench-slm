@@ -4,6 +4,15 @@ Wrench should be downloadable as one model package. Users should not need to
 understand the evaluation harness, context ledger, or local development
 repository.
 
+The current public experimental package is
+`stancsz/Wrench-4B-Qwen3.6-8E`. Copy it with:
+
+```powershell
+hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E
+```
+
+This is a public artifact release, not a production-readiness declaration.
+
 ## Package contract
 
 The canonical Hugging Face package is a normal model directory containing:
@@ -80,7 +89,7 @@ exact model-side prompt tokens and no truncation.
 
 ## Release checklist
 
-Before uploading a public Hugging Face revision:
+For every public Hugging Face revision:
 
 1. run `tools/validate_wrench_package.py` against the exact model directory;
 2. bind every shard, tokenizer, package code file, and runtime build to hashes;

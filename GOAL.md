@@ -778,8 +778,9 @@ receipt: `phases/phase-71-native-retrieval-quality/native-1m.json`. Native 1M
 and 2M attention are therefore not release claims. A portable package now
 bundles the custom tokenizer hook and mechanical prefill dependency so a local
 Transformers loader can stage long input without a separately installed
-harness. Structural validation passes, but the package remains experimental
-and public upload is not authorized.
+harness. Structural validation passes. At the user's explicit request, the
+package is now a public experimental artifact at
+`stancsz/Wrench-4B-Qwen3.6-8E`; this does not authorize production claims.
 
 2026-09-19 mechanical fast path and calibration evidence: added a conservative
 deterministic parser for high-confidence read_file, read_lines,
@@ -806,9 +807,10 @@ training lineage and replay artifacts are committed in `68ab8fa`.
 
 The phase also revalidated the existing v5 portable package as
 `PASS_STRUCTURAL_PACKAGE`. This proves package structure and hashes only. The
-canonical public release still requires a supported standard serving backend,
-formal model card and license, native direct 2M/4M attention evidence, and
-matched MiniMax workflow savings before publication or learned routing.
+canonical production release still requires a supported standard serving
+backend, formal model card and license, native direct 2M/4M attention evidence,
+and matched MiniMax workflow savings before production enablement or learned
+routing.
 
 2026-09-19 native overlay refinement: changed the FreeToken long-context
 overlay so all ten gated-attention layers can use a bounded 65,536-token

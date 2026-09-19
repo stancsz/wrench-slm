@@ -1,6 +1,6 @@
 # Phase 77: zero-global sliding-window native overlay
 
-Status: `PASS_POLICY_NATIVE_64K_REFERENCE_SLOW`
+Status: `PASS_POLICY_NATIVE_64K_REFERENCE_SLOW_PUBLIC_EXPERIMENTAL_PACKAGE`
 
 The long-context overlay now supports `WRENCH_GLOBAL_FULL_LAYERS=none`. On the
 Qwen3.5 configuration, the verified policy resolves the 30 linear-attention
@@ -36,6 +36,11 @@ candidate and needs long-context training or distillation.
 
 The mechanical 4M-to-effective-context reducer remains the practical fast path
 while native attention and retrieval quality are optimized separately.
+
+The portable Safetensors package was published as a public experimental artifact
+at `stancsz/Wrench-4B-Qwen3.6-8E`. The package includes the deterministic lookup
+runtime and FreeToken launcher. This publication does not claim native 4M quality,
+MiniMax parity, or production throughput.
 
 The 4M-configured NVFP4 candidate also loaded successfully with Triton NVFP4
 experts and a roughly 428K-token KV allocation. A warm repeated 16K native
