@@ -1,0 +1,26 @@
+{
+  "schema": "wrench.long-context-overlay-policy.v1",
+  "status": "PASS_POLICY_RESOLUTION_NATIVE_RUNTIME_BLOCKED",
+  "model": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
+  "configured_context_tokens": 2000000,
+  "requested_global_full_layers": "none",
+  "resolved_attention_groups": [
+    {
+      "name": "linear",
+      "layer_count": 30,
+      "layer_ids": [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20, 21, 22, 24, 25, 26, 28, 29, 30, 32, 33, 34, 36, 37, 38]
+    },
+    {
+      "name": "swa",
+      "layer_count": 10,
+      "layer_ids": [3, 7, 11, 15, 19, 23, 27, 31, 35, 39],
+      "sliding_window_tokens": 65536
+    }
+  ],
+  "native_prefill_probe": {
+    "status": "NOT_COMPLETED",
+    "reason": "current Windows FreeToken NVFP4/offload installation lacks freetoken.kernel._pinned_tensor",
+    "native_attention_claim": false
+  },
+  "quality_claim": false
+}

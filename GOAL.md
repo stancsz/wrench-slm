@@ -809,3 +809,13 @@ The phase also revalidated the existing v5 portable package as
 canonical public release still requires a supported standard serving backend,
 formal model card and license, native direct 2M/4M attention evidence, and
 matched MiniMax workflow savings before publication or learned routing.
+
+2026-09-19 native overlay refinement: changed the FreeToken long-context
+overlay so all ten gated-attention layers can use a bounded 65,536-token
+sliding window with zero global full-attention layers. The real FreeToken
+config parser resolved 30 linear layers plus 10 SWA layers under
+`WRENCH_GLOBAL_FULL_LAYERS=none`; this removes the known O(n^2) global layer
+from the native probe path. A weight-bearing native probe remains incomplete
+because the current Windows NVFP4/offload installation lacks
+`freetoken.kernel._pinned_tensor`. Receipt:
+`phases/phase-77-long-context-overlay/long-context-overlay-policy.json`.
