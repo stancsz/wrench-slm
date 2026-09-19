@@ -22,6 +22,8 @@ Wrench/
   modeling_wrench.py                  # only when the architecture is custom
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime
+  wrench-runtime.json                 # fast/native mode contract
+  serve_freetoken.ps1                 # native 4M experimental launcher
   wrench-package.json
   README.md
   LICENSE
@@ -55,6 +57,12 @@ Wrench's AST/search runtime. An Ollama or llama.cpp release is publishable only
 after the Wrench architecture, tokenizer, hybrid KV policy, and package runtime
 have been validated by that backend. Until then, do not publish a misleading
 GGUF that loads but silently loses retrieval or long-context behavior.
+
+The bundled tokenizer has two explicit modes. The default fast mode performs
+mechanical 4M-to-64K staging. Setting `WRENCH_NATIVE_DIRECT_INPUT=1` disables
+that staging and sends the complete chat payload to the backend tokenizer. The
+portable package records which mode was used in its receipt, so a fast result
+cannot be reported as native-input evidence.
 
 ## Long-context labels
 

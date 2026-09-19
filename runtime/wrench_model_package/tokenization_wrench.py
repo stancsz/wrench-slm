@@ -8,6 +8,7 @@ attention implementation and it never calls an LLM.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,8 @@ class WrenchTokenizer(PreTrainedTokenizerFast):
 
     def apply_chat_template(self, conversation: Any, *args: Any, **kwargs: Any) -> Any:
         if (
+            os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") != "1"
+            and
             isinstance(conversation, list)
             and conversation
             and all(isinstance(message, dict) and isinstance(message.get("content"), str) for message in conversation)
@@ -51,6 +54,14 @@ class WrenchTokenizer(PreTrainedTokenizerFast):
                 mechanical_index=self._wrench_mechanical_index,
             )
             self.last_wrench_prefill_receipt = receipt
+        elif isinstance(conversation, list):
+            self.last_wrench_prefill_receipt = {
+                "schema": "wrench.native-direct-input-receipt.v1",
+                "native_direct_input": True,
+                "source_message_count": len(conversation),
+                "omitted_messages": [],
+                "mechanical_reduction": False,
+            }
         return super().apply_chat_template(conversation, *args, **kwargs)
 
     def wrench_lookup(self, reference_id: str) -> str:

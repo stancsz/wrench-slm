@@ -1,0 +1,35 @@
+{
+  "schema": "wrench.native-context-startup-receipt.v1",
+  "status": "PASS_STARTUP_CAPACITY_NOT_NATIVE_INPUT",
+  "observed_at": "2026-09-19T16:27:09-06:00",
+  "model": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
+  "runtime": "FreeToken editable Python plus local sitecustomize overlay",
+  "requested_context_tokens": 2000000,
+  "max_seq_len_override": 2000000,
+  "num_token_override": 2000000,
+  "rope_max_position_runtime": 2000000,
+  "attention_policy": {
+    "global_full_layers": "none",
+    "swa_window_tokens": 8192,
+    "swa_pool_tokens": 8192,
+    "linear_layers": 30,
+    "swa_layers": 10,
+    "zero_layer_full_bookkeeping_slab": true
+  },
+  "startup": {
+    "http_ready": true,
+    "warmup_complete": true,
+    "kv_cache_log": "Allocating 2000000 tokens for KV cache, K + V = 0.64 GiB",
+    "free_memory_after_initialization_gib": 6.49,
+    "prefill_warmup_seconds": 2.132
+  },
+  "smoke_request": {
+    "http_status": 200,
+    "actual_prompt_tokens": 28,
+    "elapsed_ms": 3752.992
+  },
+  "native_direct_payload_verified": false,
+  "quality_claim": false,
+  "release_speed_claim": false,
+  "release_context_claim": false
+}

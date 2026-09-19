@@ -33,6 +33,9 @@ def main() -> int:
         "wrench_prefill.py",
         "wrench_mechanical.py",
         "wrench_runtime/prefill.py",
+        "wrench_runtime/sitecustomize.py",
+        "wrench-runtime.json",
+        "serve_freetoken.ps1",
     ]
     for name in required:
         if not (args.model_dir / name).is_file():

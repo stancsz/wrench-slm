@@ -9,6 +9,7 @@ source directory is never modified and an existing target is never replaced.
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 import shutil
@@ -25,10 +26,20 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
     if target.exists():
         raise FileExistsError(f"refusing to overwrite existing target: {target}")
     target.mkdir(parents=True)
+    weight_materialization_mode = "hardlink"
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
             if item.is_file() and item.suffix == ".safetensors":
-                os.link(item, target / item.name)
+                try:
+                    os.link(item, target / item.name)
+                except OSError as exc:
+                    if exc.errno != errno.EXDEV and getattr(exc, "winerror", None) != 17:
+                        raise
+                    # Hugging Face artifacts are often on a separate data volume
+                    # from the repository. Preserve the no-overwrite contract
+                    # while falling back to a byte-for-byte copy across volumes.
+                    shutil.copy2(item, target / item.name)
+                    weight_materialization_mode = "copy_cross_volume"
             elif item.is_file():
                 shutil.copy2(item, target / item.name)
         tokenizer_config_path = target / "tokenizer_config.json"
@@ -44,10 +55,43 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         runtime_dir = target / "wrench_runtime"
         runtime_dir.mkdir()
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", runtime_dir / "prefill.py")
+        shutil.copy2(
+            repo_root / "runtime" / "freetoken_wrench_long_context" / "sitecustomize.py",
+            runtime_dir / "sitecustomize.py",
+        )
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
         (runtime_dir / "__init__.py").write_text("\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n", encoding="utf-8")
+        (target / "wrench-runtime.json").write_text(
+            json.dumps(
+                {
+                    "schema": "wrench.runtime-profile.v1",
+                    "fast_mode": {
+                        "native_direct_input": False,
+                        "effective_working_context_tokens": 64000,
+                        "hot_context_tokens": 48000,
+                        "reference_card_tokens": 16000,
+                    },
+                    "native_mode": {
+                        "native_direct_input": True,
+                        "declared_input_context_tokens": 4000000,
+                        "swa_window_tokens": 8192,
+                        "swa_pool_tokens": 8192,
+                        "rope_max_position_runtime": 4000000,
+                        "native_direct_payload_verified": False,
+                    },
+                    "launch_note": "Native mode requires the bundled runtime overlay and a compatible FreeToken build.",
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (target / "serve_freetoken.ps1").write_text(
+            """param(\n    [string]$FreeTokenPython = \"python\",\n    [int]$Port = 28900\n)\n\n$env:PYTHONPATH = \"$PSScriptRoot\\wrench_runtime;$env:PYTHONPATH\"\n$env:WRENCH_LONG_CONTEXT_OVERLAY = \"1\"\n$env:WRENCH_GLOBAL_FULL_LAYERS = \"none\"\n$env:WRENCH_SWA_WINDOW = \"8192\"\n$env:WRENCH_SWA_POOL_TOKENS = \"8192\"\n$env:WRENCH_ROPE_MAX_POSITION = \"4000000\"\n$env:WRENCH_NATIVE_DIRECT_INPUT = \"1\"\n& $FreeTokenPython -m freetoken.cli serve `\n    --model-path $PSScriptRoot `\n    --host 127.0.0.1 `\n    --port $Port `\n    --moe-strategy fused `\n    --max-running-requests 1 `\n    --max-seq-len-override 4000000 `\n    --num-tokens 4000000 `\n    --memory-ratio 0.9 `\n    --cuda-graph-max-bs 0 `\n    --text-model-only `\n    --mm-disable vision audio `\n    --max-prefill-length 8192\n""",
+            encoding="utf-8",
+        )
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
@@ -84,12 +128,16 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "source": str(source.resolve()),
             "target": str(target.resolve()),
             "weight_link_count": len(list(target.glob("*.safetensors"))),
+            "weight_materialization_mode": weight_materialization_mode,
             "runtime_files": [
                 "tokenization_wrench.py",
                 "wrench_prefill.py",
                 "wrench_mechanical.py",
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
+                "wrench_runtime/sitecustomize.py",
+                "wrench-runtime.json",
+                "serve_freetoken.ps1",
             ],
             "quality_claim": False,
             "native_attention_claim": False,

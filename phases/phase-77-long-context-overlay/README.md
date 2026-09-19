@@ -24,9 +24,18 @@ or a proof of the 65K SWA target. The torch-only MoE copy fallback is a
 reference path and is too slow to serve as the final portable backend.
 
 The earlier 256K attempt with the 65,536-token window was stopped after the
-same backend showed unacceptable latency. No 2M or 4M native performance claim
-is made by this phase. The mechanical 4M-to-effective-context reducer remains
-the practical fast path while native attention is optimized separately.
+same backend showed unacceptable latency. After fixing the package-level
+FreeToken parser alias and adding a pure-SWA bookkeeping path, BF16 startup
+capacity was verified at 2M and 4M. The 2M run allocated 0.64 GiB for KV and
+the 4M run allocated 0.66 GiB, both completed warmup, and both served a small
+HTTP 200 smoke request. These are startup-capacity receipts only. They did not
+send a 2M or 4M payload, so they do not establish native direct-input quality,
+prefill latency, or release readiness. The runtime also extended the rotary
+table to 4M for the capacity probe; the checkpoint itself remains a 2M-position
+candidate and needs long-context training or distillation.
+
+The mechanical 4M-to-effective-context reducer remains the practical fast path
+while native attention and retrieval quality are optimized separately.
 
 The 4M-configured NVFP4 candidate also loaded successfully with Triton NVFP4
 experts and a roughly 428K-token KV allocation. A warm repeated 16K native
@@ -42,6 +51,9 @@ building large synthetic payloads. The model endpoint's reported
 200-second self-inflicted tokenizer delay from the 16K measurement and is
 required before trusting 2M stress timings.
 
-Receipts: `long-context-overlay-policy.json` and
-`native-64k-swa8k-rerun.json`, plus
-`native-16k-nvfp4-swa8k-fastprobe.json`.
+Receipts: `long-context-overlay-policy.json`,
+`native-64k-swa8k-rerun.json`,
+`native-2m-swa-only-startup.json`,
+`native-4m-swa-only-startup.json`,
+`native-16k-nvfp4-swa8k-fastprobe.json`, and
+`portable-package-validation.json`.

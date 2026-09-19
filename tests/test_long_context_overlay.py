@@ -15,3 +15,10 @@ def test_long_context_overlay_allows_zero_global_full_layers():
     assert resolve((3, 7, 11), "off") == ()
     assert resolve((3, 7, 11), "7,99") == (7,)
     assert resolve((3, 7, 11), "") == (11,)
+
+
+def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
+    source = Path("runtime/freetoken_wrench_long_context/sitecustomize.py").read_text(encoding="utf-8")
+    assert "qwen_family.parse_config = parse_config_with_bounded_full_attention" in source
+    assert "zero-layer" in source
+    assert "WRENCH_ROPE_MAX_POSITION" in source

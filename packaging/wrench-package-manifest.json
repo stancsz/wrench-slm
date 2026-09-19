@@ -21,6 +21,9 @@
     "wrench_prefill.py",
     "wrench_mechanical.py",
     "wrench_runtime/prefill.py",
+    "wrench_runtime/sitecustomize.py",
+    "wrench-runtime.json",
+    "serve_freetoken.ps1",
     "model.safetensors or model-*.safetensors",
     "wrench-package.json"
   ],
