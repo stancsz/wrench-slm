@@ -793,3 +793,19 @@ final matched MiniMax workflow score. The parser and runtime are also bundled
 into the portable package and verified through `AutoTokenizer` dynamic-module
 loading. A LoRA/router calibration probe was measured and rejected after it
 produced 86/220 correct outcomes and 24 prohibited accepts.
+
+2026-09-19 teacher-aligned LoRA replay: captured 224 MiniMax proposal traces,
+kept 183 valid `train_` rows, and excluded 23 evaluation rows plus 18 invalid
+or unallowlisted teacher outputs. A rank-8, 100-step v10 LoRA probe was then
+replayed on the full 220-case diagnostic suite without using those cases for
+calibration. It produced 7/220 correct outcomes, 0/120 exact eligible accepts,
+19 prohibited accepts, zero transport failures, 9.873 seconds median latency,
+and 11.401 seconds p95 latency. The candidate is rejected. Evidence is in
+`phases/phase-76-teacher-calibration/v10-eval-score-220.json`; the clean
+training lineage and replay artifacts are committed in `68ab8fa`.
+
+The phase also revalidated the existing v5 portable package as
+`PASS_STRUCTURAL_PACKAGE`. This proves package structure and hashes only. The
+canonical public release still requires a supported standard serving backend,
+formal model card and license, native direct 2M/4M attention evidence, and
+matched MiniMax workflow savings before publication or learned routing.
