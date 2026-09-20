@@ -55,12 +55,14 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         runtime_dir = target / "wrench_runtime"
         runtime_dir.mkdir()
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", runtime_dir / "prefill.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "toolbelt.py")
         shutil.copy2(
             repo_root / "runtime" / "freetoken_wrench_long_context" / "sitecustomize.py",
             runtime_dir / "sitecustomize.py",
         )
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", target / "wrench_toolbelt.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
         (runtime_dir / "__init__.py").write_text("\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n", encoding="utf-8")
         (target / "wrench-runtime.json").write_text(
@@ -119,6 +121,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             },
             "runtime": {
                 "bundled": True,
+                "verifier_is_bundled": True,
                 "entrypoint": "tokenization_wrench.py",
                 "model_calls_for_mechanical_lookup": 0,
             },
@@ -146,8 +149,10 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "tokenization_wrench.py",
                 "wrench_prefill.py",
                 "wrench_mechanical.py",
+                "wrench_toolbelt.py",
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
+                "wrench_runtime/toolbelt.py",
                 "wrench_runtime/sitecustomize.py",
                 "wrench-runtime.json",
                 "serve_freetoken.ps1",

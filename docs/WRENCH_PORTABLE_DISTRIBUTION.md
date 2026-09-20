@@ -28,9 +28,11 @@ Wrench/
   tokenization_wrench.py              # bundled long-context tokenizer hook
   wrench_prefill.py                   # dynamic-module-local dependency
   wrench_mechanical.py                # bundled high-confidence mechanical router
+  wrench_toolbelt.py                  # bundled read-only verifier and executor
   modeling_wrench.py                  # only when the architecture is custom
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime
+    toolbelt.py                        # same verifier for package-local imports
   wrench-runtime.json                 # fast/native mode contract
   serve_freetoken.ps1                 # native 4M experimental launcher
   wrench-package.json

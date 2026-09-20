@@ -20,7 +20,9 @@
     "tokenization_wrench.py",
     "wrench_prefill.py",
     "wrench_mechanical.py",
+    "wrench_toolbelt.py",
     "wrench_runtime/prefill.py",
+    "wrench_runtime/toolbelt.py",
     "wrench_runtime/sitecustomize.py",
     "wrench-runtime.json",
     "serve_freetoken.ps1",
@@ -44,6 +46,7 @@
   },
   "retrieval": {
     "runtime_is_bundled": true,
+    "verifier_is_bundled": true,
     "model_calls_for_mechanical_lookup": 0,
     "reference_only_old_context": true,
     "hash_bound_receipts": true

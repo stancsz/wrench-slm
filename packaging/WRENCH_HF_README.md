@@ -26,9 +26,9 @@ hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E
 ```
 
 The canonical distribution format is Hugging Face Safetensors. The package embeds
-the tokenizer hook, deterministic mechanical lookup runtime, long-context overlay,
-hash-bound package metadata, and the FreeToken launcher. It is intended to feel
-like one model directory, not a separately installed harness.
+the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
+long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
+is intended to feel like one model directory, not a separately installed harness.
 
 ## Run the experimental native endpoint
 

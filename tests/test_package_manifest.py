@@ -10,3 +10,6 @@ def test_portable_manifest_keeps_native_and_effective_context_separate():
     assert context["native_attention_context_tokens_verified"] is None
     assert context["effective_working_context_tokens_default"] == 64_000
     assert manifest["publication"]["public_upload_authorized"] is True
+    assert "wrench_toolbelt.py" in manifest["required_files"]
+    assert "wrench_runtime/toolbelt.py" in manifest["required_files"]
+    assert manifest["retrieval"]["verifier_is_bundled"] is True
