@@ -1353,3 +1353,15 @@ MoE MLP computation before position `48,000` reduced latency from `23,108.787`
 ms to `17,004.096` ms, about `1.36x`. The setting remains opt-in because
 retrieval quality and MiniMax parity under skipped history are unverified.
 Evidence: `phases/phase-100-skipmlp-pinned`.
+
+2026-09-20 weighted route accounting: added
+`tools/score_mechanical_route_frontier.py` to join the current deterministic
+route with the captured teacher frontier-token mass while excluding boundary
+and out-of-domain rows from the mechanical denominator. On the historical
+220-case fixture, 100/120 eligible rows route mechanically, but they cover only
+`78.9999%` of eligible weighted frontier-token mass. The entire uncovered mass
+is the 20 eligible patch-draft prompts whose text omits the actual diff, so the
+route correctly leaves them for model/fallback handling. This is a stronger
+diagnostic than the prior `90.91%` all-category case-count figure, but it is
+still not the authorized family-disjoint workflow gate. Evidence:
+`phases/phase-101-public-copy-paste-package/weighted-route-frontier-score.json`.
