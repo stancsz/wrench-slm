@@ -194,13 +194,17 @@ general native attention retrieval quality or MiniMax parity.
 - The bundled FreeToken path has produced a schema-valid read-only proposal on a
   small smoke request when given the explicit Wrench output contract.
 - vLLM: requires a registered Wrench architecture adapter.
-- Ollama, llama.cpp, and GGUF: not verified for Wrench hybrid attention and lookup
+- Ollama: the public v42 metadata is text-only and imports through the
+  Safetensors path. An isolated Windows MLX runner loaded the model and
+  completed a short request after a local cuDNN path workaround. Stock Windows
+  Ollama completion is still not verified.
+- llama.cpp and GGUF: not verified for Wrench hybrid attention and lookup
   semantics. Do not assume a generic GGUF conversion preserves these features.
 
-The package also includes an experimental Ollama `Modelfile`. Ollama 0.32+
-may attempt local Safetensors import with `ollama create --experimental`, but
-this path is not considered verified until the exact Ollama build loads this
-architecture and passes a completion plus context smoke.
+The package also includes an experimental Ollama `Modelfile`. Ollama 0.34.2+
+can attempt local Safetensors import with `ollama create --experimental`.
+Windows users still need the matching MLX CUDA runner and cuDNN runtime. The
+portable package does not patch or install third-party runtime binaries.
 
 GGUF is not a file-extension conversion. A valid GGUF release needs a tested
 llama.cpp or Ollama architecture adapter, tokenizer mapping, hybrid KV policy,
