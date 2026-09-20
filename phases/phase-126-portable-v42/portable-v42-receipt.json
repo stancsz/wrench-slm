@@ -35,6 +35,13 @@
     "weighted_frontier_mass_rate": 1.0,
     "status": "DIAGNOSTIC_FIXTURE_ONLY"
   },
+  "structural_package_validation": {
+    "status": "PASS_STRUCTURAL_PACKAGE",
+    "config_max_position_embeddings": 4000000,
+    "safetensors_shard_count": 2,
+    "quality_claim": false,
+    "native_attention_claim": false
+  },
   "ollama_isolated": {
     "version": "0.34.2",
     "runner": "MLX CUDA 13",
