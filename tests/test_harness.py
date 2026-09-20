@@ -299,7 +299,17 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
         def do_POST(self):  # noqa: N802
             length = int(self.headers["Content-Length"])
             json.loads(self.rfile.read(length))
-            payload = {"model": "test-qwen", "choices": [{"message": {"content": expected}}], "usage": {"total_tokens": 9}}
+            payload = {
+                "model": "test-qwen",
+                "choices": [{"message": {"content": expected}}],
+                "usage": {"total_tokens": 9},
+                "wrench": {
+                    "backend": "embedded-mechanical",
+                    "mechanical_fast_path": True,
+                    "model_calls": 0,
+                    "elapsed_ms": 1.25,
+                },
+            }
             encoded = json.dumps(payload).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -318,6 +328,9 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
         result = execute_local_qwen(endpoint, "test-qwen", [{"role": "user", "content": "proposal"}], str(tmp_path))
         assert result["status"] == "accepted"
         assert result["usage"]["total_tokens"] == 9
+        assert result["mechanical_fast_path"] is True
+        assert result["model_calls"] == 0
+        assert result["backend"] == "embedded-mechanical"
 
         traced = execute_local_qwen(
             endpoint,

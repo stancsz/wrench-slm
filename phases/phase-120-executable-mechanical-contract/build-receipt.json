@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.executable-mechanical-contract.v1",
+  "status": "BUILT_PROMPT_COMPLETE_MECHANICAL_CONTRACT",
+  "historical_shape": "evals/wrench-expanded-v1/cases.jsonl",
+  "case_count": 220,
+  "eligible_case_count": 120,
+  "explicit_patch_case_count": 20,
+  "explicit_health_case_count": 20,
+  "boundary_case_count": 60,
+  "out_of_domain_case_count": 40,
+  "cases_sha256": "72dfd13dd9d3607206ea282e4422c53ae09cc9297d815365fc06fd8e2d74458a",
+  "fixture_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-120-executable-mechanical-contract\\fixture",
+  "fixture_git_repository": true,
+  "sealed_final_split_used_for_training": false,
+  "quality_claim": false,
+  "release_authorization": false,
+  "limitations": [
+    "This contract measures the bounded deterministic route, not MiniMax parity.",
+    "The fixture is synthetic and does not establish production workflow utility.",
+    "Historical 220-case results remain unchanged and are reported separately."
+  ]
+}

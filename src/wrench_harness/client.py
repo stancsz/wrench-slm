@@ -228,6 +228,23 @@ def execute_local_qwen(
             return _abstain("qwen_response_content_invalid")
         result = execute_model_output(content, allowed_root, request_prompt=request_prompt)
         result["model"] = response_model
+        endpoint_receipt = payload.get("wrench")
+        if isinstance(endpoint_receipt, dict):
+            # Preserve receipts emitted by a model-local Wrench endpoint. The
+            # endpoint itself owns the mechanical route, so the client must
+            # not report a fast embedded proposal as a model call merely
+            # because it parsed the OpenAI-compatible response afterward.
+            for key in (
+                "backend",
+                "mechanical_fast_path",
+                "model_calls",
+                "dynamic_prefill",
+                "fallback_reason",
+                "elapsed_ms",
+            ):
+                if key in endpoint_receipt:
+                    result[key] = endpoint_receipt[key]
+            result["endpoint_receipt"] = endpoint_receipt
         retryable_malformed = result.get("fallback_reason") in {
             "model_output_not_text",
             "model_output_invalid_json",

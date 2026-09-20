@@ -148,6 +148,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "latency_ms": elapsed_ms,
                     "model": model_result.get("model"),
                     "usage": model_result.get("usage"),
+                    "backend": model_result.get("backend"),
+                    "model_calls": model_result.get("model_calls"),
+                    "endpoint_elapsed_ms": model_result.get("elapsed_ms"),
                     "mechanical_fast_path": model_result.get("mechanical_fast_path", False),
                     "raw_model_output": model_result.get("raw_model_output"),
                     "parsed_proposal": model_result.get("parsed_proposal"),
@@ -180,6 +183,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 for item in results
             ),
             "mechanical_fast_path_requests": sum(item["mechanical_fast_path"] for item in results),
+            "model_calls": sum(
+                item["model_calls"]
+                for item in results
+                if isinstance(item.get("model_calls"), int)
+            ),
             "median_latency_ms": _percentile(latencies, 0.5),
             "p95_latency_ms": _percentile(latencies, 0.95),
             "mean_latency_ms": round(statistics.mean(latencies), 3) if latencies else None,
