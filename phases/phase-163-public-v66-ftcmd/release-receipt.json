@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.public-package-release-receipt.v1",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v66-ftcmd-docs",
+  "hub_repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "hub_revision": "ffa6bce60508e34cb4db59ccdf434576e67955e3",
+  "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "package_patch_smoke": {
+    "status": "accepted",
+    "action": "patch_draft",
+    "applied": false,
+    "backend": "embedded-mechanical"
+  },
+  "fresh_download": {
+    "launcher_ft_command": "ft.cmd",
+    "reference_patch_route": true,
+    "launcher_hash_matches_local": true,
+    "mechanical_runtime_hash_matches_local": true
+  },
+  "quality_claim": false,
+  "native_dense_4m_verified": false,
+  "minimax_parity_verified": false
+}

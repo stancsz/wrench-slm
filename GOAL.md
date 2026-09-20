@@ -1805,3 +1805,11 @@ host with WinError 1455 and a CUDA allocation failure while only about 1.31 GiB
 was free. The launcher cleaned ports 28960 and 28961 afterward. This narrows
 the native-direct blocker to host resources; it does not close native quality
 or production gates. Evidence: `phases/phase-162-native-launcher-ftcmd`.
+
+2026-09-20 public v66 package repair: the rebuilt package passed structural
+validation and package-local exact reference patch smoke. The public Hub
+revision `ffa6bce60508e34cb4db59ccdf434576e67955e3` was fresh-downloaded;
+launcher and mechanical runtime hashes matched local v66, with `ft.cmd` as the
+Windows default and `reference_patch_route` present. This publishes the
+launcher repair and bundled retrieval behavior, not native dense 4M quality or
+MiniMax parity. Evidence: `phases/phase-163-public-v66-ftcmd`.
