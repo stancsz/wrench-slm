@@ -163,13 +163,15 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
         url_match = re.search(r"https?://[^\s'\"]+", prompt)
         if url_match:
             url = url_match.group(0).rstrip(".,)")
-            has_explicit_timeout = _TIMEOUT_RE.search(prompt) is not None or any(
-                re.search(rf"\b{word}\s+second", lowered) for word in _WORD_NUMBERS
-            )
-            if has_explicit_timeout:
-                timeout = _timeout(prompt)
-                byte_limit = _limit(prompt, default=64 * 1024)
-                return _proposal("health_read", url=url, timeout_seconds=timeout, max_bytes=byte_limit)
+            # "bounded timeout" and "response cap" are already bounded by the
+            # verifier contract. Do not send an otherwise rigid local health
+            # read to the language model merely because the user omitted an
+            # exact number. Explicit numeric bounds still win, while malformed
+            # schemes, hosts, paths, queries, and fragments fail closed in the
+            # verifier.
+            timeout = _timeout(prompt)
+            byte_limit = _limit(prompt, default=64 * 1024)
+            return _proposal("health_read", url=url, timeout_seconds=timeout, max_bytes=byte_limit)
 
     if re.search(r"\b(patch|diff|change)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
         if path:

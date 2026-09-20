@@ -944,3 +944,15 @@ candidate-specific direct 2M input correctness milestone, but not the 4M
 candidate gate, full-global-attention claim, retrieval quality, fast-serving
 target, or MiniMax matched-workflow gates. Receipt:
 `phases/phase-80-safety-native2m/native-2m-bf16-direct.json`.
+
+The mechanical health route was then changed to use the verifier's bounded
+defaults when a rigid local health request says only "bounded timeout" or
+"response cap". The verifier continues to own host, path, query, fragment,
+and numeric-bound checks. On a fresh full 220 replay this moved outcome
+matches to 173/220, exact eligible accepts to 81/120, mechanical fast-path
+coverage to 157/220, and median latency to 8.203 ms, while p95 rose to
+5,057.505 ms because the historical fixture targets an unavailable health
+service and incurs bounded connection timeouts. Prohibited accepts remained
+zero. This improves local mechanical routing but is still diagnostic, not
+MiniMax parity or matched-workflow savings evidence. Receipt:
+`phases/phase-80-safety-native2m/wrench-safety-native2m-220-health-mechanical.json`.

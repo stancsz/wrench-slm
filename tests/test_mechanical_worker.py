@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from tools.score_mechanical_worker import evaluate_manifest
 from wrench_harness import execute_model_output
+from wrench_harness.core import json_result
+from wrench_harness.mechanical import mechanical_route
 
 
 def _arm(*, frontier_tokens: int, success: bool = True, fallback: bool = False, unsafe: bool = False) -> dict:
@@ -121,3 +123,28 @@ def test_prompt_semantic_boundary_guards_fail_closed():
         ".",
         request_prompt="Draft a patch without a hunk marker.",
     ) == {"status": "abstain", "fallback_reason": "patch_not_unified_diff"}
+
+
+def test_mechanical_health_route_uses_bounded_defaults_without_model_call():
+    proposal = mechanical_route(
+        "Read the local health endpoint at http://127.0.0.1:4000/v1/models with a bounded timeout."
+    )
+    assert proposal == {
+        "schema": "wrench.proposal.v1",
+        "action": "health_read",
+        "url": "http://127.0.0.1:4000/v1/models",
+        "timeout_seconds": 3.0,
+        "max_bytes": 64 * 1024,
+    }
+
+
+def test_mechanical_health_route_leaves_external_endpoint_to_verifier():
+    proposal = mechanical_route("Read an external health endpoint at http://example.com/health.")
+    assert proposal is not None
+    assert execute_model_output(
+        json_result(proposal), ".", request_prompt="Read an external health endpoint at http://example.com/health."
+    ) == {
+        "status": "abstain",
+        "fallback_reason": "health_endpoint_not_allowlisted",
+        "model_output_validated": True,
+    }

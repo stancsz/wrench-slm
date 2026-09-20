@@ -39,3 +39,15 @@ YaRN config, a 4M runtime KV allocation, and an 8K SWA serving window. This is
 direct-input capacity evidence for the safety candidate, not a claim of full
 2M global attention, retrieval quality, or fast serving. Receipt:
 `native-2m-bf16-direct.json`.
+
+After the direct probe, the mechanical router was tightened so a rigid local
+health request with an omitted numeric value uses the verifier's bounded
+defaults instead of spending a model call. Invalid hosts, paths, query strings,
+fragments, and bounds still fail closed in the verifier. The refreshed 220-case
+diagnostic moved to 173/220 outcome matches, 81/120 exact eligible accepts,
+zero prohibited accepts, 157/220 mechanical fast-path requests, 8.203 ms
+median latency, 5,057.505 ms p95, and 1,025.603 ms mean latency. The p95 is
+higher because the fixture points at an unavailable health service and the
+verifier waits for bounded connection timeouts. This is a real safety and
+latency tradeoff, not a MiniMax workflow result. Receipt:
+`wrench-safety-native2m-220-health-mechanical.json`.
