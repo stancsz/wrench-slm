@@ -13,6 +13,8 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
     assert "EXPERIMENTAL_PUBLIC_ARTIFACT" in script
     assert "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED" in script
     assert "public_upload_authorized" in script
+    assert '"target": str(target.resolve())' in script
+    assert "NVFP4-W4A16-ModelOpt" in script
 
 
 def test_standard_hf_load_verifier_is_metadata_only():

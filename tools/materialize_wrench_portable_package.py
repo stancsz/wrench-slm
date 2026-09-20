@@ -26,7 +26,10 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
     if target.exists():
         raise FileExistsError(f"refusing to overwrite existing target: {target}")
     target.mkdir(parents=True)
-    safety_candidate = "safety" in source.name.lower() or "calibrated" in source.name.lower()
+    source_name_lower = source.name.lower()
+    safety_candidate = "safety" in source_name_lower or "calibrated" in source_name_lower
+    quantized_candidate = (source / "hf_quant_config.json").is_file()
+    native4m_candidate = "native4m" in source_name_lower
     weight_materialization_mode = "hardlink"
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
@@ -129,9 +132,18 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "hard_parameter_ceiling": PARAMETER_CEILING,
             "model_lineage": "Qwen3.6-35B-A3B -> Wrench 8E structural prune",
             "candidate_identity": (
-                "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M"
-                if safety_candidate
-                else "Wrench-4B-Qwen3.6-8E-base"
+                "Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M"
+                if quantized_candidate and native4m_candidate
+                else (
+                    "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M"
+                    if safety_candidate
+                    else "Wrench-4B-Qwen3.6-8E-base"
+                )
+            ),
+            "quantization": (
+                "NVFP4-W4A16-ModelOpt"
+                if quantized_candidate
+                else None
             ),
             "context": {
                 "declared_input_context_tokens": 4_000_000,
@@ -149,7 +161,11 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             },
             "backends": {
                 "transformers": "Transformers >=5.17.0 config/tokenizer verified; full generation backend-dependent",
-                "freetoken": "local experimental backend",
+                "freetoken": (
+                    "local experimental backend with ModelOpt NVFP4"
+                    if quantized_candidate
+                    else "local experimental backend"
+                ),
                 "vllm": "requires registered Wrench architecture",
                 "ollama_gguf": "not verified",
             },
@@ -165,6 +181,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "status": "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED",
             "source_artifact_name": source.name,
             "target_package_name": target.name,
+            "target": str(target.resolve()),
             "weight_link_count": len(list(target.glob("*.safetensors"))),
             "weight_materialization_mode": weight_materialization_mode,
             "runtime_files": [
