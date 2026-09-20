@@ -22,13 +22,18 @@ verifier decides whether it is eligible. Old lookup hits are marked
 `reference_only` and never override the newest user intent or the authority
 boundary.
 
-For a native 4M runtime, the toolbelt reduces the amount of work the model must
-do on stale text, but it does not replace the direct 4M intake receipt. The
-runtime may perform an explicit staged prefill after accepting the raw payload:
-one fast pass keeps current intent and hot tool state verbatim, while old
-lookups become hash-bound reference cards in a read-only lookup table. The
-receipt reports both raw input tokens and model prefill tokens, so internal
-compression cannot be misreported as native intake.
+The production fast path is a package-local hybrid runtime. It accepts the raw
+4M logical payload, performs an explicit staged prefill, keeps current intent
+and hot tool state verbatim, and turns old lookups into hash-bound reference
+cards in a read-only lookup table. The receipt reports both raw input tokens
+and model prefill tokens, so internal compression cannot be misreported as
+native dense attention.
+
+This hybrid path is the release target when it meets the complete workflow
+gates: retrieval quality, safety, final success, frontier-token savings, and
+end-to-end latency. A separate native-direct runtime may still ingest the full
+sequence for comparison and research. It is only needed to claim dense native
+4M attention, and it should not hold the hybrid production-value path hostage.
 
 The dynamic prefill uses cheap regex anchors first, then AST or lexical symbol
 extraction for code. It preferentially retains paths, symbols, tests, errors,

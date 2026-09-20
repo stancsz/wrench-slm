@@ -69,6 +69,29 @@ Routine tool selection can waste frontier-model turns and context, but a smaller
 model has value only after its inference, verification, retries, corrections,
 and fallback are included in the full workflow cost and latency.
 
+## Serving lanes
+
+The production-value candidate uses a hybrid long-context lane as its default:
+
+1. accept the raw request at the package-local Wrench endpoint, up to the
+   declared logical context limit;
+2. run the deterministic, model-local MapReduce prefill over the raw payload;
+3. preserve the newest intent and hot context, then expose only hash-bound
+   lookup cards and bounded evidence windows to the model's working context;
+4. let Wrench propose a bounded action, with the independent verifier and the
+   identical frontier fallback retaining final authority.
+
+This lane is the practical release target because it gives Wrench a large
+logical context without making a 4B model attend densely to stale tokens. Its
+acceptance evidence must report raw input size, staged working-context size,
+retrieval recall, staging latency, model latency, and complete workflow value.
+
+Dense native 2M/4M attention remains a separate comparison lane. It is required
+before making a native-attention claim, but it must not block a clearly labelled
+hybrid production-value release. The two claims are never substituted for one
+another: a hybrid pass is not native dense attention, and a native stress pass
+is not evidence of workflow utility.
+
 ## Invariants
 
 - Wrench proposes bounded structured actions or abstains. It never owns the full
