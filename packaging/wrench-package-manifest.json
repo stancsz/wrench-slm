@@ -52,6 +52,7 @@
   "retrieval": {
     "runtime_is_bundled": true,
     "verifier_is_bundled": true,
+    "embedded_mechanical_route": true,
     "model_calls_for_mechanical_lookup": 0,
     "reference_only_old_context": true,
     "hash_bound_receipts": true

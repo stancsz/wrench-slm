@@ -29,7 +29,52 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in source
     assert "WRENCH_HISTORY_CONTROL_PREFIX_TOKENS" in source
     assert "WRENCH_HISTORY_CONTROL_SUFFIX" in source
+    assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in source
+    assert "proposal_only_external_verifier_required" in source
     assert "history_skip_mlp_before" in source
     assert "history_skip_layers_before" in source
     assert "history_control_prefix_tokens" in source
     assert "history_control_suffix_chars" in source
+
+
+def test_reference_lookup_card_promotes_only_exact_old_matches():
+    namespace = _load_overlay_source()
+    build_card = namespace["_build_reference_lookup_card"]
+    old = (
+        "irrelevant historical record\n" * 40
+        + "symbol=needle_symbol path=src/worker.py line=218\n"
+        + "irrelevant historical record\n" * 40
+    )
+    tail = 'Find "needle_symbol" in the old reference and keep the newest intent.'
+    card = build_card(old + tail, tail, max_chars=1200, max_hits=4)
+    assert card["status"] == "hit"
+    assert any("needle_symbol" in match["line"] for match in card["matches"])
+    assert len(card["rendered"]) <= 1200
+    assert build_card(old + "no such token", "no such token")["status"] == "no_hit"
+
+
+def test_reference_lookup_card_can_form_a_bounded_read_hint():
+    namespace = _load_overlay_source()
+    build_card = namespace["_build_reference_lookup_card"]
+    hint = namespace["_reference_proposal_hint"]
+    old = "historical lookup symbol=run_worker path=src/worker.py\n"
+    tail = 'Inspect the source for symbol "run_worker" with a 4096 byte limit.'
+    card = build_card(old + tail, tail)
+    assert hint(tail, card) == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "src/worker.py",
+        "max_bytes": 4096,
+    }
+
+
+def test_embedded_read_hint_is_bounded_and_relative():
+    namespace = _load_overlay_source()
+    hint = namespace["_mechanical_read_hint_from_tail"]
+    assert hint("Read file src/worker.py with a 4096 byte limit.") == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "src/worker.py",
+        "max_bytes": 4096,
+    }
+    assert hint("Read file C:/secret.txt with a 4096 byte limit.")["path"] == "C:/secret.txt"

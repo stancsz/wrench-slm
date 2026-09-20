@@ -45,6 +45,13 @@ the newest user message, not the full payload, so the model-side fast path can
 recover the active intent and output contract after skipping stale middle
 chunks. Tune the tail with `WRENCH_HISTORY_CONTROL_SUFFIX_CHARS`.
 
+`WRENCH_EMBEDDED_MECHANICAL_ROUTE=1` enables the package-local buffered API
+route for high-confidence read-only proposals. It searches the newest intent
+and the bounded exact-term lookup card, returns a standard chat completion with
+`model_calls=0`, and leaves execution to the independent verifier. Ambiguous
+requests continue through the model path. This is the portable toolbelt path,
+not a permission to execute arbitrary tools.
+
 This does not change the Safetensors weights. It is a serving architecture
 experiment and must be followed by long-context distillation or fine-tuning
 before quality is considered release-ready.

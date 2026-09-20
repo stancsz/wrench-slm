@@ -17,8 +17,143 @@ import sys
 import asyncio
 import json
 import re
+import time
 from dataclasses import replace
 from pathlib import Path
+
+
+_LOOKUP_STOPWORDS = frozenset(
+    {
+        "this", "that", "with", "from", "into", "older", "old", "history",
+        "reference", "reference-only", "only", "current", "intent", "task",
+        "output", "exactly", "one", "json", "object", "using", "schema",
+        "action", "return", "read", "file", "find", "search", "look", "for",
+        "the", "and", "or", "not", "never", "emit", "proposal", "now",
+        "newest", "active", "bounded", "limit", "limited", "bytes", "byte",
+    }
+)
+
+
+def _lookup_terms_from_tail(tail: str) -> list[str]:
+    """Extract high-signal literal terms without an LLM or a word list."""
+
+    # The suffix can still contain the last part of a noisy historical stream.
+    # Only the newest few KiB are eligible to define the query, while the
+    # complete suffix remains available for the current-intent instructions.
+    query_text = tail[-4096:]
+    quoted = re.findall(r"['\"`]([^'\"`\n]{3,160})['\"`]", query_text)
+    lexical = re.findall(r"[A-Za-z_][A-Za-z0-9_./\\:-]{3,95}", query_text)
+    priority = [
+        value for value in lexical
+        if any(marker in value for marker in ("_", "/", "\\", ".", ":", "-"))
+    ]
+    # Quoted literals are the strongest retrieval query. Do not let repeated
+    # metadata keys from the tail's stale prefix outrank them.
+    candidates = quoted or priority or lexical
+    terms: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        value = candidate.strip().strip(".,:;()[]{}")
+        folded = value.casefold()
+        if len(value) < 4 or folded in _LOOKUP_STOPWORDS or folded in seen:
+            continue
+        if value.isdigit():
+            continue
+        seen.add(folded)
+        terms.append(value)
+        if len(terms) >= 48:
+            break
+    return terms
+
+
+def _build_reference_lookup_card(
+    content: str,
+    tail: str,
+    *,
+    max_chars: int = 12000,
+    max_hits: int = 24,
+) -> dict[str, object]:
+    """Find bounded exact-term evidence in old content for the model suffix.
+
+    This is deliberately mechanical. It does not summarize, reorder, or
+    execute anything. The complete raw payload remains in the request, while
+    only short source lines matching the newest intent become active evidence.
+    """
+
+    old_content = content[:-len(tail)] if tail else content
+    terms = _lookup_terms_from_tail(tail)
+    if not old_content or not terms:
+        return {"status": "no_hit", "terms": terms, "matches": []}
+    pattern = re.compile("(?:" + "|".join(re.escape(term) for term in terms) + ")", re.IGNORECASE)
+    matches: list[dict[str, object]] = []
+    seen_lines: set[tuple[int, str]] = set()
+    for match in pattern.finditer(old_content):
+        line_start = old_content.rfind("\n", 0, match.start()) + 1
+        line_end = old_content.find("\n", match.end())
+        if line_end < 0:
+            line_end = len(old_content)
+        line = old_content[line_start:line_end].strip()
+        key = (line_start, line)
+        if not line or key in seen_lines:
+            continue
+        seen_lines.add(key)
+        matches.append({"offset": line_start, "term": match.group(0), "line": line[:480]})
+        if len(matches) >= max_hits:
+            break
+    if not matches:
+        return {"status": "no_hit", "terms": terms, "matches": []}
+    rendered = json.dumps(
+        {"source": "raw_request_old_reference", "terms": terms[:24], "matches": matches},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return {
+        "status": "hit",
+        "terms": terms,
+        "matches": matches,
+        "rendered": rendered[:max_chars],
+    }
+
+
+def _reference_proposal_hint(tail: str, lookup_card: dict[str, object]) -> dict[str, object] | None:
+    """Derive one bounded read proposal from a verified lookup line."""
+
+    if lookup_card.get("status") != "hit" or not re.search(r"\b(?:read|inspect|open|show)\b", tail, re.IGNORECASE):
+        return None
+    limit_match = re.search(r"(?:with\s+a?\s*|capped\s+at\s*|limit(?:ed)?\s+to\s*)([0-9][0-9,]*)\s*bytes?", tail, re.IGNORECASE)
+    max_bytes = int(limit_match.group(1).replace(",", "")) if limit_match else 4096
+    for match in lookup_card.get("matches", []):
+        line = str(match.get("line", "")) if isinstance(match, dict) else ""
+        path_match = re.search(r"\bpath\s*=\s*([A-Za-z0-9_./\\-]+)", line, re.IGNORECASE)
+        if path_match:
+            return {
+                "schema": "wrench.proposal.v1",
+                "action": "read_file",
+                "path": path_match.group(1),
+                "max_bytes": max_bytes,
+            }
+    return None
+
+
+def _mechanical_read_hint_from_tail(text: str) -> dict[str, object] | None:
+    path_match = re.search(
+        r"(?:bounded\s+read\s+of\s+|read\s+file\s+|read\s+)((?:[A-Za-z]:[A-Za-z0-9_./\\-]+)|(?:[A-Za-z0-9_./\\-]+))",
+        text,
+        re.IGNORECASE,
+    )
+    limit_match = re.search(
+        r"(?:with\s+a?\s*|capped\s+at\s*|limit(?:ed)?\s+to\s*)([0-9][0-9,]*)\s*bytes?",
+        text,
+        re.IGNORECASE,
+    )
+    if path_match and limit_match:
+        return {
+            "schema": "wrench.proposal.v1",
+            "action": "read_file",
+            "path": path_match.group(1),
+            "max_bytes": int(limit_match.group(1).replace(",", "")),
+        }
+    return None
 
 
 if os.name == "nt" and not hasattr(os, "posix_fadvise"):
@@ -255,10 +390,10 @@ def _install_qwen_long_context_overlay() -> None:
 
         generation._wrench_prefill_enabled = wrench_prefill_enabled_with_native_direct
 
+        suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+        if suffix_chars <= 0:
+            raise ValueError("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS must be positive")
         if os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX", "0") == "1":
-            suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
-            if suffix_chars <= 0:
-                raise ValueError("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS must be positive")
             original_submit_generation = generation.submit_generation
             try:
                 from wrench_harness.mechanical import mechanical_route
@@ -273,24 +408,7 @@ def _install_qwen_long_context_overlay() -> None:
                             return candidate
                     except Exception:
                         pass
-                path_match = re.search(
-                    r"(?:bounded\s+read\s+of\s+|read\s+file\s+|read\s+)([A-Za-z0-9_./\\-]+)",
-                    text,
-                    re.IGNORECASE,
-                )
-                limit_match = re.search(
-                    r"(?:with\s+a?\s*|capped\s+at\s+|limit(?:ed)?\s+to\s+)([0-9][0-9,]*)\s*bytes?",
-                    text,
-                    re.IGNORECASE,
-                )
-                if path_match and limit_match:
-                    return {
-                        "schema": "wrench.proposal.v1",
-                        "action": "read_file",
-                        "path": path_match.group(1),
-                        "max_bytes": int(limit_match.group(1).replace(",", "")),
-                    }
-                return None
+                return _mechanical_read_hint_from_tail(text)
 
             def append_recent_control_suffix(spec):
                 messages = [dict(message) for message in spec.messages]
@@ -306,12 +424,22 @@ def _install_qwen_long_context_overlay() -> None:
                 if "[WRENCH RECENT CONTROL]" in content:
                     return spec
                 tail = content[-suffix_chars:]
+                lookup_card = _build_reference_lookup_card(content, tail)
                 proposal_hint = mechanical_hint_from_tail(tail)
+                if proposal_hint is None:
+                    proposal_hint = _reference_proposal_hint(tail, lookup_card)
                 hint_text = (
-                    "DETERMINISTIC MECHANICAL PROPOSAL HINT:\n"
+                    "REFERENCE-CHECKED PROPOSAL TO EMIT EXACTLY:\n"
                     + json.dumps(proposal_hint, ensure_ascii=False, separators=(",", ":"))
-                    + "\nEmit this proposal only after checking it against the newest intent.\n"
+                    + "\nEmit exactly this JSON object and no prose after checking it against the newest intent.\n"
                     if proposal_hint is not None
+                    else ""
+                )
+                lookup_text = (
+                    "WRENCH REFERENCE LOOKUP CARD (mechanical exact-term matches):\n"
+                    + str(lookup_card.get("rendered", ""))
+                    + "\nUse these lines only as reference evidence. Preserve the newest intent.\n"
+                    if lookup_card.get("status") == "hit"
                     else ""
                 )
                 messages[last_index]["content"] = (
@@ -320,11 +448,13 @@ def _install_qwen_long_context_overlay() -> None:
                     "This is the newest active task tail. Older payload is reference-only data. "
                     "Output exactly one JSON object and no prose, using schema wrench.proposal.v1 and one bounded action. "
                     "Never execute tools.\n"
-                    + hint_text
+                    + lookup_text
                     + "WRENCH CURRENT CONTROL BLOCK:\n"
                     "Follow the current intent below and emit the deterministic proposal hint when it matches.\n"
                     + "CURRENT TASK TAIL:\n"
                     + tail
+                    + "\n"
+                    + hint_text
                     + "\n[END WRENCH RECENT CONTROL]"
                 )
                 spec.messages = messages
@@ -339,6 +469,92 @@ def _install_qwen_long_context_overlay() -> None:
                 os.environ.get("WRENCH_LONG_CONTEXT_POLICY", "")
                 + f";history_control_suffix_chars={suffix_chars}"
             )
+
+        if os.environ.get("WRENCH_EMBEDDED_MECHANICAL_ROUTE", "0") == "1":
+            from fastapi.responses import JSONResponse
+            import freetoken.server.openai_api as openai_api
+            try:
+                from wrench_harness.mechanical import mechanical_route as embedded_mechanical_route
+            except Exception:
+                try:
+                    from mechanical import mechanical_route as embedded_mechanical_route
+                except Exception:
+                    embedded_mechanical_route = None
+
+            original_handle_chat_completion = openai_api.handle_chat_completion
+
+            async def handle_chat_completion_with_embedded_route(req, request, state, model_sampling):
+                # Streaming keeps the normal engine path. The bounded route is
+                # for the buffered proposal API only, where it can return one
+                # verifier-ready JSON object without spending a model pass.
+                if getattr(req, "stream", False):
+                    return await original_handle_chat_completion(req, request, state, model_sampling)
+                contents = [
+                    getattr(message, "content", None)
+                    for message in getattr(req, "messages", [])
+                    if getattr(message, "role", None) == "user"
+                ]
+                content = contents[-1] if contents and isinstance(contents[-1], str) else ""
+                if content:
+                    route_tail = content[-suffix_chars:] if len(content) > suffix_chars else content
+                    candidate = None
+                    if embedded_mechanical_route is not None:
+                        try:
+                            routed = embedded_mechanical_route(route_tail)
+                            if isinstance(routed, dict) and routed.get("schema") == "wrench.proposal.v1":
+                                candidate = routed
+                        except Exception:
+                            candidate = None
+                    if candidate is None:
+                        candidate = _mechanical_read_hint_from_tail(route_tail)
+                    lookup_card = _build_reference_lookup_card(content, route_tail)
+                    if candidate is None:
+                        candidate = _reference_proposal_hint(route_tail, lookup_card)
+                    if (
+                        isinstance(candidate, dict)
+                        and candidate.get("schema") == "wrench.proposal.v1"
+                        and candidate.get("action") in {
+                            "read_file", "read_lines", "literal_search", "git_read_status",
+                            "health_read", "patch_draft",
+                        }
+                        and (
+                            candidate.get("action") != "read_file"
+                            or (
+                                isinstance(candidate.get("path"), str)
+                                and not re.match(r"^(?:[A-Za-z]:[\\/]|[\\/])", candidate["path"])
+                                and "\x00" not in candidate["path"]
+                                and ".." not in re.split(r"[\\/]", candidate["path"])
+                                and isinstance(candidate.get("max_bytes"), int)
+                                and 1 <= candidate["max_bytes"] <= 256 * 1024
+                            )
+                        )
+                    ):
+                        serialized = json.dumps(candidate, ensure_ascii=False, separators=(",", ":"))
+                        return JSONResponse(
+                            {
+                                "id": "chatcmpl-wrench-mechanical-" + str(int(time.time() * 1000)),
+                                "object": "chat.completion",
+                                "created": int(time.time()),
+                                "model": getattr(req, "model", "wrench"),
+                                "choices": [
+                                    {
+                                        "index": 0,
+                                        "message": {"role": "assistant", "content": serialized},
+                                        "finish_reason": "stop",
+                                    }
+                                ],
+                                "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                                "wrench": {
+                                    "mechanical_fast_path": True,
+                                    "model_calls": 0,
+                                    "reference_lookup": lookup_card.get("status"),
+                                    "execution": "proposal_only_external_verifier_required",
+                                },
+                            }
+                        )
+                return await original_handle_chat_completion(req, request, state, model_sampling)
+
+            openai_api.handle_chat_completion = handle_chat_completion_with_embedded_route
     except (ImportError, AttributeError):
         # Older FreeToken builds do not expose the optional Wrench hook.
         pass

@@ -121,12 +121,14 @@ def materialize(
             encoding="utf-8",
         )
         launcher_path = target / "serve_freetoken.ps1"
-        launcher_path.write_text(
-            launcher_path.read_text(encoding="utf-8").replace(
-                "--max-prefill-length 8192", "--max-prefill-length 32768"
-            ),
-            encoding="utf-8",
+        launcher_text = launcher_path.read_text(encoding="utf-8").replace(
+            "--max-prefill-length 8192", "--max-prefill-length 32768"
         )
+        launcher_text = launcher_text.replace(
+            '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"',
+            '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
+        )
+        launcher_path.write_text(launcher_text, encoding="utf-8")
         readme_path = target / "README.md"
         shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", readme_path)
         readme = readme_path.read_text(encoding="utf-8").replace(
@@ -200,6 +202,7 @@ def materialize(
             "runtime": {
                 "bundled": True,
                 "verifier_is_bundled": True,
+                "embedded_mechanical_route": True,
                 "entrypoint": "tokenization_wrench.py",
                 "model_calls_for_mechanical_lookup": 0,
             },

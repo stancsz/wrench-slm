@@ -1167,6 +1167,17 @@ MiniMax parity, matched 220-case utility, or release readiness. Evidence:
 `phases/phase-87-native-prefill-tuning/native-4m-history-skip-layers-pure.json`,
 and `phases/phase-87-native-prefill-tuning/history-skip-layers-runtime-hint4.json`.
 
+2026-09-20 embedded mechanical endpoint route: the portable runtime now has an
+opt-in buffered OpenAI route for high-confidence read-only proposals. It can
+scan the newest intent, resolve a path from a bounded exact-term card in old
+reference text, and return a standard chat completion without a model call.
+The synthetic 80,079-character history probe placed `run_worker` at offset
+40,000, resolved `src/wrench_harness/worker.py`, and passed the independent
+verifier in 30.992 ms with `model_calls=0`. Ambiguous requests still use the
+model path. This is embedded-toolbelt evidence only, not native 4M retrieval
+quality, matched 220-case utility, or MiniMax parity. Evidence:
+`phases/phase-88-public-package/history-lookup-route-v7-accepted.json`.
+
 2026-09-20 MoE residency tuning: an explicit `moe_cache_size=320` was tested
 because the historical warm 16K NVFP4 probe used that geometry. The 16K probe
 was healthy at 14,558.191 ms, but the complete direct 2M replay took

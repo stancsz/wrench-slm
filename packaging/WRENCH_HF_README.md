@@ -35,6 +35,11 @@ the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
 long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
 is intended to feel like one model directory, not a separately installed harness.
 
+The bundled FreeToken launcher enables the package-local mechanical route for
+high-confidence read-only proposals. Those requests return a standard chat
+completion with `model_calls=0`; ambiguous requests continue through the model.
+Every proposal remains subject to an independent verifier before execution.
+
 The embedded worker API is available directly from the downloaded directory:
 
 ```python
