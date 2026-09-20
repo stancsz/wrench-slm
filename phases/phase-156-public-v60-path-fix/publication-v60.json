@@ -1,0 +1,29 @@
+{
+  "phase": "phase-156-public-v60-path-fix",
+  "date": "2026-09-20",
+  "hub_repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "hub_revision": "6eab44cd8c41b24de4c424b524cba670a1f3713b",
+  "targeted_materializer_tests": 5,
+  "full_regression": {
+    "passed": 146,
+    "warnings": 14,
+    "duration_seconds": 19.29
+  },
+  "structural_validation": {
+    "status": "PASS_STRUCTURAL_PACKAGE",
+    "errors": []
+  },
+  "mechanical_4m_route": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "elapsed_ms": 16.171,
+    "model_calls": 0,
+    "payload_tokens": 4000000
+  },
+  "fresh_hub_download": {
+    "duplicate_worker_path": false,
+    "correct_worker_path": true,
+    "process_tree_cleanup": true,
+    "serial_expert_load": true,
+    "native_direct_input": true
+  }
+}

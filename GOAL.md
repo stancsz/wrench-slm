@@ -1733,3 +1733,13 @@ at Hub revision `5456c8942efc14950fec0d2ce57f73eaa9a02c5c`. Native 2M/4M
 generation, retrieval quality, MiniMax parity, GGUF compatibility, and
 production readiness remain open. Evidence:
 `phases/phase-155-native-process-tree-cleanup`.
+
+2026-09-20 public v60 copy-paste repair: the portable package materializer now
+rewrites the complete canonical package path in the direct Python worker
+example, avoiding a duplicated `NVFP4-native4M` suffix. The targeted test and
+full regression passed, the v60 package passed structural validation, and the
+fresh Hub download retained the native launcher controls. Public Hub revision
+is `6eab44cd8c41b24de4c424b524cba670a1f3713b`. Native 2M/4M generation,
+retrieval quality, MiniMax parity, GGUF compatibility, and production
+readiness remain open. Evidence:
+`phases/phase-156-public-v60-path-fix`.

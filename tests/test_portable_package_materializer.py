@@ -12,6 +12,11 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     readme = (target / "README.md").read_text(encoding="utf-8")
     assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M" in readme
     assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-NVFP4-native4M" not in readme
+    assert (
+        './Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False'
+        in readme
+    )
+    assert "native4M-NVFP4-native4M\", load_model=False" not in readme
     launcher = (target / "serve_freetoken.ps1").read_text(encoding="utf-8")
     assert '[string]$FreeTokenExecutable = "ft.exe"' in launcher
     assert "[switch]$FastHistory" in launcher
