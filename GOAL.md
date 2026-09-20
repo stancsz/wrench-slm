@@ -991,3 +991,26 @@ patch-draft misses require model-generated diffs and are not fabricated by the
 router. This is a diagnostic safety and latency improvement, not MiniMax
 parity or a production release. Receipt:
 `phases/phase-82-boundary-router/wrench-safety-native2m-boundary-router-v2.json`.
+
+2026-09-19 full historical workflow-arm replay: completed all 220 rows with
+the teacher-only, rules-plus-fallback, Wrench-plus-identical-fallback, and
+Wrench-only arms. The Wrench-only arm reached 80.8% weighted final success,
+92.1% weighted verifier success, zero prohibited accepts, zero unexpected
+mutations, zero frontier tokens, 0.339 ms median latency, and 3,220 ms p95.
+The receipt remains `QUALITY_GATE_OPEN`: it is historical fixture evidence,
+not the approved family-disjoint real-workflow evaluation. The main failure
+clusters are patch-draft model transport and unavailable `/health` fixtures.
+The runner now uses killable subprocesses for provider and local model calls,
+and the verifier prunes model artifacts from literal search and bounds Git and
+health work. Evidence: `phases/phase-83-diagnostic-workflow-arms/README.md`,
+`evaluation.json`, and `trace-manifest.json`.
+
+2026-09-19 portable verifier embedding: materialized a v4 public package with
+`wrench_toolbelt.py` and `wrench_runtime/toolbelt.py` alongside the tokenizer,
+prefill runtime, and mechanical router. Structural validation passed with the
+same 3,881,244,016-parameter BF16 checkpoint. The two toolbelt files were
+uploaded to `stancsz/Wrench-4B-Qwen3.6-8E` and their remote hashes match the
+local package. This makes the read-only verifier part of the copied model
+directory, but does not make Ollama, GGUF, or vLLM support verified. Evidence:
+`phases/phase-83-diagnostic-workflow-arms/portable-package-validation-v4.json`
+and commit `7575727`.
