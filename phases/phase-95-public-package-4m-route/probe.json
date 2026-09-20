@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.public-package-4m-route-probe.v1",
+  "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v20",
+  "requested_payload_tokens": 4000000,
+  "raw_payload_chars": 35199491,
+  "elapsed_ms": 9300.602,
+  "model_calls": 0,
+  "target_reference_sha256": "45f1f6db952ab38195b6fe02dc2d823711eaa8ef90b8b7ef715faafbd6170993",
+  "result": {
+    "status": "accepted",
+    "action": "git_read_status",
+    "observation": {
+      "repo_root": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm",
+      "output": "## main...origin/main [ahead 67]\n",
+      "mutated": false
+    },
+    "model_output_validated": true,
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "raw_model_output": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"git_read_status\",\"repo_root\":\".\"}"
+  },
+  "quality_claim": false,
+  "scope": "direct downloaded-package worker route; not native dense attention quality"
+}

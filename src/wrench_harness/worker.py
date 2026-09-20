@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .mechanical import mechanical_route, reference_lookup_route
+from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 from .prefill import MechanicalPrefillIndex, build_dynamic_prefill, split_monolithic_current_message
@@ -149,7 +149,15 @@ class WrenchWorker:
             # payload remains available as reference evidence for multi-turn
             # conversations, including payloads whose old lookup lives in an
             # earlier message.
-            mechanical = mechanical_route(prompt) or reference_lookup_route(reference_payload)
+            route_suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+            if route_suffix_chars < 1:
+                return {"status": "abstain", "fallback_reason": "qwen_route_suffix_invalid"}
+            # A monolithic user message may contain millions of tokens of old
+            # lookup data. Only the newest suffix can define the active action.
+            # The complete payload remains available to reference_lookup_route
+            # for exact historical evidence.
+            route_prompt = active_intent_suffix(prompt, suffix_chars=route_suffix_chars)
+            mechanical = mechanical_route(route_prompt) or reference_lookup_route(reference_payload)
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":
@@ -158,7 +166,7 @@ class WrenchWorker:
                     result = execute_model_output(
                         serialized,
                         self.allowed_root,
-                        request_prompt=prompt,
+                        request_prompt=route_prompt,
                     )
                 result.update(
                     {

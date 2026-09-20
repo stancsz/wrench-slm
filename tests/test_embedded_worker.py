@@ -88,6 +88,22 @@ def test_embedded_worker_uses_earlier_user_message_as_reference(tmp_path: Path):
     assert result["mechanical_fast_path"] is True
 
 
+def test_embedded_worker_uses_latest_suffix_as_active_intent(tmp_path: Path):
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    noisy_history = "stale lookup telemetry record status observed unrelated reference-only data; " * 2_000
+    result = worker.propose(
+        [{
+            "role": "user",
+            "content": noisy_history + "\nRead README.md with a 4096 byte limit.",
+        }],
+    )
+    assert result["status"] == "abstain"
+    assert result["fallback_reason"] == "missing_path"
+    assert result["backend"] == "embedded-mechanical"
+    assert result["mechanical_fast_path"] is True
+    assert '"action":"read_file"' in result["raw_model_output"]
+
+
 def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
     (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
 

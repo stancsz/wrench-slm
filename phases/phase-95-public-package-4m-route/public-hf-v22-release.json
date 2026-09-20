@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v22",
+  "package_format": "huggingface-safetensors",
+  "weights_changed": false,
+  "runtime_fix": "latest-intent-control-block-before-mechanical-route",
+  "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "four_million_token_probe": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "requested_payload_tokens": 4000000,
+    "raw_payload_chars": 35199491,
+    "elapsed_ms": 10.948,
+    "model_calls": 0,
+    "action": "read_file",
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "target_reference_preserved": true
+  },
+  "quality_claim": false,
+  "release_boundary": "package-worker evidence only; not dense native 4M attention quality, MiniMax parity, or production readiness",
+  "regression_suite": "109 passed"
+}

@@ -1289,3 +1289,14 @@ read_lines, 30 literal_search, 30 git_read_status, and 30 health_read cases
 routed; 20 patch prompts without concrete diffs remained model-fallback
 required. This is current source coverage evidence, not weighted frontier-token
 coverage or MiniMax parity. Evidence: `phases/phase-94-mechanical-route`.
+
+2026-09-20 public package latest-intent correction: the downloaded package had
+a real 4M monolithic-payload bug where stale reference text could override the
+newest read request. The worker now isolates the newest explicit intent before
+mechanical routing while preserving the complete payload for reference lookup.
+The v22 materialized package passed structural validation and a 4,000,000-token
+estimated payload probe returned the expected `read_file` action through the
+embedded route in `10.948` ms with zero model calls. The full suite passed
+`109` tests. This closes a package routing correctness issue, not native dense
+4M attention quality, MiniMax parity, or production readiness. Evidence:
+`phases/phase-95-public-package-4m-route`.

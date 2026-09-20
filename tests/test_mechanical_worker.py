@@ -3,7 +3,20 @@ from __future__ import annotations
 from tools.score_mechanical_worker import evaluate_manifest
 from wrench_harness import execute_model_output
 from wrench_harness.core import json_result
-from wrench_harness.mechanical import mechanical_route, reference_lookup_route
+from wrench_harness.mechanical import active_intent_suffix, mechanical_route, reference_lookup_route
+
+
+def test_active_intent_suffix_ignores_stale_monolithic_metadata():
+    prompt = ("stale lookup telemetry status observed; " * 2_000) + "CURRENT INTENT: Read README.md with a 4096 byte limit."
+    active = active_intent_suffix(prompt)
+    assert active.startswith("CURRENT INTENT:")
+    assert "status observed" not in active
+    assert mechanical_route(prompt) == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "README.md",
+        "max_bytes": 4096,
+    }
 
 
 def _arm(*, frontier_tokens: int, success: bool = True, fallback: bool = False, unsafe: bool = False) -> dict:

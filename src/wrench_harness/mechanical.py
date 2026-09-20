@@ -71,9 +71,26 @@ _REFERENCE_QUERY_STOPWORDS = frozenset(
     }
 )
 
+_ACTIVE_INTENT_MARKERS = (
+    "[WRENCH RECENT CONTROL]",
+    "WRENCH CURRENT CONTROL BLOCK",
+    "CURRENT INTENT:",
+)
+
 
 def _proposal(action: str, **fields: Any) -> dict[str, Any]:
     return {"schema": "wrench.proposal.v1", "action": action, **fields}
+
+
+def active_intent_suffix(prompt: str, *, suffix_chars: int = 16_000) -> str:
+    """Keep the newest bounded command separate from stale monolithic history."""
+
+    if not isinstance(prompt, str) or suffix_chars < 1:
+        return ""
+    tail = prompt[-suffix_chars:]
+    positions = [tail.casefold().rfind(marker.casefold()) for marker in _ACTIVE_INTENT_MARKERS]
+    position = max(positions, default=-1)
+    return tail[position:] if position >= 0 else tail
 
 
 def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[str, Any] | None:
@@ -268,6 +285,7 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
 
     if not isinstance(prompt, str) or not prompt.strip():
         return None
+    prompt = active_intent_suffix(prompt)
     lowered = prompt.casefold().strip()
     boundary = _explicit_boundary_abstention(prompt, lowered)
     if boundary is not None:
