@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.public-hf-docs-receipt.v1",
+  "status": "PUBLIC_DOCUMENTATION_UPDATED",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "52ef7bf62e0e1847ae2aeae7e74548d37e370d00",
+  "updated_files": [
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md"
+  ],
+  "documented_behavior": "simple reads default to a 256 KiB verifier cap; entire or complete reads remain fallback-required",
+  "weights_changed": false,
+  "remote_is_public": true
+}

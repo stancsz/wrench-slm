@@ -39,6 +39,9 @@ The bundled FreeToken launcher enables the package-local mechanical route for
 high-confidence read-only proposals. Those requests return a standard chat
 completion with `model_calls=0`; ambiguous requests continue through the model.
 Every proposal remains subject to an independent verifier before execution.
+Simple reads without an explicit byte limit use the verifier's bounded 256 KiB
+cap. Requests asking for the entire or complete file remain fallback-required
+so a large file is never silently truncated.
 
 The embedded worker API is available directly from the downloaded directory:
 

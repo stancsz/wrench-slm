@@ -61,6 +61,8 @@ proposal = worker.propose([
 The worker routes high-confidence mechanical requests through the embedded
 deterministic path. Ambiguous requests can set `load_model=True` and use the
 standard Transformers model, with every output still passing the verifier.
+An uncomplicated read with no byte limit uses a 256 KiB verifier cap; requests
+for the entire or complete file remain model/fallback-required.
 
 For a local Hugging Face directory, the embedded hook is loaded through the
 normal Transformers API:
