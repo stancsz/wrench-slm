@@ -14,7 +14,7 @@ The default launcher remains unchanged and does not enable this policy.
 - 2M direct input without this policy: `1,999,929` prompt tokens,
   `truncated=false`, HTTP 200, `1,287,078.199 ms`
 - Generated launcher PowerShell AST parse: `0` errors
-- Full repository tests after the launcher change: `121 passed, 10 warnings`
+- Full repository tests after the launcher change: `122 passed, 10 warnings`
 
 The history-layer skip measurements are capacity and throughput evidence only.
 They do not establish retrieval quality, MiniMax parity, safety parity, or a
@@ -22,7 +22,9 @@ production default. The profile is therefore opt-in.
 
 The public package revision containing the profile, lookup fix, and PowerShell
 launcher fix is `5176fd64ff511a8f959cd505966d8af02b8efc9e`. The boundary is
-request-relative:
+request-relative. The latest public revision is
+`85389af2c506d5fe21b842edf189c2212349b351` and also rejects empty unified
+diffs at the verifier boundary:
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
 the same endpoint safely.
@@ -49,6 +51,12 @@ MiniMax parity.
 The portable launcher now defaults to `ft.exe`, avoiding the Windows
 PowerShell `ft` alias for `Format-Table`. An explicit FreeToken executable
 path can still be supplied when the binary is not on `PATH`.
+
+A short 48-token semantic probe completed in 1.874 seconds, but produced
+an empty diff. The new verifier rejects that output as
+`invalid_patch_diff`; fast semantic mode must therefore be treated as a fast
+fail until patch content is supplied or the model is fine-tuned to generate a
+real diff.
 
 The full portable 220-case replay preserved `200/200` outcome matches and
 `0` prohibited accepts on the mechanical fast path. The remaining 20 eligible

@@ -266,6 +266,11 @@ def _patch_draft(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
         return _abstain("patch_draft_requires_review_only")
     if not isinstance(diff, str) or not diff or len(diff.encode("utf-8")) > MAX_DIFF_BYTES:
         return _abstain("invalid_patch_diff")
+    diff_lines = diff.splitlines()
+    has_removed_content = any(line.startswith("-") and not line.startswith("---") for line in diff_lines)
+    has_added_content = any(line.startswith("+") and not line.startswith("+++") for line in diff_lines)
+    if not has_removed_content or not has_added_content:
+        return _abstain("invalid_patch_diff")
     resolved: list[str] = []
     for value in files:
         path = _bounded_path(value, root)

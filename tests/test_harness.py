@@ -77,6 +77,17 @@ def test_health_and_patch_fail_closed(tmp_path: Path):
     assert patch["observation"]["applied"] is False
     assert target.read_text(encoding="utf-8") == "old\n"
 
+    empty_patch = execute_proposal(
+        proposal(
+            "patch_draft",
+            files=["note.txt"],
+            review_only=True,
+            diff="--- a/note.txt\n+++ b/note.txt\n@@ -1 @@\n\n",
+        ),
+        tmp_path,
+    )
+    assert empty_patch["fallback_reason"] == "invalid_patch_diff"
+
     applied = execute_proposal(proposal("patch_draft", files=["note.txt"], review_only=False, diff="x"), tmp_path)
     assert applied["fallback_reason"] == "patch_draft_requires_review_only"
 

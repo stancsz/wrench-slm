@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.patch-short-probe.v1",
+  "status": "FAST_FAIL_EMPTY_DIFF_REJECTED",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-fast-history-auto-smoke-v5",
+  "endpoint": "http://127.0.0.1:28906/v1/chat/completions",
+  "case_id": "eval59_patch_draft_00_00",
+  "max_tokens": 48,
+  "elapsed_ms": 1874.02,
+  "usage": {
+    "prompt_tokens": 533,
+    "completion_tokens": 47,
+    "total_tokens": 580
+  },
+  "model_output": {
+    "action": "patch_draft",
+    "files": ["README.md"],
+    "review_only": true,
+    "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 @@\n\n"
+  },
+  "result": {
+    "status": "abstain",
+    "fallback_reason": "invalid_patch_diff"
+  },
+  "model_calls": 1,
+  "quality_claim": false,
+  "scope": "short semantic fallback safety probe; no usable patch content was supplied by the prompt"
+}
