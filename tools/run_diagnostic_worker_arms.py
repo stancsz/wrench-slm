@@ -409,6 +409,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
             {
                 "id": row["id"],
                 "family": row["family"],
+                "category": row.get("category", "unknown"),
+                "split": row.get("split", "unknown"),
                 "model_input_tokens": int((teacher.get("usage") or {}).get("prompt_tokens", max(1, len(row["prompt"]) // 4))),
                 "workload_weight": max(1.0, float(teacher["frontier_tokens"] or 1)),
                 "arms": {

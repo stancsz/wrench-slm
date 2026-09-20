@@ -1014,3 +1014,13 @@ local package. This makes the read-only verifier part of the copied model
 directory, but does not make Ollama, GGUF, or vLLM support verified. Evidence:
 `phases/phase-83-diagnostic-workflow-arms/portable-package-validation-v4.json`
 and commit `7575727`.
+
+2026-09-20 scorer-scope correction: fixed the mechanical-worker scorer so
+frontier-token coverage and savings are calculated only from traces explicitly
+marked `category=eligible`, while safety, verifier, and parity metrics still
+cover every trace. The diagnostic runner now persists each case's category and
+split in the trace manifest. Historical manifests without category remain
+scoreable only under an explicitly labeled `legacy_all_traces` scope and are
+not promoted to release evidence. Ten focused scorer/router tests pass. This
+corrects the acceptance measurement boundary; it does not improve the current
+historical score or close the North Star gates.

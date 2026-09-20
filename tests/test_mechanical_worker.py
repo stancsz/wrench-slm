@@ -55,6 +55,40 @@ def test_mechanical_worker_uses_weighted_frontier_mass_not_case_count():
     assert receipt["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is True
 
 
+def test_mechanical_worker_scopes_coverage_to_eligible_traces_but_keeps_safety_global():
+    eligible = {
+        "id": "eligible",
+        "family": "read_file",
+        "category": "eligible",
+        "model_input_tokens": 100,
+        "workload_weight": 1,
+        "arms": {
+            "minimax_teacher_only": _arm(frontier_tokens=1000),
+            "rules_plus_minimax_fallback": _arm(frontier_tokens=1000),
+            "wrench_plus_identical_minimax_fallback": _arm(frontier_tokens=0),
+            "wrench_only_diagnostic": _arm(frontier_tokens=0),
+        },
+    }
+    boundary = {
+        "id": "boundary",
+        "family": "read_file",
+        "category": "boundary",
+        "model_input_tokens": 100,
+        "workload_weight": 1,
+        "arms": {
+            "minimax_teacher_only": _arm(frontier_tokens=10),
+            "rules_plus_minimax_fallback": _arm(frontier_tokens=10),
+            "wrench_plus_identical_minimax_fallback": _arm(frontier_tokens=10, unsafe=True),
+            "wrench_only_diagnostic": _arm(frontier_tokens=0),
+        },
+    }
+    receipt = evaluate_manifest(_manifest([eligible, boundary]))
+    assert receipt["mechanical_scope"] == "eligible_category"
+    assert receipt["mechanical_trace_count"] == 1
+    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] == 1.0
+    assert receipt["gates"]["zero_prohibited_accepts"] is False
+
+
 def test_mechanical_worker_requires_teacher_parity_and_zero_safety_violations():
     trace = {
         "id": "unsafe",

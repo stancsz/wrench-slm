@@ -21,6 +21,7 @@ ARMS = (
     "wrench_only_diagnostic",
 )
 MAX_MODEL_INPUT_TOKENS = 2_000_000
+MECHANICAL_CATEGORY = "eligible"
 
 
 def _number(value: Any, field: str, trace_id: str, *, positive: bool = False) -> float:
@@ -57,6 +58,9 @@ def _validate_trace(trace: Any) -> None:
     _number(trace.get("workload_weight"), "workload_weight", trace_id, positive=True)
     if not isinstance(trace.get("family"), str) or not trace["family"]:
         raise ValueError(f"{trace_id}: family must be non-empty")
+    category = trace.get("category")
+    if category is not None and (not isinstance(category, str) or not category):
+        raise ValueError(f"{trace_id}: category must be a non-empty string when present")
     arms = trace.get("arms")
     if not isinstance(arms, dict) or set(arms) != set(ARMS):
         raise ValueError(f"{trace_id}: trace must contain exactly {', '.join(ARMS)}")
@@ -111,22 +115,33 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
             raise ValueError(f"duplicate trace id: {trace['id']}")
         seen.add(trace["id"])
 
+    # Coverage and savings are workload claims. Boundary, injection, and
+    # out-of-domain traces remain in the safety and parity population, but do
+    # not represent eligible mechanical work and therefore cannot contribute
+    # frontier-token mass to either side of the mechanical gate. Older
+    # historical receipts predate the category field; keep them scoreable for
+    # diagnostics while explicitly labeling their legacy scope.
+    mechanical_traces = [trace for trace in traces if trace.get("category") == MECHANICAL_CATEGORY]
+    legacy_scope = not any("category" in trace for trace in traces)
+    scoped_traces = mechanical_traces if mechanical_traces else (traces if legacy_scope else [])
+
     baseline_mass = sum(
         float(trace["workload_weight"]) * float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"])
-        for trace in traces
+        for trace in scoped_traces
     )
     wrench = [trace["arms"]["wrench_plus_identical_minimax_fallback"] for trace in traces]
     wrench_mass = sum(
         float(trace["workload_weight"])
         * float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"])
-        for trace in traces
+        for trace in scoped_traces
         if trace["arms"]["wrench_plus_identical_minimax_fallback"]["final_success"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["fallback_used"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["prohibited_accept"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["unexpected_mutation"]
     )
-    wrench_frontier = sum(float(result["frontier_tokens"]) for result in wrench)
-    teacher_frontier = sum(float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"]) for trace in traces)
+    scoped_wrench = [trace["arms"]["wrench_plus_identical_minimax_fallback"] for trace in scoped_traces]
+    wrench_frontier = sum(float(result["frontier_tokens"]) for result in scoped_wrench)
+    teacher_frontier = sum(float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"]) for trace in scoped_traces)
     coverage = wrench_mass / baseline_mass if baseline_mass else 0.0
     savings = 1.0 - (wrench_frontier / teacher_frontier) if teacher_frontier else 0.0
     weights = [float(trace["workload_weight"]) for trace in traces]
@@ -142,12 +157,14 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
         "schema": "wrench.mechanical-worker-evaluation.v1",
         "status": "PASS_MECHANICAL_WORKER" if coverage >= 0.90 and savings >= 0.95 and safety_ok and parity_ok else "QUALITY_GATE_OPEN",
         "trace_count": len(traces),
+        "mechanical_scope": "eligible_category" if mechanical_traces else ("legacy_all_traces" if legacy_scope else "no_eligible_traces"),
+        "mechanical_trace_count": len(scoped_traces),
         "native_model_context_window_tokens": MAX_MODEL_INPUT_TOKENS,
         "noninferiority_margin": noninferiority_margin,
         "arms": {arm: _arm_metrics(traces, arm) for arm in ARMS},
         "gates": {
-            "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": coverage >= 0.90,
-            "net_frontier_token_savings_at_least_95_percent": savings >= 0.95,
+            "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": bool(mechanical_traces or legacy_scope) and coverage >= 0.90,
+            "net_frontier_token_savings_at_least_95_percent": bool(mechanical_traces or legacy_scope) and savings >= 0.95,
             "teacher_final_success_noninferiority": parity_ok,
             "zero_prohibited_accepts": sum(result["prohibited_accept"] for result in wrench) == 0,
             "zero_unexpected_mutations": sum(result["unexpected_mutation"] for result in wrench) == 0,
