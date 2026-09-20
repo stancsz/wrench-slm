@@ -475,16 +475,19 @@ def _install_qwen_long_context_overlay() -> None:
             import freetoken.server.openai_api as openai_api
             try:
                 from wrench_harness.mechanical import (
+                    active_intent_suffix as embedded_active_intent_suffix,
                     mechanical_route as embedded_mechanical_route,
                     reference_lookup_route as embedded_reference_lookup_route,
                 )
             except Exception:
                 try:
                     from mechanical import (
+                        active_intent_suffix as embedded_active_intent_suffix,
                         mechanical_route as embedded_mechanical_route,
                         reference_lookup_route as embedded_reference_lookup_route,
                     )
                 except Exception:
+                    embedded_active_intent_suffix = None
                     embedded_mechanical_route = None
                     embedded_reference_lookup_route = None
 
@@ -504,8 +507,16 @@ def _install_qwen_long_context_overlay() -> None:
                 contents = [content for content in contents if isinstance(content, str)]
                 content = contents[-1] if contents else ""
                 reference_payload = "\n\n".join(contents)
+                raw_input_chars = sum(len(value) for value in contents)
+                raw_input_tokens_estimate = sum(
+                    max(1, value.count(" ") + value.count("\n") + 1)
+                    for value in contents
+                )
                 if content:
-                    route_tail = content[-suffix_chars:] if len(content) > suffix_chars else content
+                    if embedded_active_intent_suffix is not None:
+                        route_tail = embedded_active_intent_suffix(content, suffix_chars=suffix_chars)
+                    else:
+                        route_tail = content[-suffix_chars:] if len(content) > suffix_chars else content
                     candidate = None
                     if embedded_mechanical_route is not None:
                         try:
@@ -559,10 +570,18 @@ def _install_qwen_long_context_overlay() -> None:
                                         "finish_reason": "stop",
                                     }
                                 ],
-                                "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                                "usage": {
+                                    "prompt_tokens": raw_input_tokens_estimate,
+                                    "completion_tokens": 0,
+                                    "total_tokens": raw_input_tokens_estimate,
+                                },
                                 "wrench": {
                                     "mechanical_fast_path": True,
                                     "model_calls": 0,
+                                    "raw_input_chars": raw_input_chars,
+                                    "raw_input_tokens_estimate": raw_input_tokens_estimate,
+                                    "effective_working_tokens": 0,
+                                    "input_mode": "complete_raw_payload_before_model",
                                     "reference_lookup": lookup_card.get("status"),
                                     "execution": "proposal_only_external_verifier_required",
                                 },

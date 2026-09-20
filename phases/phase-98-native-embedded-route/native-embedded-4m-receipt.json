@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.native-embedded-route-receipt.v1",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v25",
+  "backend": "FreeToken",
+  "configured_max_seq_len": 4000000,
+  "endpoint": "/v1/chat/completions",
+  "probe": {
+    "status": "PASS_OPENAI_EMBEDDED_ROUTE_4M",
+    "requested_tokens": 4000000,
+    "raw_payload_chars": 32000075,
+    "reported_prompt_tokens": 4000010,
+    "http_status": 200,
+    "elapsed_ms": 454.852,
+    "action": "read_file",
+    "model_calls": 0,
+    "effective_working_tokens": 0,
+    "input_mode": "complete_raw_payload_before_model"
+  },
+  "native_generation_quality_verified": false,
+  "native_generation_throughput_pass": false,
+  "minimax_parity_verified": false,
+  "production_ready": false
+}

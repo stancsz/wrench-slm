@@ -1322,3 +1322,13 @@ backend for NVFP4. Standard Transformers full-weight loading remains
 unverified because the available environments are below the package's 5.17
 minimum. This is a native capacity pass but a throughput fail. Evidence:
 `phases/phase-97-standard-weight-load`.
+
+2026-09-20 native embedded-route accounting correction: the v25 package's real
+FreeToken endpoint accepted a complete 4,000,000-token raw request at
+`/v1/chat/completions`, reported `4,000,010` prompt tokens, preserved the
+latest intent, returned the expected `read_file` proposal, and made zero model
+calls in `454.852` ms. The route now records raw input chars, raw token
+estimate, effective working tokens, and input mode instead of reporting zero
+prompt tokens. This is direct endpoint capacity plus fast mechanical routing,
+not dense native generation quality or MiniMax parity. Evidence:
+`phases/phase-98-native-embedded-route`.
