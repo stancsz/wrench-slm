@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "status": "PUBLIC_EXPERIMENTAL_PACKAGE_V20_VERIFIED",
+  "source_commit": "45347ce",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "845432235d575ec7eb175e772b0e6f87094b8196",
+  "local_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v20",
+  "package_validation": "phases/phase-91-hf-tokenizer-prefill/native4m-nvfp4-portable-v20-validation.json",
+  "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "package_size_bytes": 3423695149,
+  "embedded_runtime": true,
+  "dynamic_staged_prefill": true,
+  "standard_hf_tokenizer_probe": "phases/phase-91-hf-tokenizer-prefill/standard-hf-tokenizer-4m-v20.json",
+  "standard_hf_tokenizer_probe_summary": {
+    "status": "PASS_STANDARD_HF_4M_STAGING",
+    "requested_payload_tokens": 4000000,
+    "raw_payload_chars": 35199482,
+    "staged_ms": 86.336,
+    "raw_token_count": 3999943,
+    "model_prefill_token_count": 1850,
+    "target_reference_preserved": true,
+    "model_calls": 0
+  },
+  "runtime_hashes": {
+    "tokenization_wrench.py": "0A9ACAB101FD47DFFA0A4BFF59AE6597293FCC0DCB4F6D0B8D5E81B63F0DCDB7",
+    "wrench_prefill.py": "D9E221A85E6D262A7CDB04EFC3705CFE3E0ED79E2325EC45E915F2A6D98D0470",
+    "wrench_runtime/prefill.py": "D9E221A85E6D262A7CDB04EFC3705CFE3E0ED79E2325EC45E915F2A6D98D0470",
+    "wrench_runtime/worker.py": "9779FDD54BCD67A594C1E52B9706C4880C4B21DD33EE03779655216C87257E83"
+  },
+  "claims": {
+    "copy_paste_download": true,
+    "standard_hf_internal_4m_staging": true,
+    "native_dense_4m_retrieval_quality": false,
+    "minimax_parity": false,
+    "vllm": false,
+    "ollama": false,
+    "gguf": false,
+    "production_ready": false
+  }
+}

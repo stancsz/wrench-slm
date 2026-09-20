@@ -1,0 +1,39 @@
+{
+  "schema": "wrench.standard-hf-tokenizer-prefill-probe.v1",
+  "status": "PASS_STANDARD_HF_4M_STAGING",
+  "model_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v20",
+  "requested_payload_tokens": 4000000,
+  "raw_payload_chars": 35199482,
+  "tokenizer_load_ms": 800.098,
+  "staged_ms": 86.336,
+  "rendered_chars": 16775,
+  "target_reference_preserved": true,
+  "model_calls": 0,
+  "receipt": {
+    "schema": "wrench.dynamic-prefill-receipt.v1",
+    "mode": "staged_single_pass",
+    "raw_token_count": 3999943,
+    "model_prefill_token_count": 1850,
+    "compression_ratio": 0.000463,
+    "hot_token_budget": 48000,
+    "model_prefill_budget": 64000,
+    "reference_index_budget": 16000,
+    "current_intent_source_index": 1,
+    "hot_message_count": 0,
+    "reference_card_count": 1,
+    "deduplicated_reference_count": 0,
+    "lookup_table_ids": [
+      "ref-00000000"
+    ],
+    "lookup_table": {},
+    "raw_payload_sha256": "f2686bd2c7a84eceeb0b992c547a4aa2e3208ee6775ec2438669fb1064cd8d93",
+    "native_input_claim": false,
+    "split_current_message": true,
+    "suffix_chars": 16000
+  },
+  "quality_claim": false,
+  "limitations": [
+    "This proves the standard package tokenizer stages a 4M estimated-token payload.",
+    "It does not prove dense native 4M attention quality or MiniMax parity."
+  ]
+}
