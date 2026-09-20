@@ -1583,3 +1583,12 @@ This is a real native-path performance failure, not a gateway compaction
 failure. The native direct-input capacity surface remains present, but native
 prefill is not yet fast enough for the 2M/4M North Star. Evidence:
 `phases/phase-138-native-retrieval-probe`.
+
+2026-09-20 public v49 runtime repair: the materialized portable package passed
+structural validation and a fresh 4M package-local raw-payload route probe in
+16.292 ms with zero model calls. Native upstream timeouts now return explicit
+HTTP 504 `upstream_timeout` status. The updated runtime was synchronized to
+public Hub revision `e52b6d7e91ad3f88c1a00e3c64e8878ac70ad182`, with weights
+unchanged and a fresh remote SHA verification. This keeps the public package
+operationally bounded, but does not close native dense 4M retrieval quality or
+speed. Evidence: `phases/phase-139-public-v49`.

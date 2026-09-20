@@ -1,0 +1,9 @@
+{
+  "schema": "wrench.public-hf-sync.v1",
+  "repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "e52b6d7e91ad3f88c1a00e3c64e8878ac70ad182",
+  "weights_changed": false,
+  "updated_file": "wrench_runtime/server.py",
+  "sha256": "5A80440BA755C0782EA06DF25C3359D7187E6DF50DF316C8A9E3424A2A03C950",
+  "remote_verification": "fresh hf download matched local hash"
+}
