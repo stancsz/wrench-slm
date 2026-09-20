@@ -34,10 +34,10 @@ def materialize(source: Path, target: Path, top_k: int) -> dict[str, object]:
     target.mkdir(parents=True)
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
-            if not item.is_file():
-                continue
             destination = target / item.name
-            if item.name == "config.json":
+            if item.is_dir():
+                shutil.copytree(item, destination)
+            elif item.name == "config.json":
                 derived = json.loads(json.dumps(config))
                 derived["text_config"]["num_experts_per_tok"] = top_k
                 destination.write_text(json.dumps(derived, indent=2) + "\n", encoding="utf-8")

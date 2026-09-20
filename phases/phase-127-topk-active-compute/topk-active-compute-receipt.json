@@ -1,0 +1,65 @@
+{
+  "schema": "wrench.topk-active-compute-receipt.v1",
+  "status": "DIAGNOSTIC_ACTIVE_COMPUTE_CANDIDATE",
+  "source_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v42",
+  "source_num_experts": 8,
+  "source_num_experts_per_tok": 8,
+  "weights_changed": false,
+  "parameter_count_changed": false,
+  "cases_sha256": "D127003E81EE57A32ADD86B68056CD5393408488356C86C1ED23D65066B1FB95",
+  "variants": {
+    "topk4": {
+      "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-topk4-v2",
+      "num_experts_per_tok": 4,
+      "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+      "direct_64k": {
+        "actual_prompt_tokens": 65467,
+        "http_status": 200,
+        "truncated": false,
+        "elapsed_ms": 17657.311
+      }
+    },
+    "topk2": {
+      "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-topk2-v2",
+      "num_experts_per_tok": 2,
+      "config_sha256": "8BFB0BA8988CA304666ABEB3C88EBF6C26135C997FA2803FC6B071009EE41AE6",
+      "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+      "direct_64k": {
+        "actual_prompt_tokens": 65467,
+        "http_status": 200,
+        "truncated": false,
+        "elapsed_ms": 13997.873
+      },
+      "direct_4m_reference_only": {
+        "requested_target_tokens": 3990000,
+        "actual_prompt_tokens": 3995336,
+        "configured_max_model_len": 4000000,
+        "http_status": 200,
+        "truncated": false,
+        "elapsed_ms": 154315.68,
+        "history_policy": "reference_only_middle_history_recent_64000"
+      },
+      "complete_payload_220": {
+        "outcome_matches": 220,
+        "eligible_exact_accepts": 102,
+        "mechanical_fast_path_requests": 220,
+        "model_calls": 0,
+        "prohibited_accepts": 0,
+        "median_latency_ms": 0.537,
+        "p95_latency_ms": 41.048,
+        "status": "DIAGNOSTIC_FIXTURE_ONLY"
+      },
+      "free_generation_smoke": {
+        "quality_claim": false,
+        "observed_failure": "repeated_invalid_json_output"
+      }
+    }
+  },
+  "public_release_ready": false,
+  "quality_claim": false,
+  "next_required": [
+    "family-disjoint quality evaluation",
+    "teacher fallback parity measurement",
+    "independent 5060Ti re-verification"
+  ]
+}

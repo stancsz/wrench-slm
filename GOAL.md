@@ -1451,3 +1451,16 @@ MLX run also accepted a real `num_ctx=4,000,000` generation request with HTTP
 200 and `/api/ps` reported `context_length=4,000,000` after a local cuDNN path
 workaround, but stock Windows Ollama remains unverified. Evidence:
 `phases/phase-126-portable-v42`.
+
+2026-09-20 active-expert fan-out probe: the top-k materializer now copies
+embedded runtime directories, fixing structural validation for derived
+variants. Weight-identical config variants with top-k=4 and top-k=2 reduced
+same-host direct 64K native prefill from 23,241.743 ms for top-k=8 to
+17,657.311 ms and 13,997.873 ms. The top-k=2 variant passed a direct
+3,995,336-token native probe with HTTP 200 and `truncated=false` at the
+4,000,000-token limit in 154,315.680 ms. Its complete-payload 220-case
+mechanical route remained 220/220 outcome matches, 220/220 fast paths, zero
+model calls, and zero prohibited accepts. Free generation was still invalid,
+so these variants remain diagnostic candidates behind mechanical routing and
+identical teacher fallback, not public quality releases. Evidence:
+`phases/phase-127-topk-active-compute`. Full regression is `135 passed`.
