@@ -119,6 +119,8 @@ def materialize(
                         "rope_max_position_runtime": 4000000,
                         "max_prefill_length_tokens": 32768,
                         "native_direct_payload_verified": True,
+                        "fast_history_profile": "opt_in_reference_only",
+                        "fast_history_keep_tokens_default": 64000,
                     },
                     "launch_note": "Native mode requires the bundled runtime overlay and a compatible FreeToken build.",
                 },
@@ -140,12 +142,29 @@ def materialize(
             "    [int]$KvReserveTokens = 8192",
         )
         launcher_text = launcher_text.replace(
+            "    [int]$KvReserveTokens = 8192",
+            "    [int]$KvReserveTokens = 8192,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000",
+        )
+        launcher_text = launcher_text.replace(
             "    --moe-cache-size $MoeCacheSize `",
             "    --moe-cache-auto `\n    --kv-reserve-tokens $KvReserveTokens `\n    --num-tokens 4000000 `",
         )
         launcher_text = launcher_text.replace(
             '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"',
             '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
+        )
+        launcher_text = launcher_text.replace(
+            '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
+            '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"\n'
+            'if ($FastHistory) {\n'
+            '    if ($FastHistoryKeepTokens -lt 1 -or $FastHistoryKeepTokens -ge 4000000) {\n'
+            '        throw "FastHistoryKeepTokens must be between 1 and 3999999"\n'
+            '    }\n'
+            '    $historySkipBefore = 4000000 - $FastHistoryKeepTokens\n'
+            '    $env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "$historySkipBefore"\n'
+            '    $env:WRENCH_HISTORY_CONTROL_SUFFIX = "1"\n'
+            '    $env:WRENCH_HISTORY_CONTROL_SUFFIX_CHARS = "16000"\n'
+            '}',
         )
         launcher_path.write_text(launcher_text, encoding="utf-8")
         readme_path = target / "README.md"

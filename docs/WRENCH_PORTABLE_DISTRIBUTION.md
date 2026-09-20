@@ -104,6 +104,18 @@ capacity, and uses automatic expert-cache sizing with an 8K reserve for the
 pure-SWA profile. Adjust the launcher's `-KvReserveTokens` when the target GPU
 has a different memory budget.
 
+For an experimental faster native profile that treats old history as
+reference-only, use:
+
+```powershell
+.\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
+```
+
+This keeps the complete raw request and 4M model-side prompt accounting, but
+skips attention and MLP work before the recent-token boundary. It is opt-in
+because retrieval quality and MiniMax parity for this policy are not yet
+verified. The default launcher does not enable it.
+
 ## Long-context labels
 
 The package must distinguish three values:

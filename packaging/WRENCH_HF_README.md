@@ -77,6 +77,18 @@ automatic expert cache. This avoids allocating an oversized sparse address
 mapping on GPUs with limited memory. It improves the native serving profile,
 but it does not by itself prove fast dense generation at 4M.
 
+For an experimental faster native profile that treats old history as
+reference-only, use:
+
+```powershell
+.\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
+```
+
+This keeps the complete raw request and 4M model-side prompt accounting, but
+skips attention and MLP work before the recent-token boundary. It is opt-in
+because retrieval quality and MiniMax parity for this policy are not yet
+verified. The default launcher does not enable it.
+
 This endpoint is part of the downloaded package, not a separately installed
 Wrench harness. It still does not claim dense native attention quality over
 every 4M token. It provides the practical model-local path while that native

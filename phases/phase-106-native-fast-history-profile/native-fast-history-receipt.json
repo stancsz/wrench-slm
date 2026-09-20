@@ -1,0 +1,39 @@
+{
+  "schema": "wrench.native-fast-history-profile-receipt.v1",
+  "status": "OPT_IN_NATIVE_FAST_PROFILE_PUBLISHED",
+  "profile": {
+    "launcher_switch": "-FastHistory",
+    "keep_tokens_default": 64000,
+    "skip_policy": "WRENCH_HISTORY_SKIP_LAYERS_BEFORE",
+    "control_suffix": true,
+    "default_enabled": false
+  },
+  "native_probes": {
+    "two_million_with_skip": {
+      "prompt_tokens": 2004136,
+      "truncated": false,
+      "http_status": 200,
+      "elapsed_ms": 84851.71
+    },
+    "four_million_with_skip": {
+      "prompt_tokens": 3999942,
+      "truncated": false,
+      "http_status": 200,
+      "elapsed_ms": 129290.508
+    },
+    "two_million_without_skip": {
+      "prompt_tokens": 1999929,
+      "truncated": false,
+      "http_status": 200,
+      "elapsed_ms": 1287078.199
+    }
+  },
+  "verification": {
+    "launcher_powershell_parse_errors": 0,
+    "tests_passed": 120,
+    "tests_warnings": 8,
+    "huggingface_public": true,
+    "huggingface_revision": "6b890cbd4d33d69bed869881200503218772f046"
+  },
+  "release_boundary": "opt-in throughput and capacity diagnostic; retrieval quality, MiniMax parity, and production default remain unverified"
+}
