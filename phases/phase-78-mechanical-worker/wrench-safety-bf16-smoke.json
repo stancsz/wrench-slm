@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.local-qwen-performance-smoke.v1",
+  "endpoint": "http://127.0.0.1:28903/v1/chat/completions",
+  "model": "Wrench-4B-Qwen3.6-8E-Safety-BF16",
+  "wall_time_ms": 1973.872,
+  "result": {
+    "status": "abstain",
+    "fallback_reason": "missing_path",
+    "model_output_validated": true,
+    "model": "Wrench-4B-Qwen3.6-8E-Safety-BF16",
+    "usage": {
+      "prompt_tokens": 72,
+      "completion_tokens": 32,
+      "total_tokens": 104
+    }
+  },
+  "scope": "one bounded request; diagnostic only"
+}

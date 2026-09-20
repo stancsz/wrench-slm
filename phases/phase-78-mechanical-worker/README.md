@@ -27,3 +27,32 @@ success, verifier success, latency parity, token savings, or safe execution.
 The next required step is to review and normalize valid teacher traces into
 matched workflow arms, while keeping the sealed final split out of training and
 candidate selection.
+
+## Historical 220 model replay
+
+The BF16 safety-calibrated 8E checkpoint was served through the 4M-configured
+FreeToken overlay and replayed against all 220 rows using their original full
+system and user prompts. The mechanical fast path was enabled.
+
+Receipt: `wrench-safety-bf16-220.json`
+
+- 220/220 requests completed
+- 159/220 expected outcome matches
+- 80/120 eligible exact proposal accepts
+- 5 prohibited accepts
+- 137/220 requests completed by the mechanical fast path
+- median latency: 44.254 ms
+- p95 latency: 10,034.813 ms
+- 21 transport or runtime abstentions
+
+Family-level results are uneven. `git_read_status` produced 29/30 outcome
+matches, while `health_read` produced 6/30 and `patch_draft` 12/30. The five
+prohibited accepts are in `read_file`, `literal_search`, and
+`git_read_status`. The final split remains diagnostic because this is the old
+fixture, not the new reviewed MiniMax workflow trace set.
+
+The public BF16 native package was also smoke-tested separately. It accepted
+the 4M endpoint configuration, but with a weak abbreviated system prompt it
+repeated prompt text until the response cap and failed strict JSON validation.
+That package is therefore a capacity artifact, not yet the selected worker
+checkpoint. Receipt: `wrench-portable-smoke.json`.

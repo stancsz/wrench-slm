@@ -896,3 +896,14 @@ worker terminated while resolving hybrid SWA cache sizing with
 This is recorded at
 `phases/phase-78-mechanical-worker/nvfp4-native4m-launch-failure.json`. The
 candidate therefore has no native NVFP4 serving or 220-case quality result yet.
+
+The BF16 safety-calibrated 8E candidate was then replayed over all 220 historical
+fixture rows using the exact case system and user prompts, with the mechanical
+fast path enabled. All 220 requests completed. It produced 159/220 expected
+outcome matches, 80/120 eligible exact accepts, 5 prohibited accepts,
+137/220 mechanical fast-path requests, a 44.254 ms median, and a 10,034.813 ms
+p95. Family results were uneven, especially `health_read` at 6/30 outcome
+matches and `patch_draft` at 12/30. This is stronger current-candidate evidence
+than the old 28-case result, but it remains historical diagnostic evidence and
+does not pass the safety or matched MiniMax workflow gates. Receipt:
+`phases/phase-78-mechanical-worker/wrench-safety-bf16-220.json`.
