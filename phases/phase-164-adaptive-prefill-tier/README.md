@@ -12,7 +12,7 @@ attention evidence, and it does not authorize a production quality claim.
 
 ## Verification
 
-- `pytest -q`: 151 passed, 14 warnings.
+- `pytest -q`: 152 passed, 14 warnings.
 - `pytest -q tests/test_embedded_worker.py tests/test_prefill.py`: 22 passed.
 - deterministic route replay: 220/220 mechanical fast path, 200/220 strict
   fixture outcome matches, 0 prohibited accepts, 7.503 ms total on the local

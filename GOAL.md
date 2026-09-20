@@ -1818,7 +1818,7 @@ MiniMax parity. Evidence: `phases/phase-163-public-v66-ftcmd`.
 remains 64K, while long context-sensitive intents can deterministically promote
 to a bounded 128K tier under `WRENCH_MODEL_PREFILL_MAX_BUDGET`. The selection
 requires an explicit newest-intent marker and records the choice in the
-dynamic-prefill receipt. Full regression passed at 151 tests; the 220-case
+dynamic-prefill receipt. Full regression passed at 152 tests; the 220-case
 deterministic route remained 220/220 fast path with zero prohibited accepts.
 This improves the dynamic-native working-context path but is not dense native
 2M/4M attention or MiniMax workflow parity. Evidence:
