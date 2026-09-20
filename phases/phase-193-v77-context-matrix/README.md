@@ -51,3 +51,20 @@ fast hybrid serving, not a claim of dense native attention over all 4M tokens.
 - the monster-handoff test asserts verifier prompt length is at most 16,000
   characters and smaller than the raw historical payload;
 - no mutation authority was added.
+
+## Bundled package verification
+
+The source change was materialized as:
+
+`D:\models\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v78-bounded-verifier`
+
+- structural package validation: `PASS_STRUCTURAL_PACKAGE`;
+- package `wrench_runtime` import plus a 4M staged native handoff:
+  `PASS_NATIVE_HANDOFF_STAGED_4M`, 270.181 ms, 3,999,942 raw estimated
+  tokens, 1,955 staged tokens, one verified upstream call;
+- package-local model endpoint 4M smoke: `PASS_MODEL_LOCAL_SERVER_4M`, HTTP
+  200, 32,000,075 raw payload characters, 151.799 ms, embedded mechanical
+  route and zero model calls.
+
+These package checks still use a local protocol stub for the staged native
+handoff and do not establish dense-native attention quality or MiniMax parity.

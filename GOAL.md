@@ -2086,3 +2086,10 @@ any full-payload regex scan. Three source-runtime repetitions measured 2M at
 p95, with 1,955 staged tokens in every run. The absolute 100 ms 4M aspiration
 is still open. Full tests pass at 163 tests. Evidence:
 `phases/phase-193-v77-context-matrix`.
+
+The same source was materialized as a v78 package. Structural validation
+passed, the bundled `wrench_runtime` accepted and verified a 4M staged handoff
+in 270.181 ms with 1,955 staged tokens, and the package-local direct endpoint
+accepted a 4M raw payload in 151.799 ms with zero model calls. These are
+hybrid intake and protocol-stub receipts, not dense-native attention quality
+or MiniMax parity.

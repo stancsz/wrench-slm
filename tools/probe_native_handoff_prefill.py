@@ -15,10 +15,6 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "src"))
-
-from wrench_harness.server import WrenchHTTPServer
-from wrench_harness.worker import WrenchWorker
 
 
 def _build_payload(target_tokens: int) -> str:
@@ -36,9 +32,27 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--payload-tokens", type=int, default=4_000_000)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--package-dir",
+        type=Path,
+        help="load the bundled wrench_runtime from a materialized package",
+    )
     args = parser.parse_args()
     if args.payload_tokens < 1:
         raise SystemExit("--payload-tokens must be positive")
+
+    if args.package_dir is not None:
+        sys.path.insert(0, str(args.package_dir.resolve()))
+        from wrench_runtime.server import WrenchHTTPServer
+        from wrench_runtime.worker import WrenchWorker
+
+        runtime_import = "bundled_package_runtime"
+    else:
+        sys.path.insert(0, str(REPO_ROOT / "src"))
+        from wrench_harness.server import WrenchHTTPServer
+        from wrench_harness.worker import WrenchWorker
+
+        runtime_import = "source_runtime"
 
     captured: dict[str, object] = {}
 
@@ -158,6 +172,8 @@ def main() -> int:
             else "FAIL"
         ),
         "mode": "native_direct_input" if direct_mode else "staged_single_pass",
+        "runtime_import": runtime_import,
+        "package_dir": str(args.package_dir.resolve()) if args.package_dir is not None else None,
         "requested_payload_tokens": args.payload_tokens,
         "raw_payload_bytes": len(body),
         "raw_token_estimate": _token_estimate(content),
