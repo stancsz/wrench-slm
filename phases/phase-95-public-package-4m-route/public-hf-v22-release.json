@@ -1,6 +1,7 @@
 {
   "schema": "wrench.public-hf-release.v1",
   "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "f451bd60bd67191d69603e3779fc8394d29c3e64",
   "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v22",
   "package_format": "huggingface-safetensors",
   "weights_changed": false,
