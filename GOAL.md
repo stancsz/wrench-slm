@@ -2141,3 +2141,15 @@ remaining linear-scan latency opportunity for a reusable offset/index layer.
 This proves package-local monster-context retrieval behavior, not dense-native
 attention or learned MiniMax parity. Evidence:
 `phases/phase-197-v79-retrieval-quality`.
+
+2026-09-20 v80 bounded lookup-window optimization: the package runtime no
+longer copies or regex-scans an entire multi-million-character logical line
+when recovering a reference path. It parses only a bounded evidence window
+around the exact needle while keeping the raw payload hash-bound. The v80
+package passed structural validation and 18/18 retrieval cases across three
+repetitions at 2M and 4M, with all needles at 1%, 50%, and 99% positions. The
+all-case median was 6.895 ms, p95 16.063 ms, and worst observed latency
+17.688 ms, with zero model calls and exact path/byte-limit recovery. This
+advances the fast hybrid product path; dense-native attention and learned
+MiniMax parity remain separate open evidence. Evidence:
+`phases/phase-198-v80-bounded-lookup-window`.
