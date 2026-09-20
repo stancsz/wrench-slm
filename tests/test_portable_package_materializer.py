@@ -73,6 +73,8 @@ def test_materializer_embeds_worker_runtime():
     assert '"--expert-load", "serial"' in script
     assert '"tokenizer_processes": 0' in script
     assert '"expert_load": "serial"' in script
+    assert '$env:OPENBLAS_NUM_THREADS = "1"' in script
+    assert '$env:CUDA_MODULE_LOADING = "LAZY"' in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "WRENCH_ALLOWED_ROOT" in script
     assert "dynamic_staged_prefill" in script

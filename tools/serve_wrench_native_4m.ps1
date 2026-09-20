@@ -11,6 +11,12 @@ param(
 $overlay = Join-Path $PSScriptRoot '..\runtime\freetoken_wrench_long_context'
 $env:PYTHONPATH = (Resolve-Path $overlay).Path
 $env:WRENCH_LONG_CONTEXT_OVERLAY = '1'
+$env:CUDA_MODULE_LOADING = 'LAZY'
+$env:PYTORCH_NVML_BASED_CUDA_CHECK = '1'
+$env:OPENBLAS_NUM_THREADS = '1'
+$env:OMP_NUM_THREADS = '1'
+$env:MKL_NUM_THREADS = '1'
+$env:NUMEXPR_NUM_THREADS = '1'
 $env:WRENCH_GLOBAL_FULL_LAYERS = [string]$GlobalFullLayer
 $env:WRENCH_SWA_WINDOW = [string]$SlidingWindow
 

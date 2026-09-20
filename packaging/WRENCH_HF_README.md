@@ -119,6 +119,8 @@ avoids an extra Torch tokenizer process and lowers Windows startup memory
 pressure when the native model is loading CUDA libraries.
 It also uses `--expert-load serial` to avoid a parallel whole-shard host-memory
 buffer while loading the MoE experts.
+The launcher constrains BLAS thread pools to one thread and enables lazy CUDA
+module loading for lower-memory Windows startup.
 
 To expose the native FreeToken backend through the same package-local
 Ollama-shaped endpoint, use:

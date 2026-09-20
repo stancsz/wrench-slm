@@ -160,6 +160,16 @@ def materialize(
             "    --moe-strategy offload `\n    --num-tokenizer 0 `\n",
         )
         launcher_text = launcher_text.replace(
+            '$env:WRENCH_LONG_CONTEXT_OVERLAY = "1"',
+            '$env:WRENCH_LONG_CONTEXT_OVERLAY = "1"\n'
+            '$env:CUDA_MODULE_LOADING = "LAZY"\n'
+            '$env:PYTORCH_NVML_BASED_CUDA_CHECK = "1"\n'
+            '$env:OPENBLAS_NUM_THREADS = "1"\n'
+            '$env:OMP_NUM_THREADS = "1"\n'
+            '$env:MKL_NUM_THREADS = "1"\n'
+            '$env:NUMEXPR_NUM_THREADS = "1"',
+        )
+        launcher_text = launcher_text.replace(
             '[string]$FreeTokenExecutable = "ft"',
             '[string]$FreeTokenExecutable = "ft.exe"',
         )
