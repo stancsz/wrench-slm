@@ -146,6 +146,8 @@ budget.
 The launcher passes `--num-tokenizer 0` to FreeToken. This shares tokenization
 with the detokenizer instead of starting another Torch worker, which reduces
 Windows startup memory pressure while preserving the native request path.
+It also passes `--expert-load serial` so MoE shard loading does not allocate a
+parallel whole-shard buffer during startup.
 
 To keep the native backend inside the downloaded model package while exposing
 the package-local Ollama-shaped API, run:

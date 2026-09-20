@@ -70,7 +70,9 @@ def test_materializer_embeds_worker_runtime():
     assert "--kv-reserve-tokens $KvReserveTokens" in script
     assert "--num-tokens 4000000" in script
     assert '"--num-tokenizer", 0' in script
+    assert '"--expert-load", "serial"' in script
     assert '"tokenizer_processes": 0' in script
+    assert '"expert_load": "serial"' in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "WRENCH_ALLOWED_ROOT" in script
     assert "dynamic_staged_prefill" in script

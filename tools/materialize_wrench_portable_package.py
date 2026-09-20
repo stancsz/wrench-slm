@@ -126,6 +126,7 @@ def materialize(
                     "swa_window_tokens": 8192,
                     "swa_pool_tokens": 8192,
                     "expert_cache": "auto",
+                    "expert_load": "serial",
                     "tokenizer_processes": 0,
                     "shared_tokenizer_detokenizer": True,
                     "rope_max_position_runtime": 4000000,
@@ -227,6 +228,7 @@ def materialize(
             '    "--port", $nativeServePort,\n'
             '    "--served-model-name", "wrench-4b-qwen3.6-8e",\n'
             '    "--moe-strategy", "offload",\n'
+            '    "--expert-load", "serial",\n'
             '    "--num-tokenizer", 0,\n'
             '    "--kv-reserve-tokens", $KvReserveTokens,\n'
             '    "--num-tokens", 4000000,\n'

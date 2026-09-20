@@ -25,6 +25,7 @@ $env:WRENCH_SWA_WINDOW = [string]$SlidingWindow
     --num-tokenizer 0 `
     --memory-ratio 0.90 `
     --moe-strategy offload `
+    --expert-load serial `
     --moe-cache-auto `
     --kv-reserve-tokens $KvReserveTokens `
     --num-tokens 4000000 `
