@@ -1,0 +1,33 @@
+{
+  "schema": "wrench.portable-public-release-receipt.v1",
+  "status": "PUBLIC_COPY_PASTE_PACKAGE_VERIFIED",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_public": true,
+  "huggingface_revision": "edafa1e63fd72b7d2c80ee45a635e598d3cbaf10",
+  "canonical_format": "huggingface-safetensors",
+  "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "runtime_files_verified": [
+    "wrench_worker.py",
+    "wrench_server.py",
+    "wrench_runtime/toolbelt.py",
+    "wrench_runtime/core.py",
+    "wrench_runtime/mechanical.py",
+    "wrench_runtime/prefill.py",
+    "wrench_runtime/worker.py",
+    "wrench_toolbelt.py",
+    "serve_freetoken.ps1"
+  ],
+  "remote_toolbelt_ast_symbol_support": true,
+  "backend_status": {
+    "freetoken": "experimental_verified_local_backend",
+    "transformers": "config_tokenizer_and_weight_load_boundary_verified",
+    "vllm": "unverified_registered_architecture_required",
+    "ollama": "unverified_gguf_architecture_adapter_required",
+    "gguf": "not_verified"
+  },
+  "tests": {
+    "passed": 116,
+    "warnings": 8
+  },
+  "release_boundary": "public experimental artifact only; no MiniMax parity, native 4M retrieval-quality, production throughput, or production-readiness claim"
+}
