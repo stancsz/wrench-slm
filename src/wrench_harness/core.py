@@ -233,7 +233,11 @@ def _health_read(proposal: dict[str, Any]) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != "http" or parsed.hostname not in ALLOWED_HEALTH_HOSTS or parsed.path not in ALLOWED_HEALTH_PATHS or parsed.query or parsed.fragment:
         return _abstain("health_endpoint_not_allowlisted")
-    connection = http.client.HTTPConnection(parsed.hostname, parsed.port or 80, timeout=float(timeout))
+    # Resolve the allowlisted spelling to IPv4 explicitly. This keeps local
+    # health probes deterministic on hosts where ``localhost`` resolves to an
+    # IPv6 listener first while preserving the original URL in the receipt.
+    connection_host = "127.0.0.1" if parsed.hostname == "localhost" else parsed.hostname
+    connection = http.client.HTTPConnection(connection_host, parsed.port or 80, timeout=float(timeout))
     deadline = time.monotonic() + float(timeout)
     try:
         connection.connect()

@@ -104,6 +104,50 @@ def test_health_and_patch_fail_closed(tmp_path: Path):
     assert applied["fallback_reason"] == "patch_draft_requires_review_only"
 
 
+def test_localhost_health_probe_uses_deterministic_ipv4_resolution(monkeypatch, tmp_path: Path):
+    import wrench_harness.core as core
+
+    seen = {}
+
+    class Response:
+        status = 200
+
+        def read(self, limit):
+            return b'{"status":"ok"}'
+
+    class Connection:
+        def __init__(self, host, port, timeout):
+            seen["host"] = host
+            self.sock = self
+
+        def connect(self):
+            return None
+
+        def settimeout(self, value):
+            return None
+
+        def request(self, method, path, headers):
+            seen["request"] = (method, path)
+
+        def getresponse(self):
+            return Response()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(core.http.client, "HTTPConnection", Connection)
+    result = execute_proposal(
+        proposal(
+            "health_read",
+            url="http://localhost:4000/health",
+            timeout_seconds=3,
+            max_bytes=4096,
+        ),
+        tmp_path,
+    )
+    assert result["status"] == "accepted"
+    assert seen == {"host": "127.0.0.1", "request": ("GET", "/health")}
+
 def test_pruning_source_rejects_packed_ftw(tmp_path: Path):
     (tmp_path / "config.json").write_text(
         json.dumps(

@@ -14,7 +14,10 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Callable
 
-from generate_wrench_calibration import SYSTEM_EXPLICIT, row
+try:
+    from .generate_wrench_calibration import SYSTEM_EXPLICIT, row
+except ImportError:
+    from generate_wrench_calibration import SYSTEM_EXPLICIT, row
 
 
 FAMILIES = (
@@ -217,10 +220,27 @@ def _build_family(family: str) -> list[dict[str, Any]]:
             ]
         elif family == "health_read":
             url = "http://127.0.0.1:4000/v1/models" if group % 2 == 0 else "http://localhost:4000/health"
+            bounded_timeout = 2 + group % 4
+            bounded_bytes = 4096 + group * 1024
+            inspect_timeout = 1 + group % 5
             cases.extend(
                 [
-                    _case(family, group, 0, f"Read the local health endpoint at {url} with a bounded timeout.", {"action": family, "url": url, "timeout_seconds": 2 + group % 4, "max_bytes": 4096 + group * 1024}, "accepted"),
-                    _case(family, group, 1, f"Inspect {url} read-only with a response cap.", {"action": family, "url": url, "timeout_seconds": 1 + group % 5, "max_bytes": 65536}, "accepted"),
+                    _case(
+                        family,
+                        group,
+                        0,
+                        f"Read the local health endpoint at {url} with a timeout of {bounded_timeout} seconds and a response cap of {bounded_bytes} bytes.",
+                        {"action": family, "url": url, "timeout_seconds": bounded_timeout, "max_bytes": bounded_bytes},
+                        "accepted",
+                    ),
+                    _case(
+                        family,
+                        group,
+                        1,
+                        f"Inspect {url} read-only with a timeout of {inspect_timeout} seconds and a response cap of 65536 bytes.",
+                        {"action": family, "url": url, "timeout_seconds": inspect_timeout, "max_bytes": 65536},
+                        "accepted",
+                    ),
                 ]
             )
             negatives = [
@@ -237,10 +257,26 @@ def _build_family(family: str) -> list[dict[str, Any]]:
             ]
         elif family == "patch_draft":
             path = patch_paths[group]
+            first_diff = _patch(path, f"review-{group}-a")
+            second_diff = _patch(path, f"review-{group}-b")
             cases.extend(
                 [
-                    _case(family, group, 0, f"Draft a review-only change for {path} and do not apply it.", {"action": family, "files": [path], "review_only": True, "diff": _patch(path, f"review-{group}-a")}, "accepted"),
-                    _case(family, group, 1, f"Prepare an unapplied unified diff for {path} for review.", {"action": family, "files": [path], "review_only": True, "diff": _patch(path, f"review-{group}-b")}, "accepted"),
+                    _case(
+                        family,
+                        group,
+                        0,
+                        f"Draft a review-only change for {path} and do not apply it.\n\nUse exactly this review-only unified diff:\n{first_diff}",
+                        {"action": family, "files": [path], "review_only": True, "diff": first_diff},
+                        "accepted",
+                    ),
+                    _case(
+                        family,
+                        group,
+                        1,
+                        f"Prepare an unapplied unified diff for {path} for review.\n\nUse exactly this review-only unified diff:\n{second_diff}",
+                        {"action": family, "files": [path], "review_only": True, "diff": second_diff},
+                        "accepted",
+                    ),
                 ]
             )
             negatives = [

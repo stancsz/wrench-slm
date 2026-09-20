@@ -2008,3 +2008,16 @@ prompts whose oracle contains concrete timeout and byte-limit values omitted
 from the prompt, so those values cannot be guessed mechanically. This is
 provider-backed diagnostic evidence, not the final family-disjoint release
 gate. Evidence: `phases/phase-182-live-teacher-current-package`.
+
+2026-09-20 corrected 220-case contract and v74 replay: eligible health prompts
+now state their numeric bounds and eligible patch prompts carry their exact
+review-only diffs, eliminating two under-specified oracle defects. A fresh v74
+portable package with deterministic localhost health resolution passed
+structural validation. Its current-package four-arm replay reached 94.0113%
+weighted mechanical frontier-token coverage, 100% net frontier-token savings,
+97.1208% Wrench weighted final success versus 76.7929% teacher success, zero
+Wrench fallbacks, zero prohibited accepts, zero unexpected mutations, 184.312
+ms median latency, and 296.324 ms p95. This passes the mechanical-worker
+gates on the corrected contract. Final family-disjoint approval, independent
+5060Ti verification, and dense native 2M/4M attention remain open. Evidence:
+`phases/phase-188-v74-v2-four-arm-replay`.
