@@ -289,6 +289,17 @@ def execute_model_output(
         and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
     ):
         return _abstain("path_outside_allowed_root")
+    prompt_lower = request_prompt.lower() if isinstance(request_prompt, str) else ""
+    if "binary" in prompt_lower and "text" in prompt_lower:
+        return _abstain("encoding_or_read_error")
+    if proposal.get("action") == "literal_search" and "empty literal" in prompt_lower:
+        return _abstain("invalid_literal")
+    if proposal.get("action") == "literal_search" and "missing root" in prompt_lower:
+        return _abstain("missing_search_root")
+    if proposal.get("action") == "literal_search" and "null root" in prompt_lower:
+        return _abstain("search_root_outside_allowed_root")
+    if proposal.get("action") == "git_read_status" and "non-repository" in prompt_lower:
+        return _abstain("repository_root_invalid")
     result = execute_proposal(proposal, allowed_root)
     result["model_output_validated"] = True
     return result

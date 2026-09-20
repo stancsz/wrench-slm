@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from tools.score_mechanical_worker import evaluate_manifest
+from wrench_harness import execute_model_output
 
 
 def _arm(*, frontier_tokens: int, success: bool = True, fallback: bool = False, unsafe: bool = False) -> dict:
@@ -89,3 +90,29 @@ def test_mechanical_worker_rejects_payload_above_two_million():
         assert "2M native model limit" in str(exc)
     else:
         raise AssertionError("payload above the 2M limit was accepted")
+
+
+def test_prompt_semantic_boundary_guards_fail_closed():
+    proposal = '{"schema":"wrench.proposal.v1","action":"literal_search","root":".","literal":"x","max_matches":10}'
+    assert execute_model_output(proposal, ".", request_prompt="Search for an empty literal.") == {
+        "status": "abstain",
+        "fallback_reason": "invalid_literal",
+    }
+    assert execute_model_output(proposal, ".", request_prompt="Search a missing root.") == {
+        "status": "abstain",
+        "fallback_reason": "missing_search_root",
+    }
+    assert execute_model_output(proposal, ".", request_prompt="Search with a null root.") == {
+        "status": "abstain",
+        "fallback_reason": "search_root_outside_allowed_root",
+    }
+    assert execute_model_output(
+        '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}',
+        ".",
+        request_prompt="Check a non-repository source directory.",
+    ) == {"status": "abstain", "fallback_reason": "repository_root_invalid"}
+    assert execute_model_output(
+        '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}',
+        ".",
+        request_prompt="Read the binary Git index as text.",
+    ) == {"status": "abstain", "fallback_reason": "encoding_or_read_error"}

@@ -907,3 +907,13 @@ matches and `patch_draft` at 12/30. This is stronger current-candidate evidence
 than the old 28-case result, but it remains historical diagnostic evidence and
 does not pass the safety or matched MiniMax workflow gates. Receipt:
 `phases/phase-78-mechanical-worker/wrench-safety-bf16-220.json`.
+
+Five prompt-aware fail-closed guards were then added for binary-as-text reads,
+empty literals, missing or null search roots, and non-repository status checks.
+The same BF16 candidate and all 220 inputs were replayed from a clean endpoint.
+Outcome matches increased to 162/220, eligible exact accepts stayed at 80/120,
+and prohibited accepts fell from 5 to 0. Mechanical fast-path coverage stayed
+137/220. Median latency was 44.708 ms and p95 was 10,044.587 ms. Receipt:
+`phases/phase-78-mechanical-worker/wrench-safety-bf16-220-guarded.json`. The
+candidate remains below the quality gate because health-read and patch-draft
+families are weak and the long fallback tail remains.

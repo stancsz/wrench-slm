@@ -56,3 +56,19 @@ the 4M endpoint configuration, but with a weak abbreviated system prompt it
 repeated prompt text until the response cap and failed strict JSON validation.
 That package is therefore a capacity artifact, not yet the selected worker
 checkpoint. Receipt: `wrench-portable-smoke.json`.
+
+After adding five prompt-aware fail-closed semantic guards, the same model and
+same 220 inputs were replayed from a clean endpoint:
+`wrench-safety-bf16-220-guarded.json`.
+
+- outcome matches: 162/220, up from 159/220
+- eligible exact accepts: 80/120, unchanged
+- prohibited accepts: 0, down from 5
+- mechanical fast-path requests: 137/220, unchanged
+- median latency: 44.708 ms
+- p95 latency: 10,044.587 ms
+
+The five changed prohibited cases now abstain with explicit boundary reasons.
+The remaining quality gap is concentrated in `health_read` and `patch_draft`,
+plus slow model fallback paths. This is still historical diagnostic evidence,
+not the matched MiniMax worker acceptance result.
