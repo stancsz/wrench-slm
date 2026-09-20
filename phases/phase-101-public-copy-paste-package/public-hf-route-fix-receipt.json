@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.public-hf-runtime-fix-receipt.v1",
+  "status": "PUBLIC_RUNTIME_UPDATED",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "6681773374f0a40ef6b953ec0efe384f16625962",
+  "weights_changed": false,
+  "updated_files": [
+    "wrench_mechanical.py",
+    "wrench_runtime/mechanical.py"
+  ],
+  "fix": "normalize unified-diff +++ b/path to verifier-relative path",
+  "remote_runtime_matches_local": true,
+  "remote_is_public": true,
+  "weight_shard_count": 2,
+  "validation": {
+    "full_pytest": "113 passed, 8 warnings",
+    "concrete_patch_route": "review-only unified diff produces README.md rather than b/README.md"
+  },
+  "release_boundary": "runtime correctness fix only; no MiniMax parity or production-readiness claim"
+}
