@@ -1996,3 +1996,15 @@ the portable model directory exposes the monster-context behavior on the
 Ollama-shaped surface, while remaining explicitly a MapReduce intake result,
 not dense native 4M attention. Evidence:
 `phases/phase-181-ollama-4m-direct-intake`.
+
+2026-09-20 provider-backed current-package replay: the v73-style downloaded
+package was replayed against the existing 220-trace MiniMax cloud proposal
+capture without new provider calls. With client fast-path bypassed, Wrench
+made zero teacher fallbacks, recorded 93.1290% weighted final success versus
+60.5218% teacher success, 100% net frontier-token savings, 217.883 ms median,
+387.115 ms p95, zero prohibited accepts, and zero unexpected mutations. The
+weighted mechanical coverage was 84.8103%; the gap is concentrated in health
+prompts whose oracle contains concrete timeout and byte-limit values omitted
+from the prompt, so those values cannot be guessed mechanically. This is
+provider-backed diagnostic evidence, not the final family-disjoint release
+gate. Evidence: `phases/phase-182-live-teacher-current-package`.
