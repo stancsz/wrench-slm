@@ -44,3 +44,11 @@ tokens. After the fix, the same 2M canary passed at `112.471 ms`, and a
 `src/wrench_harness/worker.py` with `model_calls=0`. These are deterministic
 embedded lookup proofs, not a claim of general LLM retrieval quality or
 MiniMax parity.
+
+The full portable 220-case replay preserved `200/200` outcome matches and
+`0` prohibited accepts on the mechanical fast path. The remaining 20 eligible
+patch-draft requests were sent to the real FreeToken model fallback; all 20
+exceeded the 10-second client timeout under the current 8GB offload profile.
+The measured replay median was `0.524 ms`, but p95 was `10,030.754 ms` because
+of those semantic generations. This is now the main latency blocker for
+practical fallback work.
