@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.public-v56-hub-receipt.v1",
+  "repository": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "1c5af1683b41ae756bd434d96c19b530d4913029",
+  "visibility": "public",
+  "package_format": "huggingface-safetensors",
+  "local_structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "local_4m_route": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "elapsed_ms": 15.304,
+    "model_calls": 0
+  },
+  "remote_content_checks": {
+    "serve_freetoken_shared_tokenizer": true,
+    "readme_documents_shared_tokenizer": true,
+    "runtime_profile_records_zero_tokenizer_processes": true
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}

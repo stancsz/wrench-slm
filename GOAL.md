@@ -1676,3 +1676,13 @@ generation with Windows `WinError 1455` while loading CUDA DLLs. This is a
 real startup improvement and sharper diagnosis, not native 2M/4M generation,
 retrieval quality, MiniMax parity, or production evidence. Evidence:
 `phases/phase-150-native-shared-tokenizer`.
+
+2026-09-20 public v56 portable refresh: the NVFP4 Safetensors package was
+materialized with the shared-tokenizer native launcher and uploaded to the
+public Hub repository at revision
+`1c5af1683b41ae756bd434d96c19b530d4913029`. Structural validation passed, the
+downloaded-package 4M mechanical route measured 15.304 ms with zero model
+calls, and fresh Hub downloads confirmed the launcher argument, README note,
+and runtime metadata. This publishes the startup repair while keeping native
+2M/4M generation, retrieval quality, MiniMax parity, GGUF, and production
+claims explicitly open. Evidence: `phases/phase-151-public-v56`.
