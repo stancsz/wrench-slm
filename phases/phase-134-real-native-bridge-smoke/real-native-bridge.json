@@ -1,0 +1,36 @@
+{
+  "schema": "wrench.real-native-bridge-smoke.v1",
+  "status": "PASS_REAL_NATIVE_BRIDGE_FAIL_CLOSED",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v47-ollama-native-bridge",
+  "runtime": "FreeToken 0.1.3+g52322e984",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "launcher": {
+    "ollama_api": true,
+    "fast_history": true,
+    "moe_cache_size": 16,
+    "kv_reserve_tokens": 1024,
+    "declared_context_tokens": 4000000
+  },
+  "mechanical_4m": {
+    "http_status": 200,
+    "payload_chars": 37142960,
+    "prompt_eval_count": 4000013,
+    "elapsed_ms": 128.228,
+    "backend": "embedded-mechanical",
+    "model_calls": 0,
+    "status": "accepted",
+    "action": "read_file"
+  },
+  "native_upstream": {
+    "http_status": 200,
+    "elapsed_ms": 2340.31,
+    "backend": "native-upstream-verified",
+    "model_calls": 1,
+    "status": "abstain",
+    "fallback_reason": "model_output_invalid_json",
+    "safety_result": "fail_closed"
+  },
+  "quality_claim": false,
+  "minimax_parity_claim": false,
+  "production_claim": false
+}

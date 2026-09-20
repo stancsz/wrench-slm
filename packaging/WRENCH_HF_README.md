@@ -127,6 +127,16 @@ other native responses pass through the bundled verifier before they are
 returned. It is still a package adapter around the experimental FreeToken
 backend, not a claim that stock Ollama loads the Wrench architecture.
 
+On a GPU with competing workloads, override the automatic expert-cache planner
+instead of changing the model package:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -MoeCacheSize 16 -KvReserveTokens 1024
+```
+
+`MoeCacheSize` must be at least 16 for this 8-expert package. The default
+remains automatic sizing.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

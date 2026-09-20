@@ -1537,3 +1537,17 @@ parity, or production readiness. Evidence:
 `phases/phase-133-native-ollama-bridge`. The updated runtime and launcher were
 also synchronized to the public Hub revision
 `72bbc1e748f6ca35f41a972f13c2b224720c771b`; the weights were unchanged.
+
+2026-09-20 real native bridge smoke: the v47 one-command launcher reached
+`READY` with the actual FreeToken `0.1.3+g52322e984` runtime and the RTX 5070
+Ti. The public package endpoint accepted a 37,142,960-character request with
+`options.num_ctx=4000000`, counted 4,000,013 prompt tokens, routed it through
+the embedded mechanical path in 128.228 ms, and made zero model calls. A
+non-mechanical request reached the real native backend in 2,340.310 ms; its
+malformed proposal was rejected by the package verifier as
+`model_output_invalid_json`. Automatic cache sizing was insufficient under the
+current competing GPU workload, while the exposed manual profile
+`MoeCacheSize=16, KvReserveTokens=1024` started successfully. This is a real
+native loading and fail-closed bridge pass, not a learned-quality, MiniMax
+parity, direct dense 4M, or production-throughput pass. Evidence:
+`phases/phase-134-real-native-bridge-smoke`.

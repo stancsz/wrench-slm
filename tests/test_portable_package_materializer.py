@@ -23,6 +23,10 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert launcher.count('[string]$AllowedRoot = "."') == 1
     assert "[switch]$OllamaApi" in launcher
     assert "--upstream-url" in launcher
+    assert "--mechanical-only" in launcher
+    assert "$env:PYTHONPATH = $null" in launcher
+    assert "[int]$MoeCacheSize = 0" in launcher
+    assert "MoeCacheSize must be at least 16" in launcher
     assert "Start-Process -FilePath $FreeTokenExecutable" in launcher
 
 

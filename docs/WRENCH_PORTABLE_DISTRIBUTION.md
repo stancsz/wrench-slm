@@ -134,6 +134,15 @@ owns the public port, routes high-confidence mechanical work locally, and
 verifies native backend text before returning it. This remains an experimental
 package adapter, not stock Ollama architecture support.
 
+If another GPU workload leaves too little headroom for automatic expert-cache
+sizing, use the bounded manual cache profile:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -MoeCacheSize 16 -KvReserveTokens 1024
+```
+
+The default launcher still uses automatic cache sizing.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

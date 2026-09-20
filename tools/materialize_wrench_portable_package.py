@@ -159,7 +159,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             "    [int]$KvReserveTokens = 8192",
-            "    [int]$KvReserveTokens = 8192,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096",
+            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096",
         )
         launcher_text = launcher_text.replace(
             "    [int]$Port = 28900,\n",
@@ -213,7 +213,6 @@ def materialize(
             '    "--port", $nativeServePort,\n'
             '    "--served-model-name", "wrench-4b-qwen3.6-8e",\n'
             '    "--moe-strategy", "offload",\n'
-            '    "--moe-cache-auto",\n'
             '    "--kv-reserve-tokens", $KvReserveTokens,\n'
             '    "--num-tokens", 4000000,\n'
             '    "--max-running-requests", 1,\n'
@@ -225,6 +224,12 @@ def materialize(
             '    "--tool-call-parser", "qwen",\n'
             '    "--reasoning-parser", "off"\n'
             ')\n'
+            'if ($MoeCacheSize -gt 0) {\n'
+            '    if ($MoeCacheSize -lt 16) { throw "MoeCacheSize must be at least 16 for the 8-expert Wrench package" }\n'
+            '    $nativeArguments += @("--moe-cache-size", $MoeCacheSize)\n'
+            '} else {\n'
+            '    $nativeArguments += "--moe-cache-auto"\n'
+            '}\n'
             'if (-not $OllamaApi) {\n'
             '    & $FreeTokenExecutable @nativeArguments\n'
             '    exit $LASTEXITCODE\n'
@@ -247,8 +252,16 @@ def materialize(
             '    if (-not $ready) { throw "FreeToken readiness timeout on port $NativePort" }\n'
             '    $python = (Get-Command python -ErrorAction Stop).Source\n'
             '    $server = Join-Path $PSScriptRoot "wrench_server.py"\n'
-            '    & $python $server --model-dir $PSScriptRoot --allowed-root $AllowedRoot --port $Port --upstream-url "http://127.0.0.1:$NativePort/v1/chat/completions" --max-request-bytes 536870912\n'
-            '    $exitCode = $LASTEXITCODE\n'
+            '    $savedPythonPath = $env:PYTHONPATH\n'
+            '    # The native backend needs the FreeToken overlay, but the\n'
+            '    # package API process must not auto-import that sitecustomize.\n'
+            '    $env:PYTHONPATH = $null\n'
+            '    try {\n'
+            '        & $python $server --model-dir $PSScriptRoot --allowed-root $AllowedRoot --port $Port --mechanical-only --upstream-url "http://127.0.0.1:$NativePort/v1/chat/completions" --max-request-bytes 536870912\n'
+            '        $exitCode = $LASTEXITCODE\n'
+            '    } finally {\n'
+            '        $env:PYTHONPATH = $savedPythonPath\n'
+            '    }\n'
             '} finally {\n'
             '    if ($nativeProcess -and -not $nativeProcess.HasExited) {\n'
             '        Stop-Process -Id $nativeProcess.Id -Force\n'
