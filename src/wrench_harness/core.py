@@ -9,12 +9,12 @@ can preserve the original request and escalate.
 from __future__ import annotations
 
 import difflib
+import http.client
 import json
 import os
 import subprocess
-import urllib.error
 import urllib.parse
-import urllib.request
+import time
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +23,29 @@ MAX_FILE_BYTES = 256 * 1024
 MAX_LINES = 500
 MAX_MATCHES = 200
 MAX_DIFF_BYTES = 128 * 1024
+MAX_SEARCH_FILE_BYTES = 8 * 1024 * 1024
+SEARCH_PRUNED_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "artifacts",
+    "checkpoints",
+    "models",
+    "venv",
+}
+SEARCH_PRUNED_SUFFIXES = {
+    ".bin",
+    ".gguf",
+    ".onnx",
+    ".npz",
+    ".npy",
+    ".pt",
+    ".pth",
+    ".safetensors",
+}
 ALLOWED_HEALTH_HOSTS = {"127.0.0.1", "localhost", "::1"}
 ALLOWED_HEALTH_PATHS = {"/health", "/v1/models"}
 OUT_OF_DOMAIN_MARKERS = (
@@ -142,7 +165,27 @@ def _literal_search(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
         return _abstain("invalid_match_limit")
     if not search_root.exists():
         return _abstain("missing_search_root")
-    paths = [search_root] if search_root.is_file() else sorted(p for p in search_root.rglob("*") if p.is_file())
+    if search_root.is_file():
+        paths = [search_root]
+    else:
+        paths = []
+        for current, directories, filenames in os.walk(search_root, topdown=True, followlinks=False):
+            directories[:] = sorted(
+                name
+                for name in directories
+                if not name.startswith(".") and name not in SEARCH_PRUNED_DIRS
+            )
+            current_path = Path(current)
+            for name in sorted(filenames):
+                path = current_path / name
+                if path.suffix.lower() in SEARCH_PRUNED_SUFFIXES:
+                    continue
+                try:
+                    if path.stat().st_size > MAX_SEARCH_FILE_BYTES:
+                        continue
+                except OSError:
+                    continue
+                paths.append(path)
     matches: list[dict[str, Any]] = []
     for path in paths:
         if any(part.startswith(".") for part in path.relative_to(root).parts):
@@ -165,7 +208,7 @@ def _git_read_status(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
         return _abstain("repository_root_invalid")
     try:
         completed = subprocess.run(
-            ["git", "-C", str(repo), "status", "--short", "--branch"],
+            ["git", "-C", str(repo), "status", "--short", "--branch", "--untracked-files=no"],
             check=False,
             capture_output=True,
             text=True,
@@ -190,15 +233,29 @@ def _health_read(proposal: dict[str, Any]) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != "http" or parsed.hostname not in ALLOWED_HEALTH_HOSTS or parsed.path not in ALLOWED_HEALTH_PATHS or parsed.query or parsed.fragment:
         return _abstain("health_endpoint_not_allowlisted")
+    connection = http.client.HTTPConnection(parsed.hostname, parsed.port or 80, timeout=float(timeout))
+    deadline = time.monotonic() + float(timeout)
     try:
-        with urllib.request.urlopen(url, timeout=float(timeout)) as response:
-            data = response.read(limit + 1)
-            if len(data) > limit:
-                return _abstain("health_response_size_limit")
-            text = data.decode("utf-8")
-            return _accept("health_read", {"url": url, "status": response.status, "body": text})
-    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, OSError) as exc:
+        connection.connect()
+        if connection.sock is not None:
+            connection.sock.settimeout(max(0.1, deadline - time.monotonic()))
+        path = parsed.path or "/"
+        connection.request("GET", path, headers={"Accept": "application/json, text/plain, */*"})
+        response = connection.getresponse()
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("health response deadline exceeded")
+        if connection.sock is not None:
+            connection.sock.settimeout(max(0.1, remaining))
+        data = response.read(limit + 1)
+        if len(data) > limit:
+            return _abstain("health_response_size_limit")
+        text = data.decode("utf-8")
+        return _accept("health_read", {"url": url, "status": response.status, "body": text})
+    except (http.client.HTTPException, TimeoutError, UnicodeDecodeError, OSError) as exc:
         return _abstain("health_read_error", type(exc).__name__)
+    finally:
+        connection.close()
 
 
 def _patch_draft(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
