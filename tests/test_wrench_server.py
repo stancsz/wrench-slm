@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from wrench_harness.server import WrenchHTTPServer
+import wrench_harness.server as server_module
 from wrench_harness.worker import WrenchWorker
 
 
@@ -185,3 +186,44 @@ def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: 
         upstream.shutdown()
         upstream.server_close()
         upstream_thread.join(timeout=5)
+
+
+def test_model_local_server_maps_native_timeout_to_504(tmp_path: Path, monkeypatch):
+    def timed_out(*args, **kwargs):
+        raise TimeoutError("native prefill deadline")
+
+    monkeypatch.setattr(server_module, "_forward_upstream", timed_out)
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+        upstream_url="http://127.0.0.1:1/v1/chat/completions",
+        upstream_timeout_seconds=9,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "messages": [{"role": "user", "content": "Draft a complex multi-file change."}],
+            "max_tokens": 64,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(request, timeout=5)
+        except urllib.error.HTTPError as exc:
+            assert exc.code == 504
+            body = json.loads(exc.read().decode("utf-8"))
+            assert body["error"]["type"] == "upstream_timeout"
+        else:
+            raise AssertionError("expected HTTP 504")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)

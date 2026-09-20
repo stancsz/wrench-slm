@@ -1573,3 +1573,13 @@ mechanical fast-path requests, 0.584 ms median, and 45.084 ms p95. This closes
 the package-local mechanical regression for the canonical fixture. It does not
 close native dense 4M retrieval quality, MiniMax parity, or the matched
 workflow North Star gates. Evidence: `phases/phase-137-native-220-correct-root`.
+
+2026-09-20 reducer-bypassed native long-context probe: a generic inert request
+that did not match the embedded mechanical route was sent through the v48
+package to the internal native backend. A 65,536-token direct request timed
+out after 120.079 seconds without provider usage or a native completion; the
+2M attempt also reached its 600-second client deadline without a completion.
+This is a real native-path performance failure, not a gateway compaction
+failure. The native direct-input capacity surface remains present, but native
+prefill is not yet fast enough for the 2M/4M North Star. Evidence:
+`phases/phase-138-native-retrieval-probe`.

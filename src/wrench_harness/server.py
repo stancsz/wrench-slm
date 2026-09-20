@@ -379,6 +379,11 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 400,
                 {"error": {"message": str(exc), "type": "invalid_request_error"}},
             )
+        except TimeoutError as exc:
+            self._send_json(
+                504,
+                {"error": {"message": str(exc), "type": "upstream_timeout"}},
+            )
         except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
             # The client may enforce a shorter deadline than the native
             # backend. The worker request is already bounded by the upstream

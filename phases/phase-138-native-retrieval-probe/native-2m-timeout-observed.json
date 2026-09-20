@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.native-context-timeout-observation.v1",
+  "status": "TIMEOUT_OBSERVED_NO_COMPLETION",
+  "endpoint": "http://127.0.0.1:28984/v1/chat/completions",
+  "model": "wrench-4b-qwen3.6-8e",
+  "requested_target_tokens": 2000000,
+  "configured_max_model_len": 4000000,
+  "client_timeout_seconds": 600,
+  "prompt_build_method": "local_tokenizer_unit_estimate",
+  "max_tokens": 1,
+  "native_context_pass": false,
+  "receipt_note": "The probe client reached its deadline before the original timeout-aware receipt patch was installed. The owned package and native processes were then stopped. This observation records the failed attempt and is not a no-truncation or retrieval-quality claim."
+}

@@ -46,6 +46,9 @@ def _post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, 
         except json.JSONDecodeError:
             detail = {"error": raw.decode("utf-8", errors="replace")}
         return exc.code, detail, elapsed
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        elapsed = (time.perf_counter() - started) * 1000
+        return 599, {"error": type(exc).__name__, "detail": str(exc)}, elapsed
 
 
 def _build_prompt(
