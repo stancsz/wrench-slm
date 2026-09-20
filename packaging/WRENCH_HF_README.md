@@ -209,6 +209,13 @@ performed over every 4M token. If an application sends the whole conversation
 as one large user message, the package splits the old prefix from the newest
 suffix internally before building the same reference index.
 
+When an old reference card contains the exact unified diff requested by the
+newest review-only intent, the embedded route can recover that diff directly.
+It requires matching paths, a valid hunk, a bounded diff, and an existing file;
+otherwise it abstains with `patch_content_missing` and preserves the fallback.
+This is reference retrieval, not patch synthesis, and it never applies a file
+change.
+
 In `-OllamaApi` mode this reducer is embedded in the downloaded package server.
 The server accepts the original request, runs the embedded MapReduce reducer,
 and sends only the staged messages to the internal native backend while keeping

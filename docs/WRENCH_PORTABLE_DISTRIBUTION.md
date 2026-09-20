@@ -77,6 +77,12 @@ server-side staging on the development host. The complete protocol-stub round
 trip was about 2.6 seconds because it also transfers a 35 MB request body.
 This is still not dense native 4M attention.
 
+The same embedded lookup path can recover an exact unified diff from an older
+reference when the newest request asks for an unapplied review-only patch. It
+requires matching paths, a valid hunk, bounded size, and an existing file. If
+the old context does not contain the exact diff, Wrench abstains instead of
+inventing one. The proposal remains review-only and is never applied.
+
 The portable worker can be used directly from the downloaded directory:
 
 ```python
