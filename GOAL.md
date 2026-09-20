@@ -1152,3 +1152,14 @@ the larger chunk was aborted and rejected as a performance tuning. Receipt:
 `phases/phase-85-nvfp4-native4m/native-2m-swa8k-p64k-timeout.json`. Keep the
 32K result as the current reproducible baseline until a kernel-level or
 multi-stage prefill optimization is implemented.
+
+2026-09-20 MoE residency tuning: an explicit `moe_cache_size=320` was tested
+because the historical warm 16K NVFP4 probe used that geometry. The 16K probe
+was healthy at 14,558.191 ms, but the complete direct 2M replay took
+1,570,463.990 ms, about 26.2 minutes, versus 1,389,715.469 ms with the
+baseline cache size 16. Both runs reported 1,999,912 model-side prompt tokens
+with no truncation and HTTP 200. Cache 320 is therefore rejected as the
+default long-context setting; short-context residency and full-sequence
+prefill have different bottlenecks. Evidence:
+`phases/phase-86-nvfp4-cache-tuning/native-16k-cache320.json` and
+`phases/phase-86-nvfp4-cache-tuning/native-2m-cache320.json`.
