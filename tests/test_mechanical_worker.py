@@ -208,6 +208,14 @@ def test_reference_lookup_route_scans_suffix_boundary_when_reference_is_recent()
     }
 
 
+def test_reference_lookup_route_refuses_generic_monster_lookup_without_anchor():
+    prompt = (
+        ("stale lookup telemetry status observed; " * 20_000)
+        + "CURRENT INTENT: inspect the active repository state and return one bounded proposal."
+    )
+    assert reference_lookup_route(prompt) is None
+
+
 def test_mechanical_route_does_not_treat_protocol_schema_as_file_path():
     prompt = (
         "WRENCH CURRENT CONTROL BLOCK. Use the old reference only to resolve "

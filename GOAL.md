@@ -2074,3 +2074,15 @@ payload was 32,000,075 characters, the request returned HTTP 200 in 120.177 ms,
 the embedded mechanical route recovered the current `read_file` intent, and it
 made zero model calls. This is hybrid raw intake plus MapReduce evidence, not
 dense-native attention. Evidence: `phases/phase-192-v76-health-status`.
+
+2026-09-20 2M/4M staged handoff latency repair: native handoff verification
+previously re-scanned the complete monster prompt during semantic guards and
+TTC, causing a 4M staged request to take about 7.4 seconds even though only
+1,955 staged tokens were sent upstream. Verification now receives only the
+bounded current-intent suffix while the raw payload remains hash-bound, and
+generic historical lookup without a path or symbol anchor fails closed before
+any full-payload regex scan. Three source-runtime repetitions measured 2M at
+152.768 ms p50 and 162.178 ms p95, and 4M at 261.682 ms p50 and 299.537 ms
+p95, with 1,955 staged tokens in every run. The absolute 100 ms 4M aspiration
+is still open. Full tests pass at 163 tests. Evidence:
+`phases/phase-193-v77-context-matrix`.

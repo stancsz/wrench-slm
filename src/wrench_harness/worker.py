@@ -78,7 +78,14 @@ def _adaptive_prefill_budget(
         for item in messages
         if isinstance(item, dict) and item.get("role") == "user" and isinstance(item.get("content"), str)
     ]
-    latest = users[-1].casefold() if users else ""
+    # Adaptive policy only needs the active intent. Case-folding a complete
+    # 4M payload here allocates and scans tens of megabytes before the actual
+    # reducer starts, even though historical material is reference-only.
+    latest = (
+        active_intent_suffix(users[-1], suffix_chars=16_000).casefold()
+        if users
+        else ""
+    )
     marker = next((value for value in _ADAPTIVE_CONTEXT_MARKERS if value in latest), None)
     if marker is None:
         return base_budget, None
@@ -104,11 +111,12 @@ def _dynamic_prefill_messages(
     messages: list[dict[str, str]],
     *,
     mechanical_index: MechanicalPrefillIndex | None = None,
+    original_payload_sha256: str | None = None,
 ) -> tuple[list[dict[str, str]], dict[str, Any] | None]:
     """Keep monster payloads losslessly indexed but bounded for model work."""
 
     budget = int(os.environ.get("WRENCH_MODEL_PREFILL_BUDGET", "64000"))
-    original_payload_sha256 = ordered_payload_sha256(messages)
+    original_payload_sha256 = original_payload_sha256 or ordered_payload_sha256(messages)
     content_values = [
         message["content"]
         for message in messages
@@ -235,19 +243,29 @@ class WrenchWorker:
         users = [content for content in users if isinstance(content, str)]
         prompt = users[-1] if users else ""
         reference_payload = "\n\n".join(users)
+        try:
+            verifier_suffix_chars = int(
+                os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000")
+            )
+        except ValueError:
+            verifier_suffix_chars = 16_000
+        verifier_prompt = active_intent_suffix(
+            prompt,
+            suffix_chars=max(1, verifier_suffix_chars),
+        )
         if use_mechanical_route:
             # The latest user message owns the action. The complete user
             # payload remains available as reference evidence for multi-turn
             # conversations, including payloads whose old lookup lives in an
             # earlier message.
-            route_suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+            route_suffix_chars = verifier_suffix_chars
             if route_suffix_chars < 1:
                 return {"status": "abstain", "fallback_reason": "qwen_route_suffix_invalid"}
             # A monolithic user message may contain millions of tokens of old
             # lookup data. Only the newest suffix can define the active action.
             # The complete payload remains available to reference_lookup_route
             # for exact historical evidence.
-            route_prompt = active_intent_suffix(prompt, suffix_chars=route_suffix_chars)
+            route_prompt = verifier_prompt
             mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root)
             if mechanical is None or mechanical.get("fallback_reason") == "patch_content_missing":
                 mechanical = reference_patch_route(reference_payload) or mechanical
@@ -317,7 +335,11 @@ class WrenchWorker:
             )
             generated = output[0, batch["input_ids"].shape[-1] :]
             content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
-            result = execute_model_output(content, self.allowed_root, request_prompt=prompt)
+            result = execute_model_output(
+                content,
+                self.allowed_root,
+                request_prompt=verifier_prompt,
+            )
             if result.get("status") == "accepted":
                 try:
                     proposal = json.loads(content)
@@ -325,7 +347,7 @@ class WrenchWorker:
                     proposal = None
                 result = enforce_ttc(
                     proposal,
-                    prompt,
+                    verifier_prompt,
                     result,
                     context_pressure=prefill_receipt is not None,
                 )

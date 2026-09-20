@@ -169,9 +169,10 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
         normalized = value.strip(".,:;()[]{}")
         if normalized and any(marker in normalized for marker in ("_", "/", "\\", ".", ":", "-")):
             priority.append(normalized)
-    # A generic request has no safe historical lookup key. Refuse the lookup
-    # route before compiling a regex that would otherwise scan the entire raw
-    # 4M payload and risk turning an ambiguous request into a latency spike.
+    # A generic read request has no safe historical lookup key. In particular,
+    # do not let words such as ``inspect`` or ``repository`` trigger a regex
+    # scan over a multi-million-token reference. The model/fallback path can
+    # still handle that request, while this bounded route stays predictable.
     if not quoted and not priority:
         return None
     candidates = quoted or priority or lexical
@@ -196,7 +197,6 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     old = prompt[:-len(tail)] if len(prompt) > len(tail) else prompt
     if not old:
         return None
-    pattern = re.compile("(?:" + "|".join(re.escape(term) for term in terms) + ")", re.IGNORECASE)
     # Usually the reference occupies the prefix. A compact control block can
     # place the matching reference line just inside the suffix, though, so a
     # full-payload fallback is required for correctness at that boundary.
@@ -210,9 +210,23 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     if not 1 <= max_bytes <= 256 * 1024:
         return None
     for region in search_regions:
-        for match in pattern.finditer(region):
-            start = region.rfind("\n", 0, match.start()) + 1
-            end = region.find("\n", match.end())
+        for term in terms:
+            # ``str.find`` is implemented in C and avoids the expensive
+            # backtracking-style full regex scan that made a 4M reference
+            # dominate native handoff latency. Exact path/symbol matching is
+            # the safe common case. Case-insensitive fallback is retained for
+            # compact payloads, but deliberately skipped for monster regions
+            # so a casing mismatch fails closed instead of causing a latency
+            # spike.
+            position = region.find(term)
+            if position < 0 and len(region) <= 256 * 1024:
+                match = re.search(re.escape(term), region, re.IGNORECASE)
+                position = match.start() if match else -1
+            if position < 0:
+                continue
+            end_position = position + len(term)
+            start = region.rfind("\n", 0, position) + 1
+            end = region.find("\n", end_position)
             if end < 0:
                 end = len(region)
             line = region[start:end].strip()

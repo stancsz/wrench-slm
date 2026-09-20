@@ -198,9 +198,23 @@ def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: 
         upstream_thread.join(timeout=5)
 
 
-def test_native_upstream_receives_staged_prefill_for_monster_payload(tmp_path: Path):
+def test_native_upstream_receives_staged_prefill_for_monster_payload(
+    tmp_path: Path, monkeypatch
+):
     (tmp_path / "README.md").write_text("native upstream fixture\n", encoding="utf-8")
     captured: dict[str, object] = {}
+    verified_prompt_lengths: list[int] = []
+    original_execute_model_output = server_module.execute_model_output
+
+    def capture_verifier_prompt(output, allowed_root, *, request_prompt=None):
+        verified_prompt_lengths.append(len(request_prompt or ""))
+        return original_execute_model_output(
+            output,
+            allowed_root,
+            request_prompt=request_prompt,
+        )
+
+    monkeypatch.setattr(server_module, "execute_model_output", capture_verifier_prompt)
 
     class UpstreamHandler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:  # noqa: N802
@@ -283,6 +297,9 @@ def test_native_upstream_receives_staged_prefill_for_monster_payload(tmp_path: P
         assert body["wrench"]["dynamic_prefill"]["raw_token_count"] > staged_tokens
         assert body["wrench"]["dynamic_prefill"]["native_input_claim"] is False
         assert body["wrench"]["dynamic_prefill"]["server_staging_elapsed_ms"] >= 0
+        assert verified_prompt_lengths
+        assert verified_prompt_lengths[0] <= 16_000
+        assert verified_prompt_lengths[0] < len(legacy)
     finally:
         server.shutdown()
         server.server_close()

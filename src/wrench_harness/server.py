@@ -20,6 +20,8 @@ from typing import Any
 from urllib import request as urllib_request
 
 from .core import execute_model_output
+from .mechanical import active_intent_suffix
+from .prefill import ordered_payload_sha256
 from .ttc import enforce_ttc
 from .worker import WrenchWorker, _dynamic_prefill_messages
 
@@ -28,7 +30,7 @@ def _estimated_tokens(value: str) -> int:
     return max(1, value.count(" ") + value.count("\n") + 1)
 
 
-def _request_token_estimate(messages: list[dict[str, Any]]) -> tuple[int, int]:
+def _request_token_estimate(messages: list[dict[str, Any]]) -> tuple[int, int, str | None]:
     raw_chars = 0
     raw_tokens = 0
     for message in messages:
@@ -36,7 +38,15 @@ def _request_token_estimate(messages: list[dict[str, Any]]) -> tuple[int, int]:
         if isinstance(content, str):
             raw_chars += len(content)
             raw_tokens += _estimated_tokens(content)
-    return raw_chars, raw_tokens
+    payload_sha256 = None
+    if all(
+        isinstance(message, dict)
+        and isinstance(message.get("role"), str)
+        and isinstance(message.get("content"), str)
+        for message in messages
+    ):
+        payload_sha256 = ordered_payload_sha256(messages)  # type: ignore[arg-type]
+    return raw_chars, raw_tokens, payload_sha256
 
 
 def _cost_accounting_receipt(
@@ -266,6 +276,24 @@ def _latest_user_prompt(messages: list[dict[str, Any]]) -> str:
     return ""
 
 
+def _bounded_verification_prompt(messages: list[dict[str, Any]]) -> str:
+    """Keep verifier work proportional to active intent, not raw history.
+
+    The raw payload is already hash-bound in the prefill receipt. Older
+    material is reference-only, so semantic guards and TTC should inspect the
+    same bounded current-intent suffix used by the mechanical router. Passing
+    a 4M string into repeated ``lower()`` calls here would turn a fast staged
+    handoff into a multi-second CPU scan.
+    """
+
+    prompt = _latest_user_prompt(messages)
+    try:
+        suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+    except ValueError:
+        suffix_chars = 16_000
+    return active_intent_suffix(prompt, suffix_chars=max(1, suffix_chars))
+
+
 def _native_direct_input_receipt(
     messages: list[dict[str, str]],
     raw_tokens: int,
@@ -292,6 +320,13 @@ def _native_direct_input_receipt(
 
 class WrenchRequestHandler(BaseHTTPRequestHandler):
     server_version = "WrenchModelServer/1.0"
+    # A 4M logical request is commonly tens of megabytes on the wire. The
+    # stdlib handler's small default buffered reader makes localhost uploads
+    # needlessly syscall-bound before MapReduce can even start. Keep the
+    # package-local endpoint responsive for monster payload intake without
+    # changing the logical context contract.
+    rbufsize = 1024 * 1024
+    wbufsize = 1024 * 1024
 
     def _server(self) -> "WrenchHTTPServer":
         return self.server  # type: ignore[return-value]
@@ -410,7 +445,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             if not isinstance(messages, list):
                 raise ValueError("messages must be a list")
             model_name = str(request.get("model") or server.model_name)
-            raw_chars, raw_tokens = _request_token_estimate(messages)
+            raw_chars, raw_tokens, raw_payload_sha256 = _request_token_estimate(messages)
             options = request.get("options")
             declared_context_tokens = None
             if isinstance(options, dict) and isinstance(options.get("num_ctx"), int):
@@ -435,6 +470,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         staged_messages, prefill_receipt = _dynamic_prefill_messages(
                             messages,
                             mechanical_index=server.worker.prefill_index,
+                            original_payload_sha256=raw_payload_sha256,
                         )
                         if prefill_receipt is not None:
                             prefill_receipt["server_staging_elapsed_ms"] = round(
@@ -456,7 +492,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     verified = execute_model_output(
                         upstream_output,
                         server.worker.allowed_root,
-                        request_prompt=_latest_user_prompt(messages),
+                        request_prompt=_bounded_verification_prompt(messages),
                     )
                     if verified.get("status") == "accepted":
                         try:
@@ -465,7 +501,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                             upstream_proposal = None
                         verified = enforce_ttc(
                             upstream_proposal,
-                            _latest_user_prompt(messages),
+                            _bounded_verification_prompt(messages),
                             verified,
                             context_pressure=prefill_receipt is not None,
                         )
