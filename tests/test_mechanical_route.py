@@ -17,6 +17,16 @@ def test_mechanical_route_builds_bounded_read_proposals():
     }
 
 
+def test_mechanical_route_uses_verifier_bounded_default_for_simple_read():
+    assert mechanical_route("Read README.md.") == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "README.md",
+        "max_bytes": 256 * 1024,
+    }
+    assert mechanical_route("Read the entire README.md.") is None
+
+
 def test_mechanical_route_handles_literal_health_and_git():
     assert mechanical_route("Find the exact text 'TODO' below src, capped at 5 matches.") == {
         "schema": "wrench.proposal.v1",

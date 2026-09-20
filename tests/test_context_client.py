@@ -51,6 +51,7 @@ def test_local_client_sends_bounded_retrieved_context(tmp_path: Path):
             context_query="health deployment",
             active_context_token_budget=8,
             preserve_context_ids=("call",),
+            mechanical_fast_path=False,
         )
         assert result["status"] == "accepted"
         assert result["context_receipt"]["selected_token_count"] == 8

@@ -1385,3 +1385,12 @@ maximum. Elapsed time was `1,287,078.199` ms, about 21.45 minutes, with
 `max_tokens=1`. This is a real pinned 2M capacity pass and a decisive native
 throughput failure, not a practical-serving pass. Evidence:
 `phases/phase-102-native-pinned-2m/native-2m.json`.
+
+2026-09-20 bounded default-read fast path: simple requests such as `Read
+README.md.` now receive the verifier's explicit 256 KiB cap and avoid an
+unnecessary model prefill. Requests asking for the entire, whole, complete,
+full, or all contents remain fallback-required to avoid silently truncating a
+large file. The historical 220-case fixture is unchanged at 200/220 routes
+and `78.9999%` eligible weighted frontier-token mass because its uncovered
+patch prompts omit their actual diffs. Evidence:
+`phases/phase-103-bounded-default-read`.

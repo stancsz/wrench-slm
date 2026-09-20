@@ -59,6 +59,8 @@ _WORD_NUMBERS = {
     "ten": 10,
 }
 
+_DEFAULT_READ_MAX_BYTES = 256 * 1024
+
 
 _REFERENCE_QUERY_STOPWORDS = frozenset(
     {
@@ -317,6 +319,8 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
         byte_match = _BYTES_RE.search(prompt)
         if byte_match:
             return _proposal("read_file", path=path, max_bytes=int(byte_match.group(1).replace(",", "")))
+        if not re.search(r"\b(?:entire|whole|complete|full|all)\b", lowered):
+            return _proposal("read_file", path=path, max_bytes=_DEFAULT_READ_MAX_BYTES)
 
     if re.search(r"\b(search|find|look for)\b", lowered) and not re.search(r"\bregex\b", lowered):
         quoted = _quoted(prompt)

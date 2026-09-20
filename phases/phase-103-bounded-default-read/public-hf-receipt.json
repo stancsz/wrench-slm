@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.public-hf-bounded-read-receipt.v1",
+  "status": "PUBLIC_RUNTIME_UPDATED",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "06cf800d3facdbfafe40f9ab9e8511217a929337",
+  "weights_changed": false,
+  "updated_files": [
+    "wrench_mechanical.py",
+    "wrench_runtime/mechanical.py"
+  ],
+  "behavior": {
+    "simple_read_default_max_bytes": 262144,
+    "explicit_entire_read": "fallback_required",
+    "mechanical_model_calls": 0
+  },
+  "remote_runtime_matches_local": true,
+  "remote_is_public": true,
+  "weight_shard_count": 2,
+  "validation": "115 passed, 8 warnings",
+  "release_boundary": "bounded practical-work optimization only; no MiniMax parity or production-readiness claim"
+}
