@@ -18,7 +18,7 @@ from typing import Any
 from urllib import request as urllib_request
 
 from .core import execute_model_output
-from .worker import WrenchWorker
+from .worker import WrenchWorker, _dynamic_prefill_messages
 
 
 def _estimated_tokens(value: str) -> int:
@@ -132,10 +132,13 @@ def _upstream_payload(
     request: dict[str, Any],
     *,
     path: str,
+    messages_override: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     """Translate package-local Ollama-shaped requests to OpenAI chat input."""
 
-    if path == "/api/generate":
+    if messages_override is not None:
+        messages = messages_override
+    elif path == "/api/generate":
         prompt = request.get("prompt")
         if not isinstance(prompt, str):
             raise ValueError("prompt must be a string")
@@ -168,10 +171,14 @@ def _forward_upstream(
     *,
     path: str,
     timeout_seconds: float,
+    messages_override: list[dict[str, str]] | None = None,
 ) -> str:
     """Ask the native backend for text, without giving it execution authority."""
 
-    body = json.dumps(_upstream_payload(request, path=path), ensure_ascii=False).encode("utf-8")
+    body = json.dumps(
+        _upstream_payload(request, path=path, messages_override=messages_override),
+        ensure_ascii=False,
+    ).encode("utf-8")
     upstream_request = urllib_request.Request(
         upstream_url,
         data=body,
@@ -330,11 +337,19 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     use_mechanical_route=True,
                 )
                 if server.upstream_url and not result.get("mechanical_fast_path", False):
+                    # The downloaded package accepts the complete raw request,
+                    # but a native backend should only pay model compute for a
+                    # deterministic hot set plus lookup cards. Preserve the
+                    # original messages for verification and receipt hashing.
+                    staged_messages, prefill_receipt = _dynamic_prefill_messages(messages)
                     upstream_output = _forward_upstream(
                         server.upstream_url,
                         request,
                         path=self.path,
                         timeout_seconds=server.upstream_timeout_seconds,
+                        messages_override=(
+                            staged_messages if prefill_receipt is not None else None
+                        ),
                     )
                     verified = execute_model_output(
                         upstream_output,
@@ -349,6 +364,8 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                             "model_calls": 1,
                         }
                     )
+                    if prefill_receipt is not None:
+                        verified["dynamic_prefill"] = prefill_receipt
                     result = verified
             elapsed_ms = (time.perf_counter() - started) * 1000
             if self.path == "/v1/chat/completions":

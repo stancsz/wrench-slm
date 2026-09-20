@@ -197,6 +197,14 @@ over every 4M token. If an application sends the whole conversation as one
 large user message, the package splits the old prefix from the newest suffix
 internally before building the same reference index.
 
+In `-OllamaApi` mode this reducer is embedded in the downloaded package server.
+The server accepts the original request, stages it deterministically, and sends
+the staged messages to the internal native backend while keeping the original
+payload hash and latest intent for verification. A fresh 4M worker stress run
+reduced the raw input to a bounded prefill with zero model calls. That run took
+621.756 ms locally, so it proves the native handoff shape but not the requested
+sub-100-ms map-reduce target.
+
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:
 

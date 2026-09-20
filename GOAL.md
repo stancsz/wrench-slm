@@ -1611,3 +1611,15 @@ validation and the 4M package-local mechanical route in 19.2 ms with zero
 model calls. Launcher and docs were synchronized to public Hub revision
 `ad66f828cf70442b77630142f83a0c2f9a26502c`; weights were unchanged and fresh
 remote hash verification passed. Evidence: `phases/phase-141-public-v51`.
+
+2026-09-20 embedded native handoff: the package server now applies the
+deterministic dynamic prefill before forwarding ambiguous requests to its
+internal native backend. It still accepts the raw request and verifies the
+native answer against the original latest intent, while the backend receives a
+bounded staged message set and the receipt carries the original payload hash.
+The regression suite passed 144 tests. The 4M worker probe passed with zero
+model calls and a bounded staged prefill, but the current local reducer measured
+621.756 ms, so the sub-100-ms map-reduce target remains open. This closes the
+previous packaging gap, not native 4M retrieval quality, native speed, GGUF or
+stock Ollama loading, MiniMax parity, or production readiness. Evidence:
+`phases/phase-142-native-handoff-prefill`.

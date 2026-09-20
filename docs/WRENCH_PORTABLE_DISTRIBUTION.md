@@ -65,6 +65,14 @@ route accepts `options.num_ctx=4000000` while keeping the complete request
 inside the package-local reducer. This is an API compatibility layer, not a
 claim that stock Ollama can load the Wrench hybrid checkpoint.
 
+In `-OllamaApi` mode the reducer is embedded in the downloaded package server.
+The server accepts the original request, stages it deterministically, and sends
+only the staged messages to the internal native backend. The original payload
+hash and latest intent remain available for verification. This provides a
+practical 4M-to-64K native handoff, but it is not dense attention over every
+raw token. The latest 4M worker stress run completed with zero model calls and
+measured 621.756 ms locally, so the sub-100-ms map-reduce target remains open.
+
 The portable worker can be used directly from the downloaded directory:
 
 ```python
