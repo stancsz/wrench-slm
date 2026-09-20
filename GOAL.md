@@ -1939,3 +1939,12 @@ initialization bug found during this replay was fixed before the receipt was
 accepted. This is package-local mechanical evidence, not matched MiniMax
 workflow parity or priced production savings. Evidence:
 `phases/phase-175-package-cost-replay`.
+
+The token-flow accounting runtime was published in public v73 at Hub revision
+`db49ccc21b372ff91ace35bcbb69ccc1d5ee52d9`. Structural validation passed, a
+package-local mechanical request returned zero model prompt tokens and
+positive input tokens not sent to a model, and fresh runtime-only Hub hashes
+matched the local package. This makes the cost measurement portable alongside
+the worker, while USD pricing and the matched 90 percent coverage and 95
+percent net savings gates remain open. Evidence:
+`phases/phase-176-public-v73-cost-package`.
