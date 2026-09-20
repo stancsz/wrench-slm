@@ -194,7 +194,7 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     # compact payload searchable. For a large payload, retain the strict
     # old-versus-tail split so a path mentioned only by the current intent is
     # never treated as a historical lookup result.
-    old_end = len(prompt) - len(tail) if len(prompt) > len(tail) else 0
+    old_end = len(prompt) - len(tail) if len(prompt) > len(tail) else len(prompt)
     if old_end <= 0:
         return None
     # Usually the reference occupies the prefix. A compact control block can
@@ -204,7 +204,11 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     # multi-million-character prefix. The old implementation copied the
     # entire reference before ``str.find`` could begin, which made a 4M tail
     # lookup pay a second memory-bandwidth pass.
-    search_regions = [(prompt, old_end), (prompt, len(prompt))]
+    search_regions = (
+        [(prompt, old_end)]
+        if old_end == len(prompt)
+        else [(prompt, old_end), (prompt, len(prompt))]
+    )
     limit_match = re.search(
         r"(?:with\s+a?\s*|capped\s+at\s*|limit(?:ed)?\s+to\s*)([0-9][0-9,]*)\s*bytes?",
         tail,
