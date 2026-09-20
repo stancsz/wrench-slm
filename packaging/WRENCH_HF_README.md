@@ -138,6 +138,13 @@ measured cold ingest was 98.713 ms and hot selection was 44.441 ms on the local
 development machine. This is deterministic toolbelt evidence, not an LLM
 long-context quality or MiniMax-parity claim.
 
+The embedded native endpoint also passes deterministic history lookup canaries:
+an approximately 2M-token request completed in 112.471 ms and an approximately
+4M-token request completed in 460.155 ms, both recovering
+`src/wrench_harness/worker.py` from old reference material with zero model calls.
+These canaries validate the bounded lookup route only. They do not establish
+general native attention retrieval quality or MiniMax parity.
+
 ## Backend status
 
 - Hugging Face Safetensors: public experimental package. Transformers 5.17.0+
