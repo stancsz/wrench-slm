@@ -2243,3 +2243,9 @@ unexpected mutations. This is the strongest current hybrid serving result,
 not dense-native 4M attention quality, family-disjoint approval, or production
 enablement. Evidence: `phases/phase-204-v83-package-regression` and the
 raw handoff receipts under `phases/phase-204-v83-*`.
+
+The same v83 package-local `/api/chat` route also passed raw-input points at
+approximately 64K, 128K, 256K, 2M, and 4M. Server staging was 2.803 ms,
+4.255 ms, 7.324 ms, 50.456 ms, and 97.523 ms respectively, with 1,955 staged
+tokens at every point and no external gateway. The complete protocol-stub
+round trips were 35.930 ms, 32.776 ms, 43.197 ms, 139.290 ms, and 224.807 ms.

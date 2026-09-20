@@ -30,6 +30,19 @@ and JSON processing of the roughly 35 MB request body. The upstream was a
 local protocol stub, so this is intake and staging evidence, not model quality
 or dense native attention evidence.
 
+The same package-local `/api/chat` path also passed the context matrix:
+
+| raw estimate | server staging | complete stub round trip | staged tokens |
+| ---: | ---: | ---: | ---: |
+| 63,942 | 2.803 ms | 35.930 ms | 1,955 |
+| 127,942 | 4.255 ms | 32.776 ms | 1,955 |
+| 255,942 | 7.324 ms | 43.197 ms | 1,955 |
+| 1,999,942 | 50.456 ms | 139.290 ms | 1,955 |
+| 3,999,942 | 97.523 ms | 224.807 ms | 1,955 |
+
+All five returned `PASS_NATIVE_HANDOFF_STAGED_4M` with the same model-local
+staged route and no external gateway.
+
 ## 220-case package replay
 
 The package-local HTTP endpoint was exercised with client mechanical fast-path
@@ -58,3 +71,8 @@ Receipts:
 - `phases/phase-204-v83-handoff-1.json`
 - `phases/phase-204-v83-handoff-2.json`
 - `phases/phase-204-v83-handoff-3.json`
+- `phases/phase-204-v83-context-matrix/api-chat-64000.json`
+- `phases/phase-204-v83-context-matrix/api-chat-128000.json`
+- `phases/phase-204-v83-context-matrix/api-chat-256000.json`
+- `phases/phase-204-v83-context-matrix/api-chat-2000000.json`
+- `phases/phase-204-v83-context-matrix/api-chat-4000000.json`
