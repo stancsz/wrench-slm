@@ -2249,3 +2249,14 @@ approximately 64K, 128K, 256K, 2M, and 4M. Server staging was 2.803 ms,
 4.255 ms, 7.324 ms, 50.456 ms, and 97.523 ms respectively, with 1,955 staged
 tokens at every point and no external gateway. The complete protocol-stub
 round trips were 35.930 ms, 32.776 ms, 43.197 ms, 139.290 ms, and 224.807 ms.
+
+2026-09-20 v83 sealed final replay: the v83 package-local endpoint ran the
+44-row `evals/wrench-expanded-v2/final.jsonl` split with client mechanical
+fast-path bypass and an isolated health fixture. It reached 100% weighted
+mechanical coverage, 100% net frontier-token savings, and 100% Wrench final
+success versus 78.3130% teacher success, using 4,805 local tokens and zero
+Wrench frontier tokens. Median and p95 latency were 186.640 ms and 322.191
+ms; fallbacks, prohibited accepts, and unexpected mutations were all zero.
+This remains sealed-split diagnostic evidence, not the family-disjoint final
+approval or production authorization. Evidence:
+`phases/phase-205-v83-final-replay`.
