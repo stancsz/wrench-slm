@@ -2106,3 +2106,16 @@ eligible health rows to fail closed, so this remains diagnostic until an
 isolated fixture is used. The 5060Ti queue currently has only an older pending
 job pinned to source `0d6546a`; no current-commit independent receipt exists.
 Evidence: `phases/phase-194-v78-220-replay`.
+
+2026-09-20 v79 bundled-package 220-case replay with an explicit isolated
+loopback health fixture: the current package again returned
+`PASS_MECHANICAL_WORKER`, now with 96.2576% weighted mechanical frontier-token
+coverage, 96.1611% net frontier-token savings, 99.6767% Wrench-plus-fallback
+weighted final success versus 70.7422% teacher success, 2,487 Wrench frontier
+tokens, 23,643 Wrench local tokens, five fallbacks, zero prohibited accepts,
+and zero unexpected mutations. The test-only fixture preserves the original
+requested health URL and records the transport URL; it is default-off and does
+not alter production behavior. This is stronger bundled diagnostic evidence,
+but final family-disjoint approval, current-commit 5060Ti verification, and
+production enablement remain open. Evidence:
+`phases/phase-195-v79-health-fixture-replay`.
