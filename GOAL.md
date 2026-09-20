@@ -1081,3 +1081,14 @@ mechanical latency, but does not claim standard Transformers generation quality,
 4M retrieval quality, Ollama/GGUF/vLLM support, or MiniMax parity. Evidence:
 `phases/phase-84-standard-hf-loader/safety-v5-package-validation-worker.json` and
 public commit `1ba309f60f58039b1aa49529b274208322a34f87`.
+
+2026-09-20 public v5 package full 220-case replay: started the exact
+downloaded v5 directory with its bundled FreeToken launcher and ran the
+canonical 220-case client path end to end. The run completed all 220 rows with
+190/220 expected outcomes, 81/120 eligible exact accepts, zero prohibited
+accepts, 200/220 mechanical fast-path requests, 20 transport/runtime
+abstentions, 0.543 ms median latency, and 10,032.616 ms p95 latency. This is
+strong package-integrity and safety evidence, but not a quality pass: the
+remaining tail is concentrated in model-backed patch or complex requests, and
+the historical fixture is not the sealed MiniMax workflow set. Receipt:
+`phases/phase-84-standard-hf-loader/safety-v5-model-220.json`.
