@@ -2225,3 +2225,21 @@ The same v81 package then passed the exact Ollama-shaped `/api/chat` surface:
 staging and 309.808 ms complete local stub round trip. This confirms that the
 MapReduce path is attached to the user-facing Ollama-shaped endpoint, not only
 to the OpenAI-compatible probe.
+
+2026-09-20 v83 fast first-layer optimization: the bundled prefill runtime now
+uses bounded head/tail token-density sampling for monster payload estimates,
+and skips a redundant full 4M code-fence scan while retaining SHA-256 payload
+binding, exact lookup windows, and bounded AST extraction for small source
+fragments. The new portable package passed structural validation and its
+Ollama-shaped `/api/chat` staging measured 97.351 ms, 81.003 ms, and 99.029 ms
+across three fresh 4M runs, with 3,999,547 raw estimated tokens, 1,966 direct
+staged tokens in the worker probe, and 1,955 staged tokens in the handoff
+probe. The complete stub round trips were 214.542 ms, 186.708 ms, and 214.256
+ms. The package-local 220-case replay still passed with 94.5411% weighted
+mechanical coverage, 95.5310% net frontier-token savings, 99.6503% Wrench-plus-
+fallback weighted final success versus 78.9959% teacher success, 184.658 ms
+median, 350.017 ms p95, five fallbacks, zero prohibited accepts, and zero
+unexpected mutations. This is the strongest current hybrid serving result,
+not dense-native 4M attention quality, family-disjoint approval, or production
+enablement. Evidence: `phases/phase-204-v83-package-regression` and the
+raw handoff receipts under `phases/phase-204-v83-*`.

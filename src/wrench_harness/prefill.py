@@ -248,10 +248,27 @@ _GENERIC_QUERY_TERMS = {
 }
 
 
-def _estimate_token_count(value: str) -> int:
-    """Cheap conservative count without allocating a word list."""
+_TOKEN_ESTIMATE_SAMPLE_THRESHOLD = 1_000_000
+_TOKEN_ESTIMATE_SAMPLE_CHARS = 64_000
 
-    return max(1, value.count(" ") + value.count("\n") + 1)
+
+def _estimate_token_count(value: str) -> int:
+    """Estimate tokens without repeatedly scanning a monster payload.
+
+    Small staged messages retain the exact cheap separator count used by the
+    existing receipts. For a multi-million-token raw message, a bounded
+    head/tail sample preserves the observed separator density while avoiding a
+    second full pass over the same payload. Exact payload identity remains
+    bound by SHA-256 and this value is explicitly an estimate, not a tokenizer
+    claim.
+    """
+
+    if len(value) <= _TOKEN_ESTIMATE_SAMPLE_THRESHOLD:
+        return max(1, value.count(" ") + value.count("\n") + 1)
+    sample_size = min(_TOKEN_ESTIMATE_SAMPLE_CHARS, len(value) // 2)
+    sample = value[:sample_size] + value[-sample_size:]
+    sample_tokens = sample.count(" ") + sample.count("\n") + 1
+    return max(1, round(len(value) * sample_tokens / len(sample)))
 
 
 def _code_path_hint(text: str, query_terms: set[str]) -> str:
@@ -277,6 +294,13 @@ def _bounded_toolbelt_evidence(text: str, query_terms: set[str]) -> dict[str, An
     result is reference evidence only and never grants execution authority.
     """
 
+    # A full fence search over a multi-million-token reference is itself the
+    # kind of attention-like work this first layer is meant to avoid. Exact
+    # lookup terms still receive bounded evidence windows in ``query_card``;
+    # AST extraction is reserved for bounded source fragments.
+    if len(text) > _MAX_TOOLBELT_SOURCE_BYTES:
+        return {"ast_symbols": [], "dependencies": [], "toolbelt_scan": "skipped_unbounded_or_non_code"}
+
     candidates: list[tuple[str, str]] = []
     # Do not run a DOTALL regex over a multi-million-token history just to
     # discover that it has no fenced code. ``str.find`` is implemented in C
@@ -295,10 +319,6 @@ def _bounded_toolbelt_evidence(text: str, query_terms: set[str]) -> dict[str, An
             candidates.append((_code_path_hint(text, query_terms), body))
         fence_start = text.find("```", body_end + 3)
     if not candidates:
-        # Character length is a conservative UTF-8 byte lower bound. For a
-        # monster reference, skip the second full-text regex scan entirely.
-        if len(text) > _MAX_TOOLBELT_SOURCE_BYTES:
-            return {"ast_symbols": [], "dependencies": [], "toolbelt_scan": "skipped_unbounded_or_non_code"}
         code_like = bool(re.search(r"\b(?:class|def|function|interface|import|from)\b", text))
         if code_like:
             candidates.append((_code_path_hint(text, query_terms), text))

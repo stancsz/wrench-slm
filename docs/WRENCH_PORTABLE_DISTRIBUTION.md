@@ -85,11 +85,12 @@ the latest intent, hot context, matching cards, and bounded evidence windows.
 The server accepts the original request, sends only the staged messages to the
 internal native backend, and returns an original-payload hash plus a prepared-
 payload hash. This provides a practical 4M-to-64K native handoff, but it is
-not dense attention over every raw token. The current 4M handoff probe reduced
-about 4M estimated tokens to 1,845 staged tokens and measured 114.563 ms for
-server-side staging on the development host. The complete protocol-stub round
-trip was about 2.6 seconds because it also transfers a 35 MB request body.
-This is still not dense native 4M attention.
+not dense attention over every raw token. The current fast-first-layer package
+reduced about 4M estimated tokens to 1,955 staged tokens. Three fresh
+Ollama-shaped `/api/chat` runs measured 81.003 ms, 97.351 ms, and 99.029 ms
+for server-side staging on the development host. Complete local protocol-stub
+round trips were 186.708 ms to 214.542 ms because the request still transfers
+about 35 MB on localhost. This is still not dense native 4M attention.
 
 The native handoff index is content-addressed and can persist across requests
 inside the package server. Its byte ceiling is configurable with

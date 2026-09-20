@@ -21,13 +21,13 @@ from urllib import request as urllib_request
 
 from .core import execute_model_output
 from .mechanical import active_intent_suffix
-from .prefill import ordered_payload_sha256
+from .prefill import _estimate_token_count, ordered_payload_sha256
 from .ttc import enforce_ttc
 from .worker import WrenchWorker, _dynamic_prefill_messages
 
 
 def _estimated_tokens(value: str) -> int:
-    return max(1, value.count(" ") + value.count("\n") + 1)
+    return _estimate_token_count(value)
 
 
 def _request_token_estimate(messages: list[dict[str, Any]]) -> tuple[int, int, str | None]:

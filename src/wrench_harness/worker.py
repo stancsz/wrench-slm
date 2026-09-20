@@ -25,6 +25,7 @@ from .patching import (
 from .ttc import enforce_ttc
 from .prefill import (
     MechanicalPrefillIndex,
+    _estimate_token_count,
     build_dynamic_prefill,
     ordered_payload_sha256,
     split_monolithic_current_message,
@@ -46,10 +47,8 @@ _ADAPTIVE_CONTEXT_MARKERS = (
 
 
 def _estimated_tokens(value: str) -> int:
-    # Spaces and newlines dominate the cheap estimate. Avoid a third full
-    # scan for tabs on monster payloads; the exact tokenizer remains the
-    # authority once the bounded staged prompt reaches the model.
-    return max(1, value.count(" ") + value.count("\n") + 1)
+    # Keep the worker and prefill index on the same bounded-sampling policy.
+    return _estimate_token_count(value)
 
 
 def _adaptive_prefill_budget(

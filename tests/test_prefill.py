@@ -1,9 +1,17 @@
 from wrench_harness.prefill import (
     MechanicalPrefillIndex,
+    _estimate_token_count,
     build_dynamic_prefill,
     build_lossless_structured_prefill,
     split_monolithic_current_message,
 )
+
+
+def test_monster_token_estimate_uses_bounded_sampling_without_losing_density():
+    payload = "stale lookup record " * 250_000
+    exact = payload.count(" ") + payload.count("\n") + 1
+    estimated = _estimate_token_count(payload)
+    assert abs(estimated - exact) / exact < 0.01
 
 
 def test_structured_prefill_keeps_current_intent_and_all_reference_text():
