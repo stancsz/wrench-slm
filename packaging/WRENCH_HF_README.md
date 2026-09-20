@@ -121,6 +121,8 @@ It also uses `--expert-load serial` to avoid a parallel whole-shard host-memory
 buffer while loading the MoE experts.
 The launcher constrains BLAS thread pools to one thread and enables lazy CUDA
 module loading for lower-memory Windows startup.
+Failed native smoke startup also cleans the complete FreeToken process tree to
+avoid leaking Torch workers into subsequent launches.
 
 To expose the native FreeToken backend through the same package-local
 Ollama-shaped endpoint, use:

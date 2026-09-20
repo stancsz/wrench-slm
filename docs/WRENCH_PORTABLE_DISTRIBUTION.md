@@ -151,6 +151,9 @@ parallel whole-shard buffer during startup.
 The native launcher constrains BLAS thread pools to one thread and enables lazy
 CUDA module loading to avoid a second host-memory spike during Windows worker
 startup.
+When the native smoke fails, the package launcher terminates the complete
+FreeToken process tree so failed probes do not leak Torch workers into later
+starts.
 
 To keep the native backend inside the downloaded model package while exposing
 the package-local Ollama-shaped API, run:

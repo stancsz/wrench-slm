@@ -33,6 +33,8 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert "RedirectStandardError" in launcher
     assert "native smoke readiness timeout" in launcher
     assert "Start-Process -FilePath $FreeTokenExecutable" in launcher
+    assert "taskkill.exe /PID $nativeProcess.Id /T /F" in launcher
+    assert "failed Windows startup can leak Torch workers" in launcher
 
 
 def test_materializer_is_available_and_does_not_overwrite_by_contract():
