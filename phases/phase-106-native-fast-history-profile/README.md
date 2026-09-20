@@ -23,7 +23,7 @@ production default. The profile is therefore opt-in.
 The public package revision containing the profile, lookup fix, and PowerShell
 launcher fix is `5176fd64ff511a8f959cd505966d8af02b8efc9e`. The boundary is
 request-relative. The latest public revision is
-`85389af2c506d5fe21b842edf189c2212349b351` and also rejects empty unified
+`1c4615a67a3cf271f17524532172a18ce9fe11d1` and also rejects empty unified
 diffs at the verifier boundary:
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
@@ -57,6 +57,10 @@ an empty diff. The new verifier rejects that output as
 `invalid_patch_diff`; fast semantic mode must therefore be treated as a fast
 fail until patch content is supplied or the model is fine-tuned to generate a
 real diff.
+
+The v6 portable package passed structural validation as
+`portable-package-v6-validation.json`. It is published in the public Hugging
+Face repository without re-uploading the unchanged safetensor shards.
 
 The full portable 220-case replay preserved `200/200` outcome matches and
 `0` prohibited accepts on the mechanical fast path. The remaining 20 eligible

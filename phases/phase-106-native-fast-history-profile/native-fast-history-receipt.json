@@ -79,13 +79,15 @@
   },
   "publication": {
     "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
-    "revision": "85389af2c506d5fe21b842edf189c2212349b351",
+    "revision": "1c4615a67a3cf271f17524532172a18ce9fe11d1",
     "public": true,
     "schema_path_fix_present": true,
     "canary_results_present_in_readme": true,
+    "empty_patch_rejection_documented_in_readme": true,
     "weights_reused_without_reupload": true,
     "windows_launcher_default": "ft.exe",
-    "empty_patch_guard_present": true
+    "empty_patch_guard_present": true,
+    "portable_package_validation": "portable-package-v6-validation.json"
   },
   "short_semantic_probe": {
     "status": "FAST_FAIL_EMPTY_DIFF_REJECTED",
