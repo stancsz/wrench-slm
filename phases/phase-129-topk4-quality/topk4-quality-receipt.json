@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.topk4-direct-quality-probe.v1",
+  "status": "REJECTED_DIRECT_MODEL_DIAGNOSTIC",
+  "model_variant": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-topk4-v2",
+  "cases_sha256": "54D06DFF69C2A330FBBA5ED13BA22817C287CB7EC384A59458EB4F5E291BB45A",
+  "mechanical": {
+    "receipt": "canonical-220-v2.json",
+    "outcome_matches": 200,
+    "eligible_exact_accepts": 82,
+    "eligible_case_count": 120,
+    "prohibited_accepts": 0,
+    "median_latency_ms": 0.285,
+    "p95_latency_ms": 56.005,
+    "model_calls": 0,
+    "receipt_sha256": "79DC42D9D628CEFC457DBEEB3D7A85120C79049684DB5F00F34DE6CC51A0134E"
+  },
+  "direct_model": {
+    "receipt": "canonical-220-direct-model.json",
+    "outcome_matches": 62,
+    "eligible_exact_accepts": 4,
+    "eligible_case_count": 120,
+    "prohibited_accepts": 6,
+    "median_latency_ms": 415.166,
+    "p95_latency_ms": 1560.488,
+    "receipt_sha256": "CD6CE1A79E6F80DF8DE04932987645140BBB7D8435A7EB554D206AD7564DE4FD"
+  },
+  "quality_claim": false,
+  "publication_authorized": false,
+  "limitations": [
+    "The canonical 220 fixture is historical regression input, not the approved matched real-workflow trace set.",
+    "The direct endpoint did not expose Wrench model-call metadata, so its model_calls field is not an inference count.",
+    "No mutation authority was granted; verifier outcomes only were measured."
+  ]
+}

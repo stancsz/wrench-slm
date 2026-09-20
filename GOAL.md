@@ -1478,3 +1478,15 @@ health prompts whose target objects contain values not present in the request.
 This is still diagnostic evidence, not MiniMax parity, production utility, or
 release authorization. Evidence: `phases/phase-128-live-minimax-teacher`.
 Full regression is `139 passed`.
+
+2026-09-20 top-k=4 direct-model quality probe: the weight-identical top-k=4
+NVFP4 variant was evaluated on the complete 220-case fixture. The embedded
+deterministic route matched 200/220 outcomes, 82/120 eligible proposals, zero
+prohibited accepts, and measured 0.285 ms median with 56.005 ms p95 while
+making zero model calls. With that route disabled, the direct model matched
+only 62/220 outcomes and 4/120 eligible proposals, with six prohibited
+accepts, 415.166 ms median, and 1,560.488 ms p95. The direct candidate is
+rejected for publication and router promotion. This confirms that the current
+practical value is in the bundled mechanical worker, while learned direct
+proposal generation still needs targeted structured training and independent
+validation. Evidence: `phases/phase-129-topk4-quality`.
