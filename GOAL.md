@@ -1153,6 +1153,20 @@ the larger chunk was aborted and rejected as a performance tuning. Receipt:
 32K result as the current reproducible baseline until a kernel-level or
 multi-stage prefill optimization is implemented.
 
+2026-09-20 diagnostic historical-layer fast path: an opt-in runtime overlay now
+preserves the leading control prefix, keeps the raw request at the model
+endpoint, and skips attention plus MLP work for reference-only middle history.
+With a 32,768-token control prefix and a bounded recent-control suffix, a direct
+2,004,136-token request completed with HTTP 200 in 84,851.710 ms, and a direct
+3,999,942-token request completed with HTTP 200 in 129,290.508 ms on the RTX
+5070 Ti. A separate 112,287-token synthetic recent-intent smoke produced an
+exact verified bounded-read proposal in 29,598.956 ms. These are runtime and
+single-case diagnostics only. They do not establish native 4M retrieval quality,
+MiniMax parity, matched 220-case utility, or release readiness. Evidence:
+`phases/phase-87-native-prefill-tuning/native-2m-history-skip-layers-runtime-hint.json`,
+`phases/phase-87-native-prefill-tuning/native-4m-history-skip-layers-pure.json`,
+and `phases/phase-87-native-prefill-tuning/history-skip-layers-runtime-hint4.json`.
+
 2026-09-20 MoE residency tuning: an explicit `moe_cache_size=320` was tested
 because the historical warm 16K NVFP4 probe used that geometry. The 16K probe
 was healthy at 14,558.191 ms, but the complete direct 2M replay took

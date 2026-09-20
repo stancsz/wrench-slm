@@ -26,4 +26,10 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "original group would create two SWA groups" in source
     assert "WRENCH_NATIVE_DIRECT_INPUT" in source
     assert "WRENCH_HISTORY_SKIP_MLP_BEFORE" in source
+    assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in source
+    assert "WRENCH_HISTORY_CONTROL_PREFIX_TOKENS" in source
+    assert "WRENCH_HISTORY_CONTROL_SUFFIX" in source
     assert "history_skip_mlp_before" in source
+    assert "history_skip_layers_before" in source
+    assert "history_control_prefix_tokens" in source
+    assert "history_control_suffix_chars" in source

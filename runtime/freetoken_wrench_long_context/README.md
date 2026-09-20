@@ -25,6 +25,26 @@ request still reaches the model endpoint. This is a diagnostic fast-history
 policy and has no quality or release claim until matched retrieval and worker
 tests pass.
 
+For a more aggressive reference-only history experiment, set
+`WRENCH_HISTORY_SKIP_LAYERS_BEFORE` to an absolute token position. Prefill
+chunks ending before that position preserve the residual stream but skip both
+attention and MLP; the recent suffix remains on the normal full path. The raw
+payload still reaches the model endpoint, but historical model integration is
+reduced by design. This is diagnostic only and must pass retrieval and worker
+quality checks before it can be considered for a default profile.
+
+When using that policy, `WRENCH_HISTORY_CONTROL_PREFIX_TOKENS` can reserve the
+leading system/developer/authority prefix. Chunks before that prefix stay on
+the full path; only the middle historical region is eligible for skipping.
+This should be set for quality experiments so the newest intent retains its
+control contract.
+
+`WRENCH_HISTORY_CONTROL_SUFFIX=1` enables the corresponding deterministic
+recent-control suffix in the serving hook. It repeats only a bounded tail of
+the newest user message, not the full payload, so the model-side fast path can
+recover the active intent and output contract after skipping stale middle
+chunks. Tune the tail with `WRENCH_HISTORY_CONTROL_SUFFIX_CHARS`.
+
 This does not change the Safetensors weights. It is a serving architecture
 experiment and must be followed by long-context distillation or fine-tuning
 before quality is considered release-ready.
