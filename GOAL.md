@@ -1792,4 +1792,7 @@ accepted the recovered proposal with `applied=false`. The public Hub update is
 revision `829dbe7cb15c52f5ac483079139e741504912a15`; fresh downloaded package
 hashes match the local runtime and contain `reference_patch_route`. This adds
 safe old-lookup utility but does not close the 90%/95% workflow gates.
-Evidence: `phases/phase-161-reference-patch-package-validation.json`.
+The v64 package also recovered an exact diff from a 4.8M estimated-token,
+15.6MB payload in 62.737 ms with zero model calls. Evidence:
+`phases/phase-161-reference-patch-package-validation.json` and
+`phases/phase-161-reference-patch-package/long-context-reference-patch-stress.json`.

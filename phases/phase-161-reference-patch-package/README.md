@@ -12,6 +12,10 @@ Evidence:
   structural validation passed with no errors.
 - Fresh v64 package smoke accepted the recovered `patch_draft` and reported
   `applied=false`.
+- A v64 package stress payload with about 4.8M cheap-estimated tokens and
+  15.6 MB of raw text recovered an exact old diff in `62.737 ms`, with zero
+  model calls and `applied=false`. Receipt:
+  `long-context-reference-patch-stress.json`.
 
 Package source:
 `D:\models\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v64-reference-patch-docs`

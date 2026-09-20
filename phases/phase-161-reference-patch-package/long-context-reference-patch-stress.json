@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.long-context-reference-patch-stress.v1",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v64-reference-patch-docs",
+  "raw_chars": 15600123,
+  "estimated_tokens": 4800021,
+  "elapsed_ms": 62.737,
+  "status": "accepted",
+  "action": "patch_draft",
+  "applied": false,
+  "diff_recovered": true,
+  "model_calls": 0,
+  "quality_claim": false,
+  "note": "Package-local exact lookup over old reference text, not dense native attention or workflow parity evidence."
+}
