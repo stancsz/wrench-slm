@@ -22,3 +22,6 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "qwen_family.parse_config = parse_config_with_bounded_full_attention" in source
     assert "zero-layer" in source
     assert "WRENCH_ROPE_MAX_POSITION" in source
+    assert "existing_swa_ids" in source
+    assert "original group would create two SWA groups" in source
+    assert "WRENCH_NATIVE_DIRECT_INPUT" in source

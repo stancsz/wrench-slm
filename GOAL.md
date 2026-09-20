@@ -1129,3 +1129,18 @@ an experimental artifact at revision `5f915e35`, with no GGUF/Ollama/vLLM
 quality claim. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-220-patch-twoshot-retry.json`,
 `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v9-validation.json`,
 and public Hub revision `5f915e35455be361a8b64d632b8fcf9f90769c4c`.
+
+2026-09-20 NVFP4 direct-2M runtime gate: the first pure-SWA launch exposed two
+serving defects. FreeToken's automatic MoE cache sizing rejected the zero-full
+layer policy, and its Wrench request hook ignored `WRENCH_NATIVE_DIRECT_INPUT`
+and compacted a direct 2M request before model tokenization. The overlay now
+merges the checkpoint's existing SWA layers into one group, uses an explicit
+MoE cache size in the launcher, and disables the reducer only for explicit
+native-direct mode. After the fix, the NVFP4 candidate accepted a direct
+1,999,912-token prompt with no truncation and HTTP 200 at configured max
+4,000,000. End-to-end prefill and completion took 1,389,715.469 ms on the
+RTX 5070 Ti, about 23.2 minutes, so this closes the direct 2M intake evidence
+but is a clear performance failure against the North Star. The result does not
+claim native retrieval quality or 4M speed. Evidence:
+`phases/phase-85-nvfp4-native4m/native-2m-swa8k-direct-v2.json`; related runtime
+tests pass in the full `91 passed` suite.

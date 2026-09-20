@@ -4,6 +4,7 @@ param(
     [int]$Port = 28180,
     [int]$GlobalFullLayer = 39,
     [int]$SlidingWindow = 65536,
+    [int]$MoeCacheSize = 16,
     [string]$ServedModel = 'wrench-8e-native4m'
 )
 
@@ -23,7 +24,7 @@ $env:WRENCH_SWA_WINDOW = [string]$SlidingWindow
     --max-running-requests 1 `
     --memory-ratio 0.90 `
     --moe-strategy offload `
-    --moe-cache-auto `
+    --moe-cache-size $MoeCacheSize `
     --text-model-only `
     --cache-type radix `
     --tool-call-parser qwen `

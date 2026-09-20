@@ -32,3 +32,5 @@ def test_materializer_embeds_worker_runtime():
     assert "wrench_runtime/worker.py" in script
     assert "wrench_runtime/patching.py" in script
     assert "WrenchWorker" in script
+    assert "--moe-cache-size $MoeCacheSize" in script
+    assert "--moe-cache-auto" not in script

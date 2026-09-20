@@ -66,9 +66,12 @@ The bundled launcher requires a compatible FreeToken build and a CUDA GPU:
 ```
 
 The package declares a 4M input endpoint and uses an 8K recent SWA window in the
-experimental native profile. The default fast path mechanically reduces noisy
-payloads to a 64K effective working context. Native direct input and fast staged
-input are recorded separately in receipts.
+experimental native profile. The bundled launcher selects native direct input
+and uses an explicit 16-slot MoE cache because FreeToken automatic cache sizing
+does not support the pure-SWA profile. Pass `-MoeCacheSize` to tune it for a
+different GPU. The embedded worker's default fast path mechanically reduces
+noisy payloads to a 64K effective working context. Native direct input and fast
+staged input are recorded separately in receipts.
 
 The embedded reducer has also passed a 4M mechanical stress diagnostic: 3,999,951
 estimated raw tokens reduced to a 92-token model prefill, with 1.0 target-reference

@@ -117,9 +117,19 @@ def _install_qwen_long_context_overlay() -> None:
             if group.name == "full"
         )
         full_ids = tuple(full_group.layer_ids)
+        existing_swa_ids = tuple(
+            layer_id
+            for group in model_config.attention_groups
+            if group.name == "swa"
+            for layer_id in group.layer_ids
+        )
         requested = os.environ.get("WRENCH_GLOBAL_FULL_LAYERS", "")
         global_ids = _resolve_global_ids(full_ids, requested)
-        swa_ids = tuple(layer_id for layer_id in full_ids if layer_id not in global_ids)
+        swa_ids = tuple(
+            dict.fromkeys(
+                (*existing_swa_ids, *(layer_id for layer_id in full_ids if layer_id not in global_ids))
+            )
+        )
 
         groups = []
         for group in model_config.attention_groups:
@@ -137,6 +147,13 @@ def _install_qwen_long_context_overlay() -> None:
                             sliding_window=window,
                         )
                     )
+            elif group.name == "swa":
+                # The checkpoint may already declare a default SWA group via
+                # wrench_global_full_layers. Its layer IDs were merged above
+                # into the single serving override group; retaining the
+                # original group would create two SWA groups, which FreeToken
+                # rejects.
+                continue
             else:
                 groups.append(group)
         groups.sort(key=lambda group: group.layer_ids[0] if group.layer_ids else 1 << 30)
@@ -152,6 +169,25 @@ def _install_qwen_long_context_overlay() -> None:
     # bindings so the real engine and the loader select the same hybrid cache.
     qwen_config.parse_config = parse_config_with_bounded_full_attention
     qwen_family.parse_config = parse_config_with_bounded_full_attention
+
+    # The bundled FreeToken Wrench request hook normally performs deterministic
+    # 4M-to-64K staging. Native-input probes must be able to disable that hook
+    # explicitly, otherwise a direct 2M request can fail inside the reducer
+    # before the tokenizer or model reports its actual prompt length.
+    try:
+        import freetoken.server.generation as generation
+
+        original_wrench_prefill_enabled = generation._wrench_prefill_enabled
+
+        def wrench_prefill_enabled_with_native_direct(state):
+            if os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") == "1":
+                return False
+            return original_wrench_prefill_enabled(state)
+
+        generation._wrench_prefill_enabled = wrench_prefill_enabled_with_native_direct
+    except (ImportError, AttributeError):
+        # Older FreeToken builds do not expose the optional Wrench hook.
+        pass
 
     # FreeToken's hybrid pool normally expects at least one true full-attention
     # layer. The long-context overlay intentionally converts every paged layer
