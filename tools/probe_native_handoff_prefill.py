@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import tempfile
 import threading
@@ -46,6 +47,11 @@ def main() -> int:
             length = int(self.headers["Content-Length"])
             request = json.loads(self.rfile.read(length).decode("utf-8"))
             captured["request"] = request
+            prompt_tokens = sum(
+                _token_estimate(message.get("content", ""))
+                for message in request.get("messages", [])
+                if isinstance(message, dict) and isinstance(message.get("content"), str)
+            )
             body = json.dumps(
                 {
                     "choices": [
@@ -62,7 +68,8 @@ def main() -> int:
                                 ),
                             }
                         }
-                    ]
+                    ],
+                    "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": 2},
                 }
             ).encode("utf-8")
             self.send_response(200)
@@ -127,16 +134,30 @@ def main() -> int:
     )
     wrench = response_body.get("wrench", {}) if isinstance(response_body, dict) else {}
     receipt = wrench.get("dynamic_prefill") if isinstance(wrench, dict) else None
+    direct_mode = os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") == "1"
+    direct_pass = (
+        direct_mode
+        and isinstance(receipt, dict)
+        and receipt.get("mode") == "native_direct_input"
+        and staged_tokens >= args.payload_tokens * 0.95
+        and receipt.get("native_input_claim") is True
+    )
+    staged_pass = (
+        not direct_mode
+        and isinstance(receipt, dict)
+        and receipt.get("mode") == "staged_single_pass"
+        and staged_tokens <= 64_000
+    )
     result = {
         "schema": "wrench.native-handoff-prefill-probe.v1",
         "status": (
-            "PASS_NATIVE_HANDOFF_STAGED_4M"
-            if isinstance(receipt, dict)
-            and receipt.get("mode") == "staged_single_pass"
-            and staged_tokens <= 64_000
-            and wrench.get("backend") == "native-upstream-verified"
+            "PASS_NATIVE_DIRECT_RAW_4M"
+            if direct_pass and wrench.get("backend") == "native-upstream-verified"
+            else "PASS_NATIVE_HANDOFF_STAGED_4M"
+            if staged_pass and wrench.get("backend") == "native-upstream-verified"
             else "FAIL"
         ),
+        "mode": "native_direct_input" if direct_mode else "staged_single_pass",
         "requested_payload_tokens": args.payload_tokens,
         "raw_payload_bytes": len(body),
         "raw_token_estimate": _token_estimate(content),
@@ -151,7 +172,7 @@ def main() -> int:
         "native_attention_claim": False,
         "notes": [
             "The upstream is a local protocol stub, not a model-quality evaluation.",
-            "This proves raw package intake and staged native handoff, not dense native 4M attention.",
+            "This proves raw package intake, mode selection, and native handoff accounting, not dense native 4M attention.",
         ],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

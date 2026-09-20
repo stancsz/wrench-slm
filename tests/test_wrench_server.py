@@ -138,7 +138,8 @@ def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: 
                                 ),
                             }
                         }
-                    ]
+                    ],
+                    "usage": {"prompt_tokens": 123456, "completion_tokens": 2},
                 }
             ).encode("utf-8")
             self.send_response(200)
@@ -309,7 +310,8 @@ def test_native_direct_mode_forwards_raw_messages_and_binds_receipt(tmp_path: Pa
                                 ),
                             }
                         }
-                    ]
+                    ],
+                    "usage": {"prompt_tokens": 123456, "completion_tokens": 2},
                 }
             ).encode("utf-8")
             self.send_response(200)
@@ -361,6 +363,8 @@ def test_native_direct_mode_forwards_raw_messages_and_binds_receipt(tmp_path: Pa
         assert receipt["mode"] == "native_direct_input"
         assert receipt["native_input_claim"] is True
         assert receipt["model_prefill_token_count"] == receipt["raw_token_count"]
+        assert receipt["native_backend_prompt_tokens"] == 123456
+        assert receipt["native_backend_usage_available"] is True
     finally:
         server.shutdown()
         server.server_close()

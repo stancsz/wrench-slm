@@ -174,6 +174,7 @@ def _forward_upstream(
     path: str,
     timeout_seconds: float,
     messages_override: list[dict[str, str]] | None = None,
+    response_metadata: dict[str, Any] | None = None,
 ) -> str:
     """Ask the native backend for text, without giving it execution authority."""
 
@@ -189,6 +190,10 @@ def _forward_upstream(
     )
     with urllib_request.urlopen(upstream_request, timeout=timeout_seconds) as response:
         payload = json.loads(response.read().decode("utf-8"))
+    if response_metadata is not None and isinstance(payload, dict):
+        usage = payload.get("usage")
+        if isinstance(usage, dict):
+            response_metadata["usage"] = usage
     choices = payload.get("choices") if isinstance(payload, dict) else None
     if isinstance(choices, list) and choices and isinstance(choices[0], dict):
         message = choices[0].get("message")
@@ -378,6 +383,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                 (time.perf_counter() - prefill_started) * 1000,
                                 3,
                             )
+                    upstream_metadata: dict[str, Any] = {}
                     upstream_output = _forward_upstream(
                         server.upstream_url,
                         request,
@@ -386,6 +392,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         messages_override=(
                             staged_messages if prefill_receipt is not None else None
                         ),
+                        response_metadata=upstream_metadata,
                     )
                     verified = execute_model_output(
                         upstream_output,
@@ -401,6 +408,12 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         }
                     )
                     if prefill_receipt is not None:
+                        usage = upstream_metadata.get("usage")
+                        if isinstance(usage, dict) and isinstance(usage.get("prompt_tokens"), int):
+                            prefill_receipt["native_backend_prompt_tokens"] = usage["prompt_tokens"]
+                            prefill_receipt["native_backend_usage_available"] = True
+                        else:
+                            prefill_receipt["native_backend_usage_available"] = False
                         verified["dynamic_prefill"] = prefill_receipt
                     result = verified
             elapsed_ms = (time.perf_counter() - started) * 1000

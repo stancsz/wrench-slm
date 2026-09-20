@@ -1,0 +1,32 @@
+{
+  "schema": "wrench.native-handoff-prefill-probe.v1",
+  "status": "PASS_NATIVE_DIRECT_RAW_4M",
+  "mode": "native_direct_input",
+  "requested_payload_tokens": 4000000,
+  "raw_payload_bytes": 35199607,
+  "raw_token_estimate": 3999942,
+  "staged_token_estimate": 3999942,
+  "elapsed_ms": 2747.084,
+  "server_staging_elapsed_ms": 0.0,
+  "model_calls": 1,
+  "backend": "native-upstream-verified",
+  "dynamic_prefill": {
+    "schema": "wrench.dynamic-prefill-receipt.v1",
+    "mode": "native_direct_input",
+    "raw_token_count": 3999942,
+    "model_prefill_token_count": 3999942,
+    "compression_ratio": 1.0,
+    "native_input_claim": true,
+    "native_direct_input": true,
+    "source_payload_sha256": "5aeb258e8804d827064eb111eeb4f41f35821f48aecaf61076373a033f327767",
+    "payload_hash_mode": "ordered_message_json",
+    "server_staging_elapsed_ms": 0.0,
+    "native_backend_prompt_tokens": 3999942,
+    "native_backend_usage_available": true
+  },
+  "native_attention_claim": false,
+  "notes": [
+    "The upstream is a local protocol stub, not a model-quality evaluation.",
+    "This proves raw package intake and staged native handoff, not dense native 4M attention."
+  ]
+}

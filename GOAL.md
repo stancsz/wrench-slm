@@ -1644,3 +1644,13 @@ package passed structural validation plus the 4M mechanical route in 17.715 ms
 with zero model calls. This repairs the evidence boundary, but clean-GPU native
 2M/4M generation and retrieval quality remain open. Evidence:
 `phases/phase-146-public-v54`.
+
+2026-09-20 direct raw-input accounting: the package-server probe exercised the
+explicit direct mode with a 4M raw request. The local protocol stub received
+`3,999,942` prompt tokens, exactly matching the package raw estimate, with
+`server_staging_elapsed_ms=0` and `native_direct_input=true`. The staged arm
+reduced the same raw request to `1,845` estimated tokens. Native backend usage
+tokens are now copied into the receipt when available. These are protocol and
+accounting receipts, not native model generation or retrieval-quality passes.
+Evidence: `phases/phase-147-native-direct-receipt` and
+`phases/phase-148-public-v55`.
