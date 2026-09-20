@@ -50,7 +50,7 @@ def test_score_reports_eligible_frontier_mass_separately(tmp_path: Path):
 
     receipt = score(cases, manifest)
 
-    assert receipt["mechanical_route_count_all_categories"] == 2
+    assert receipt["mechanical_route_count_all_categories"] == 1
     assert receipt["mechanical_route_count_eligible"] == 1
     assert receipt["eligible_frontier_token_mass"]["teacher_total"] == 40
     assert receipt["eligible_frontier_token_mass"]["mechanical_covered"] == 10

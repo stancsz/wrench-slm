@@ -73,6 +73,7 @@ def _trace_rows(manifest: dict[str, Any], cases: dict[str, dict[str, Any]]) -> l
         frontier_tokens = _number(teacher.get("frontier_tokens"), "frontier_tokens", identifier)
         case = cases[identifier]
         candidate = mechanical_route(case["prompt"])
+        mechanical = isinstance(candidate, dict) and candidate.get("status") != "abstain"
         rows.append(
             {
                 "id": identifier,
@@ -80,8 +81,12 @@ def _trace_rows(manifest: dict[str, Any], cases: dict[str, dict[str, Any]]) -> l
                 "category": case.get("category"),
                 "workload_weight": weight,
                 "teacher_frontier_tokens": frontier_tokens,
-                "mechanical_route": candidate is not None,
-                "route_kind": "mechanical" if candidate is not None else "fallback_required",
+                "mechanical_route": mechanical,
+                "route_kind": (
+                    "mechanical"
+                    if mechanical
+                    else ("fast_abstain" if candidate is not None else "fallback_required")
+                ),
             }
         )
     return rows
@@ -145,6 +150,9 @@ def score(cases_path: Path, trace_path: Path) -> dict[str, Any]:
         "eligible_trace_count": len(eligible),
         "mechanical_route_count_all_categories": sum(row["mechanical_route"] for row in rows),
         "mechanical_route_count_eligible": sum(row["mechanical_route"] for row in eligible),
+        "fast_abstention_count_all_categories": sum(
+            row["route_kind"] == "fast_abstain" for row in rows
+        ),
         "eligible_case_rate": covered_weight / total_weight if total_weight else 0.0,
         "eligible_frontier_token_mass": {
             "teacher_total": total_mass,

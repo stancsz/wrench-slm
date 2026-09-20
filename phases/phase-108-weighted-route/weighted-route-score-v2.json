@@ -1,0 +1,84 @@
+{
+  "schema": "wrench.deterministic-route-frontier-score.v1",
+  "status": "DIAGNOSTIC_WEIGHTED_ROUTE_ONLY",
+  "cases_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\evals\\wrench-expanded-v1\\cases.jsonl",
+  "cases_sha256": "54d06dff69c2a330fbba5ed13ba22817c287cb7ec384a59458eb4f5e291bb45a",
+  "trace_manifest_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-83-diagnostic-workflow-arms\\trace-manifest.json",
+  "trace_manifest_sha256": "a9a69a00d8441e3d73e256484b35de7e4cbb1fadba1de3ee276f04670bfa8809",
+  "trace_count": 220,
+  "eligible_trace_count": 120,
+  "mechanical_route_count_all_categories": 100,
+  "mechanical_route_count_eligible": 100,
+  "fast_abstention_count_all_categories": 120,
+  "eligible_case_rate": 0.8542347777396456,
+  "eligible_frontier_token_mass": {
+    "teacher_total": 31694660.0,
+    "mechanical_covered": 25038756.0,
+    "coverage_rate": 0.7899991986031717
+  },
+  "family_metrics": {
+    "git_read_status": {
+      "eligible_cases": 20,
+      "mechanical_cases": 20,
+      "eligible_workload_weight": 10147.0,
+      "mechanical_workload_weight": 10147.0,
+      "teacher_frontier_token_mass": 5237023.0,
+      "mechanical_frontier_token_mass": 5237023.0,
+      "case_rate": 1.0,
+      "frontier_mass_rate": 1.0
+    },
+    "health_read": {
+      "eligible_cases": 20,
+      "mechanical_cases": 20,
+      "eligible_workload_weight": 10338.0,
+      "mechanical_workload_weight": 10338.0,
+      "teacher_frontier_token_mass": 5380796.0,
+      "mechanical_frontier_token_mass": 5380796.0,
+      "case_rate": 1.0,
+      "frontier_mass_rate": 1.0
+    },
+    "literal_search": {
+      "eligible_cases": 20,
+      "mechanical_cases": 20,
+      "eligible_workload_weight": 9863.0,
+      "mechanical_workload_weight": 9863.0,
+      "teacher_frontier_token_mass": 5935068.0,
+      "mechanical_frontier_token_mass": 5935068.0,
+      "case_rate": 1.0,
+      "frontier_mass_rate": 1.0
+    },
+    "patch_draft": {
+      "eligible_cases": 20,
+      "mechanical_cases": 0,
+      "eligible_workload_weight": 8070.0,
+      "mechanical_workload_weight": 0.0,
+      "teacher_frontier_token_mass": 6655904.0,
+      "mechanical_frontier_token_mass": 0.0,
+      "case_rate": 0.0,
+      "frontier_mass_rate": 0.0
+    },
+    "read_file": {
+      "eligible_cases": 20,
+      "mechanical_cases": 20,
+      "eligible_workload_weight": 8011.0,
+      "mechanical_workload_weight": 8011.0,
+      "teacher_frontier_token_mass": 4027199.0,
+      "mechanical_frontier_token_mass": 4027199.0,
+      "case_rate": 1.0,
+      "frontier_mass_rate": 1.0
+    },
+    "read_lines": {
+      "eligible_cases": 20,
+      "mechanical_cases": 20,
+      "eligible_workload_weight": 8934.0,
+      "mechanical_workload_weight": 8934.0,
+      "teacher_frontier_token_mass": 4458670.0,
+      "mechanical_frontier_token_mass": 4458670.0,
+      "case_rate": 1.0,
+      "frontier_mass_rate": 1.0
+    }
+  },
+  "quality_claim": false,
+  "workflow_success_claim": false,
+  "release_authorization": false
+}
