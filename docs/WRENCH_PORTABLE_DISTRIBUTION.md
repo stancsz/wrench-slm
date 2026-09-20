@@ -72,12 +72,14 @@ The package-local server also exposes a small Ollama-compatible surface at
 route accepts `options.num_ctx=4000000` while keeping the complete request
 inside the package-local reducer. This is an API compatibility layer, not a
 claim that stock Ollama can run the Wrench hybrid checkpoint. A real Ollama
-0.34.2 MLX importer did import the v81 Safetensors package, preserved its
-3.4B NVFP4 architecture, and reported a 4,000,000-token context. Actual
-generation still depends on the matching Windows MLX CUDA and cuDNN runtime;
-the current development machine's standalone runner reached model load but
-failed before generation because its cuDNN installation directory was absent.
-Stock Ollama portability therefore remains an open runtime-validation item.
+0.34.2 MLX importer did import the v84 Safetensors package, preserved its
+3.4B NVFP4 architecture, loaded 3,993 tensors, and reported a 4,000,000-token
+context. A patched relocatable CUDA runtime then reached real generation, but
+the short `/api/generate` result was empty after 16 generated tokens, and
+`/api/chat` with `think=false` returned malformed repeated-token text after 64
+generated tokens. Stock Ollama import and metadata are therefore verified, but
+native generation quality is not passed. The package-local hybrid endpoint
+remains the supported production-shaped path.
 
 In `-OllamaApi` mode the reducer is embedded in the downloaded package server.
 The map stage builds content-addressed lookup cards and the reduce stage keeps

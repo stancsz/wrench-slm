@@ -451,7 +451,7 @@ def materialize(
                     else "local experimental backend"
                 ),
                 "vllm": "requires registered Wrench architecture",
-                "ollama_safetensors": "experimental local import via bundled Modelfile; must be runtime-verified",
+                "ollama_safetensors": "Ollama 0.34.2 MLX import and 4M metadata verified; native generation quality failed on validation host",
                 "ollama_gguf": "not verified",
             },
             "publication": {

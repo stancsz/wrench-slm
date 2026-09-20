@@ -2270,3 +2270,13 @@ required preserved state, but remains optional and non-blocking. The v84
 package passed structural validation and a fresh 4M `/api/chat` handoff with
 3,999,942 raw estimated tokens, 1,955 staged tokens, and 100.293 ms server
 staging. Evidence: `phases/phase-206-v84-context-gate`.
+
+2026-09-20 v84 Ollama boundary: Ollama 0.34.2 MLX imported the v84
+Safetensors package, loaded 3,993 tensors, preserved the 3.4B NVFP4
+architecture, and reported `num_ctx=4e+06` with a 4,000,000-token context.
+Native generation then failed quality validation on the RTX 5070 Ti: a short
+`/api/generate` returned empty text after 16 generated tokens, and
+`/api/chat` with `think=false` returned malformed repeated-token text after
+64 generated tokens. The package now records import as verified but native
+Ollama generation as failed on this host. Evidence:
+`phases/phase-207-v84-ollama-import`.
