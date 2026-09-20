@@ -218,7 +218,7 @@ not a requirement to replace the faster hybrid MapReduce product path.
   hybrid raw-intake plus effective-working-context path.
 - [ ] Conditional dense-native first-layer target: if dense-native 2M/4M
   serving is enabled, the portable model/runtime must include an integrated,
-   low-cost pruner plus cherrypicker as its first model-side layer/stage, not
+  low-cost pruner plus cherrypicker as its first model-side layer/stage, not
    merely a metadata or gateway setting. It must
   receive the full raw sequence, compact it to a bounded 32K to 64K active
   working context before expensive attention, preserve newest intent,
@@ -2306,3 +2306,18 @@ deterministic generation request still failed to return usable text and
 ended as HTTP 500 after about 63 seconds. This separates import compatibility
 from serving quality and shows that BF16 alone does not solve the native
 prefill/runtime boundary. Evidence: `phases/phase-210-ollama-bf16-comparison`.
+
+2026-09-20 CUDA LoRA development probe: the real BF16 3.94B candidate trained
+for 100 steps on the 132-row calibration split with a rank-8 attention/router
+LoRA. The held-out 44-row development generation, with the mechanical fast
+path disabled, matched 26/44 expected outcomes and 10/44 exact proposals at
+3,163.878 ms median and 5,651.504 ms p95. It remains an experimental gap and
+is not promoted over the deterministic mechanical worker. Evidence:
+`phases/phase-211-lora-development-eval`.
+
+2026-09-20 integrated first-layer gate: `FirstLayerContextGate` is now used by
+the dynamic native prefill path. It records raw input, bounded effective
+context, selected hot/reference spans, omitted spans, raw-hash binding, and
+gate latency under the explicit `first_model_side_pruner_cherrypicker` stage.
+The targeted prefill/server suite passed 23 tests. Evidence:
+`phases/phase-212-first-layer-context-gate`.

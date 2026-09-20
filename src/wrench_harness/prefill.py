@@ -13,6 +13,7 @@ import ast
 import json
 import os
 import re
+import time
 from collections import OrderedDict
 from typing import Any
 
@@ -952,3 +953,74 @@ def build_dynamic_prefill(
         "native_input_claim": False,
     }
     return staged, receipt
+
+
+class FirstLayerContextGate:
+    """Integrated fast pruner/cherrypicker for model-side prefill.
+
+    The gate is deliberately deterministic. It receives the complete raw
+    message sequence, keeps the newest intent and recent hot state, and
+    promotes only bounded exact-match evidence from older references. The
+    model backend therefore sees a bounded working context while the receipt
+    remains bound to the complete raw payload.
+
+    This is the runtime implementation of the conditional dense-native first
+    layer. It is also used by the hybrid path, where the same gate avoids
+    paying dense attention on stale history before a native fallback.
+    """
+
+    def __init__(
+        self,
+        *,
+        raw_context_limit_tokens: int = 4_000_000,
+        working_context_tokens: int = 64_000,
+        hot_context_tokens: int = 48_000,
+        reference_card_tokens: int = 16_000,
+    ) -> None:
+        for name, value in (
+            ("raw_context_limit_tokens", raw_context_limit_tokens),
+            ("working_context_tokens", working_context_tokens),
+            ("hot_context_tokens", hot_context_tokens),
+            ("reference_card_tokens", reference_card_tokens),
+        ):
+            if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+                raise ValueError(f"{name} must be a positive integer")
+        if hot_context_tokens + reference_card_tokens > working_context_tokens:
+            raise ValueError("hot and reference budgets exceed working context")
+        self.raw_context_limit_tokens = raw_context_limit_tokens
+        self.working_context_tokens = working_context_tokens
+        self.hot_context_tokens = hot_context_tokens
+        self.reference_card_tokens = reference_card_tokens
+
+    def compact(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        mechanical_index: MechanicalPrefillIndex | None = None,
+        include_lookup_table: bool = False,
+    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        started = time.perf_counter()
+        staged, receipt = build_dynamic_prefill(
+            messages,
+            model_prefill_budget=self.working_context_tokens,
+            hot_token_budget=self.hot_context_tokens,
+            reference_index_budget=self.reference_card_tokens,
+            include_lookup_table=include_lookup_table,
+            mechanical_index=mechanical_index,
+        )
+        receipt["context_gate"] = {
+            "schema": "wrench.first-layer-context-gate.v1",
+            "stage": "first_model_side_pruner_cherrypicker",
+            "strategy": "deterministic_mapreduce_dynamic_native",
+            "raw_context_limit_tokens": self.raw_context_limit_tokens,
+            "raw_input_tokens": receipt["raw_token_count"],
+            "effective_working_context_tokens": receipt["model_prefill_token_count"],
+            "working_context_budget_tokens": self.working_context_tokens,
+            "selected_hot_spans": receipt["hot_message_count"],
+            "selected_reference_cards": receipt["reference_card_count"],
+            "omitted_reference_spans": receipt["map_stage"]["indexed_reference_count"]
+            - receipt["reference_card_count"],
+            "raw_payload_hash_bound": True,
+        }
+        receipt["context_gate_latency_ms"] = round((time.perf_counter() - started) * 1000, 3)
+        return staged, receipt

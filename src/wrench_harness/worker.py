@@ -24,9 +24,9 @@ from .patching import (
 )
 from .ttc import enforce_ttc
 from .prefill import (
+    FirstLayerContextGate,
     MechanicalPrefillIndex,
     _estimate_token_count,
-    build_dynamic_prefill,
     ordered_payload_sha256,
     split_monolithic_current_message,
 )
@@ -145,13 +145,15 @@ def _dynamic_prefill_messages(
     reference_budget = max(1, budget - hot_budget)
     index = mechanical_index or MechanicalPrefillIndex()
     index.add_all(prepared_messages)
+    context_gate = FirstLayerContextGate(
+        working_context_tokens=budget,
+        hot_context_tokens=hot_budget,
+        reference_card_tokens=reference_budget,
+    )
     source_payload_sha256 = index.payload_sha256(prepared_messages)
     try:
-        staged, receipt = build_dynamic_prefill(
+        staged, receipt = context_gate.compact(
             prepared_messages,
-            model_prefill_budget=budget,
-            hot_token_budget=hot_budget,
-            reference_index_budget=reference_budget,
             mechanical_index=index,
         )
     except (TypeError, ValueError):

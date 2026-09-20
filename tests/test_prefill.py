@@ -1,4 +1,5 @@
 from wrench_harness.prefill import (
+    FirstLayerContextGate,
     MechanicalPrefillIndex,
     _estimate_token_count,
     build_dynamic_prefill,
@@ -60,6 +61,27 @@ def test_dynamic_prefill_keeps_hot_context_and_makes_old_lookup_cards():
     assert receipt["raw_token_count"] > receipt["model_prefill_token_count"]
     assert receipt["native_input_claim"] is False
     assert receipt["lookup_table"]
+
+
+def test_first_layer_context_gate_records_bounded_prune_and_cherrypick():
+    messages = [
+        {"role": "assistant", "content": "old path=src/service.py class Worker\n" + ("stale context\n" * 80)},
+        {"role": "user", "content": "Inspect Worker in src/service.py."},
+    ]
+    index = MechanicalPrefillIndex(token_counter=lambda value: len(value.split()))
+    index.add_all(messages)
+    staged, receipt = FirstLayerContextGate(
+        working_context_tokens=120,
+        hot_context_tokens=16,
+        reference_card_tokens=104,
+    ).compact(messages, mechanical_index=index)
+    gate = receipt["context_gate"]
+    assert staged
+    assert gate["stage"] == "first_model_side_pruner_cherrypicker"
+    assert gate["raw_input_tokens"] > gate["effective_working_context_tokens"]
+    assert gate["selected_reference_cards"] == 1
+    assert gate["omitted_reference_spans"] == 0
+    assert receipt["context_gate_latency_ms"] >= 0
 
 
 def test_dynamic_prefill_is_deterministic_for_same_payload():
