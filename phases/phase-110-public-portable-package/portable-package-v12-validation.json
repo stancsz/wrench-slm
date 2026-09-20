@@ -1,0 +1,14 @@
+{
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-fast-history-auto-smoke-v12",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "public_revision": "9eab0de000f0e81e624632d0f7b80c3fb0fd7995",
+  "public_files": 35,
+  "public_size": "approximately 3.4 GB",
+  "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "pycache_files_in_local_package": 0,
+  "native_attention_quality_verified": false,
+  "gguf_verified": false,
+  "ollama_completion_verified": false,
+  "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M"
+}

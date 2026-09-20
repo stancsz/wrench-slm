@@ -38,6 +38,10 @@ def materialize(
     weight_materialization_mode = "hardlink"
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
+            # Python bytecode is machine- and interpreter-specific noise.  It
+            # must not become part of a portable Hub model snapshot.
+            if item.name == "__pycache__" or item.suffix == ".pyc":
+                continue
             if item.is_file() and item.suffix == ".safetensors":
                 try:
                     os.link(item, target / item.name)
@@ -202,8 +206,11 @@ def materialize(
         distribution_text = distribution_doc.read_text(encoding="utf-8").replace(
             "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M", "__WRENCH_HF_URL__"
         )
+        # Replace the documented package directory as a whole.  A prefix-only
+        # replacement would duplicate the suffix when the package name itself
+        # already contains `Wrench-4B-Qwen3.6-8E`.
         distribution_text = distribution_text.replace(
-            "Wrench-4B-Qwen3.6-8E", package_dir_name
+            "Wrench-4B-Qwen3.6-8E-NVFP4-native4M", package_dir_name
         ).replace("__WRENCH_HF_URL__", huggingface_repo_id)
         distribution_doc.write_text(distribution_text, encoding="utf-8")
         candidate_identity = (
