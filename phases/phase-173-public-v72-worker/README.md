@@ -12,6 +12,9 @@ pass and bounded multi-file reference retrieval to
 - Structural validation: `PASS_STRUCTURAL_PACKAGE`
 - Package-local two-file 2.9M-character route: accepted in 16.479 ms to
   18.795 ms, zero model calls, TTC passed, `applied: false`.
+- A separate exact 4,000,130-character v72 package-local payload was accepted
+  in `22.747 ms`, with zero model calls, the mechanical fast path, a passing
+  TTC receipt, and `applied: false`.
 - Package-local prompt-complete 220-case replay: 220/220 outcome matches,
   120/120 exact eligible proposals, zero prohibited accepts, zero transport or
   runtime abstentions, 220 mechanical fast paths, zero model calls, 0.578 ms
