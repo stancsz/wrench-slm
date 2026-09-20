@@ -1365,3 +1365,14 @@ route correctly leaves them for model/fallback handling. This is a stronger
 diagnostic than the prior `90.91%` all-category case-count figure, but it is
 still not the authorized family-disjoint workflow gate. Evidence:
 `phases/phase-101-public-copy-paste-package/weighted-route-frontier-score.json`.
+
+2026-09-20 patch fast-path verifier integration: a review-only unified diff
+with `+++ b/README.md` now becomes a verifier-relative `README.md` path instead
+of the invalid `b/README.md` path. The bundled `WrenchWorker` accepted the
+proposal through the independent verifier, reported `applied: false`, and left
+the file unchanged. The corrected mechanical runtime was synchronized to the
+public HF package at revision
+`6681773374f0a40ef6b953ec0efe384f16625962`. This improves complete-payload
+patch work, but does not alter the historical fixture's intentionally missing
+diffs or prove MiniMax parity. Evidence: `tests/test_mechanical_worker.py` and
+`phases/phase-101-public-copy-paste-package/public-hf-route-fix-receipt.json`.

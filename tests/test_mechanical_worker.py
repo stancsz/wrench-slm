@@ -4,6 +4,7 @@ from tools.score_mechanical_worker import evaluate_manifest
 from wrench_harness import execute_model_output
 from wrench_harness.core import json_result
 from wrench_harness.mechanical import active_intent_suffix, mechanical_route, reference_lookup_route
+from wrench_harness.worker import WrenchWorker
 
 
 def test_active_intent_suffix_ignores_stale_monolithic_metadata():
@@ -226,3 +227,26 @@ def test_mechanical_route_handles_explicit_invalid_boundaries_without_model_gues
     }
     for prompt, reason in cases.items():
         assert mechanical_route(prompt) == {"status": "abstain", "fallback_reason": reason}
+
+
+def test_worker_patch_fast_path_crosses_verifier(tmp_path: Path):
+    (tmp_path / "README.md").write_text("old\n", encoding="utf-8")
+    prompt = (
+        "Draft a review-only change for README.md and do not apply it.\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+    )
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path.resolve())
+
+    result = worker.propose([{"role": "user", "content": prompt}])
+
+    assert result["status"] == "accepted"
+    assert result["action"] == "patch_draft"
+    assert result["observation"]["files"] == [str((tmp_path / "README.md").resolve())]
+    assert result["observation"]["applied"] is False
+    assert result["backend"] == "embedded-mechanical"
+    assert result["mechanical_fast_path"] is True
+    assert (tmp_path / "README.md").read_text(encoding="utf-8") == "old\n"
