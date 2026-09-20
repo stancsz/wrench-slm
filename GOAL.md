@@ -1948,3 +1948,13 @@ matched the local package. This makes the cost measurement portable alongside
 the worker, while USD pricing and the matched 90 percent coverage and 95
 percent net savings gates remain open. Evidence:
 `phases/phase-176-public-v73-cost-package`.
+
+2026-09-20 direct 4M-token endpoint: the v73-equivalent downloaded package
+server accepted a request whose local estimator counted exactly 4,000,000 raw
+input tokens. The 8,000,037-character request completed with HTTP 200 in
+66.5 ms, used the embedded mechanical fast path, made zero model calls, and
+reported all 4,000,000 input tokens as not sent to a model. Local server
+accounting time was 2.219 ms. This proves direct model-directory intake plus
+MapReduce for eligible work, not dense native 4M attention or final MiniMax
+matched-workflow parity. Evidence:
+`phases/phase-177-direct-4m-token-endpoint`.
