@@ -43,6 +43,13 @@ experimental native profile. The default fast path mechanically reduces noisy
 payloads to a 64K effective working context. Native direct input and fast staged
 input are recorded separately in receipts.
 
+The embedded reducer has also passed a 4M mechanical stress diagnostic: 3,999,951
+estimated raw tokens reduced to a 92-token model prefill, with 1.0 target-reference
+recall, 1.0 current-intent preservation, and 1.0 hash-bound reference rate. The
+measured cold ingest was 98.713 ms and hot selection was 44.441 ms on the local
+development machine. This is deterministic toolbelt evidence, not an LLM
+long-context quality or MiniMax-parity claim.
+
 ## Backend status
 
 - Hugging Face Safetensors: public experimental package.

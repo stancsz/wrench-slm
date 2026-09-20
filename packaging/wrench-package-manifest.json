@@ -49,9 +49,9 @@
     "hash_bound_receipts": true
   },
   "evidence": {
-    "mechanical_retrieval": "phases/phase-71-native-retrieval-quality/retrieval-220.json",
-    "long_context_runtime": "phases/phase-70-mechanical-map-reduce/runtime-4m-64k.json",
-    "native_attention_probe": "phases/phase-71-native-retrieval-quality/native-1m.json"
+    "mechanical_retrieval": "phases/phase-81-monster-retrieval/retrieval-4m-final.json",
+    "long_context_runtime": "phases/phase-80-safety-native2m/native-4m-bf16-direct.json",
+    "native_attention_probe": "phases/phase-80-safety-native2m/native-4m-bf16-direct.json"
   },
   "publication": {
     "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E",
