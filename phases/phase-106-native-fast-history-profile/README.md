@@ -14,7 +14,7 @@ The default launcher remains unchanged and does not enable this policy.
 - 2M direct input without this policy: `1,999,929` prompt tokens,
   `truncated=false`, HTTP 200, `1,287,078.199 ms`
 - Generated launcher PowerShell AST parse: `0` errors
-- Full repository tests after the launcher change: `120 passed, 8 warnings`
+- Full repository tests after the launcher change: `121 passed, 10 warnings`
 
 The history-layer skip measurements are capacity and throughput evidence only.
 They do not establish retrieval quality, MiniMax parity, safety parity, or a
@@ -25,3 +25,13 @@ The public package revision containing the profile is
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
 the same endpoint safely.
+
+## Retrieval-quality canary
+
+The first real 2M fast-history lookup canary did not pass. It processed
+`861,242` prompt tokens in `118.517 ms`, but returned the invalid path
+`wrench.proposal.v1` instead of the expected
+`src/wrench_harness/worker.py`. The receipt is
+`fast-history-2m-lookup.json`. This keeps the release boundary honest: native
+capacity and fast-path throughput are demonstrated, while retrieval quality
+and MiniMax parity remain open.

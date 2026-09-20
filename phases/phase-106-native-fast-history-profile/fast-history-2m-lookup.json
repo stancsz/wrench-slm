@@ -1,0 +1,38 @@
+{
+  "schema": "wrench.history-lookup-quality-probe.v1",
+  "endpoint": "http://127.0.0.1:28901/v1/chat/completions",
+  "model": "wrench-4b-qwen3.6-8e",
+  "history_skip_layers_before": 1936000,
+  "old_context_chars": 7700079,
+  "needle": "run_worker",
+  "needle_offset": 3850000,
+  "current_intent_sha256": "6c1369b31f8b9ef9bd46d146e0d3fd647b1f5880841cc569a03327ee1b8f4ffb",
+  "elapsed_ms": 118.517,
+  "usage": {
+    "prompt_tokens": 861242,
+    "completion_tokens": 0,
+    "total_tokens": 861242
+  },
+  "result": {
+    "status": "abstain",
+    "fallback_reason": "missing_path",
+    "model_output_validated": true,
+    "raw_model_output": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"wrench.proposal.v1\",\"max_bytes\":65536}",
+    "provider_usage": {
+      "prompt_tokens": 861242,
+      "completion_tokens": 0,
+      "total_tokens": 861242
+    }
+  },
+  "expected": {
+    "status": "accepted",
+    "proposal": {
+      "schema": "wrench.proposal.v1",
+      "action": "read_file",
+      "path": "src/wrench_harness/worker.py",
+      "max_bytes": 65536
+    }
+  },
+  "quality_claim": false,
+  "scope": "single synthetic needle in skipped old history; not a matched workflow result"
+}

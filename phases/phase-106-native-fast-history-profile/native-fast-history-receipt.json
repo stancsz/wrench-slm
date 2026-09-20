@@ -41,5 +41,19 @@
       "shorter_than_keep": 0
     }
   },
+  "retrieval_quality_probe": {
+    "status": "FAIL_EXPECTED_LOOKUP_NOT_RECOVERED",
+    "probe": "fast-history-2m-lookup.json",
+    "prompt_tokens": 861242,
+    "elapsed_ms": 118.517,
+    "model_output_validated": true,
+    "actual_output": {
+      "action": "read_file",
+      "path": "wrench.proposal.v1",
+      "max_bytes": 65536
+    },
+    "expected_path": "src/wrench_harness/worker.py",
+    "quality_claim": false
+  },
   "release_boundary": "opt-in throughput and capacity diagnostic; retrieval quality, MiniMax parity, and production default remain unverified"
 }
