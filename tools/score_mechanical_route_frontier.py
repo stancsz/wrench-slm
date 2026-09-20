@@ -51,7 +51,12 @@ def _number(value: Any, field: str, identifier: str, *, positive: bool = False) 
     return float(value)
 
 
-def _trace_rows(manifest: dict[str, Any], cases: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def _trace_rows(
+    manifest: dict[str, Any],
+    cases: dict[str, dict[str, Any]],
+    *,
+    allowed_root: Path | None = None,
+) -> list[dict[str, Any]]:
     traces = manifest.get("traces")
     if not isinstance(traces, list) or not traces:
         raise ValueError("trace manifest must contain traces")
@@ -72,7 +77,7 @@ def _trace_rows(manifest: dict[str, Any], cases: dict[str, dict[str, Any]]) -> l
         weight = _number(trace.get("workload_weight"), "workload_weight", identifier, positive=True)
         frontier_tokens = _number(teacher.get("frontier_tokens"), "frontier_tokens", identifier)
         case = cases[identifier]
-        candidate = mechanical_route(case["prompt"])
+        candidate = mechanical_route(case["prompt"], allowed_root=allowed_root)
         mechanical = isinstance(candidate, dict) and candidate.get("status") != "abstain"
         rows.append(
             {
@@ -92,11 +97,11 @@ def _trace_rows(manifest: dict[str, Any], cases: dict[str, dict[str, Any]]) -> l
     return rows
 
 
-def score(cases_path: Path, trace_path: Path) -> dict[str, Any]:
+def score(cases_path: Path, trace_path: Path, *, allowed_root: Path | None = None) -> dict[str, Any]:
     cases = _read_cases(cases_path)
     trace_bytes = trace_path.read_bytes()
     manifest = json.loads(trace_bytes.decode("utf-8"))
-    rows = _trace_rows(manifest, cases)
+    rows = _trace_rows(manifest, cases, allowed_root=allowed_root)
     eligible = [row for row in rows if row["category"] == "eligible"]
     if not eligible:
         raise ValueError("trace manifest has no eligible cases")
@@ -146,6 +151,7 @@ def score(cases_path: Path, trace_path: Path) -> dict[str, Any]:
         "cases_sha256": hashlib.sha256(cases_path.read_bytes()).hexdigest(),
         "trace_manifest_path": str(trace_path.resolve()),
         "trace_manifest_sha256": hashlib.sha256(trace_bytes).hexdigest(),
+        "allowed_root": str(allowed_root.resolve()) if allowed_root is not None else None,
         "trace_count": len(rows),
         "eligible_trace_count": len(eligible),
         "mechanical_route_count_all_categories": sum(row["mechanical_route"] for row in rows),
@@ -171,8 +177,9 @@ def main() -> int:
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--trace-manifest", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--allowed-root", type=Path)
     args = parser.parse_args()
-    receipt = score(args.cases, args.trace_manifest)
+    receipt = score(args.cases, args.trace_manifest, allowed_root=args.allowed_root)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({

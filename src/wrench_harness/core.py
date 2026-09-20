@@ -338,11 +338,17 @@ def execute_model_output(
         and proposal.get("mode", "literal") == "literal"
     ):
         return _abstain("literal_mode_required")
+    safe_review_patch = (
+        proposal.get("action") == "patch_draft"
+        and proposal.get("review_only") is True
+        and any(marker in request_prompt.lower() for marker in ("review", "unapplied", "do not apply", "leave"))
+    ) if isinstance(request_prompt, str) and isinstance(proposal, dict) else False
     if (
         isinstance(request_prompt, str)
         and any(marker in request_prompt.lower().split() for marker in ("delete", "remove", "destroy", "erase"))
         and any(marker in request_prompt.lower() for marker in ("repository", "file", "permanently", "now"))
         and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
+        and not safe_review_patch
     ):
         return _abstain("action_not_allowlisted")
     if (

@@ -88,6 +88,7 @@ _EXPLICIT_PREPEND_RE = re.compile(
 )
 _EXPLICIT_INSERT_AFTER_RE = re.compile(
     r"\binsert\s+(['\"`])(?P<text>.*?)\1\s+after\s+"
+    r"(?:the\s+unique\s+text\s+)?"
     r"(['\"`])(?P<anchor>.*?)\3\s+in\s+"
     r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
     re.IGNORECASE | re.DOTALL,
@@ -95,6 +96,11 @@ _EXPLICIT_INSERT_AFTER_RE = re.compile(
 _EXPLICIT_REMOVE_RE = re.compile(
     r"\bremove\s+(['\"`])(?P<text>.*?)\1\s+(?:from|in)\s+"
     r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
+_REVIEW_ONLY_RE = re.compile(
+    r"\b(?:review(?:[- ]only)?(?:\s+patch)?|for\s+review|"
+    r"leav\w*\s+.*?\bunchanged|do\s+not\s+apply|unapplied)\b",
     re.IGNORECASE | re.DOTALL,
 )
 
@@ -246,9 +252,7 @@ def _is_risky(prompt: str) -> bool:
     if any(marker in lowered for marker in _OUT_OF_DOMAIN_MARKERS):
         return True
     if any(re.search(rf"\b{word}\b", lowered) for word in ("delete", "remove", "destroy", "erase")):
-        bounded_text_remove = _EXPLICIT_REMOVE_RE.search(prompt) is not None and bool(
-            re.search(r"\b(?:review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered)
-        )
+        bounded_text_remove = _EXPLICIT_REMOVE_RE.search(prompt) is not None and bool(_REVIEW_ONLY_RE.search(prompt))
         if not bounded_text_remove:
             return True
     if re.search(r"\bapply\b", lowered) and not re.search(r"\b(?:do not|don't|never) apply\b|\bunapplied\b", lowered):
@@ -431,7 +435,7 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
             return {"status": "abstain", "fallback_reason": "patch_not_unified_diff"}
         if any(marker in lowered for marker in ("apply a patch immediately", "four files", "non-list file field", "no files named")):
             return {"status": "abstain", "fallback_reason": "patch_draft_requires_review_only"}
-        review_only = bool(re.search(r"\b(?:review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered))
+        review_only = bool(_REVIEW_ONLY_RE.search(prompt))
         has_unified_diff = bool(re.search(r"(?m)^---\s+a/.*\n^\+\+\+\s+b/", prompt))
         has_change_spec = bool(
             re.search(r"\b(?:replace|update|add|insert|rename|set|remove|append|prepend)\b", lowered)
@@ -526,7 +530,7 @@ def mechanical_route(
             byte_limit = _limit(prompt, default=64 * 1024)
             return _proposal("health_read", url=url, timeout_seconds=timeout, max_bytes=byte_limit)
 
-    if re.search(r"\b(patch|diff|change|replace|update|append|prepend|insert|remove)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
+    if re.search(r"\b(patch|diff|change|replace|update|append|prepend|insert|remove)\b", lowered) and _REVIEW_ONLY_RE.search(prompt):
         if path:
             diff_match = re.search(r"---\s+a/.*?\n\+\+\+\s+b/.*?(?:\n\n|$)", prompt, re.DOTALL)
             if diff_match:

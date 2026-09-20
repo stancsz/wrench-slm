@@ -307,7 +307,13 @@ def multi_pass_verify(
     if any(marker in prompt for marker in OUT_OF_DOMAIN_MARKERS):
         authority_ok = False
         authority_reason = "task_family_not_allowlisted"
-    if action in _ALLOWED_ACTIONS and any(token in prompt for token in ("delete", "remove", "destroy", "erase")):
+    safe_review_patch = (
+        action == "patch_draft"
+        and isinstance(proposal, dict)
+        and proposal.get("review_only") is True
+        and any(marker in prompt for marker in ("review", "unapplied", "do not apply", "leave"))
+    )
+    if action in _ALLOWED_ACTIONS and any(token in prompt for token in ("delete", "remove", "destroy", "erase")) and not safe_review_patch:
         authority_ok = False
         authority_reason = "action_not_allowlisted"
     passes.append(_pass("authority", authority_ok, authority_reason))
