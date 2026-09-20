@@ -186,6 +186,7 @@ class WrenchWorker:
         request_messages = add_patch_schema_examples(messages)
         request_messages, prefill_receipt = _dynamic_prefill_messages(request_messages)
         patch_retry_count = 0
+        model_calls = 0
         while True:
             prompt_text = self.tokenizer.apply_chat_template(
                 request_messages,
@@ -199,6 +200,7 @@ class WrenchWorker:
                 batch = {key: value.to(input_device) for key, value in batch.items()}
             except StopIteration:
                 pass
+            model_calls += 1
             output = self.model.generate(
                 **batch,
                 max_new_tokens=max_tokens,
@@ -219,7 +221,14 @@ class WrenchWorker:
                 break
             patch_retry_count = 1
             request_messages = add_patch_retry_instruction(request_messages)
-        result.update({"backend": "transformers", "mechanical_fast_path": False, "raw_model_output": content})
+        result.update(
+            {
+                "backend": "transformers",
+                "mechanical_fast_path": False,
+                "raw_model_output": content,
+                "model_calls": model_calls,
+            }
+        )
         if prefill_receipt is not None:
             result["dynamic_prefill"] = prefill_receipt
         if is_patch_prompt(prompt):

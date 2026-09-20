@@ -81,8 +81,10 @@ def materialize(
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "server.py", runtime_dir / "server.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "core.py")
         shutil.copy2(repo_root / "wrench_worker.py", target / "wrench_worker.py")
+        shutil.copy2(repo_root / "wrench_server.py", target / "wrench_server.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
         (runtime_dir / "__init__.py").write_text(
             "\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n"
@@ -206,8 +208,9 @@ def materialize(
                 "embedded_mechanical_route": True,
                 "dynamic_staged_prefill": True,
                 "model_prefill_budget_tokens": 64000,
-                "entrypoint": "tokenization_wrench.py",
-                "model_calls_for_mechanical_lookup": 0,
+            "entrypoint": "tokenization_wrench.py",
+            "server_entrypoint": "wrench_server.py",
+            "model_calls_for_mechanical_lookup": 0,
             },
             "backends": {
                 "transformers": "Transformers >=5.17.0 config/tokenizer verified; full generation backend-dependent",
@@ -247,7 +250,9 @@ def materialize(
                 "wrench_runtime/patching.py",
                 "wrench_runtime/worker.py",
                 "wrench_worker.py",
+                "wrench_server.py",
                 "wrench_runtime/sitecustomize.py",
+                "wrench_runtime/server.py",
                 "wrench-runtime.json",
                 "serve_freetoken.ps1",
             ],

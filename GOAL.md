@@ -1300,3 +1300,14 @@ embedded route in `10.948` ms with zero model calls. The full suite passed
 `109` tests. This closes a package routing correctness issue, not native dense
 4M attention quality, MiniMax parity, or production readiness. Evidence:
 `phases/phase-95-public-package-4m-route`.
+
+2026-09-20 model-local serving slice: the portable package now contains its own
+OpenAI-compatible `wrench_server.py` endpoint. A v24 materialized package
+accepted complete raw payloads at 64K, 2M, and 4M estimated tokens through
+`/v1/chat/completions`; the 4M request reported `4,000,010` input tokens,
+returned the current `read_file` action, made zero model calls, and completed
+the request in `138.212` ms. The 64K and 2M probes completed in `35.488` ms and
+`76.024` ms. This is a meaningful model-local package serving path, but the
+mechanical route intentionally bypasses dense native attention. Native dense
+4M retrieval quality, learned MiniMax parity, and production readiness remain
+open. Evidence: `phases/phase-96-model-local-server`.

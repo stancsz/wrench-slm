@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.model-local-server-receipt.v1",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v24",
+  "huggingface_revision": "2ed0d0dcde998258d501190bba52ff9d8072bfb0",
+  "endpoint": "/v1/chat/completions",
+  "server_entrypoint": "wrench_server.py",
+  "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "probes": [
+    {
+      "requested_tokens": 64000,
+      "raw_payload_chars": 512075,
+      "reported_prompt_tokens": 64010,
+      "elapsed_ms": 35.488,
+      "status": "PASS_MODEL_LOCAL_SERVER_4M",
+      "action": "read_file",
+      "model_calls": 0
+    },
+    {
+      "requested_tokens": 2000000,
+      "raw_payload_chars": 16000075,
+      "reported_prompt_tokens": 2000010,
+      "elapsed_ms": 76.024,
+      "status": "PASS_MODEL_LOCAL_SERVER_4M",
+      "action": "read_file",
+      "model_calls": 0
+    },
+    {
+      "requested_tokens": 4000000,
+      "raw_payload_chars": 32000075,
+      "reported_prompt_tokens": 4000010,
+      "elapsed_ms": 138.212,
+      "status": "PASS_MODEL_LOCAL_SERVER_4M",
+      "action": "read_file",
+      "model_calls": 0
+    }
+  ],
+  "native_dense_attention_quality_verified": false,
+  "minimax_parity_verified": false,
+  "production_ready": false
+}

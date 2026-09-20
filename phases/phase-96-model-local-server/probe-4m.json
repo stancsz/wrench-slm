@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.model-local-server-4m-probe.v1",
+  "status": "PASS_MODEL_LOCAL_SERVER_4M",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v23",
+  "requested_payload_tokens": 4000000,
+  "raw_payload_chars": 32000075,
+  "request_bytes": 32500168,
+  "request_sha256": "c4ea2224ff137e57e2753ea00afa264ad3a5566c917e43b0a422866a1f6e3db9",
+  "http_status": 200,
+  "elapsed_ms": 138.212,
+  "shutdown_elapsed_ms": 395.997,
+  "response_model": "wrench-package",
+  "usage": {
+    "prompt_tokens": 4000010,
+    "completion_tokens": 1,
+    "total_tokens": 4000011
+  },
+  "wrench": {
+    "raw_input_chars": 32000075,
+    "raw_input_tokens_estimate": 4000010,
+    "elapsed_ms": 1.982,
+    "status": "accepted",
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "model_calls": 0,
+    "dynamic_prefill": null,
+    "fallback_reason": null
+  },
+  "assistant_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"src/wrench_harness/worker.py\",\"max_bytes\":65536}"
+}

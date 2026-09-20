@@ -51,6 +51,27 @@ result = worker.propose([
 ])
 ```
 
+## Run it as a local model endpoint
+
+The package also contains its own small OpenAI-compatible server. It accepts
+the complete raw request at the model endpoint, then applies the bundled
+mechanical route or bounded working-context reducer inside the package:
+
+```powershell
+python .\wrench_server.py --model-dir . --allowed-root . --mechanical-only
+```
+
+The endpoint is `http://127.0.0.1:28900/v1/chat/completions`. A client can send
+the full conversation, including a multi-million-token raw payload, directly to
+this model-local process. The response includes the raw input estimate,
+effective route, model-call count, and dynamic-prefill receipt. Remove
+`--mechanical-only` when the local backend is ready to load the model weights.
+
+This endpoint is part of the downloaded package, not a separately installed
+Wrench harness. It still does not claim dense native attention quality over
+every 4M token. It provides the practical model-local path while that native
+quality and throughput work continues.
+
 With `load_model=True`, ambiguous requests use the standard Transformers model
 and still pass through the same fail-closed verifier. High-confidence
 mechanical requests use the embedded route without a model call.
