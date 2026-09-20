@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route
+from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route, reference_patch_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 from .prefill import (
@@ -164,7 +164,11 @@ class WrenchWorker:
             # The complete payload remains available to reference_lookup_route
             # for exact historical evidence.
             route_prompt = active_intent_suffix(prompt, suffix_chars=route_suffix_chars)
-            mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root) or reference_lookup_route(reference_payload)
+            mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root)
+            if mechanical is None or mechanical.get("fallback_reason") == "patch_content_missing":
+                mechanical = reference_patch_route(reference_payload) or mechanical
+            if mechanical is None:
+                mechanical = reference_lookup_route(reference_payload)
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":

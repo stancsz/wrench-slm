@@ -1,6 +1,7 @@
 import pytest
 
 from wrench_harness import mechanical_route
+from wrench_harness.mechanical import reference_patch_route
 
 
 def test_mechanical_route_builds_bounded_read_proposals():
@@ -143,3 +144,23 @@ def test_mechanical_route_builds_bounded_text_patch(tmp_path, instruction, befor
     assert removed in proposal["diff"]
     assert added in proposal["diff"]
     assert target.read_text(encoding="utf-8") == before
+
+
+def test_reference_patch_route_recovers_exact_old_diff():
+    prompt = (
+        "Historical review artifact:\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old line\n"
+        "+new line\n"
+        "CURRENT INTENT: Prepare an unapplied unified diff for README.md for review."
+    )
+
+    assert reference_patch_route(prompt) == {
+        "schema": "wrench.proposal.v1",
+        "action": "patch_draft",
+        "files": ["README.md"],
+        "review_only": True,
+        "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old line\n+new line\n",
+    }

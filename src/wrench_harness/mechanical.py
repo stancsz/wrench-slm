@@ -103,6 +103,10 @@ _REVIEW_ONLY_RE = re.compile(
     r"leav\w*\s+.*?\bunchanged|do\s+not\s+apply|unapplied)\b",
     re.IGNORECASE | re.DOTALL,
 )
+_UNIFIED_DIFF_HEADER_RE = re.compile(
+    r"(?m)^---\s+a/(?P<old_path>[^\r\n]+)\r?\n"
+    r"\+\+\+\s+b/(?P<new_path>[^\r\n]+)\r?\n"
+)
 
 
 _REFERENCE_QUERY_STOPWORDS = frozenset(
@@ -219,6 +223,66 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
             if path.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:[\\/]", path) or ".." in re.split(r"[\\/]", path):
                 continue
             return _proposal("read_file", path=path, max_bytes=max_bytes)
+    return None
+
+
+def reference_patch_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[str, Any] | None:
+    """Recover one exact bounded review diff from old reference text."""
+
+    if not isinstance(prompt, str) or not prompt.strip() or suffix_chars < 1:
+        return None
+    tail = prompt[-suffix_chars:]
+    marker_positions = [tail.casefold().rfind(marker.casefold()) for marker in _ACTIVE_INTENT_MARKERS]
+    current_start = max(marker_positions, default=-1)
+    if current_start < 0:
+        request_positions = [
+            match.start()
+            for match in re.finditer(r"\b(?:prepare|draft|create|produce|return)\b", tail, re.IGNORECASE)
+        ]
+        current_start = max(request_positions, default=-1)
+    current = tail[current_start:] if current_start >= 0 else tail
+    lowered = current.casefold()
+    if not _REVIEW_ONLY_RE.search(current) or not re.search(
+        r"\b(?:patch|diff|change|replace|update)\b", lowered
+    ):
+        return None
+    target_path = _path(current)
+    if not target_path or target_path.startswith(("/", "\\")) or ".." in re.split(r"[/\\]", target_path):
+        return None
+    old_prefix = prompt[:-len(tail)] if len(prompt) > len(tail) else ""
+    old_suffix = tail[:current_start] if current_start > 0 else ""
+    old = old_prefix + old_suffix
+    if not old:
+        return None
+    target_folded = target_path.replace("\\", "/").casefold()
+    for match in _UNIFIED_DIFF_HEADER_RE.finditer(old):
+        old_path = match.group("old_path").strip().replace("\\", "/")
+        new_path = match.group("new_path").strip().replace("\\", "/")
+        if old_path != new_path or old_path.casefold() != target_folded:
+            continue
+        lines = old[match.start() :].splitlines(keepends=True)
+        selected: list[str] = lines[:2]
+        saw_hunk = False
+        saw_change = False
+        for line in lines[2:]:
+            stripped = line.rstrip("\r\n")
+            if stripped.startswith("@@"):
+                saw_hunk = True
+                selected.append(line)
+                continue
+            if saw_hunk and (stripped.startswith(("+", "-", " ")) or stripped == r"\\ No newline at end of file"):
+                selected.append(line)
+                if stripped.startswith(("+", "-")) and not stripped.startswith(("+++", "---")):
+                    saw_change = True
+                continue
+            if saw_hunk:
+                break
+        diff = "".join(selected)
+        if not saw_hunk or not saw_change or len(diff.encode("utf-8")) > 128 * 1024:
+            continue
+        if not diff.endswith("\n"):
+            diff += "\n"
+        return _proposal("patch_draft", files=[target_path], review_only=True, diff=diff)
     return None
 
 

@@ -88,6 +88,35 @@ def test_embedded_worker_uses_earlier_user_message_as_reference(tmp_path: Path):
     assert result["mechanical_fast_path"] is True
 
 
+def test_embedded_worker_recovers_review_diff_from_old_reference(tmp_path: Path):
+    (tmp_path / "README.md").write_text("old line\n", encoding="utf-8")
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    result = worker.propose(
+        [
+            {
+                "role": "user",
+                "content": (
+                    "Historical review artifact:\n"
+                    "--- a/README.md\n"
+                    "+++ b/README.md\n"
+                    "@@ -1 +1 @@\n"
+                    "-old line\n"
+                    "+new line\n"
+                ),
+            },
+            {
+                "role": "user",
+                "content": "Prepare an unapplied unified diff for README.md for review.",
+            },
+        ]
+    )
+    assert result["status"] == "accepted"
+    assert result["action"] == "patch_draft"
+    assert result["observation"]["applied"] is False
+    assert result["observation"]["diff"].endswith("+new line\n")
+    assert result["backend"] == "embedded-mechanical"
+
+
 def test_embedded_worker_uses_latest_suffix_as_active_intent(tmp_path: Path):
     worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
     noisy_history = "stale lookup telemetry record status observed unrelated reference-only data; " * 2_000
