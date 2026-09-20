@@ -274,6 +274,7 @@ def test_native_upstream_receives_staged_prefill_for_monster_payload(tmp_path: P
         assert body["wrench"]["dynamic_prefill"]["mode"] == "staged_single_pass"
         assert body["wrench"]["dynamic_prefill"]["raw_token_count"] > staged_tokens
         assert body["wrench"]["dynamic_prefill"]["native_input_claim"] is False
+        assert body["wrench"]["dynamic_prefill"]["server_staging_elapsed_ms"] >= 0
     finally:
         server.shutdown()
         server.server_close()

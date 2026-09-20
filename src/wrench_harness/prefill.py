@@ -259,15 +259,29 @@ def _bounded_toolbelt_evidence(text: str, query_terms: set[str]) -> dict[str, An
     """
 
     candidates: list[tuple[str, str]] = []
-    for match in _CODE_FENCE_RE.finditer(text):
-        body = match.group("body")
+    # Do not run a DOTALL regex over a multi-million-token history just to
+    # discover that it has no fenced code. ``str.find`` is implemented in C
+    # and gives the common reference-only case one bounded linear scan.
+    fence_start = text.find("```")
+    while fence_start >= 0 and len(candidates) < 2:
+        body_start = text.find("\n", fence_start + 3)
+        if body_start < 0:
+            break
+        body_start += 1
+        body_end = text.find("```", body_start)
+        if body_end < 0:
+            break
+        body = text[body_start:body_end]
         if len(body.encode("utf-8")) <= _MAX_TOOLBELT_CODE_BLOCK_BYTES:
             candidates.append((_code_path_hint(text, query_terms), body))
-        if len(candidates) >= 2:
-            break
+        fence_start = text.find("```", body_end + 3)
     if not candidates:
+        # Character length is a conservative UTF-8 byte lower bound. For a
+        # monster reference, skip the second full-text regex scan entirely.
+        if len(text) > _MAX_TOOLBELT_SOURCE_BYTES:
+            return {"ast_symbols": [], "dependencies": [], "toolbelt_scan": "skipped_unbounded_or_non_code"}
         code_like = bool(re.search(r"\b(?:class|def|function|interface|import|from)\b", text))
-        if len(text.encode("utf-8")) <= _MAX_TOOLBELT_SOURCE_BYTES and code_like:
+        if code_like:
             candidates.append((_code_path_hint(text, query_terms), text))
     if not candidates:
         return {"ast_symbols": [], "dependencies": [], "toolbelt_scan": "skipped_unbounded_or_non_code"}
@@ -569,6 +583,12 @@ class MechanicalPrefillIndex:
             for term in terms
             if any(marker in term for marker in ("_", "/", "\\", ".", ":", "-"))
         ]
+        # Generic words are not a safe reason to rescan a multi-million-token
+        # reference. Only explicit path or symbol-shaped keys can promote old
+        # evidence. This keeps an ambiguous current intent fast and prevents
+        # repeated full-text ``find`` calls over the same raw payload.
+        if not preferred_terms:
+            return {**base, "query_scan": "skipped_no_specific_terms"}
         fallback_terms = [term for term in terms if term not in preferred_terms]
         for term in [*preferred_terms, *fallback_terms]:
             position = text.find(term)

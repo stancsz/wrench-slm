@@ -341,7 +341,13 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     # but a native backend should only pay model compute for a
                     # deterministic hot set plus lookup cards. Preserve the
                     # original messages for verification and receipt hashing.
+                    prefill_started = time.perf_counter()
                     staged_messages, prefill_receipt = _dynamic_prefill_messages(messages)
+                    if prefill_receipt is not None:
+                        prefill_receipt["server_staging_elapsed_ms"] = round(
+                            (time.perf_counter() - prefill_started) * 1000,
+                            3,
+                        )
                     upstream_output = _forward_upstream(
                         server.upstream_url,
                         request,

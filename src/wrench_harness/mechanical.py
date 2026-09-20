@@ -151,13 +151,25 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     tail = prompt[-suffix_chars:]
     if not re.search(r"\b(?:read|inspect|open|show)\b", tail, re.IGNORECASE):
         return None
-    query_text = tail[-4096:]
+    active_positions = [tail.casefold().rfind(marker.casefold()) for marker in _ACTIVE_INTENT_MARKERS]
+    active_position = max(active_positions, default=-1)
+    # When a monolithic payload carries an explicit current-intent marker,
+    # never let stale reference words from the preceding 4M prefix become
+    # lookup keys. Without a marker, keep the bounded tail behavior used by
+    # ordinary multi-turn messages.
+    query_text = tail[active_position:] if active_position >= 0 else tail[-4096:]
     quoted = re.findall(r"['\"`]([^'\"`\n]{3,160})['\"`]", query_text)
     lexical = re.findall(r"[A-Za-z_][A-Za-z0-9_./\\:-]{3,95}", query_text)
-    priority = [
-        value for value in lexical
-        if any(marker in value for marker in ("_", "/", "\\", ".", ":", "-"))
-    ]
+    priority = []
+    for value in lexical:
+        normalized = value.strip(".,:;()[]{}")
+        if normalized and any(marker in normalized for marker in ("_", "/", "\\", ".", ":", "-")):
+            priority.append(normalized)
+    # A generic request has no safe historical lookup key. Refuse the lookup
+    # route before compiling a regex that would otherwise scan the entire raw
+    # 4M payload and risk turning an ambiguous request into a latency spike.
+    if not quoted and not priority:
+        return None
     candidates = quoted or priority or lexical
     terms: list[str] = []
     seen: set[str] = set()

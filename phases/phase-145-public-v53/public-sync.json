@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.public-hf-sync.v1",
+  "repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "9827766d5b5e33701f996a5cca34ad9255819bc5",
+  "weights_changed": false,
+  "uploaded_files": [
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md",
+    "wrench_prefill.py",
+    "wrench_mechanical.py",
+    "wrench_runtime/prefill.py",
+    "wrench_runtime/mechanical.py",
+    "wrench_runtime/server.py"
+  ],
+  "verified_sha256": {
+    "README.md": "A1CDE8FFA98EA2EAAC9AA9C29555820450C845A4B5B83B09A278056A7E9B88B0",
+    "WRENCH_PORTABLE_DISTRIBUTION.md": "2EC09611F0740A0293E6272DCFB7ACA08236312E2785BFC3B109B0D2502F5859",
+    "wrench_prefill.py": "85F6AEBFC9933537BCC588A03BB0AB2CE9C51DCD88624BB8935FF5688A81C1AE",
+    "wrench_mechanical.py": "98579684A3C9D80C7A08DA315139776D0EB38C68D77E10F677B932A2EA2B8662",
+    "wrench_runtime/prefill.py": "85F6AEBFC9933537BCC588A03BB0AB2CE9C51DCD88624BB8935FF5688A81C1AE",
+    "wrench_runtime/mechanical.py": "98579684A3C9D80C7A08DA315139776D0EB38C68D77E10F677B932A2EA2B8662",
+    "wrench_runtime/server.py": "8221EF2309D003818610BCE1E747A1C2BAD92A227E8200C1A4650BFB8E6DAA57"
+  },
+  "remote_verification": "fresh hf download matched all local hashes",
+  "native_attention_claim": false,
+  "quality_claim": false
+}

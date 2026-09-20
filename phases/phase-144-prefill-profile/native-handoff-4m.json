@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.native-handoff-prefill-probe.v1",
+  "status": "PASS_NATIVE_HANDOFF_STAGED_4M",
+  "requested_payload_tokens": 4000000,
+  "raw_payload_bytes": 35199607,
+  "raw_token_estimate": 3999942,
+  "staged_token_estimate": 1845,
+  "elapsed_ms": 2580.931,
+  "server_staging_elapsed_ms": 85.714,
+  "model_calls": 1,
+  "backend": "native-upstream-verified",
+  "dynamic_prefill": {
+    "schema": "wrench.dynamic-prefill-receipt.v1",
+    "mode": "staged_single_pass",
+    "raw_token_count": 3999943,
+    "model_prefill_token_count": 1845,
+    "compression_ratio": 0.000461,
+    "hot_token_budget": 48000,
+    "model_prefill_budget": 64000,
+    "reference_index_budget": 16000,
+    "current_intent_source_index": 1,
+    "hot_message_count": 0,
+    "reference_card_count": 1,
+    "deduplicated_reference_count": 0,
+    "lookup_table_ids": [
+      "ref-00000000"
+    ],
+    "lookup_table": {},
+    "raw_payload_sha256": "b35a5af1b50b6686c75b11a9eca95ee29b70f78cc92f83bafaa9fdde1f7dea4a",
+    "native_input_claim": false,
+    "source_payload_sha256": "b35a5af1b50b6686c75b11a9eca95ee29b70f78cc92f83bafaa9fdde1f7dea4a",
+    "payload_hash_mode": "content_addressed_message_digests",
+    "split_current_message": true,
+    "suffix_chars": 16000,
+    "server_staging_elapsed_ms": 85.714
+  },
+  "native_attention_claim": false,
+  "notes": [
+    "The upstream is a local protocol stub, not a model-quality evaluation.",
+    "This proves raw package intake and staged native handoff, not dense native 4M attention."
+  ]
+}

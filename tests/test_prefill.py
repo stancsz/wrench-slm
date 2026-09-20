@@ -141,6 +141,25 @@ def test_dynamic_prefill_skips_ast_for_monster_reference():
     assert receipt["reference_card_count"] == 1
 
 
+def test_dynamic_prefill_keeps_bounded_fence_scan_for_small_code_reference():
+    messages = [
+        {
+            "role": "assistant",
+            "content": "Reference src/service.py\n```python\nclass Worker:\n    def run(self):\n        return 1\n```",
+        },
+        {"role": "user", "content": "Inspect Worker in src/service.py."},
+    ]
+    staged, _ = build_dynamic_prefill(
+        messages,
+        token_counter=lambda value: len(value.split()),
+        model_prefill_budget=120,
+        hot_token_budget=8,
+    )
+    rendered = "\n".join(message["content"] for message in staged)
+    assert "run" in rendered
+    assert "bounded_ast_and_dependency" in rendered
+
+
 def test_dynamic_prefill_skips_full_text_query_scan_without_specific_lookup_term():
     messages = [
         {"role": "assistant", "content": "stale context\n" * 100_000},

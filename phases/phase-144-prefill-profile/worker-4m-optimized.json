@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.embedded-worker-prefill-probe.v1",
+  "status": "PASS_EMBEDDED_MONSTER_PREFILL",
+  "quality_claim": false,
+  "requested_payload_tokens": 4000000,
+  "raw_payload_chars": 35199496,
+  "elapsed_ms": 92.763,
+  "model_calls": 0,
+  "target_reference_sha256": "45f1f6db952ab38195b6fe02dc2d823711eaa8ef90b8b7ef715faafbd6170993",
+  "target_reference_preserved": true,
+  "receipt": {
+    "schema": "wrench.dynamic-prefill-receipt.v1",
+    "mode": "staged_single_pass",
+    "raw_token_count": 3999945,
+    "model_prefill_token_count": 1852,
+    "compression_ratio": 0.000463,
+    "hot_token_budget": 48000,
+    "model_prefill_budget": 64000,
+    "reference_index_budget": 16000,
+    "current_intent_source_index": 2,
+    "hot_message_count": 0,
+    "reference_card_count": 1,
+    "deduplicated_reference_count": 0,
+    "lookup_table_ids": [
+      "ref-00000001"
+    ],
+    "lookup_table": {},
+    "raw_payload_sha256": "6c1a5b15de339939e3901ba6c4c40ff919042c212458663926ea5a9db104ab08",
+    "native_input_claim": false,
+    "source_payload_sha256": "6c1a5b15de339939e3901ba6c4c40ff919042c212458663926ea5a9db104ab08",
+    "payload_hash_mode": "content_addressed_message_digests",
+    "split_current_message": true,
+    "suffix_chars": 16000
+  },
+  "staged_message_count": 3,
+  "notes": [
+    "Deterministic package prefill only; no model generation was called.",
+    "This proves bounded working-context staging, not native dense 4M attention quality."
+  ]
+}

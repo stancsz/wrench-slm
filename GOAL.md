@@ -1623,3 +1623,13 @@ model calls and a bounded staged prefill, but the current local reducer measured
 previous packaging gap, not native 4M retrieval quality, native speed, GGUF or
 stock Ollama loading, MiniMax parity, or production readiness. Evidence:
 `phases/phase-142-native-handoff-prefill`.
+
+2026-09-20 prefill latency and native handoff repair: the 4M reducer no longer
+runs a DOTALL fenced-code regex over the entire payload, and generic intents no
+longer trigger repeated old-context scans without an explicit path or symbol
+lookup key. The standalone 4M probe fell from 621.756 ms to 92.763 ms. The
+real package-server to protocol-stub handoff accepted a 3,999,942-token raw
+request, delivered a 1,845-token staged prompt, and measured 85.714 ms for
+server-side staging with one verified upstream call. This is still a staging
+and integration result, not native dense 4M retrieval quality or MiniMax
+parity. Evidence: `phases/phase-144-prefill-profile`.

@@ -71,7 +71,9 @@ only the staged messages to the internal native backend. The original payload
 hash and latest intent remain available for verification. This provides a
 practical 4M-to-64K native handoff, but it is not dense attention over every
 raw token. The latest 4M worker stress run completed with zero model calls and
-measured 621.756 ms locally, so the sub-100-ms map-reduce target remains open.
+measured 92.763 ms locally. A real package-server handoff probe measured
+85.714 ms for server-side staging, separate from the 2.581 s raw HTTP intake
+and protocol-stub round trip. This is still not dense native 4M attention.
 
 The portable worker can be used directly from the downloaded directory:
 

@@ -202,8 +202,9 @@ The server accepts the original request, stages it deterministically, and sends
 the staged messages to the internal native backend while keeping the original
 payload hash and latest intent for verification. A fresh 4M worker stress run
 reduced the raw input to a bounded prefill with zero model calls. That run took
-621.756 ms locally, so it proves the native handoff shape but not the requested
-sub-100-ms map-reduce target.
+92.763 ms locally. A real package-server handoff probe measured 85.714 ms for
+server-side staging, separate from raw HTTP intake and the protocol-stub round
+trip. This proves the staging shape, not dense native 4M attention.
 
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:
