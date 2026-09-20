@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.mechanical-retrieval-quality.v1",
+  "status": "PASS_MECHANICAL_RETRIEVAL_DIAGNOSTIC",
+  "quality_claim": false,
+  "cases": 1,
+  "target_reference_recall": 1.0,
+  "current_intent_preservation": 1.0,
+  "hash_bound_reference_rate": 1.0,
+  "model_calls": 0,
+  "payload_mode": "monster_single_cold_reference",
+  "requested_payload_tokens": 4000000,
+  "raw_token_count": 3999951,
+  "model_prefill_token_count": 92,
+  "cold_ingest_ms": 102.543,
+  "hot_selection_ms": 42.997,
+  "notes": [
+    "Mechanical retrieval only. No LLM or teacher was used.",
+    "The result does not prove final Wrench task success or MiniMax parity."
+  ]
+}

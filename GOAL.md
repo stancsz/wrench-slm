@@ -1214,3 +1214,13 @@ package path, but does not establish native 4M retrieval quality, MiniMax
 parity, GGUF/Ollama/vLLM compatibility, or production readiness. Evidence:
 `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v16-validation.json`;
 full suite `102 passed`.
+
+2026-09-20 4M mechanical retrieval replay: the current package toolbelt
+replayed 220 historical retrieval cases with `1.0` target-reference recall,
+`1.0` current-intent preservation, `1.0` hash-bound reference rate, and zero
+model calls. A separate 4,000,000-token estimated monster payload reduced to
+92 model-prefill tokens, with 102.543 ms cold ingest and 42.997 ms hot
+selection on the local development machine. This validates the deterministic
+map-reduce layer and its latency target, not LLM native attention quality or
+MiniMax parity. Evidence: `phases/phase-89-mechanical-retrieval/mechanical-220.json`
+and `phases/phase-89-mechanical-retrieval/mechanical-4m.json`.
