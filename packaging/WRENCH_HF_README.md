@@ -252,6 +252,20 @@ working context. Use `-NativeDirectInput` to send the complete raw request to
 the native backend. Native direct input and fast staged input are recorded
 separately in receipts.
 
+On a machine with limited free GPU memory, use the bounded CPU expert profile:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -NativeDirectInput -MoeStrategy cpu -MoeCpuThreads 4
+```
+
+The launcher also accepts `-MoeStrategy hybrid`, `-MoeCpuLayers`, and
+`-MoeHybridMaxFetch` for controlled expert placement. These options do not
+change the model weights. They may reduce GPU pressure, but still require
+enough host RAM, pagefile, and GPU headroom for the rest of the native model.
+The launcher fails closed if its native smoke request cannot complete and
+cleans the native child process tree. Native generation on the current busy
+development host is not claimed as verified by this package revision.
+
 The embedded reducer has also passed a 4M mechanical stress diagnostic: 3,999,951
 estimated raw tokens reduced to a 92-token model prefill, with 1.0 target-reference
 recall, 1.0 current-intent preservation, and 1.0 hash-bound reference rate. The

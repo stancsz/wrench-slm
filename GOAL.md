@@ -1859,3 +1859,17 @@ prefill. Full regression passed 153 tests. Evidence:
 The updated retrieval runtime was published in public v68 at Hub revision
 `33341a7551b4fd4e3cee9ef3a4b2baa28832e407`; fresh-downloaded runtime hashes
 match the local package.
+
+2026-09-20 MapReduce-first public v70 package: the default production-value
+path is now explicit. A model-local 4M payload is reduced mechanically to the
+bounded working context before Wrench generation, while native direct
+attention and expert placement remain optional runtime profiles. Full
+regression passed at 153 tests, v70 structural validation passed, and the
+local package completed the 4M mechanical route in 16.181 ms with zero model
+calls. The public Hub revision is
+`e3f5f69e1dbd685b5911509cf48f776c87e0bb03`; fresh-downloaded runtime and
+launcher hashes match local v70. The current host still cannot prove native
+generation because of CUDA memory pressure, and MiniMax matched-workflow
+parity remains open. Evidence:
+`phases/phase-168-native-cpu-profile` and
+`phases/phase-169-public-v70-mapreduce-profile`.

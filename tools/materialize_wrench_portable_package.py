@@ -179,7 +179,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             "    [int]$KvReserveTokens = 8192",
-            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096,\n    [switch]$NativeDirectInput,\n    [switch]$OllamaApi,\n    [int]$NativePort = 28901,\n    [int]$UpstreamTimeoutSeconds = 9",
+            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [ValidateSet(\"offload\", \"cpu\", \"hybrid\", \"fused\")] [string]$MoeStrategy = \"offload\",\n    [string]$MoeCpuLayers = \"\",\n    [int]$MoeCpuThreads = 0,\n    [int]$MoeHybridMaxFetch = -1,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096,\n    [switch]$NativeDirectInput,\n    [switch]$OllamaApi,\n    [int]$NativePort = 28901,\n    [int]$UpstreamTimeoutSeconds = 9",
         )
         launcher_text = launcher_text.replace(
             "    [int]$Port = 28900,\n",
@@ -237,7 +237,7 @@ def materialize(
             '    "--host", "127.0.0.1",\n'
             '    "--port", $nativeServePort,\n'
             '    "--served-model-name", "wrench-4b-qwen3.6-8e",\n'
-            '    "--moe-strategy", "offload",\n'
+            '    "--moe-strategy", $MoeStrategy,\n'
             '    "--expert-load", "serial",\n'
             '    "--num-tokenizer", 0,\n'
             '    "--kv-reserve-tokens", $KvReserveTokens,\n'
@@ -256,6 +256,15 @@ def materialize(
             '    $nativeArguments += @("--moe-cache-size", $MoeCacheSize)\n'
             '} else {\n'
             '    $nativeArguments += "--moe-cache-auto"\n'
+            '}\n'
+            'if ($MoeCpuLayers) {\n'
+            '    $nativeArguments += @("--moe-cpu-layers", $MoeCpuLayers)\n'
+            '}\n'
+            'if ($MoeCpuThreads -gt 0) {\n'
+            '    $nativeArguments += @("--moe-cpu-threads", $MoeCpuThreads)\n'
+            '}\n'
+            'if ($MoeStrategy -eq "hybrid" -and $MoeHybridMaxFetch -ge 0) {\n'
+            '    $nativeArguments += @("--moe-hybrid-max-fetch", $MoeHybridMaxFetch)\n'
             '}\n'
             'if (-not $OllamaApi) {\n'
             '    & $FreeTokenExecutable @nativeArguments\n'

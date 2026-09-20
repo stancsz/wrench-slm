@@ -188,6 +188,22 @@ sizing, use the bounded manual cache profile:
 
 The default launcher still uses automatic cache sizing.
 
+If the machine has less free GPU memory than the default offload profile,
+the launcher exposes bounded expert-placement profiles without changing the
+model package or granting mutation authority:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -NativeDirectInput -MoeStrategy cpu -MoeCpuThreads 4
+```
+
+`cpu` keeps expert computation on the CPU and is intended as a startup
+fallback on a busy GPU. `hybrid` and `-MoeCpuLayers` are also available for
+controlled experiments. These profiles still need enough host RAM, pagefile,
+and CUDA headroom for the attention and embedding layers. A startup failure is
+reported and the child process tree is cleaned up. The current development
+machine was too full to prove native generation with this profile, so this is
+a launcher capability receipt, not a native quality or throughput claim.
+
 The native bridge defaults to a 9-second upstream timeout. Keep the caller's
 request timeout longer than this bound so a slow native generation fails closed
 without blocking later mechanical requests.
