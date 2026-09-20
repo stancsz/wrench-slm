@@ -2065,3 +2065,12 @@ and safely disables retention at zero. Full tests passed at 162 tests. This
 improves the hybrid production path; it does not close final release approval,
 5060 Ti verification, or the held-out health-fixture issue. Evidence:
 `phases/phase-191-v75-prefill-cache`.
+
+2026-09-20 current package 4M intake verification: after rejecting an
+environment-specific health workaround that did not receive HTTP headers
+within the declared bound, a fresh current package passed structural
+validation and an exact 4,000,000-token model-local endpoint probe. The raw
+payload was 32,000,075 characters, the request returned HTTP 200 in 120.177 ms,
+the embedded mechanical route recovered the current `read_file` intent, and it
+made zero model calls. This is hybrid raw intake plus MapReduce evidence, not
+dense-native attention. Evidence: `phases/phase-192-v76-health-status`.
