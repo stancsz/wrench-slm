@@ -1417,3 +1417,10 @@ proposals, 220/220 mechanical fast paths, 0 model calls, 0 prohibited accepts,
 result is still a package and mechanical-route gate, not MiniMax parity,
 native 4M retrieval quality, or the approved matched workflow savings gate.
 Evidence: `phases/phase-123-native-fast-history-220`.
+
+The v41 package also passed a fresh direct native 4M capacity probe after the
+launcher root change: `3,995,322` actual model-side prompt tokens, HTTP 200,
+`truncated=false`, `native_context_pass=true`, configured maximum
+`4,000,000`, and `173,270.470` ms elapsed on the RTX 5070 Ti. This confirms
+no regression in the direct-input path, but it remains a capacity and serving
+receipt rather than retrieval-quality or MiniMax-parity proof.

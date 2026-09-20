@@ -43,6 +43,21 @@ prompt-complete 220-case contract passed:
 
 Receipt: `full-220-v41-native-allowed-root-ready.json`.
 
+For comparison, the unchanged historical 220 prompts were also sent through
+the v41 package-local worker with the same fixture root. They produced
+200/220 expected outcomes, 82/120 exact eligible proposals, 220/220
+mechanical routes, 0 model calls, 0 prohibited accepts, median `0.268` ms,
+p95 `41.162` ms, and mean `4.376` ms. Receipt:
+`full-220-v41-historical.json`. The lower exact count is expected because the
+historical patch prompts omit the concrete diff; it is not used to claim the
+prompt-complete contract result.
+
+The same v41 package also passed a fresh direct native 4M capacity probe after
+the launcher change: `3,995,322` actual model-side prompt tokens, HTTP 200,
+`truncated=false`, `native_context_pass=true`, configured max length
+`4,000,000`, and `173,270.470` ms elapsed on the RTX 5070 Ti. Receipt:
+`v41-native-3990k.json`.
+
 The first v41 attempt began before FreeToken finished loading its expert bank
 and produced 503 responses. That cold-start observation is retained in
 `full-220-v41-native-allowed-root.json` and is not used as the quality result.
