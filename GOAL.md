@@ -1985,3 +1985,14 @@ strongest current mechanical-worker receipt, but it is not final production
 enablement because the trace set is historical, teacher capture is
 proposal-only, and native dense 4M attention remains unverified. Evidence:
 `phases/phase-180-matched-package-terminal-abstain`.
+
+2026-09-20 Ollama-shaped direct 4M intake: a fresh v73-style downloaded
+package accepted an exact 4,000,000-token estimated raw request through
+`/api/chat` with `options.num_ctx=4000000`. The endpoint returned HTTP 200 in
+80.412 ms with `prompt_eval_count=4000000`, embedded mechanical routing, zero
+model calls, zero model prompt tokens, and all 4,000,000 input tokens recorded
+as not sent to the model. TTC and verifier checks passed. This confirms that
+the portable model directory exposes the monster-context behavior on the
+Ollama-shaped surface, while remaining explicitly a MapReduce intake result,
+not dense native 4M attention. Evidence:
+`phases/phase-181-ollama-4m-direct-intake`.
