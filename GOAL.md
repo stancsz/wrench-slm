@@ -2093,3 +2093,16 @@ in 270.181 ms with 1,955 staged tokens, and the package-local direct endpoint
 accepted a 4M raw payload in 151.799 ms with zero model calls. These are
 hybrid intake and protocol-stub receipts, not dense-native attention quality
 or MiniMax parity.
+
+2026-09-20 v78 bundled-package 220-case HTTP replay: the package's own
+`wrench_runtime` endpoint was exercised with client mechanical fast-path
+bypass and the existing proposal-only teacher capture. The corrected 220-case
+receipt returned `PASS_MECHANICAL_WORKER`, with 90.9116% weighted mechanical
+frontier-token coverage, 96.1611% net frontier-token savings, 96.8925% Wrench
+weighted final success versus 68.9927% teacher success, 2,487 Wrench frontier
+tokens versus 64,785 teacher frontier tokens, zero prohibited accepts, and zero
+unexpected mutations. The current host's live health service caused several
+eligible health rows to fail closed, so this remains diagnostic until an
+isolated fixture is used. The 5060Ti queue currently has only an older pending
+job pinned to source `0d6546a`; no current-commit independent receipt exists.
+Evidence: `phases/phase-194-v78-220-replay`.
