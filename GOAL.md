@@ -954,6 +954,19 @@ matched-workflow gates because the serving profile uses bounded 8K SWA and a
 runtime RoPE extension. Receipt:
 `phases/phase-80-safety-native2m/native-4m-bf16-direct.json`.
 
+2026-09-19 4M mechanical retrieval stress: added a two-stage embedded prefill
+index. Cold ingest now hashes and records cheap size metadata without scanning
+every identifier; query-time selection uses bounded exact-term lookup after
+the latest intent is known. On a near-4M estimated-token cold reference plus
+current intent, the final receipt reports 3,999,951 raw estimated tokens, 92
+model-prefill tokens, 1.0 target-reference recall, 1.0 current-intent
+preservation, 1.0 hash-bound reference rate, 98.713 ms cold ingest, 44.441 ms
+hot selection, and zero model calls. The 220-case deterministic retrieval
+regression remains 1.0 on all three retrieval measures. This closes the
+mechanical 4M-to-small-working-set diagnostic, not native full-attention
+retrieval quality or MiniMax parity. Receipt:
+`phases/phase-81-monster-retrieval/retrieval-4m-final.json`.
+
 The mechanical health route was then changed to use the verifier's bounded
 defaults when a rigid local health request says only "bounded timeout" or
 "response cap". The verifier continues to own host, path, query, fragment,

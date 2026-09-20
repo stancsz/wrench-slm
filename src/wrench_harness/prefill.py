@@ -202,6 +202,34 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
     }
 
 
+def _lightweight_reference_card(text: str, index: int) -> dict[str, Any]:
+    """Create a cheap cold-ingest card without scanning all identifiers.
+
+    A monster payload is already bound by a full SHA-256. The expensive
+    semantic scan belongs on the query path, after the current intent tells us
+    which terms matter. Prefix and suffix probes preserve useful metadata for
+    untargeted callers without turning first receipt latency into a full-text
+    regex benchmark.
+    """
+
+    digest = _sha256(text)
+    return {
+        "reference_id": f"ref-{index:08d}",
+        "source_sha256": digest,
+        "source_chars": len(text),
+        "source_lines": text.count("\n") + 1,
+        "mechanical_score": 0,
+        "paths": [],
+        "symbols": [],
+        "errors": [],
+        "urls": [],
+        "identifiers": [],
+        "anchors": [],
+        "normalized_sha256": digest,
+        "cold_scan": "bounded_prefix_suffix",
+    }
+
+
 class MechanicalPrefillIndex:
     """Content-addressed cache for sub-100ms staged selection.
 
@@ -232,7 +260,7 @@ class MechanicalPrefillIndex:
             "role": message.get("role", "context"),
             "content": message["content"],
             "token_count": int(self._count(message["content"])),
-            "card": _reference_card(message["content"], self._next_index),
+            "card": _lightweight_reference_card(message["content"], self._next_index),
         }
         self._next_index += 1
         self._entries[key] = entry
@@ -261,6 +289,49 @@ class MechanicalPrefillIndex:
 
         material = "|".join(self.entry(message)["card"]["source_sha256"] for message in messages)
         return _sha256(material)
+
+    def query_card(self, message: dict[str, str], query_terms: set[str]) -> dict[str, Any]:
+        """Resolve query-relevant anchors after the current intent is known."""
+
+        entry = self.entry(message)
+        base = entry["card"]
+        if not query_terms:
+            return dict(base)
+        text = entry["content"]
+        hits: list[tuple[int, str]] = []
+        # Exact substring lookup is implemented in optimized C and avoids a
+        # full regex/identifier materialization pass over the cold payload.
+        folded: str | None = None
+        for term in sorted((term for term in query_terms if len(term) >= 3), key=len, reverse=True)[:64]:
+            position = text.find(term)
+            if position < 0:
+                if folded is None:
+                    folded = text.casefold()
+                position = folded.find(term)
+            if position >= 0:
+                hits.append((position, term))
+        anchors: list[str] = []
+        for position, _ in sorted(hits)[:16]:
+            start = text.rfind("\n", 0, position) + 1
+            end = text.find("\n", position)
+            if end < 0:
+                end = len(text)
+            anchors.append(text[start:end].strip()[:240])
+        paths = sorted(set(_PATH_RE.findall("\n".join(anchors))))[:16]
+        symbols = sorted(set(_SYMBOL_RE.findall("\n".join(anchors))))[:24]
+        identifiers = sorted({term for _, term in hits})[:32]
+        card = dict(base)
+        card.update(
+            {
+                "paths": paths or list(base["paths"]),
+                "symbols": symbols or list(base["symbols"]),
+                "identifiers": identifiers,
+                "anchors": anchors,
+                "mechanical_score": len(hits) * 8 + len(paths) * 3 + len(symbols) * 2,
+                "query_scan": "bounded_exact_terms",
+            }
+        )
+        return card
 
 
 def build_dynamic_prefill(
@@ -324,7 +395,7 @@ def build_dynamic_prefill(
         if mechanical_index is None:
             card = _reference_card(message["content"], index, query_terms)
         else:
-            card = dict(mechanical_index.entry(message)["card"])
+            card = mechanical_index.query_card(message, query_terms)
             card["mechanical_score"] = sum(
                 8 * sum(term in value.casefold() for term in query_terms)
                 for value in [*card["paths"], *card["symbols"], *card["errors"], *card["urls"], *card["identifiers"], *card["anchors"]]
