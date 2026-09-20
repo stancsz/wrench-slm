@@ -23,7 +23,7 @@ production default. The profile is therefore opt-in.
 The public package revision containing the profile, lookup fix, and PowerShell
 launcher fix is `5176fd64ff511a8f959cd505966d8af02b8efc9e`. The boundary is
 request-relative. The latest public revision is
-`1c4615a67a3cf271f17524532172a18ce9fe11d1` and also rejects empty unified
+`9d89032376ee87d375a3bdf6d07ac796a7ede46c` and also rejects empty unified
 diffs at the verifier boundary:
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
@@ -61,6 +61,20 @@ real diff.
 The v6 portable package passed structural validation as
 `portable-package-v6-validation.json`. It is published in the public Hugging
 Face repository without re-uploading the unchanged safetensor shards.
+
+The embedded mechanical route now handles one explicit quoted replacement by
+reading the named file and generating a review-only diff without writing it.
+An under-specified review-only patch returns `patch_content_missing` before a
+model call. The v7 portable HTTP smoke ran all 220 historical cases through
+the package: `220/220` mechanical fast-path requests, `200/220` outcome
+matches, `82` exact proposals, `0` prohibited accepts, median `0.243 ms`, and
+p95 `48.718 ms`. The 20 expected-accepted patch prompts intentionally lack a
+requested change, so they remain a fixture-quality mismatch rather than a
+fabricated patch pass.
+
+The v8 portable package passed structural validation as
+`portable-package-v8-validation.json` and is published at the latest public
+revision above.
 
 The full portable 220-case replay preserved `200/200` outcome matches and
 `0` prohibited accepts on the mechanical fast path. The remaining 20 eligible
