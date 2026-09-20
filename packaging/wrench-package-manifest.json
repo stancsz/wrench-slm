@@ -62,8 +62,8 @@
     "native_attention_probe": "phases/phase-80-safety-native2m/native-4m-bf16-direct.json"
   },
   "publication": {
-    "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E",
+    "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
     "public_upload_authorized": true,
-    "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E"
+    "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M"
   }
 }

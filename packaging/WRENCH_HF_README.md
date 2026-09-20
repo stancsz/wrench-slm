@@ -27,7 +27,7 @@ far, but it still requires a complete matched 220-case release evaluation.
 ## Copy the package
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
 ```
 
 The canonical distribution format is Hugging Face Safetensors. The package embeds

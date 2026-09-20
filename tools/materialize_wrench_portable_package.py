@@ -24,7 +24,7 @@ def materialize(
     source: Path,
     target: Path,
     repo_root: Path,
-    huggingface_repo_id: str = "stancsz/Wrench-4B-Qwen3.6-8E",
+    huggingface_repo_id: str = "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
 ) -> dict[str, object]:
     if not source.is_dir() or not (source / "config.json").is_file():
         raise ValueError(f"source artifact is missing config.json: {source}")
@@ -130,7 +130,7 @@ def materialize(
         readme_path = target / "README.md"
         shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", readme_path)
         readme = readme_path.read_text(encoding="utf-8").replace(
-            "stancsz/Wrench-4B-Qwen3.6-8E", huggingface_repo_id
+            "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M", huggingface_repo_id
         )
         if quantized_candidate:
             readme = readme.replace(
@@ -154,7 +154,7 @@ def materialize(
         distribution_doc = target / "WRENCH_PORTABLE_DISTRIBUTION.md"
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", distribution_doc)
         distribution_text = distribution_doc.read_text(encoding="utf-8").replace(
-            "stancsz/Wrench-4B-Qwen3.6-8E", "__WRENCH_HF_URL__"
+            "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M", "__WRENCH_HF_URL__"
         )
         distribution_text = distribution_text.replace(
             "Wrench-4B-Qwen3.6-8E", package_dir_name
@@ -267,7 +267,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument(
         "--huggingface-repo-id",
-        default="stancsz/Wrench-4B-Qwen3.6-8E",
+        default="stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
         help="Hub repo id embedded in the portable package copy command",
     )
     args = parser.parse_args()

@@ -5,10 +5,10 @@ understand the evaluation harness, context ledger, or local development
 repository.
 
 The current public experimental package is
-`stancsz/Wrench-4B-Qwen3.6-8E`. Copy it with:
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M`. Copy it with:
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
 ```
 
 This is a public artifact release, not a production-readiness declaration.

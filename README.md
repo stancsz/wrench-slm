@@ -1,5 +1,29 @@
 # Wrench Qwen3.6 Expert-Tier Evaluation
 
+## Public portable package
+
+The current public experimental artifact is available on Hugging Face:
+
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M`
+
+Copy the complete model directory with one command:
+
+```powershell
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+```
+
+The package is a normal Hugging Face Safetensors directory with the tokenizer,
+embedded deterministic toolbelt, verifier, runtime metadata, and experimental
+FreeToken launcher included. It is portable as a model directory, but it is
+still an experimental artifact. The current public package does not claim
+validated vLLM, Ollama, or GGUF support, native 4M retrieval quality, MiniMax
+parity, or production throughput.
+
+GGUF is not just a file rename. A valid Wrench GGUF release needs a llama.cpp
+or Ollama architecture adapter that preserves the hybrid attention, tokenizer,
+long-context policy, and embedded tool contract. Until that adapter is tested,
+the Hugging Face Safetensors package is the canonical copy-paste format.
+
 Wrench's experimental specialized execution SLM targets narrowly defined,
 independently verifiable developer-tool work. The project evaluates an
 8-expert compact tier and a 16-expert larger tier pruned from Qwen3.6-35B-A3B.
