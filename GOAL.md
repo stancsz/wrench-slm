@@ -1840,3 +1840,10 @@ prohibited accepts, zero model calls, 0.595 ms median latency, and 42.219 ms
 p95 latency. This validates the executable mechanical lane, not the matched
 MiniMax workflow gate or native dense 2M/4M attention. Evidence:
 `phases/phase-165-prompt-complete-workflow`.
+
+2026-09-20 public v67 4M endpoint intake: the downloaded package's own local
+HTTP server accepted a 4,000,000-token estimated raw request, returned HTTP
+200 with 4,000,010 prompt tokens accounted, and completed the hybrid route in
+145.594 ms. The direct worker route measured 16.484 ms with zero model calls.
+This proves model-local 4M intake plus MapReduce, not dense native 4M
+attention. Evidence: `phases/phase-166-public-v67-4m-endpoint`.
