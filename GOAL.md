@@ -1686,3 +1686,13 @@ calls, and fresh Hub downloads confirmed the launcher argument, README note,
 and runtime metadata. This publishes the startup repair while keeping native
 2M/4M generation, retrieval quality, MiniMax parity, GGUF, and production
 claims explicitly open. Evidence: `phases/phase-151-public-v56`.
+
+2026-09-20 independent weighted MiniMax-worker score replay: the checked-in
+scorer was rerun against both existing 220-case diagnostic trace manifests.
+The complete-patch replay remains `QUALITY_GATE_OPEN` at
+`0.8546684503519975` weighted frontier-token coverage and `1.0` net savings;
+the canonical v5 replay remains `QUALITY_GATE_OPEN` at
+`0.5091198427476598` coverage and `0.5966536852733304` savings. Both retain
+zero prohibited accepts and zero unexpected mutations. This independently
+confirms the remaining gap to the 90%/95% North Star gates. Evidence:
+`phases/phase-152-independent-mini-max-score`.
