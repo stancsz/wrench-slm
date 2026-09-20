@@ -15,9 +15,10 @@ hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qw
 The package is a normal Hugging Face Safetensors directory with the tokenizer,
 embedded deterministic toolbelt, verifier, runtime metadata, and experimental
 FreeToken launcher included. It is portable as a model directory, but it is
-still an experimental artifact. The current public package does not claim
-validated vLLM, Ollama, or GGUF support, native 4M retrieval quality, MiniMax
-parity, or production throughput.
+still an experimental artifact. The package-local model server has a verified
+Ollama-shaped `/api/chat` and `/api/generate` surface that accepts a 4M-declared
+request. Stock Ollama, vLLM, GGUF, native dense 4M retrieval quality, MiniMax
+parity, and production throughput are not yet claimed.
 
 GGUF is not just a file rename. A valid Wrench GGUF release needs a llama.cpp
 or Ollama architecture adapter that preserves the hybrid attention, tokenizer,
@@ -40,19 +41,26 @@ It may propose a bounded action or abstain. A separate verifier and router own
 execution, fallback, accounting, circuit breaking, and rollback. The project is
 not a general coding agent and has no autonomous-write authority.
 
-The current guarded broad fixture scores the 8E tier 11/28 accepted and 19/28
-expected outcomes, and the 16E tier 14/28 accepted and 22/28 expected
-outcomes. Both have zero prohibited accepts after intent guards. These are
-development-only verifier receipts, not production quality evidence.
+The old 28-case fixture is retained only as historical regression evidence. The
+current v44 package was re-run on the prompt-complete 220-case mechanical
+contract: 220/220 expected outcomes, 120/120 exact eligible proposals,
+zero prohibited accepts, zero model calls, and 0.594 ms median / 42.204 ms p95
+through the embedded route. This is a package and mechanical-contract result,
+not MiniMax parity, native dense 4M retrieval quality, or production utility.
 
 The latest calibration lineage records hash-stable training bytes and fresh
 packed receipts. The 16E tier is the current more-useful experimental
 candidate; the 8E tier remains the smaller and faster option. Neither tier is
 production enabled.
 
-The original 35B teacher baseline scored 12/28 verifier outcomes and 7/28
-exact proposals after a receipt-visible generic-tool schema adapter. The
-adapter is baseline-only and is not part of Wrench runtime.
+The original 35B teacher baseline and the live MiniMax replay remain separate
+comparison evidence. The generic-tool schema adapter used by the old teacher
+baseline is not part of Wrench runtime.
+
+The current package evidence is recorded in
+[Phase 131](phases/phase-131-ollama-api/README.md) and
+[Phase 132](phases/phase-132-v44-prompt-complete/README.md). The full repository
+regression is `pytest -q`: 140 passed, 14 warnings.
 
 See [GOAL.md](GOAL.md) for the governing contract. The preserved pre-restart
 implementation is outside this repository under
