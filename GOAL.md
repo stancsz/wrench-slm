@@ -2280,3 +2280,11 @@ Native generation then failed quality validation on the RTX 5070 Ti: a short
 64 generated tokens. The package now records import as verified but native
 Ollama generation as failed on this host. Evidence:
 `phases/phase-207-v84-ollama-import`.
+
+2026-09-20 v85 package refresh: the portable package was rematerialized after
+the Ollama boundary update. It now carries both the embedded 4M-to-64K
+context-gate contract and the explicit status that Ollama 0.34.2 MLX import
+and 4M metadata are verified while native generation quality failed on the
+validation host. Structural validation passed, and a fresh package-local 4M
+handoff passed with 3,999,942 raw estimated tokens, 1,955 staged tokens, and
+101.524 ms server staging. Evidence: `phases/phase-208-v85-package-refresh`.
