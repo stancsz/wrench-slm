@@ -1,0 +1,10 @@
+{
+  "schema": "wrench.hf-runtime-sync-receipt.v1",
+  "repository": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "hub_commit": "66842b579075b0d2e51c83384b4ebe2a25403906",
+  "path": "wrench_runtime/sitecustomize.py",
+  "local_sha256": "B94E9B181B283E8A068ED5BC4A940036B71DDB1AC005683AA597C7CA1C9CD6B4",
+  "downloaded_sha256": "B94E9B181B283E8A068ED5BC4A940036B71DDB1AC005683AA597C7CA1C9CD6B4",
+  "hash_match": true,
+  "weights_reuploaded": false
+}
