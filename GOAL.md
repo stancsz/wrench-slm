@@ -2119,3 +2119,15 @@ not alter production behavior. This is stronger bundled diagnostic evidence,
 but final family-disjoint approval, current-commit 5060Ti verification, and
 production enablement remain open. Evidence:
 `phases/phase-195-v79-health-fixture-replay`.
+
+2026-09-20 v79 sealed final-slice diagnostic: the current package-local HTTP
+endpoint was run against the 44-row `evals/wrench-expanded-v2/final.jsonl`
+slice with client mechanical fast-path bypassed and an isolated health
+fixture. Without using final rows for training, LoRA, expert selection, or
+prompt tuning, Wrench reached 100% weighted mechanical coverage, 100% net
+frontier-token savings, 100% Wrench-plus-fallback weighted final success
+versus 88.9922% teacher success, zero Wrench frontier tokens versus 11,967
+teacher tokens, 4,805 local tokens, zero fallbacks, 183.940 ms median, and
+323.980 ms p95. Prohibited accepts and unexpected mutations were both zero.
+This is sealed-split diagnostic evidence, not final production authorization.
+Evidence: `phases/phase-196-v79-final-slice`.

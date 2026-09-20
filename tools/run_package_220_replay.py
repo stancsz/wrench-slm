@@ -48,6 +48,11 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=28906)
     parser.add_argument("--health-fixture", action="store_true")
     parser.add_argument("--health-fixture-port", type=int, default=28907)
+    parser.add_argument(
+        "--allow-noncanonical-count",
+        action="store_true",
+        help="allow a sealed diagnostic slice such as final.jsonl instead of the 220-case fixture",
+    )
     args = parser.parse_args()
 
     package_dir = args.package_dir.resolve()
