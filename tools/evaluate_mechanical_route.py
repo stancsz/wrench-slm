@@ -34,7 +34,7 @@ def replay(cases: Path, root: Path) -> dict[str, Any]:
     started = time.perf_counter()
     for row in rows:
         prompt = row.get("prompt", "")
-        candidate = mechanical_route(prompt)
+        candidate = mechanical_route(prompt, allowed_root=root)
         if candidate is None:
             observed = {"status": "model_fallback_required", "fallback_reason": "mechanical_route_miss"}
             fast_path = False

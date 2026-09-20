@@ -1827,3 +1827,8 @@ This improves the dynamic-native working-context path but is not dense native
 The bundled adaptive runtime was published in the public v67 package revision
 `842c42e64bf0a3ec89cb458eba90c403f5f19c61`. Fresh-downloaded runtime hashes
 match the local package, so this behavior is present for copy-paste users.
+
+The 220-case route evaluator was also corrected to honor its `--root` fixture
+argument. The prompt-complete derived contract now replays 220/220 strict
+outcomes with 0 prohibited accepts; this is a mechanical-contract receipt, not
+MiniMax parity or final workflow utility evidence.
