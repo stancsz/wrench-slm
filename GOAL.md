@@ -218,7 +218,8 @@ not a requirement to replace the faster hybrid MapReduce product path.
   hybrid raw-intake plus effective-working-context path.
 - [ ] Conditional dense-native first-layer target: if dense-native 2M/4M
   serving is enabled, the portable model/runtime must include an integrated,
-  low-cost pruner plus cherrypicker as its first model-side stage. It must
+   low-cost pruner plus cherrypicker as its first model-side layer/stage, not
+   merely a metadata or gateway setting. It must
   receive the full raw sequence, compact it to a bounded 32K to 64K active
   working context before expensive attention, preserve newest intent,
   authority/dependency context, recent tool state, and hash-bound lookup
@@ -2297,3 +2298,11 @@ valid embedded mechanical `read_file` proposal with zero model calls. This
 confirms the copy-paste model-local path for the high-volume mechanical lane.
 It does not repair the separate stock-Ollama native NVFP4 generation failure.
 Evidence: `phases/phase-209-v85-one-command-smoke`.
+
+2026-09-20 BF16 Ollama comparison: the local 2M BF16 Qwen3.5 MoE candidate
+was imported by the patched Ollama 0.34.2 MLX runtime with 1,045 tensors,
+3,944,893,440 reported parameters, and a 2,000,000-token context. A short
+deterministic generation request still failed to return usable text and
+ended as HTTP 500 after about 63 seconds. This separates import compatibility
+from serving quality and shows that BF16 alone does not solve the native
+prefill/runtime boundary. Evidence: `phases/phase-210-ollama-bf16-comparison`.
