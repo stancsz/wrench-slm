@@ -934,3 +934,12 @@ guard, 137/220 mechanical fast-path requests, 46.513 ms median latency, and
 10,033.084 ms p95. This is startup and diagnostic quality evidence, not a
 native direct 2M/4M quality pass. Receipt:
 `phases/phase-80-safety-native2m/wrench-safety-native2m-220.json`.
+
+2026-09-19 safety-candidate native 2M direct-input verification: the exact
+safety-calibrated checkpoint, served under the explicit native-attention probe
+profile, accepted 1,999,912 actual model-side prompt tokens with HTTP 200 and
+no truncation. The request completed in 967,098.697 ms. This closes the
+candidate-specific direct 2M input correctness milestone, but not the 4M
+candidate gate, full-global-attention claim, retrieval quality, fast-serving
+target, or MiniMax matched-workflow gates. Receipt:
+`phases/phase-80-safety-native2m/native-2m-bf16-direct.json`.
