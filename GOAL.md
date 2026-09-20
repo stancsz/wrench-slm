@@ -1813,3 +1813,17 @@ launcher and mechanical runtime hashes matched local v66, with `ft.cmd` as the
 Windows default and `reference_patch_route` present. This publishes the
 launcher repair and bundled retrieval behavior, not native dense 4M quality or
 MiniMax parity. Evidence: `phases/phase-163-public-v66-ftcmd`.
+
+2026-09-20 adaptive MapReduce working-context tier: the default hybrid path
+remains 64K, while long context-sensitive intents can deterministically promote
+to a bounded 128K tier under `WRENCH_MODEL_PREFILL_MAX_BUDGET`. The selection
+requires an explicit newest-intent marker and records the choice in the
+dynamic-prefill receipt. Full regression passed at 151 tests; the 220-case
+deterministic route remained 220/220 fast path with zero prohibited accepts.
+This improves the dynamic-native working-context path but is not dense native
+2M/4M attention or MiniMax workflow parity. Evidence:
+`phases/phase-164-adaptive-prefill-tier`.
+
+The bundled adaptive runtime was published in the public v67 package revision
+`842c42e64bf0a3ec89cb458eba90c403f5f19c61`. Fresh-downloaded runtime hashes
+match the local package, so this behavior is present for copy-paste users.

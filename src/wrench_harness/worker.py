@@ -25,11 +25,73 @@ from .prefill import (
 )
 
 
+_ADAPTIVE_CONTEXT_MARKERS = (
+    "debug",
+    "compare",
+    "trace",
+    "reproduce",
+    "root cause",
+    "test failure",
+    "review-only",
+    "review only",
+    "multi-file",
+    "across several files",
+)
+
+
 def _estimated_tokens(value: str) -> int:
     # Spaces and newlines dominate the cheap estimate. Avoid a third full
     # scan for tabs on monster payloads; the exact tokenizer remains the
     # authority once the bounded staged prompt reaches the model.
     return max(1, value.count(" ") + value.count("\n") + 1)
+
+
+def _adaptive_prefill_budget(
+    messages: list[dict[str, str]],
+    *,
+    base_budget: int,
+    raw_chars: int,
+) -> tuple[int, dict[str, Any] | None]:
+    """Select a bounded working-context tier without invoking another model.
+
+    The default remains 64K.  A larger tier is only selected when the newest
+    intent explicitly looks like a context-sensitive investigation and the
+    payload is materially larger than the base tier.  The policy is
+    deterministic, configurable, and never allows the reducer to exceed the
+    caller's hard maximum.
+    """
+
+    if not isinstance(base_budget, int) or base_budget < 1:
+        raise ValueError("base_budget must be positive")
+    if raw_chars <= base_budget * 4:
+        return base_budget, None
+    if os.environ.get("WRENCH_DYNAMIC_PREFILL_ADAPTIVE", "1").casefold() in {"0", "false", "off", "no"}:
+        return base_budget, None
+    users = [
+        item.get("content", "")
+        for item in messages
+        if isinstance(item, dict) and item.get("role") == "user" and isinstance(item.get("content"), str)
+    ]
+    latest = users[-1].casefold() if users else ""
+    marker = next((value for value in _ADAPTIVE_CONTEXT_MARKERS if value in latest), None)
+    if marker is None:
+        return base_budget, None
+    try:
+        hard_max = int(os.environ.get("WRENCH_MODEL_PREFILL_MAX_BUDGET", "128000"))
+    except ValueError:
+        hard_max = base_budget
+    hard_max = max(base_budget, hard_max)
+    selected = min(hard_max, max(base_budget, 128_000))
+    if selected == base_budget:
+        return base_budget, None
+    return selected, {
+        "policy": "adaptive_complexity_tier",
+        "marker": marker,
+        "base_budget": base_budget,
+        "selected_budget": selected,
+        "hard_max_budget": hard_max,
+        "raw_chars": raw_chars,
+    }
 
 
 def _dynamic_prefill_messages(
@@ -44,7 +106,8 @@ def _dynamic_prefill_messages(
         for message in messages
         if isinstance(message, dict) and isinstance(message.get("content"), str)
     ]
-    large_by_chars = sum(len(value) for value in content_values) > budget * 4
+    raw_chars = sum(len(value) for value in content_values)
+    large_by_chars = raw_chars > budget * 4
     estimated_raw_tokens = (
         budget + 1
         if large_by_chars
@@ -52,6 +115,11 @@ def _dynamic_prefill_messages(
     )
     if not large_by_chars and estimated_raw_tokens <= budget:
         return messages, None
+    budget, adaptive_selection = _adaptive_prefill_budget(
+        messages,
+        base_budget=budget,
+        raw_chars=raw_chars,
+    )
     suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
     prepared_messages, split_current_message = split_monolithic_current_message(
         messages,
@@ -85,6 +153,7 @@ def _dynamic_prefill_messages(
     receipt["prepared_payload_sha256"] = source_payload_sha256
     receipt["payload_hash_mode"] = "ordered_original_plus_content_addressed_prepared"
     receipt["split_current_message"] = split_current_message
+    receipt["adaptive_selection"] = adaptive_selection
     receipt["suffix_chars"] = (
         int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
         if split_current_message

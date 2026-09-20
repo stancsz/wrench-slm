@@ -203,3 +203,19 @@ def test_dynamic_prefill_splits_a_monolithic_current_payload():
     assert receipt["payload_hash_mode"] == "ordered_original_plus_content_addressed_prepared"
     assert any(message["role"] == "user" and "CURRENT INTENT" in message["content"] for message in staged)
     assert any(message["role"] == "user" and "wrench:reference-index" in message["content"] for message in staged)
+
+
+def test_dynamic_prefill_raises_context_tier_only_for_complex_long_intent(monkeypatch):
+    from wrench_harness.worker import _dynamic_prefill_messages
+
+    monkeypatch.setenv("WRENCH_MODEL_PREFILL_BUDGET", "64000")
+    monkeypatch.setenv("WRENCH_MODEL_PREFILL_MAX_BUDGET", "128000")
+    staged, receipt = _dynamic_prefill_messages([
+        {"role": "assistant", "content": "old trace\n" * 100_000},
+        {"role": "user", "content": "Compare the old trace and find the root cause."},
+    ])
+    assert receipt is not None
+    assert receipt["adaptive_selection"]["selected_budget"] == 128_000
+    assert receipt["model_prefill_budget"] == 128_000
+    assert receipt["model_prefill_token_count"] <= 128_000
+    assert any("wrench:reference-index" in message["content"] for message in staged)

@@ -46,6 +46,17 @@ target for cached 4M-to-64K selection.
 Cold indexing is incremental work performed as context arrives. It is reported
 separately from request latency and never hidden inside a model benchmark.
 
+For context-sensitive requests, the package has a conservative adaptive tier.
+The newest intent must contain a marker such as `debug`, `compare`, `trace`,
+`root cause`, or `review-only`, and the raw payload must be materially larger
+than the base tier. Those requests may use a 128K working context, subject to
+`WRENCH_MODEL_PREFILL_MAX_BUDGET`. Ordinary reads remain at 64K. The policy is
+deterministic and its receipt records the marker, base budget, selected budget,
+hard maximum, and raw character pressure. Setting
+`WRENCH_DYNAMIC_PREFILL_ADAPTIVE=0` disables the promotion. This changes the
+working-context size only; it does not turn the staged path into dense native
+attention over the omitted raw tokens.
+
 ## Bounded test-time-compute schedule
 
 The Wrench schedule is intentionally asymmetric:
