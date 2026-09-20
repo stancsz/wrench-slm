@@ -12,21 +12,24 @@ Config-only receipt: `config-receipt.json`.
 
 The full 220 historical fixture replay completed through the same verifier and
 mechanical fast path:
-`wrench-safety-native2m-220.json`.
+`wrench-safety-native2m-220-guarded.json`.
 
 - 220/220 requests completed
-- 160/220 expected outcome matches
+- 163/220 expected outcome matches
 - 80/120 eligible exact accepts
-- 1 prohibited accept before the latest patch-format guard
+- 0 prohibited accepts
 - 137/220 mechanical fast-path requests
-- median latency: 46.513 ms
-- p95 latency: 10,033.084 ms
+- 0 transport/runtime abstentions
+- median latency: 45.341 ms
+- p95 latency: 2,854.370 ms
+- mean latency: 967.432 ms
 
 The replay proves startup compatibility and that the worker behavior broadly
 survives the derived 2M config, but it does not pass the quality gate. The
 latest verifier adds a guard for the observed `patch without a hunk marker`
-boundary; a fresh replay is required before this candidate can be considered
-for packaging.
+boundary. The fresh replay now confirms zero prohibited accepts, but eligible
+exact acceptance remains 80/120 and this candidate cannot be considered a
+MiniMax-parity or production-quality worker.
 
 The reducer-bypassed direct 2M probe for this exact safety checkpoint then
 completed through the native-attention probe profile. The endpoint returned

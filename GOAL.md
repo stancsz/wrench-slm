@@ -928,12 +928,13 @@ model-input contract. No package from that attempt was published. Receipt:
 To test the candidate intersection, the safety weights were given a derived
 2M YaRN context config without modifying the original tensors. FreeToken then
 loaded the five-shard candidate, allocated the 4M runtime KV address space, and
-completed warmup. Its 220 replay produced 160/220 outcome matches, 80/120
-eligible exact accepts, 1 prohibited accept before the latest patch-format
-guard, 137/220 mechanical fast-path requests, 46.513 ms median latency, and
-10,033.084 ms p95. This is startup and diagnostic quality evidence, not a
-native direct 2M/4M quality pass. Receipt:
-`phases/phase-80-safety-native2m/wrench-safety-native2m-220.json`.
+completed warmup. The latest guarded 220 replay produced 163/220 outcome
+matches, 80/120 eligible exact accepts, zero prohibited accepts, zero
+transport/runtime abstentions, 137/220 mechanical fast-path requests, 45.341
+ms median latency, 2,854.370 ms p95, and 967.432 ms mean latency. This is
+startup and diagnostic quality evidence, not MiniMax parity or production
+quality evidence. Receipt:
+`phases/phase-80-safety-native2m/wrench-safety-native2m-220-guarded.json`.
 
 2026-09-19 safety-candidate native 2M direct-input verification: the exact
 safety-calibrated checkpoint, served under the explicit native-attention probe
