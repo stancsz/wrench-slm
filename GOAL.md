@@ -1522,3 +1522,16 @@ revalidates the 90% mechanical-work target on a prompt-complete contract after
 the Ollama-shaped API update. It does not close native dense 4M retrieval
 quality, MiniMax parity, or family-disjoint production utility. Evidence:
 `phases/phase-132-v44-prompt-complete`.
+
+2026-09-20 package-local native bridge: the portable server now accepts an
+optional native upstream while keeping the public Ollama-shaped endpoint and
+the verifier inside the downloaded model directory. The generated
+`serve_freetoken.ps1 -OllamaApi` mode keeps FreeToken on an internal loopback
+port, routes mechanical requests locally, and verifies native text before
+returning it. A fresh v45 package accepted a 4,000,000-token request with
+HTTP 200, a 4,000,010-token prompt estimate, zero model calls on the mechanical
+route, and 109.977 ms request time. Source and materializer tests pass, and the
+full repository regression is 141 passed. This closes a package integration
+gap, not stock Ollama loading, native dense 4M retrieval quality, MiniMax
+parity, or production readiness. Evidence:
+`phases/phase-133-native-ollama-bridge`.

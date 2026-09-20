@@ -189,6 +189,74 @@ def materialize(
             '    $env:WRENCH_HISTORY_CONTROL_SUFFIX_CHARS = "16000"\n'
             '}',
         )
+        launcher_text = launcher_text.replace(
+            '    [int]$FastHistoryControlPrefixTokens = 4096\n',
+            '    [int]$FastHistoryControlPrefixTokens = 4096,\n'
+            '    [switch]$OllamaApi,\n'
+            '    [int]$NativePort = 28901\n',
+        )
+        # Optional Ollama API mode keeps the native backend private to the
+        # downloaded model directory. The package-local server owns the public
+        # API and verifies native text before returning it.
+        launcher_head, launcher_marker, _launcher_tail = launcher_text.partition(
+            '& $FreeTokenExecutable serve `\n'
+        )
+        if not launcher_marker:
+            raise RuntimeError("generated FreeToken launcher command not found")
+        launcher_text = launcher_head + launcher_marker.replace(
+            '& $FreeTokenExecutable serve `\n',
+            '$nativeServePort = if ($OllamaApi) { $NativePort } else { $Port }\n'
+            '$nativeArguments = @(\n'
+            '    "serve",\n'
+            '    "--model", $PSScriptRoot,\n'
+            '    "--host", "127.0.0.1",\n'
+            '    "--port", $nativeServePort,\n'
+            '    "--served-model-name", "wrench-4b-qwen3.6-8e",\n'
+            '    "--moe-strategy", "offload",\n'
+            '    "--moe-cache-auto",\n'
+            '    "--kv-reserve-tokens", $KvReserveTokens,\n'
+            '    "--num-tokens", 4000000,\n'
+            '    "--max-running-requests", 1,\n'
+            '    "--max-seq-len-override", 4000000,\n'
+            '    "--max-prefill-length", 32768,\n'
+            '    "--memory-ratio", 0.9,\n'
+            '    "--text-model-only",\n'
+            '    "--cache-type", "radix",\n'
+            '    "--tool-call-parser", "qwen",\n'
+            '    "--reasoning-parser", "off"\n'
+            ')\n'
+            'if (-not $OllamaApi) {\n'
+            '    & $FreeTokenExecutable @nativeArguments\n'
+            '    exit $LASTEXITCODE\n'
+            '}\n'
+            '$nativeProcess = Start-Process -FilePath $FreeTokenExecutable -ArgumentList $nativeArguments -WindowStyle Hidden -PassThru\n'
+            'try {\n'
+            '    $ready = $false\n'
+            '    for ($attempt = 0; $attempt -lt 120; $attempt++) {\n'
+            '        try {\n'
+            '            $null = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$NativePort/v1/models" -TimeoutSec 1\n'
+            '            $ready = $true\n'
+            '            break\n'
+            '        } catch {\n'
+            '            if ($nativeProcess.HasExited) {\n'
+            '                throw "FreeToken exited before readiness on port $NativePort"\n'
+            '            }\n'
+            '            Start-Sleep -Milliseconds 1000\n'
+            '        }\n'
+            '    }\n'
+            '    if (-not $ready) { throw "FreeToken readiness timeout on port $NativePort" }\n'
+            '    $python = (Get-Command python -ErrorAction Stop).Source\n'
+            '    $server = Join-Path $PSScriptRoot "wrench_server.py"\n'
+            '    & $python $server --model-dir $PSScriptRoot --allowed-root $AllowedRoot --port $Port --upstream-url "http://127.0.0.1:$NativePort/v1/chat/completions" --max-request-bytes 536870912\n'
+            '    $exitCode = $LASTEXITCODE\n'
+            '} finally {\n'
+            '    if ($nativeProcess -and -not $nativeProcess.HasExited) {\n'
+            '        Stop-Process -Id $nativeProcess.Id -Force\n'
+            '        Wait-Process -Id $nativeProcess.Id -Timeout 10 -ErrorAction SilentlyContinue\n'
+            '    }\n'
+            '}\n'
+            'exit $exitCode\n',
+        )
         launcher_path.write_text(launcher_text, encoding="utf-8")
         readme_path = target / "README.md"
         shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", readme_path)

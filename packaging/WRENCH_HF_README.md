@@ -114,6 +114,19 @@ automatic expert cache. This avoids allocating an oversized sparse address
 mapping on GPUs with limited memory. It improves the native serving profile,
 but it does not by itself prove fast dense generation at 4M.
 
+To expose the native FreeToken backend through the same package-local
+Ollama-shaped endpoint, use:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -AllowedRoot C:\path\to\your\repo
+```
+
+This keeps FreeToken on a private loopback port and starts the bundled Wrench
+server on the public port. Mechanical requests are handled inside the package;
+other native responses pass through the bundled verifier before they are
+returned. It is still a package adapter around the experimental FreeToken
+backend, not a claim that stock Ollama loads the Wrench architecture.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

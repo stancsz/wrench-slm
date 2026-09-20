@@ -21,6 +21,9 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert '[string]$AllowedRoot = "."' in launcher
     assert '$env:WRENCH_ALLOWED_ROOT = (Resolve-Path -LiteralPath $AllowedRoot).Path' in launcher
     assert launcher.count('[string]$AllowedRoot = "."') == 1
+    assert "[switch]$OllamaApi" in launcher
+    assert "--upstream-url" in launcher
+    assert "Start-Process -FilePath $FreeTokenExecutable" in launcher
 
 
 def test_materializer_is_available_and_does_not_overwrite_by_contract():
@@ -64,6 +67,7 @@ def test_materializer_embeds_worker_runtime():
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in script
     assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in script
     assert '"fast_history_profile": "opt_in_reference_only"' in script
+    assert "OllamaApi" in script
 
 
 def test_materializer_keeps_toolbelt_distinct_from_verifier():

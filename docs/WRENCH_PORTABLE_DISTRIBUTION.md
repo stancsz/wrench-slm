@@ -122,6 +122,18 @@ capacity, and uses automatic expert-cache sizing with an 8K reserve for the
 pure-SWA profile. Adjust the launcher's `-KvReserveTokens` when the target GPU
 has a different memory budget.
 
+To keep the native backend inside the downloaded model package while exposing
+the package-local Ollama-shaped API, run:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -AllowedRoot C:\path\to\your\repo
+```
+
+FreeToken listens only on an internal loopback port. The bundled Wrench server
+owns the public port, routes high-confidence mechanical work locally, and
+verifies native backend text before returning it. This remains an experimental
+package adapter, not stock Ollama architecture support.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

@@ -15,7 +15,9 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib import request as urllib_request
 
+from .core import execute_model_output
 from .worker import WrenchWorker
 
 
@@ -124,6 +126,75 @@ def _ollama_response(
     else:
         response["response"] = content
     return response
+
+
+def _upstream_payload(
+    request: dict[str, Any],
+    *,
+    path: str,
+) -> dict[str, Any]:
+    """Translate package-local Ollama-shaped requests to OpenAI chat input."""
+
+    if path == "/api/generate":
+        prompt = request.get("prompt")
+        if not isinstance(prompt, str):
+            raise ValueError("prompt must be a string")
+        messages: list[dict[str, Any]] = []
+        system = request.get("system")
+        if isinstance(system, str) and system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+    else:
+        messages = request.get("messages")
+        if not isinstance(messages, list):
+            raise ValueError("messages must be a list")
+    options = request.get("options")
+    max_tokens = request.get("max_tokens", 256)
+    if isinstance(options, dict) and isinstance(options.get("num_predict"), int):
+        max_tokens = options["num_predict"]
+    return {
+        "model": str(request.get("model") or "wrench-4b"),
+        "messages": messages,
+        "max_tokens": max_tokens,
+        # The package owns the Ollama-shaped response, so the native backend
+        # must return one complete candidate for local verification.
+        "stream": False,
+    }
+
+
+def _forward_upstream(
+    upstream_url: str,
+    request: dict[str, Any],
+    *,
+    path: str,
+    timeout_seconds: float,
+) -> str:
+    """Ask the native backend for text, without giving it execution authority."""
+
+    body = json.dumps(_upstream_payload(request, path=path), ensure_ascii=False).encode("utf-8")
+    upstream_request = urllib_request.Request(
+        upstream_url,
+        data=body,
+        headers={"Content-Type": "application/json", "Content-Length": str(len(body))},
+        method="POST",
+    )
+    with urllib_request.urlopen(upstream_request, timeout=timeout_seconds) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    choices = payload.get("choices") if isinstance(payload, dict) else None
+    if isinstance(choices, list) and choices and isinstance(choices[0], dict):
+        message = choices[0].get("message")
+        if isinstance(message, dict) and isinstance(message.get("content"), str):
+            return message["content"]
+        if isinstance(choices[0].get("text"), str):
+            return choices[0]["text"]
+    raise ValueError("native_backend_response_missing_text")
+
+
+def _latest_user_prompt(messages: list[dict[str, Any]]) -> str:
+    for message in reversed(messages):
+        if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str):
+            return message["content"]
+    return ""
 
 
 class WrenchRequestHandler(BaseHTTPRequestHandler):
@@ -258,6 +329,27 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     max_tokens=int(request.get("max_tokens", 256)),
                     use_mechanical_route=True,
                 )
+                if server.upstream_url and not result.get("mechanical_fast_path", False):
+                    upstream_output = _forward_upstream(
+                        server.upstream_url,
+                        request,
+                        path=self.path,
+                        timeout_seconds=server.upstream_timeout_seconds,
+                    )
+                    verified = execute_model_output(
+                        upstream_output,
+                        server.worker.allowed_root,
+                        request_prompt=_latest_user_prompt(messages),
+                    )
+                    verified.update(
+                        {
+                            "backend": "native-upstream-verified",
+                            "mechanical_fast_path": False,
+                            "raw_model_output": upstream_output,
+                            "model_calls": 1,
+                        }
+                    )
+                    result = verified
             elapsed_ms = (time.perf_counter() - started) * 1000
             if self.path == "/v1/chat/completions":
                 response = _completion_response(
@@ -305,11 +397,15 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         *,
         model_name: str,
         max_request_bytes: int,
+        upstream_url: str | None = None,
+        upstream_timeout_seconds: float = 600.0,
     ) -> None:
         super().__init__(address, WrenchRequestHandler)
         self.worker = worker
         self.model_name = model_name
         self.max_request_bytes = max_request_bytes
+        self.upstream_url = upstream_url
+        self.upstream_timeout_seconds = upstream_timeout_seconds
         self.worker_lock = threading.Lock()
 
 
@@ -322,6 +418,8 @@ def serve(
     model_name: str = "wrench-4b",
     load_model: bool = True,
     max_request_bytes: int = 256 * 1024 * 1024,
+    upstream_url: str | None = None,
+    upstream_timeout_seconds: float = 600.0,
 ) -> None:
     worker = WrenchWorker.from_pretrained(
         model_dir,
@@ -333,6 +431,8 @@ def serve(
         worker,
         model_name=model_name,
         max_request_bytes=max_request_bytes,
+        upstream_url=upstream_url,
+        upstream_timeout_seconds=upstream_timeout_seconds,
     )
     print(json.dumps({"status": "READY", "host": host, "port": server.server_port, "model": model_name}))
     try:
@@ -350,6 +450,8 @@ def main() -> int:
     parser.add_argument("--model-name", default="wrench-4b")
     parser.add_argument("--mechanical-only", action="store_true")
     parser.add_argument("--max-request-bytes", type=int, default=256 * 1024 * 1024)
+    parser.add_argument("--upstream-url", default=None)
+    parser.add_argument("--upstream-timeout-seconds", type=float, default=600.0)
     args = parser.parse_args()
     serve(
         args.model_dir.resolve(),
@@ -359,6 +461,8 @@ def main() -> int:
         model_name=args.model_name,
         load_model=not args.mechanical_only,
         max_request_bytes=args.max_request_bytes,
+        upstream_url=args.upstream_url,
+        upstream_timeout_seconds=args.upstream_timeout_seconds,
     )
     return 0
 
