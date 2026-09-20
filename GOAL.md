@@ -1881,3 +1881,10 @@ become fail-closed abstentions. Full regression passed at 154 tests, v71
 structural validation passed, the local 4M mechanical route measured 16.037 ms
 with zero model calls, and the package prefill stress measured 380.976 ms with
 zero model calls. Evidence: `phases/phase-170-embedded-ttc-runtime`.
+
+The embedded TTC runtime was published in public v71 at Hub revision
+`ebe2f75c478cc7138fc8c08cb8577ced30d867b5`. A correct package-local 220-case
+replay recorded 220/220 outcome matches, 120/120 exact eligible proposals,
+zero prohibited accepts, zero transport/runtime abstentions, zero model calls,
+0.538 ms median latency, and 40.040 ms p95. This remains deterministic
+contract evidence, not MiniMax matched-workflow parity.

@@ -22,6 +22,14 @@ execution path. It is no longer only an offline test helper.
 - Local v71 embedded 4M prefill stress: `380.976 ms`, zero model calls.
 - A fresh package-local accepted read returned a passed fast TTC receipt with
   schema, authority, evidence, consistency, and blind-critic checks all true.
+- Correct package-local 220-case replay: `220/220` outcome matches,
+  `120/120` exact eligible proposals, zero prohibited accepts, zero transport
+  or runtime abstentions, zero model calls, `0.538 ms` median, and `40.040 ms`
+  p95. The replay receipt recorded the TTC receipt on accepted cases.
+- Public Hub revision: `ebe2f75c478cc7138fc8c08cb8577ced30d867b5`.
+- Fresh Hub runtime hashes matched local v71 for `worker.py`, `server.py`,
+  `ttc.py`, `toolbelt.py`, `serve_freetoken.ps1`, `README.md`, and
+  `wrench-package.json`.
 
 ## Boundary
 
