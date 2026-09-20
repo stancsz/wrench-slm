@@ -43,6 +43,11 @@ Simple reads without an explicit byte limit use the verifier's bounded 256 KiB
 cap. Requests asking for the entire or complete file remain fallback-required
 so a large file is never silently truncated.
 
+For `patch_draft`, the verifier requires a real review-only unified diff with
+both removed and added content. Header-only or empty diffs are rejected as
+`invalid_patch_diff`; a schema-valid empty patch is never reported as useful
+work.
+
 The embedded worker API is available directly from the downloaded directory:
 
 ```python
