@@ -157,7 +157,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
     if len(rows) != 220:
         raise ValueError(f"expected the canonical 220-case fixture, got {len(rows)} rows")
-        results: list[dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     latencies: list[float] = []
     health_fixture = _HealthFixture(args.health_fixture)
     health_fixture.start()

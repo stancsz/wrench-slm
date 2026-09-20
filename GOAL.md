@@ -1928,3 +1928,14 @@ matched cost scoring. Full regression passed at 156 tests. USD pricing remains
 explicitly unpriced until provider and hardware rates are supplied by an
 authorized matched workflow capture. Evidence:
 `phases/phase-174-token-flow-accounting`.
+
+2026-09-20 package-local cost replay: with the client mechanical fast path
+disabled, all 220 requests entered the downloaded v73-style package server.
+The embedded worker produced 220/220 outcome matches and 120/120 exact
+eligible proposals, with zero prohibited accepts, zero model calls, 23,409
+raw input tokens, 23,409 tokens not sent to a model, zero local model tokens,
+24.011 ms median latency, and 81.938 ms p95. The runner's accounting
+initialization bug found during this replay was fixed before the receipt was
+accepted. This is package-local mechanical evidence, not matched MiniMax
+workflow parity or priced production savings. Evidence:
+`phases/phase-175-package-cost-replay`.
