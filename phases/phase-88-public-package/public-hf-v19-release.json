@@ -3,7 +3,7 @@
   "status": "PUBLIC_EXPERIMENTAL_PACKAGE_VERIFIED",
   "source_commit": "00258ab914a852e70c64d11bcf3e96b451a54f6f",
   "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
-  "huggingface_revision": "dfd086ef84d8beeaf6d81ebf1ed1124a3f677c41",
+  "huggingface_revision": "0bf25e35d9a1af4892eabe9dea060b7c341310d",
   "local_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v19",
   "package_validation": "phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v19-validation.json",
   "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
@@ -20,6 +20,11 @@
   "dynamic_staged_prefill": true,
   "model_prefill_budget_tokens": 64000,
   "copy_command_verified_without_duplicate_suffix": true,
+  "publication_cleanup": {
+    "portable_copy_command_fixed": true,
+    "generated_python_bytecode_removed": true,
+    "final_remote_revision": "0bf25e35d9a1af4892eabe9dea060b7c341310d"
+  },
   "worker_smoke": {
     "status": "accepted",
     "backend": "embedded-mechanical",
