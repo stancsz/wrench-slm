@@ -1796,3 +1796,12 @@ The v64 package also recovered an exact diff from a 4.8M estimated-token,
 15.6MB payload in 62.737 ms with zero model calls. Evidence:
 `phases/phase-161-reference-patch-package-validation.json` and
 `phases/phase-161-reference-patch-package/long-context-reference-patch-stress.json`.
+
+2026-09-20 native launcher executable repair and host-resource receipt: the
+portable Windows launcher now defaults to the installed `ft.cmd` wrapper. A
+fresh v65 native launch reached FreeToken and parsed the 4M context flags,
+serial expert loading, and shared-tokenizer mode, then failed on the current
+host with WinError 1455 and a CUDA allocation failure while only about 1.31 GiB
+was free. The launcher cleaned ports 28960 and 28961 afterward. This narrows
+the native-direct blocker to host resources; it does not close native quality
+or production gates. Evidence: `phases/phase-162-native-launcher-ftcmd`.

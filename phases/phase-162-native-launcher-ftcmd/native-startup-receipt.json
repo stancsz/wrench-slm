@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.native-launcher-startup-receipt.v1",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v65-ftcmd",
+  "launcher_default": "ft.cmd",
+  "configured_context_tokens": 4000000,
+  "parsed_native_flags": {
+    "max_seq_len_override": 4000000,
+    "num_token_override": 4000000,
+    "num_tokenizer": 0,
+    "expert_load": "serial"
+  },
+  "status": "NATIVE_STARTUP_HOST_RESOURCE_FAILURE",
+  "errors": [
+    "WinError 1455: paging file too small while loading cublas64_13.dll",
+    "CUDA OOM allocating 490 MiB with approximately 1.31 GiB free"
+  ],
+  "ports_clean_after_exit": [28960, 28961],
+  "native_generation_started": false,
+  "quality_claim": false
+}

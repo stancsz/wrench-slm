@@ -171,7 +171,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             '[string]$FreeTokenExecutable = "ft"',
-            '[string]$FreeTokenExecutable = "ft.exe"',
+            '[string]$FreeTokenExecutable = "ft.cmd"',
         )
         launcher_text = launcher_text.replace(
             "    [int]$MoeCacheSize = 16",

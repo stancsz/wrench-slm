@@ -241,6 +241,9 @@ The bundled launcher requires a compatible FreeToken build and a CUDA GPU:
 .\serve_freetoken.ps1
 ```
 
+On Windows, the launcher defaults to the installed `ft.cmd` wrapper. Pass
+`-FreeTokenExecutable` when using a different compatible FreeToken command.
+
 The package declares a 4M input endpoint and uses an 8K recent SWA window in the
 experimental native profile. The bundled launcher pins a 4M KV capacity and
 uses FreeToken's automatic expert cache with an 8K reserve. The default

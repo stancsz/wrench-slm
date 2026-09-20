@@ -146,6 +146,10 @@ That direct mode is the required path for a native-context capability probe. It
 may be slower and remains subject to the backend's real memory and
 retrieval-quality evidence.
 
+On Windows, the bundled launcher defaults to `ft.cmd`, which is the command
+wrapper installed by the current FreeToken distribution. Use
+`-FreeTokenExecutable` to point at a different compatible binary or wrapper.
+
 The bundled FreeToken launcher pins a 4M KV capacity and uses automatic
 expert-cache sizing with an 8K reserve for the pure-SWA profile. Adjust the
 launcher's `-KvReserveTokens` when the target GPU has a different memory
