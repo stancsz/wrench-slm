@@ -65,6 +65,8 @@ The source change was materialized as:
 - package-local model endpoint 4M smoke: `PASS_MODEL_LOCAL_SERVER_4M`, HTTP
   200, 32,000,075 raw payload characters, 151.799 ms, embedded mechanical
   route and zero model calls.
+- the same package-local endpoint also accepted a 2M raw payload with HTTP
+  200 in 100.576 ms and `PASS_MODEL_LOCAL_SERVER_4M`.
 
 These package checks still use a local protocol stub for the staged native
 handoff and do not establish dense-native attention quality or MiniMax parity.
