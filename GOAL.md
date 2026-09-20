@@ -86,11 +86,12 @@ logical context without making a 4B model attend densely to stale tokens. Its
 acceptance evidence must report raw input size, staged working-context size,
 retrieval recall, staging latency, model latency, and complete workflow value.
 
-Dense native 2M/4M attention remains a separate comparison lane. It is required
-before making a native-attention claim, but it must not block a clearly labelled
-hybrid production-value release. The two claims are never substituted for one
-another: a hybrid pass is not native dense attention, and a native stress pass
-is not evidence of workflow utility.
+Dense native 2M/4M attention is not a Wrench product gate or selling point. It
+may remain as an optional research comparison, but it must not block the
+hybrid production-value release. The product claim is model-local raw-context
+intake plus deterministic reduction, retrieval, bounded model work, and
+verification. A hybrid pass must be labelled as hybrid, and a native stress
+pass must not be presented as workflow utility.
 
 ## Invariants
 
@@ -188,17 +189,27 @@ is not evidence of workflow utility.
   and show at least 95% net frontier-token savings versus teacher-only, with
   paired uncertainty, zero prohibited accepts, zero unexpected mutations, and
   separately reported local inference overhead.
-- [ ] Accept up to 4,000,000 tokens directly at the Wrench model serving
-  endpoint, like an Ollama model with `num_ctx=4000000`. The receipt must bind
-  tokenizer identity, configured max context, actual model-side prompt tokens,
-  and no-truncation evidence. A gateway, AST, context ledger, summary, or
-  preselector may optimize cache and retrieval, but cannot replace the native
-  direct-input gate. Keep recent hot/warm context active by default, keep old
-  lookups reference-only, and produce a hash-bound selection receipt for every
-  optional omitted or retrieved span. Measure serving at 64K, 128K, 256K, 2M,
-  and the 4M stress point where hardware permits.
-- [ ] Keep 2,000,000 direct model input as an intermediate milestone. A 2M pass
-  is useful evidence, but it does not close the 4M target or authorize release.
+- [ ] Accept up to 4,000,000 raw input tokens directly at the Wrench
+  model-local serving endpoint, like an Ollama model with
+  `options.num_ctx=4000000`. The endpoint must not require an external gateway
+  to receive the payload. The receipt must bind the raw payload hash,
+  configured logical context, no-truncation intake evidence, staged working
+  context size, retrieval selection, and cache behavior. Deterministic
+  MapReduce, AST, search, and verifier work may reduce the payload before a
+  model backend sees it. Keep recent hot context active by default, keep old
+  lookups reference-only, and produce a hash-bound receipt for every selected
+  or omitted span. Measure 64K, 128K, 256K, 2M, and 4M raw-input points where
+  hardware permits.
+- [ ] Treat dense native 2M/4M attention as optional research evidence only.
+  It is not required for the Wrench product claim and must not block the
+  hybrid raw-intake plus effective-working-context path.
+- [ ] If a dense-native lane is enabled in the future, the model package must
+  include a first, low-cost context-gating layer that acts as a pruner and
+  cherrypicker before expensive attention. It must compact the raw sequence to
+  a bounded 32K to 64K active working context while preserving newest intent,
+  required authority/dependency context, and hash-bound lookup evidence. This
+  integrated model-side layer is an optional dense-native design target, not a
+  requirement for the hybrid product release.
 - [ ] Demonstrate bounded no-mutation shadow operation: health/metrics, finite
   attempt and token ceilings, cancellation, restart/recovery, circuit breaking,
   bypass, alerting, and hash-bound rollback.
@@ -217,11 +228,12 @@ is not evidence of workflow utility.
 
 Capture and approve MiniMax teacher traces first. Rebuild the evaluation around
 weighted mechanical frontier-token mass, teacher parity, recent-context
-behavior, reference-only old lookups, native direct 2M model input, and matched
-fallback accounting. Use those traces to teach and select Wrench, while keeping
-the final family-disjoint split sealed. Then produce one standard Safetensors
-artifact and validate direct vLLM serving first, with Ollama compatibility
-measured separately.
+behavior, reference-only old lookups, model-local 2M/4M raw intake, effective
+working-context quality, and matched fallback accounting. Use those traces to
+teach and select Wrench, while keeping the final family-disjoint split sealed.
+Then produce one standard Safetensors artifact with the embedded hybrid
+runtime, and validate the package-local Ollama-shaped path plus standard loader
+boundaries separately.
 LoRA, pruning, quantization, expert count, and runtime cache strategy are
 implementation variables. None may be optimized against the sealed final set.
 
@@ -241,13 +253,13 @@ different checkpoint or runtime.
 
 ## Remaining gap for the revised objective
 
-No candidate has passed the new North Star contract. Phase 58 contains exploratory results
-on a repeatedly used fixture, with different initial free VRAM across arms and
-unverified worker-process cleanup. Its latency ratio is not a controlled speed
-claim. A fresh independent comparison and a single selected smallest-sufficient artifact remain
-required. Cross-host synchronization is documented, but a 5060 Ti fetch and
-host-labeled verification receipt for the selected candidate are not yet
-visible. Historical multi-tier notes below are provenance, not current scope.
+The hybrid mechanical-worker contract now passes on the corrected 220-case
+receipt. The v2 held-out slice is diagnostic-only until its health fixture is
+isolated from the live host service. The remaining release work is a clean
+family-disjoint approval record, independent 5060 Ti verification, operational
+shadow checks, and selection of the smallest sufficient standard artifact.
+Dense native 2M/4M attention is intentionally not in this release gap. It is
+an optional research lane and does not define Wrench product value.
 
 ## Human authorization record
 
@@ -2018,8 +2030,9 @@ weighted mechanical frontier-token coverage, 100% net frontier-token savings,
 97.1208% Wrench weighted final success versus 76.7929% teacher success, zero
 Wrench fallbacks, zero prohibited accepts, zero unexpected mutations, 184.312
 ms median latency, and 296.324 ms p95. This passes the mechanical-worker
-gates on the corrected contract. Final family-disjoint approval, independent
-5060Ti verification, and dense native 2M/4M attention remain open. Evidence:
+gates on the corrected contract. Final family-disjoint approval and independent
+5060Ti verification remain open. Dense native 2M/4M attention is an optional
+research lane and is not a release gap. Evidence:
 `phases/phase-188-v74-v2-four-arm-replay`.
 
 2026-09-20 v74 Ollama-shaped 4M smoke: the fresh v74 portable package accepted
@@ -2039,3 +2052,16 @@ and 77.761 ms p95. The one miss was a live localhost health-service error and
 the verifier failed closed. This split was not used for tuning, and the receipt
 is held-out diagnostic evidence rather than final production authorization.
 Evidence: `phases/phase-190-v74-final-heldout`.
+
+2026-09-20 product-boundary decision and persistent prefill cache: the
+product owner explicitly removed dense native 2M/4M attention from the Wrench
+selling point and release gate. The supported value proposition is direct
+model-local raw-payload intake followed by embedded deterministic MapReduce,
+retrieval, toolbelt extraction, bounded effective working context, and
+verification. Dense native attention remains optional research only. The
+runtime now retains content-addressed prefill cards across requests behind a
+configurable byte ceiling, defaults to 256 MiB, exposes cache hit/miss receipts,
+and safely disables retention at zero. Full tests passed at 162 tests. This
+improves the hybrid production path; it does not close final release approval,
+5060 Ti verification, or the held-out health-fixture issue. Evidence:
+`phases/phase-191-v75-prefill-cache`.

@@ -77,6 +77,29 @@ def test_mechanical_index_reuses_cards_for_fresh_http_message_objects():
     assert index.token_count(fresh) == 5
 
 
+def test_mechanical_index_has_bounded_content_cache_and_reports_reuse():
+    index = MechanicalPrefillIndex(max_bytes=64)
+    first_message = {"role": "assistant", "content": "src/a.py class Alpha"}
+    second_message = {"role": "assistant", "content": "src/b.py class Beta"}
+    first = index.add(first_message)
+    index.add(second_message)
+    fresh = {"role": "assistant", "content": first_message["content"]}
+    reused = index.add(fresh)
+    stats = index.stats()
+    assert stats["cache_bytes"] <= 64
+    assert stats["max_bytes"] == 64
+    assert reused is first or reused["card"]["source_sha256"] == first["card"]["source_sha256"]
+    assert index.stats()["cache_hits"] >= 1
+
+
+def test_mechanical_index_can_disable_retention_for_memory_pressure():
+    index = MechanicalPrefillIndex(max_bytes=0)
+    message = {"role": "assistant", "content": "large reference"}
+    entry = index.add(message)
+    assert entry["content"] == message["content"]
+    assert index.stats()["entries"] == 0
+
+
 def test_dynamic_prefill_embeds_bounded_ast_and_dependency_evidence():
     messages = [
         {

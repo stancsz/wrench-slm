@@ -47,7 +47,7 @@ The trace manifest hash is
 This is the strongest current provider-backed mechanical-worker receipt and it
 passes the 90% coverage and 95% savings gates on the corrected contract. It
 does not close the final objective by itself: the final family-disjoint trace
-set still needs approval, independent 5060Ti verification is pending, and
-dense native 2M/4M attention remains a separate unverified comparison lane.
+set still needs approval and independent 5060Ti verification is pending.
+Dense native 2M/4M attention is an optional unverified research lane, not a
+release gate for the hybrid Wrench product.
 The direct 4M Ollama-shaped MapReduce intake is already separately verified.
-

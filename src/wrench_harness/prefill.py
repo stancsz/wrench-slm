@@ -11,7 +11,9 @@ from __future__ import annotations
 import hashlib
 import ast
 import json
+import os
 import re
+from collections import OrderedDict
 from typing import Any
 
 
@@ -519,23 +521,57 @@ class MechanicalPrefillIndex:
     when each request deserializes a fresh message object.
     """
 
-    def __init__(self, *, token_counter: Any | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        token_counter: Any | None = None,
+        max_bytes: int | None = None,
+    ) -> None:
         self._count = token_counter or _estimate_token_count
-        self._entries: dict[int, dict[str, Any]] = {}
-        self._entries_by_digest: dict[str, dict[str, Any]] = {}
+        if max_bytes is None:
+            configured = os.environ.get("WRENCH_PREFILL_CACHE_BYTES", str(256 * 1024 * 1024))
+            try:
+                max_bytes = int(configured)
+            except ValueError as exc:
+                raise ValueError("WRENCH_PREFILL_CACHE_BYTES must be an integer") from exc
+        if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes < 0:
+            raise ValueError("max_bytes must be a non-negative integer")
+        self._max_bytes = max_bytes
+        # Both maps are bounded. The first retains the object-identity fast
+        # path, while the digest map is the cross-request cache. Entries keep
+        # the source text because exact lookup windows must be recoverable.
+        self._entries: OrderedDict[int, tuple[dict[str, str], dict[str, Any]]] = OrderedDict()
+        self._entries_by_digest: OrderedDict[str, dict[str, Any]] = OrderedDict()
+        self._cache_bytes = 0
+        self._cache_hits = 0
+        self._cache_misses = 0
         self._next_index = 0
 
     def add(self, message: dict[str, str]) -> dict[str, Any]:
         if not isinstance(message, dict) or not isinstance(message.get("content"), str):
             raise ValueError("message must contain string content")
         key = id(message)
-        if key in self._entries:
-            return self._entries[key]
+        identity_entry = self._entries.get(key)
+        if identity_entry is not None:
+            cached_message, entry = identity_entry
+            if cached_message is message:
+                self._entries.move_to_end(key)
+                digest = str(entry["card"]["source_sha256"])
+                if digest in self._entries_by_digest:
+                    self._entries_by_digest.move_to_end(digest)
+                self._cache_hits += 1
+                return entry
+            # Python may reuse an object id after the original request dies.
+            self._entries.pop(key, None)
         digest = _sha256(message["content"])
         cached = self._entries_by_digest.get(digest)
         if cached is not None:
-            self._entries[key] = cached
+            self._entries[key] = (message, cached)
+            self._entries_by_digest.move_to_end(digest)
+            self._trim_identity_entries()
+            self._cache_hits += 1
             return cached
+        self._cache_misses += 1
         entry = {
             "role": message.get("role", "context"),
             "content": message["content"],
@@ -547,20 +583,63 @@ class MechanicalPrefillIndex:
             ),
         }
         self._next_index += 1
-        self._entries[key] = entry
+        entry_bytes = len(message["content"].encode("utf-8"))
+        entry["cache_bytes"] = entry_bytes
+        if self._max_bytes == 0 or entry_bytes > self._max_bytes:
+            # The current request still receives the fully usable entry, but
+            # an oversized payload cannot evict every other cached request.
+            return entry
+        self._entries[key] = (message, entry)
         self._entries_by_digest[digest] = entry
+        self._cache_bytes += entry_bytes
+        self._trim_identity_entries()
+        self._trim_digest_entries()
         return entry
+
+    def _trim_identity_entries(self) -> None:
+        while len(self._entries) > 4096:
+            self._entries.popitem(last=False)
+
+    def _trim_digest_entries(self) -> None:
+        while self._cache_bytes > self._max_bytes and self._entries_by_digest:
+            digest, entry = self._entries_by_digest.popitem(last=False)
+            self._cache_bytes -= int(entry.get("cache_bytes", 0))
+            stale_keys = [
+                key
+                for key, (_, candidate) in self._entries.items()
+                if candidate is entry
+            ]
+            for key in stale_keys:
+                self._entries.pop(key, None)
+
+    def stats(self) -> dict[str, int]:
+        """Return bounded cache accounting suitable for a runtime receipt."""
+
+        return {
+            "entries": len(self._entries_by_digest),
+            "cache_bytes": self._cache_bytes,
+            "max_bytes": self._max_bytes,
+            "cache_hits": self._cache_hits,
+            "cache_misses": self._cache_misses,
+        }
 
     def add_all(self, messages: list[dict[str, str]]) -> None:
         for message in messages:
             self.add(message)
 
     def entry(self, message: dict[str, str]) -> dict[str, Any]:
-        entry = self._entries.get(id(message))
+        identity_entry = self._entries.get(id(message))
+        entry = None
+        if identity_entry is not None and identity_entry[0] is message:
+            entry = identity_entry[1]
+            self._entries.move_to_end(id(message))
         if entry is None:
             content = message.get("content") if isinstance(message, dict) else None
             if isinstance(content, str):
-                entry = self._entries_by_digest.get(_sha256(content))
+                digest = _sha256(content)
+                entry = self._entries_by_digest.get(digest)
+                if entry is not None:
+                    self._entries_by_digest.move_to_end(digest)
         if entry is None:
             raise ValueError("message_not_preindexed")
         return entry

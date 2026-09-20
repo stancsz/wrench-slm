@@ -32,8 +32,16 @@ native dense attention.
 This hybrid path is the release target when it meets the complete workflow
 gates: retrieval quality, safety, final success, frontier-token savings, and
 end-to-end latency. A separate native-direct runtime may still ingest the full
-sequence for comparison and research. It is only needed to claim dense native
-4M attention, and it should not hold the hybrid production-value path hostage.
+sequence for comparison and research. Dense native attention over every raw
+token is not a Wrench product selling point or release gate, and it must not
+hold the hybrid production-value path hostage.
+
+If a dense-native experiment is enabled, the first model-side layer should
+implement the same idea internally: a fast pruner and cherrypicker that turns
+the raw sequence into a 32K to 64K active context before expensive attention.
+It must preserve current intent, authority boundaries, dependency evidence, and
+hash-bound lookup receipts. This is an optional native-lane design target, not
+an additional hybrid release requirement.
 
 The dynamic prefill uses cheap regex anchors first, then AST or lexical symbol
 extraction for code. It preferentially retains paths, symbols, tests, errors,

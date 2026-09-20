@@ -17,8 +17,12 @@ embedded deterministic toolbelt, verifier, runtime metadata, and experimental
 FreeToken launcher included. It is portable as a model directory, but it is
 still an experimental artifact. The package-local model server has a verified
 Ollama-shaped `/api/chat` and `/api/generate` surface that accepts a 4M-declared
-request. Stock Ollama, vLLM, GGUF, native dense 4M retrieval quality, MiniMax
-parity, and production throughput are not yet claimed.
+request. The product value is the model-local hybrid path: Wrench accepts the
+monster payload, mechanically maps and reduces it, retrieves bounded evidence,
+and gives the small model a compact working context. Dense native attention over
+all 4M tokens is an optional research comparison, not a Wrench selling point or
+release gate. Stock Ollama, vLLM, GGUF, MiniMax parity, and production
+throughput remain separately labelled claims.
 
 GGUF is not just a file rename. A valid Wrench GGUF release needs a llama.cpp
 or Ollama architecture adapter that preserves the hybrid attention, tokenizer,
@@ -42,11 +46,14 @@ execution, fallback, accounting, circuit breaking, and rollback. The project is
 not a general coding agent and has no autonomous-write authority.
 
 The old 28-case fixture is retained only as historical regression evidence. The
-current v44 package was re-run on the prompt-complete 220-case mechanical
-contract: 220/220 expected outcomes, 120/120 exact eligible proposals,
-zero prohibited accepts, zero model calls, and 0.594 ms median / 42.204 ms p95
-through the embedded route. This is a package and mechanical-contract result,
-not MiniMax parity, native dense 4M retrieval quality, or production utility.
+strongest local v74 mechanical-worker receipt reports 94.0113% weighted
+mechanical frontier-token coverage, 100% net frontier-token savings, 97.1208%
+weighted Wrench success, zero fallbacks, zero prohibited accepts, 184.312 ms
+median latency, and 296.324 ms p95 latency. A fresh v74 package accepted an
+exact 4,000,000-token raw request through `/api/chat` in 51.659 ms. These are
+hybrid MapReduce and mechanical-worker results. They are not dense native
+attention, final public release authorization, or a claim of universal MiniMax
+parity.
 
 The latest calibration lineage records hash-stable training bytes and fresh
 packed receipts. The 16E tier is the current more-useful experimental

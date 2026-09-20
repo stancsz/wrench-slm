@@ -432,12 +432,16 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         staged_messages = messages
                         prefill_receipt = _native_direct_input_receipt(messages, raw_tokens)
                     else:
-                        staged_messages, prefill_receipt = _dynamic_prefill_messages(messages)
+                        staged_messages, prefill_receipt = _dynamic_prefill_messages(
+                            messages,
+                            mechanical_index=server.worker.prefill_index,
+                        )
                         if prefill_receipt is not None:
                             prefill_receipt["server_staging_elapsed_ms"] = round(
                                 (time.perf_counter() - prefill_started) * 1000,
                                 3,
                             )
+                            prefill_receipt["cache"] = server.worker.prefill_index.stats()
                     upstream_metadata: dict[str, Any] = {}
                     upstream_output = _forward_upstream(
                         server.upstream_url,
@@ -562,11 +566,13 @@ def serve(
     max_request_bytes: int = 256 * 1024 * 1024,
     upstream_url: str | None = None,
     upstream_timeout_seconds: float = 600.0,
+    prefill_cache_bytes: int | None = None,
 ) -> None:
     worker = WrenchWorker.from_pretrained(
         model_dir,
         allowed_root=allowed_root,
         load_model=load_model,
+        prefill_cache_bytes=prefill_cache_bytes,
     )
     server = WrenchHTTPServer(
         (host, port),
@@ -594,6 +600,12 @@ def main() -> int:
     parser.add_argument("--max-request-bytes", type=int, default=256 * 1024 * 1024)
     parser.add_argument("--upstream-url", default=None)
     parser.add_argument("--upstream-timeout-seconds", type=float, default=600.0)
+    parser.add_argument(
+        "--prefill-cache-bytes",
+        type=int,
+        default=None,
+        help="persistent content-addressed native prefill cache; defaults to WRENCH_PREFILL_CACHE_BYTES or 256 MiB",
+    )
     args = parser.parse_args()
     serve(
         args.model_dir.resolve(),
@@ -605,6 +617,7 @@ def main() -> int:
         max_request_bytes=args.max_request_bytes,
         upstream_url=args.upstream_url,
         upstream_timeout_seconds=args.upstream_timeout_seconds,
+        prefill_cache_bytes=args.prefill_cache_bytes,
     )
     return 0
 

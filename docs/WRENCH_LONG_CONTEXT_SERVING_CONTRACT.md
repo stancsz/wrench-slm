@@ -1,6 +1,31 @@
 # Wrench Native Long-Context Serving Contract
 
-Status: experimental architecture contract
+Status: production-value hybrid serving contract; dense-native attention is an
+optional research comparison
+
+## Product boundary
+
+Wrench's long-context product promise is model-local raw-payload intake, not
+dense transformer attention over every raw token. A user can send up to 4M
+logical input tokens to the package-local endpoint, just as they would send a
+large request to an Ollama model. Wrench then performs deterministic MapReduce,
+retrieval, AST/toolbelt extraction, and verifier checks before exposing a
+bounded effective working context to the small model.
+
+This hybrid path is the supported product direction because most old context is
+reference-only and the useful recent intent is small. Dense native 2M/4M
+attention remains an optional benchmark or research path. It is not a release
+gate, not a required backend capability, and not a marketing claim.
+
+If that optional dense-native path is enabled, its first model-side layer must
+be a fast context gate, not a normal full-cost attention layer. The gate acts as
+a pruner and cherrypicker: it scores recency, current-intent anchors, tool
+state, dependency links, errors, paths, and hash-bound lookup hits, then emits
+a bounded 32K to 64K active context for the expensive layers. It must live in
+the model package or selected model runtime, preserve the original payload
+hash, and expose the selected and omitted spans in the serving receipt. This
+is an optional architecture target for dense-native experiments and does not
+change the hybrid release boundary.
 
 ## Product requirement
 
@@ -10,9 +35,10 @@ model serving endpoint. This is the same class of requirement as an Ollama
 model configured with `num_ctx=4000000` or a vLLM model configured with
 `max_model_len=4000000`.
 
-A gateway, context ledger, AST, retrieval index, summary, or preselector may
-help manage the payload, but none of those count as native 2M support if they
-silently remove tokens before the model receives the request.
+A gateway may sit in front for transport, but it is not required. The Wrench
+model-local package itself receives and hash-binds the raw payload before its
+internal reducer selects the effective working context. The reducer is part of
+the portable artifact, not an external harness users must install.
 
 ## Required serving shape
 
@@ -108,7 +134,11 @@ oldest tokens.
   `prompt_tokens`, configured max context, truncation status, prefill latency,
   decode latency, peak memory, cache tier, cache hit rate, and fallback state.
 
-## Native 4M acceptance gates
+## Optional dense-native research gates
+
+The following gates apply only if a future experiment wants to make a separate
+dense-native attention claim. They do not block the hybrid Wrench product
+release.
 
 The contract is not complete until all of the following are measured:
 

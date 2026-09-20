@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +102,8 @@ def _adaptive_prefill_budget(
 
 def _dynamic_prefill_messages(
     messages: list[dict[str, str]],
+    *,
+    mechanical_index: MechanicalPrefillIndex | None = None,
 ) -> tuple[list[dict[str, str]], dict[str, Any] | None]:
     """Keep monster payloads losslessly indexed but bounded for model work."""
 
@@ -134,16 +136,16 @@ def _dynamic_prefill_messages(
     )
     hot_budget = min(48_000, max(1, budget - 1))
     reference_budget = max(1, budget - hot_budget)
-    mechanical_index = MechanicalPrefillIndex()
-    mechanical_index.add_all(prepared_messages)
-    source_payload_sha256 = mechanical_index.payload_sha256(prepared_messages)
+    index = mechanical_index or MechanicalPrefillIndex()
+    index.add_all(prepared_messages)
+    source_payload_sha256 = index.payload_sha256(prepared_messages)
     try:
         staged, receipt = build_dynamic_prefill(
             prepared_messages,
             model_prefill_budget=budget,
             hot_token_budget=hot_budget,
             reference_index_budget=reference_budget,
-            mechanical_index=mechanical_index,
+            mechanical_index=index,
         )
     except (TypeError, ValueError):
         # Never turn a reducer failure into silent data loss. The caller can
@@ -175,6 +177,7 @@ class WrenchWorker:
     tokenizer: Any
     model: Any | None
     allowed_root: Path
+    prefill_index: MechanicalPrefillIndex = field(default_factory=MechanicalPrefillIndex)
 
     @classmethod
     def from_pretrained(
@@ -183,6 +186,7 @@ class WrenchWorker:
         *,
         allowed_root: str | Path = ".",
         load_model: bool = True,
+        prefill_cache_bytes: int | None = None,
         **model_kwargs: Any,
     ) -> "WrenchWorker":
         model_path = Path(model_dir)
@@ -209,7 +213,12 @@ class WrenchWorker:
         root = Path(allowed_root).expanduser().resolve()
         if not root.is_dir():
             raise ValueError(f"allowed_root is not a directory: {root}")
-        return cls(tokenizer=tokenizer, model=model, allowed_root=root)
+        return cls(
+            tokenizer=tokenizer,
+            model=model,
+            allowed_root=root,
+            prefill_index=MechanicalPrefillIndex(max_bytes=prefill_cache_bytes),
+        )
 
     def propose(
         self,
@@ -277,7 +286,10 @@ class WrenchWorker:
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or not 1 <= max_tokens <= 512:
             return {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"}
         request_messages = add_patch_schema_examples(messages)
-        request_messages, prefill_receipt = _dynamic_prefill_messages(request_messages)
+        request_messages, prefill_receipt = _dynamic_prefill_messages(
+            request_messages,
+            mechanical_index=self.prefill_index,
+        )
         patch_retry_count = 0
         repair_pass_count = 0
         model_calls = 0
@@ -340,6 +352,7 @@ class WrenchWorker:
         )
         if prefill_receipt is not None:
             result["dynamic_prefill"] = prefill_receipt
+            result["dynamic_prefill"]["cache"] = self.prefill_index.stats()
         if is_patch_prompt(prompt):
             result["patch_retry_count"] = patch_retry_count
         if repair_pass_count:

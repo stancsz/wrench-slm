@@ -13,6 +13,13 @@ hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qw
 
 This is a public artifact release, not a production-readiness declaration.
 
+The user-facing Wrench value is the embedded hybrid long-context worker. The
+package accepts a raw 2M or 4M logical payload at its own model-local endpoint,
+then uses deterministic MapReduce, AST/search extraction, bounded lookup cards,
+and verification to keep the effective model working context small and fast.
+Dense native attention over every raw token is an optional research comparison,
+not a product selling point or release gate.
+
 ## Package contract
 
 The canonical Hugging Face package is a normal model directory containing:
@@ -77,6 +84,13 @@ about 4M estimated tokens to 1,845 staged tokens and measured 114.563 ms for
 server-side staging on the development host. The complete protocol-stub round
 trip was about 2.6 seconds because it also transfers a 35 MB request body.
 This is still not dense native 4M attention.
+
+The native handoff index is content-addressed and can persist across requests
+inside the package server. Its byte ceiling is configurable with
+`WRENCH_PREFILL_CACHE_BYTES` or the server's `--prefill-cache-bytes` option.
+The default is 256 MiB. A zero value disables retention while preserving the
+same bounded request behavior. Runtime receipts expose cache entries, bytes,
+hits, and misses so a larger cache can be used only when the host has memory.
 
 The same embedded lookup path can recover an exact unified diff from an older
 reference when the newest request asks for an unapplied review-only patch. It
