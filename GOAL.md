@@ -1832,3 +1832,11 @@ The 220-case route evaluator was also corrected to honor its `--root` fixture
 argument. The prompt-complete derived contract now replays 220/220 strict
 outcomes with 0 prohibited accepts; this is a mechanical-contract receipt, not
 MiniMax parity or final workflow utility evidence.
+
+2026-09-20 bundled endpoint workflow replay: the prompt-complete derived
+220-case contract ran through the package-local HTTP endpoint and independent
+verifier with 220/220 outcome matches, 120/120 exact eligible proposals, zero
+prohibited accepts, zero model calls, 0.595 ms median latency, and 42.219 ms
+p95 latency. This validates the executable mechanical lane, not the matched
+MiniMax workflow gate or native dense 2M/4M attention. Evidence:
+`phases/phase-165-prompt-complete-workflow`.
