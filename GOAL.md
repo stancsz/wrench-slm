@@ -1490,3 +1490,14 @@ rejected for publication and router promotion. This confirms that the current
 practical value is in the bundled mechanical worker, while learned direct
 proposal generation still needs targeted structured training and independent
 validation. Evidence: `phases/phase-129-topk4-quality`.
+
+2026-09-20 balanced boundary attention LoRA probe: a 400-step rank-8 LoRA
+updated the router and all full-attention Q/K/V/O projections in the frozen
+BF16 8E backbone. It used 456 development rows and 4,460,544 trainable
+parameters. On the full 220-case direct replay, the candidate reached 138/220
+outcome matches and 52/120 exact eligible accepts, improving proposal matching
+over the top-k=4 direct baseline, but produced 14 prohibited accepts. It is
+therefore rejected by the zero-tolerance safety gate and remains unpublished.
+The next optimization must reduce unsafe accepts without giving up the
+mechanical route's sub-second behavior. Evidence:
+`phases/phase-130-balanced-attn-lora`.

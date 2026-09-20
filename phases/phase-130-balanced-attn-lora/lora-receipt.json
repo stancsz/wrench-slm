@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.balanced-attention-lora-probe.v1",
+  "status": "REJECTED_SAFETY_GATE",
+  "source_model": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-calibrated-v7-safety",
+  "candidate_model": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-balanced-attn-lora-v2",
+  "calibration_rows": 456,
+  "calibration_sha256": "1643cfa6793528cabc831c0f710e3230e0608d5c0d45ee23f35d8e90093395e6",
+  "steps": 400,
+  "learning_rate": 0.0003,
+  "lora_rank": 8,
+  "lora_alpha": 16,
+  "attention_lora": true,
+  "trainable_parameter_count": 4460544,
+  "final_loss": 0.00007043775985948122,
+  "evaluation": {
+    "receipt": "full-220-direct.json",
+    "cases_sha256": "54D06DFF69C2A330FBBA5ED13BA22817C287CB7EC384A59458EB4F5E291BB45A",
+    "outcome_matches": 138,
+    "eligible_exact_accepts": 52,
+    "eligible_case_count": 120,
+    "prohibited_accepts": 14,
+    "median_latency_ms": 465.667,
+    "p95_latency_ms": 846.779,
+    "receipt_sha256": "58E0003F72233887C5750477512D6D714D99AB0644A9380BD5BD4CC1BF16BA7B"
+  },
+  "quality_claim": false,
+  "publication_authorized": false
+}
