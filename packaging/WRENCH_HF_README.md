@@ -55,6 +55,14 @@ With `load_model=True`, ambiguous requests use the standard Transformers model
 and still pass through the same fail-closed verifier. High-confidence
 mechanical requests use the embedded route without a model call.
 
+For a large multi-turn payload, the package worker applies the bundled
+deterministic staged prefill before model generation. Old user and assistant
+messages become hash-bound reference cards, the newest user message remains the
+active intent, and the default model working budget is 64K estimated tokens.
+The returned result includes a `dynamic_prefill` receipt. This is a bounded
+working-context optimization, not a claim that dense attention was performed
+over every 4M token.
+
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:
 

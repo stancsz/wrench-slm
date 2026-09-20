@@ -18,3 +18,5 @@ def test_portable_manifest_keeps_native_and_effective_context_separate():
     assert "wrench_worker.py" in manifest["required_files"]
     assert manifest["retrieval"]["verifier_is_bundled"] is True
     assert manifest["retrieval"]["embedded_mechanical_route"] is True
+    assert manifest["retrieval"]["dynamic_staged_prefill"] is True
+    assert manifest["retrieval"]["model_prefill_budget_tokens"] == 64_000

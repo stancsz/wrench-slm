@@ -48,3 +48,4 @@ def test_materializer_embeds_worker_runtime():
     assert "--moe-cache-size $MoeCacheSize" in script
     assert "--moe-cache-auto" not in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
+    assert "dynamic_staged_prefill" in script

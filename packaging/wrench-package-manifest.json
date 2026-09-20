@@ -53,6 +53,8 @@
     "runtime_is_bundled": true,
     "verifier_is_bundled": true,
     "embedded_mechanical_route": true,
+    "dynamic_staged_prefill": true,
+    "model_prefill_budget_tokens": 64000,
     "model_calls_for_mechanical_lookup": 0,
     "reference_only_old_context": true,
     "hash_bound_receipts": true

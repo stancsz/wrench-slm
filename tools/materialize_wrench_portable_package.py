@@ -99,6 +99,7 @@ def materialize(
                         "effective_working_context_tokens": 64000,
                         "hot_context_tokens": 48000,
                         "reference_card_tokens": 16000,
+                        "dynamic_staged_prefill": True,
                     },
                     "native_mode": {
                         "native_direct_input": True,
@@ -203,6 +204,8 @@ def materialize(
                 "bundled": True,
                 "verifier_is_bundled": True,
                 "embedded_mechanical_route": True,
+                "dynamic_staged_prefill": True,
+                "model_prefill_budget_tokens": 64000,
                 "entrypoint": "tokenization_wrench.py",
                 "model_calls_for_mechanical_lookup": 0,
             },

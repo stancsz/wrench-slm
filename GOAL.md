@@ -1233,5 +1233,6 @@ callers. A fake-model integration test confirms a 70K+ payload becomes a
 model prefill of at most 64K, and the full suite passes `103 passed`. This is
 the portable internal toolbelt path toward 4M practical use; it is not a claim
 that dense native attention over 4M tokens is fast or that retrieval quality
-matches MiniMax. Evidence: `tests/test_embedded_worker.py` and the next v17
-package validation receipt.
+matches MiniMax. The v18 package manifest and README now expose this behavior
+as a bundled runtime feature. Evidence: `tests/test_embedded_worker.py` and
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v18-validation.json`.
