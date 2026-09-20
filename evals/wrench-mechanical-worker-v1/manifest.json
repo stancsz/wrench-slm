@@ -1,6 +1,6 @@
 {
   "schema": "wrench.mechanical-worker-evaluation.v1",
-  "status": "DRAFT_PENDING_MINIMAX_TRACE_CAPTURE",
+  "status": "DRAFT_TEACHER_CAPTURED_TRACE_REVIEW_PENDING",
   "quality_claim": false,
   "score_reset": true,
   "teacher": {
@@ -55,8 +55,25 @@
     "evals/wrench-expanded-v1/manifest.json",
     "phases/phase-62-full-220-evaluation/receipt-8e.json"
   ],
+  "teacher_trace_capture": {
+    "status": "CAPTURED_PROPOSAL_ONLY_NOT_PARITY_EVIDENCE",
+    "path": "phases/phase-78-mechanical-worker/teacher-traces-220-max768-replay.json",
+    "sha256": "63f071156267d59aad2bbf1c5c2cc929338dc2b821f30b02696a62aa9a72569c",
+    "request_count": 220,
+    "transport_failures": 0,
+    "normalized_proposals": 189,
+    "invalid_or_unparseable_outputs": 31,
+    "length_terminated_outputs_observed": 3,
+    "source_suite": "evals/wrench-expanded-v1/cases.jsonl",
+    "limitations": [
+      "This is a historical fixture capture, not the approved matched real-workflow trace set.",
+      "The owner-supplied MiniMax M3 label remains independently unverified.",
+      "Proposal capture does not execute actions or establish final task success.",
+      "The trace set cannot be used as final quality or production evidence until review and workflow arm capture are complete."
+    ]
+  },
   "limitations": [
-    "No teacher traces have been captured into this manifest yet.",
+    "Teacher traces are captured, but no reviewed matched workflow arms have been captured into this manifest yet.",
     "The owner-supplied MiniMax M3 label is not independently identity-bound.",
     "The 2M requirement is native model input. Gateway intake, context-ledger selection, or prefill compaction alone cannot satisfy it.",
     "No release or production claim is permitted until matched workflow receipts pass all gates."

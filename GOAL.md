@@ -876,3 +876,15 @@ validation with nine Safetensors shards and is published as a public
 experimental artifact. Direct 4M payload, standard vLLM or Ollama adapters,
 long-context retrieval quality, and the matched MiniMax North Star gates remain
 open. Receipt: `phases/phase-77-long-context-overlay/portable-package-validation.json`.
+
+2026-09-19 mechanical-worker trace capture: the current MiniMax-compatible
+endpoint completed a fresh proposal-only replay over all 220 historical fixture
+cases with zero transport failures. 189/220 outputs normalized to the Wrench
+proposal schema; 31/220 remained invalid or unparseable, including three
+responses explicitly terminated at the 768-token completion cap. This is useful
+input for trace review and calibration, but it is not a matched workflow,
+teacher-parity, or production receipt. The trace is hash-bound at
+`63f071156267d59aad2bbf1c5c2cc929338dc2b821f30b02696a62aa9a72569c` and is
+recorded at `phases/phase-78-mechanical-worker/teacher-traces-220-max768-replay.json`.
+The v1 evaluation manifest now records that teacher capture exists while keeping
+the workflow-arm and release gates open.
