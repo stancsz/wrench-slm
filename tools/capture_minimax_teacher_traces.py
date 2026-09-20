@@ -11,13 +11,19 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
+import re
+import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-from generate_wrench_calibration import SYSTEM_EXPLICIT
+try:
+    from generate_wrench_calibration import SYSTEM_EXPLICIT
+except ModuleNotFoundError:
+    from tools.generate_wrench_calibration import SYSTEM_EXPLICIT
 
 
 ACTION_KEYS: dict[str, tuple[str, ...]] = {
@@ -30,10 +36,30 @@ ACTION_KEYS: dict[str, tuple[str, ...]] = {
 }
 
 
+def _parse_json_object(content: str) -> dict[str, Any] | None:
+    """Extract the first schema-bearing JSON object from a model response.
+
+    MiniMax may return private reasoning in a ``<think>`` block before the
+    final JSON object even when thinking is disabled in the request. Keep the
+    raw response for provenance, but normalize only the structured object.
+    This parser deliberately accepts no prose as a proposal and requires the
+    Wrench schema discriminator below.
+    """
+    cleaned = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", cleaned):
+        try:
+            parsed, _ = decoder.raw_decode(cleaned[match.start() :])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict) and parsed.get("schema") == "wrench.proposal.v1":
+            return parsed
+    return None
+
+
 def _normalize(content: str) -> dict[str, Any] | None:
-    try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError:
+    parsed = _parse_json_object(content)
+    if parsed is None:
         return None
     if not isinstance(parsed, dict) or parsed.get("schema") != "wrench.proposal.v1":
         return None
@@ -49,7 +75,20 @@ def _normalize(content: str) -> dict[str, Any] | None:
     return normalized
 
 
-def _request(endpoint: str, model: str, row: dict[str, Any], timeout: float, max_tokens: int) -> dict[str, Any]:
+def _request(
+    endpoint: str,
+    model: str,
+    row: dict[str, Any],
+    timeout: float,
+    max_tokens: int,
+    api_key: str | None = None,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+
+    def with_latency(result: dict[str, Any]) -> dict[str, Any]:
+        result["latency_ms"] = round((time.perf_counter() - started) * 1000, 3)
+        return result
+
     messages = row.get("messages")
     if not isinstance(messages, list) or not messages:
         messages = [
@@ -66,18 +105,21 @@ def _request(endpoint: str, model: str, row: dict[str, Any], timeout: float, max
         },
         ensure_ascii=False,
     ).encode("utf-8")
-    request = urllib.request.Request(endpoint, data=body, headers={"Content-Type": "application/json"}, method="POST")
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        return {"id": row["id"], "transport_failure": True, "error": type(exc).__name__}
+        return with_latency({"id": row["id"], "transport_failure": True, "error": type(exc).__name__})
     choices = payload.get("choices") if isinstance(payload, dict) else None
     message = choices[0].get("message") if isinstance(choices, list) and choices and isinstance(choices[0], dict) else None
     content = message.get("content") if isinstance(message, dict) else None
     if not isinstance(content, str):
-        return {"id": row["id"], "transport_failure": False, "response_invalid": True, "payload": payload}
-    return {
+        return with_latency({"id": row["id"], "transport_failure": False, "response_invalid": True, "payload": payload})
+    return with_latency({
         "id": row["id"],
         "family": row.get("family"),
         "prompt": row.get("prompt"),
@@ -93,7 +135,7 @@ def _request(endpoint: str, model: str, row: dict[str, Any], timeout: float, max
         "provider": payload.get("provider"),
         "transport_failure": False,
         "response_invalid": False,
-    }
+    })
 
 
 def capture(args: argparse.Namespace) -> dict[str, Any]:
@@ -102,9 +144,15 @@ def capture(args: argparse.Namespace) -> dict[str, Any]:
         rows = rows[: args.limit]
     if not rows:
         raise ValueError("no cases to capture")
+    api_key = os.environ.get(args.auth_env, "") if args.auth_env else ""
+    if args.auth_env and not api_key:
+        raise ValueError(f"configured auth environment variable is empty: {args.auth_env}")
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(_request, args.endpoint, args.model, row, args.timeout, args.max_tokens) for row in rows]
+        futures = [
+            pool.submit(_request, args.endpoint, args.model, row, args.timeout, args.max_tokens, api_key or None)
+            for row in rows
+        ]
         for future in as_completed(futures):
             results.append(future.result())
     results.sort(key=lambda item: str(item["id"]))
@@ -117,6 +165,8 @@ def capture(args: argparse.Namespace) -> dict[str, Any]:
             "label": "MiniMax M3",
             "identity_status": "endpoint_model_id_recorded_owner_label_not_independently_verified",
             "max_tokens": args.max_tokens,
+            "auth_env": args.auth_env,
+            "auth_configured": bool(api_key),
         },
         "input_path": str(args.cases.resolve()),
         "input_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
@@ -144,6 +194,11 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=60)
     parser.add_argument("--max-tokens", type=int, default=1024)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument(
+        "--auth-env",
+        default=None,
+        help="environment variable containing a bearer token; the token is never written to the receipt",
+    )
     args = parser.parse_args()
     if not 1 <= args.workers <= 16:
         raise ValueError("workers must be between 1 and 16")

@@ -55,3 +55,31 @@ def test_out_of_domain_request_is_rejected_even_with_safe_looking_proposal(tmp_p
     proposal = '{"schema":"wrench.proposal.v1","action":"patch_draft","files":["README.md"],"review_only":true,"diff":"--- a/README.md\\n+++ b/README.md\\n@@ -1 +1 @@\\n-old\\n+new\\n"}'
     result = execute_model_output(proposal, tmp_path, request_prompt="Build a React component with state and styling.")
     assert result["fallback_reason"] == "task_family_not_allowlisted"
+
+
+def test_boundary_intent_guards_reject_teacher_safe_looking_proposals(tmp_path):
+    cases = [
+        (
+            '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}',
+            "Check a non-repository source directory.",
+            "repository_root_invalid",
+        ),
+        (
+            '{"schema":"wrench.proposal.v1","action":"git_read_status","repo_root":"."}',
+            "Use the configuration directory as a repository root.",
+            "repository_root_invalid",
+        ),
+        (
+            '{"schema":"wrench.proposal.v1","action":"read_lines","path":"README.md","start":1,"end":8}',
+            "Read past the end of README.md.",
+            "invalid_line_bounds",
+        ),
+        (
+            '{"schema":"wrench.proposal.v1","action":"read_lines","path":".git/index","start":1,"end":8}',
+            "Read the binary Git index as lines.",
+            "encoding_or_read_error",
+        ),
+    ]
+    for proposal, prompt, reason in cases:
+        result = execute_model_output(proposal, tmp_path, request_prompt=prompt)
+        assert result == {"status": "abstain", "fallback_reason": reason}

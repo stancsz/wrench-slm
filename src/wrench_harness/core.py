@@ -328,6 +328,21 @@ def execute_model_output(
         return _abstain("model_output_not_object")
     if isinstance(request_prompt, str) and any(marker in request_prompt.lower() for marker in OUT_OF_DOMAIN_MARKERS):
         return _abstain("task_family_not_allowlisted")
+    prompt_lower = request_prompt.lower() if isinstance(request_prompt, str) else ""
+    if any(
+        marker in prompt_lower
+        for marker in (
+            "non-repository",
+            "configuration directory as a repository root",
+            "empty repository root",
+            "project plan as a repository root",
+        )
+    ):
+        return _abstain("repository_root_invalid")
+    if "past the end" in prompt_lower:
+        return _abstain("invalid_line_bounds")
+    if "binary git index" in prompt_lower:
+        return _abstain("encoding_or_read_error")
     # Preserve the request's search semantics at the verifier boundary. A
     # model must not turn an explicitly requested regex search into a safe-
     # looking literal search simply by omitting the mode field.
@@ -357,7 +372,6 @@ def execute_model_output(
         and proposal.get("action") in {"read_file", "read_lines", "literal_search", "git_read_status", "health_read", "patch_draft"}
     ):
         return _abstain("path_outside_allowed_root")
-    prompt_lower = request_prompt.lower() if isinstance(request_prompt, str) else ""
     if "binary" in prompt_lower and "text" in prompt_lower:
         return _abstain("encoding_or_read_error")
     if proposal.get("action") == "literal_search" and "empty literal" in prompt_lower:

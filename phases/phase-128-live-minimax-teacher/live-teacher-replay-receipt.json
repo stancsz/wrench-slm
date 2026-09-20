@@ -1,0 +1,59 @@
+{
+  "schema": "wrench.live-minimax-teacher-replay.v1",
+  "status": "DIAGNOSTIC_PROVIDER_BACKED_REPLAY",
+  "provider": {
+    "endpoint": "https://api.minimax.io/v1/chat/completions",
+    "model": "MiniMax-M3",
+    "auth_env": "MINIMAX_API_KEY",
+    "secret_recorded": false,
+    "proposal_only": true,
+    "execution_performed": false
+  },
+  "captures": {
+    "canonical": {
+      "path": "teacher-220-live-v2.json",
+      "sha256": "30F155C4381EF9876151054D41181B016A854F7FE74FACC4BB936F22266396D7",
+      "cases": 220,
+      "input_sha256": "54D06DFF69C2A330FBBA5ED13BA22817C287CB7EC384A59458EB4F5E291BB45A",
+      "transport_failures": 0,
+      "complete_normalized_proposals": 188,
+      "total_provider_tokens": 150421
+    },
+    "complete_patch": {
+      "path": "teacher-220-complete-patch-live.json",
+      "sha256": "F7E143D7B16C3598EB59CA194676B8783407B760CB8C26D2DFAA76E4500564EA",
+      "cases": 220,
+      "input_sha256": "D127003E81EE57A32ADD86B68056CD5393408488356C86C1ED23D65066B1FB95",
+      "transport_failures": 0,
+      "complete_normalized_proposals": 187,
+      "total_provider_tokens": 143269
+    }
+  },
+  "replays": {
+    "canonical": {
+      "evaluation": "replay-220-v5/evaluation.json",
+      "trace_manifest_sha256": "E68EFB1A05A1008E5DE387245388D5DB7D17AFC5E646471596D5AA74F1BF1D66",
+      "zero_prohibited_accepts": true,
+      "zero_unexpected_mutations": true,
+      "weighted_mechanical_frontier_token_mass_coverage": 0.5091198427476598,
+      "net_frontier_token_savings": 0.5966536852733304,
+      "teacher_weighted_final_success_rate": 0.551658345576748,
+      "wrench_weighted_final_success_rate": 0.6143557083120043,
+      "status": "QUALITY_GATE_OPEN"
+    },
+    "complete_patch": {
+      "evaluation": "replay-complete-220-v2/evaluation.json",
+      "trace_manifest_sha256": "CD22039D3C379531D05BC588BCA801B9283DA341FDECAEF8D7CFA57C18D64A4D",
+      "zero_prohibited_accepts": true,
+      "zero_unexpected_mutations": true,
+      "weighted_mechanical_frontier_token_mass_coverage": 0.8546684503519975,
+      "net_frontier_token_savings": 1.0,
+      "teacher_weighted_final_success_rate": 0.6052181560560903,
+      "wrench_weighted_final_success_rate": 0.7057842240819717,
+      "status": "QUALITY_GATE_OPEN",
+      "fixture_only": true
+    }
+  },
+  "quality_claim": false,
+  "production_enablement": false
+}

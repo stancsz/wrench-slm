@@ -55,3 +55,14 @@ def test_wrench_process_wrapper_records_transport_failures():
         "qwen_transport_error",
         "wrench_timeout",
     }
+
+
+def test_rules_arm_routes_explicit_abstention_to_teacher_fallback(tmp_path):
+    accepted = {
+        "prompt": "Read README.md with a 4096 byte limit.",
+    }
+    boundary = {
+        "prompt": "Read a missing file safely.",
+    }
+    assert diagnostic._rule_result(accepted, str(tmp_path)) is not None
+    assert diagnostic._rule_result(boundary, str(tmp_path)) is None

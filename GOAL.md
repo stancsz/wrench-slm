@@ -1464,3 +1464,17 @@ model calls, and zero prohibited accepts. Free generation was still invalid,
 so these variants remain diagnostic candidates behind mechanical routing and
 identical teacher fallback, not public quality releases. Evidence:
 `phases/phase-127-topk-active-compute`. Full regression is `135 passed`.
+
+2026-09-20 provider-backed MiniMax M3 replay: the real
+`https://api.minimax.io/v1/chat/completions` endpoint completed proposal-only
+captures for both the canonical 220-case fixture and the 220-case
+complete-payload derivative, with zero transport failures. The canonical replay
+records zero prohibited accepts after new verifier intent guards, 50.91%
+weighted eligible mechanical token-mass coverage, and 59.67% net frontier-token
+savings. The complete-payload diagnostic records 100% frontier-token savings,
+85.47% strict exact-oracle coverage, zero prohibited accepts, and zero
+unexpected mutations. The remaining exact gap is the fixture's under-specified
+health prompts whose target objects contain values not present in the request.
+This is still diagnostic evidence, not MiniMax parity, production utility, or
+release authorization. Evidence: `phases/phase-128-live-minimax-teacher`.
+Full regression is `139 passed`.

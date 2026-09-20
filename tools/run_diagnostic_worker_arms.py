@@ -192,12 +192,67 @@ def _call_teacher(
     }
 
 
+def _teacher_from_capture(item: dict[str, Any], row: dict[str, Any], root: str) -> dict[str, Any]:
+    """Replay one provider-backed capture without making another API call."""
+    usage = item.get("usage") if isinstance(item.get("usage"), dict) else {}
+    normalized = item.get("normalized_proposal")
+    raw_output = item.get("raw_model_output")
+    if isinstance(normalized, dict):
+        result = execute_model_output(
+            json.dumps(normalized, ensure_ascii=False),
+            root,
+            request_prompt=row["prompt"],
+        )
+        result["parsed_proposal"] = normalized
+    elif item.get("transport_failure"):
+        result = _abstain("teacher_transport_error", str(item.get("error", "captured_transport_failure")))
+        result["parsed_proposal"] = None
+    else:
+        result = _abstain("model_output_invalid_json", "captured_response_was_not_a_complete_proposal")
+        result["parsed_proposal"] = None
+    result["model"] = item.get("response_model")
+    result["usage"] = usage
+    result["raw_model_output"] = raw_output if isinstance(raw_output, str) else None
+    return {
+        "result": result,
+        "usage": usage,
+        "latency_ms": float(item.get("latency_ms", 0.0) or 0.0),
+        "frontier_tokens": _usage_tokens(usage),
+        "cost_usd": _cost_usd(usage),
+        "provider_requests": 1,
+        "raw_output": raw_output if isinstance(raw_output, str) else None,
+    }
+
+
+def _load_teacher_capture(path: Path, cases: list[dict[str, Any]], root: str) -> dict[str, dict[str, Any]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != "wrench.mechanical-worker-teacher-traces.v1":
+        raise ValueError("teacher capture schema mismatch")
+    expected_hash = hashlib.sha256(
+        ("\n".join(json.dumps(row, ensure_ascii=False, separators=(",", ":")) for row in cases) + "\n").encode("utf-8")
+    ).hexdigest()
+    # The capture stores the source file hash, so compare against the exact
+    # bytes represented by the case rows rather than trusting only case ids.
+    source_path = Path(payload.get("input_path", ""))
+    if source_path.is_file():
+        expected_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    if payload.get("input_sha256") != expected_hash:
+        raise ValueError("teacher capture input hash does not match requested cases")
+    captured = {item.get("id"): item for item in payload.get("results", []) if isinstance(item, dict)}
+    missing = [row["id"] for row in cases if row["id"] not in captured]
+    if missing:
+        raise ValueError(f"teacher capture is missing {len(missing)} requested cases")
+    return {row["id"]: _teacher_from_capture(captured[row["id"]], row, root) for row in cases}
+
+
 def _rule_result(row: dict[str, Any], root: str) -> dict[str, Any] | None:
     proposal = mechanical_route(row["prompt"])
-    if proposal is None:
+    # A deterministic abstention is a routing miss, not a completed rules
+    # arm. The named fallback arm must send that request to the identical
+    # teacher, otherwise it silently measures "rules only" and understates
+    # both provider tokens and fallback safety risk.
+    if proposal is None or proposal.get("status") == "abstain":
         return None
-    if proposal.get("status") == "abstain":
-        return {"result": proposal, "latency_ms": 0.0, "frontier_tokens": 0, "cost_usd": 0.0, "provider_requests": 0, "raw_output": None}
     result = execute_model_output(json.dumps(proposal, ensure_ascii=False), root, request_prompt=row["prompt"])
     result["parsed_proposal"] = proposal
     return {"result": result, "latency_ms": 0.0, "frontier_tokens": 0, "cost_usd": 0.0, "provider_requests": 0, "raw_output": json.dumps(proposal, ensure_ascii=False)}
@@ -338,22 +393,25 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         raise ValueError("no cases")
     root = str(args.root.resolve())
     traces: list[dict[str, Any]] = []
-    teacher_by_id: dict[str, dict[str, Any]] = {}
-    with ThreadPoolExecutor(max_workers=args.teacher_workers) as pool:
-        futures = {
-            pool.submit(
-                _call_teacher,
-                args.teacher_endpoint,
-                args.teacher_model,
-                row,
-                root,
-                timeout=args.timeout,
-                max_tokens=args.teacher_max_tokens,
-            ): row["id"]
-            for row in rows
-        }
-        for future in as_completed(futures):
-            teacher_by_id[futures[future]] = future.result()
+    if args.teacher_traces:
+        teacher_by_id = _load_teacher_capture(args.teacher_traces, rows, root)
+    else:
+        teacher_by_id = {}
+        with ThreadPoolExecutor(max_workers=args.teacher_workers) as pool:
+            futures = {
+                pool.submit(
+                    _call_teacher,
+                    args.teacher_endpoint,
+                    args.teacher_model,
+                    row,
+                    root,
+                    timeout=args.timeout,
+                    max_tokens=args.teacher_max_tokens,
+                ): row["id"]
+                for row in rows
+            }
+            for future in as_completed(futures):
+                teacher_by_id[futures[future]] = future.result()
     for row in rows:
         teacher = teacher_by_id[row["id"]]
         teacher_result = teacher["result"]
@@ -430,6 +488,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
                         frontier_tokens=rule_frontier,
                         cost_usd=rule_cost,
                         provider_requests=rule_requests,
+                        fallback_used=rule_source == "teacher_fallback",
                         source=rule_source,
                     ),
                     "wrench_plus_identical_minimax_fallback": _arm_record(
@@ -485,6 +544,7 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--teacher-endpoint", default="http://127.0.0.1:4000/v1/chat/completions")
     parser.add_argument("--teacher-model", default="minimax")
+    parser.add_argument("--teacher-traces", type=Path, default=None, help="replay a provider-backed capture instead of making calls")
     parser.add_argument("--wrench-endpoint", required=True)
     parser.add_argument("--wrench-model", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
