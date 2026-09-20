@@ -2210,3 +2210,12 @@ seconds before cancellation because full native prefill would take more than
 an hour. The text output was malformed, so this is runtime evidence only.
 It confirms the need for the fast first-layer pruner/cherrypicker or the
 hybrid MapReduce path. Evidence: `phases/phase-202-ollama-mlx-relocation`.
+
+2026-09-20 v81 model-local 4M staged handoff: the bundled package accepted a
+direct 3,999,943-token request without an external gateway, reduced it to
+1,955 model-side tokens under the 64K budget, and returned a hash-bound
+`map_reduce_dynamic_native` receipt. Server staging was 131.372 ms and the
+complete local protocol-stub request was 261.899 ms. This proves the practical
+model-local raw-intake path and effective-context accounting, not dense native
+attention or MiniMax parity. Evidence:
+`phases/phase-203-v81-4m-model-local-handoff`.
