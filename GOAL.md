@@ -1447,5 +1447,7 @@ all 220 historical prompts as mechanical fast paths with zero model calls and
 zero prohibited accepts. The receipt records 200/220 outcome matches and
 82/120 exact eligible proposals because 20 accepted patch prompts omit their
 diff; the verifier correctly refuses to invent one. An isolated Ollama 0.34.2
-MLX run also reached HTTP 200 after a local cuDNN path workaround, but stock
-Windows Ollama remains unverified. Evidence: `phases/phase-126-portable-v42`.
+MLX run also accepted a real `num_ctx=4,000,000` generation request with HTTP
+200 and `/api/ps` reported `context_length=4,000,000` after a local cuDNN path
+workaround, but stock Windows Ollama remains unverified. Evidence:
+`phases/phase-126-portable-v42`.

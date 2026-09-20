@@ -18,8 +18,10 @@ the package.
   accepted patch-draft prompts in this historical fixture omit their actual
   diff. The fail-closed `patch_content_missing` result is intentional.
 - An isolated Ollama `0.34.2` MLX runtime loaded the corresponding no-vision
-  manifest and reported a 4,000,000-token context length. A short completion
-  reached HTTP 200 after a local cuDNN path workaround.
+  manifest and reported a 4,000,000-token context length. A real
+  `/api/generate` request with `num_ctx=4,000,000` returned HTTP 200, and
+  `/api/ps` reported `context_length=4,000,000`, after a local cuDNN path
+  workaround.
 
 ## Boundary
 

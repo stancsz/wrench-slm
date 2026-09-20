@@ -31,6 +31,14 @@
     "context_length_reported": 4000000,
     "loaded_tensor_count": 3993,
     "short_completion_http_status": 200,
+    "direct_num_ctx_request": {
+      "requested_tokens": 4000000,
+      "api_generate_http_status": 200,
+      "api_ps_context_length": 4000000,
+      "prompt_eval_count": 16,
+      "eval_count": 1,
+      "elapsed_ms": 6102.52
+    },
     "stock_windows_runtime": false,
     "patched_mlx_dll_for_local_cudnn_path": true,
     "public_release_ready": false
