@@ -205,6 +205,28 @@ def _history_skip_boundary(request_tokens: int, configured: str, keep_tokens: in
     return boundary
 
 
+def _history_skip_enabled(
+    history_skip_before: int,
+    history_skip_layers_before: int,
+    history_skip_layers_dynamic: bool,
+) -> bool:
+    """Return whether the decoder patch must be installed for this profile."""
+
+    return bool(history_skip_before or history_skip_layers_before or history_skip_layers_dynamic)
+
+
+def _request_total_tokens(request: object, fallback: int) -> int:
+    """Read the full prompt length attached by the prefill scheduler."""
+
+    marked = getattr(request, "wrench_total_input_len", None)
+    if isinstance(marked, int) and marked > 0:
+        return marked
+    legacy = getattr(request, "input_len", None)
+    if isinstance(legacy, int) and legacy > 0:
+        return legacy
+    return fallback
+
+
 def _install_qwen_long_context_overlay() -> None:
     if os.environ.get("WRENCH_LONG_CONTEXT_OVERLAY", "0") != "1":
         return
@@ -341,8 +363,32 @@ def _install_qwen_long_context_overlay() -> None:
         or history_control_prefix_tokens < 0
     ):
         raise ValueError("historical skip thresholds must be non-negative")
-    if history_skip_before or history_skip_layers_before:
+    # Dynamic request-tail mode resolves its numeric boundary per request, so
+    # the parsed integer is intentionally zero here. Include the mode flag in
+    # the installation guard or ``-FastHistory`` silently behaves like the
+    # full native path.
+    if _history_skip_enabled(
+        history_skip_before,
+        history_skip_layers_before,
+        history_skip_layers_dynamic,
+    ):
         from freetoken.models.qwen3_5_moe import model as qwen_model
+        from freetoken.scheduler.prefill import PrefillAdder
+
+        # Chunked prefill constructs a new Req for every 32K-ish forward. The
+        # request object only carries the current prefix, while PendingReq
+        # retains the complete prompt length. Preserve that length on each
+        # chunk so an auto boundary is based on the real request, not the
+        # current chunk and not an unavailable Req.input_len attribute.
+        original_add_one_req = PrefillAdder._add_one_req
+
+        def add_one_req_with_wrench_total(self, pending_req, *args, **kwargs):
+            request = original_add_one_req(self, pending_req, *args, **kwargs)
+            if request is not None:
+                request.wrench_total_input_len = int(pending_req.input_len)
+            return request
+
+        PrefillAdder._add_one_req = add_one_req_with_wrench_total
 
         original_decoder_forward = qwen_model.Qwen3_5DecoderLayer.forward
 
@@ -354,7 +400,7 @@ def _install_qwen_long_context_overlay() -> None:
             if batch.is_prefill and len(batch.reqs) == 1:
                 request_start = int(batch.reqs[0].cached_len)
                 request_end = request_start + int(hidden.shape[0])
-                request_total = int(getattr(batch.reqs[0], "input_len", request_end))
+                request_total = _request_total_tokens(batch.reqs[0], request_end)
                 active_history_skip_boundary = (
                     _history_skip_boundary(
                         request_total,

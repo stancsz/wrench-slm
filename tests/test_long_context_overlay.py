@@ -26,6 +26,28 @@ def test_history_skip_boundary_scales_with_actual_request_length():
     assert boundary(2_000_000, "123456", 64_000) == 123456
 
 
+def test_dynamic_history_skip_installs_decoder_patch_when_numeric_boundary_is_zero():
+    namespace = _load_overlay_source()
+    enabled = namespace["_history_skip_enabled"]
+    assert enabled(0, 0, True) is True
+    assert enabled(0, 0, False) is False
+    assert enabled(1, 0, False) is True
+    assert enabled(0, 1, False) is True
+
+
+def test_request_total_tokens_prefers_full_length_marker_over_current_chunk():
+    namespace = _load_overlay_source()
+    resolve = namespace["_request_total_tokens"]
+
+    class Request:
+        wrench_total_input_len = 255_000
+        input_len = 32_768
+
+    assert resolve(Request(), 32_768) == 255_000
+    assert resolve(type("Legacy", (), {"input_len": 64_000})(), 32_768) == 64_000
+    assert resolve(object(), 32_768) == 32_768
+
+
 def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     source = Path("runtime/freetoken_wrench_long_context/sitecustomize.py").read_text(encoding="utf-8")
     assert "qwen_family.parse_config = parse_config_with_bounded_full_attention" in source
