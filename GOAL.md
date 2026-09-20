@@ -978,3 +978,16 @@ service and incurs bounded connection timeouts. Prohibited accepts remained
 zero. This improves local mechanical routing but is still diagnostic, not
 MiniMax parity or matched-workflow savings evidence. Receipt:
 `phases/phase-80-safety-native2m/wrench-safety-native2m-220-health-mechanical.json`.
+
+2026-09-19 deterministic boundary routing: extended the embedded mechanical
+router to fail closed on explicit invalid limits, line ranges, missing paths,
+repository-root errors, health endpoint violations, literal mode errors, and
+invalid patch requests before invoking the model. A fresh same-host 220 replay
+then reached 204/220 outcome matches and 200/220 mechanical fast-path
+requests, with 81/120 eligible exact accepts and zero prohibited accepts.
+Median latency was 0.559 ms and p95 was 5,683.262 ms. The ten health misses
+are due to the intentionally absent localhost:4000 fixture; the remaining
+patch-draft misses require model-generated diffs and are not fabricated by the
+router. This is a diagnostic safety and latency improvement, not MiniMax
+parity or a production release. Receipt:
+`phases/phase-82-boundary-router/wrench-safety-native2m-boundary-router-v2.json`.

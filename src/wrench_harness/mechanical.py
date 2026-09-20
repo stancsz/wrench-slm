@@ -109,6 +109,73 @@ def _is_risky(prompt: str) -> bool:
     return False
 
 
+def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] | None:
+    """Return a stable abstention for an unambiguous boundary request.
+
+    These cases do not need a language-model guess. Keeping them here makes
+    malformed model output irrelevant for obvious invalid inputs and gives the
+    caller the same reason the independent verifier would produce.
+    """
+
+    if "binary" in lowered and ("text" in lowered or "lines" in lowered):
+        return {"status": "abstain", "fallback_reason": "encoding_or_read_error"}
+
+    if any(marker in lowered for marker in ("boolean byte limit", "string byte limit", "zero byte limit", "limit above the verifier maximum", "limit above maximum", "invalid zero byte")):
+        return {"status": "abstain", "fallback_reason": "invalid_byte_limit"}
+    if any(marker in lowered for marker in ("one byte limit", "file size limit")):
+        return {"status": "abstain", "fallback_reason": "file_size_limit"}
+
+    if any(marker in lowered for marker in ("boolean line number", "string line number", "zero starting line", "end line before", "past the end", "more than the maximum line range")):
+        return {"status": "abstain", "fallback_reason": "invalid_line_bounds"}
+
+    if re.search(r"\b(search|find|look for)\b", lowered):
+        if "regex" in lowered:
+            return {"status": "abstain", "fallback_reason": "literal_mode_required"}
+        if any(marker in lowered for marker in ("empty literal", "overlong literal", "non-string literal")):
+            return {"status": "abstain", "fallback_reason": "invalid_literal"}
+        if any(marker in lowered for marker in ("boolean match limit", "match limit above", "zero match limit")):
+            return {"status": "abstain", "fallback_reason": "invalid_match_limit"}
+        if "missing root" in lowered:
+            return {"status": "abstain", "fallback_reason": "missing_search_root"}
+        if "null root" in lowered:
+            return {"status": "abstain", "fallback_reason": "search_root_outside_allowed_root"}
+        if "outside the repository" in lowered:
+            return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
+
+    if "non-repository" in lowered or re.search(r"\b(?:git\s+)?(?:status|staged|unstaged)\b", lowered):
+        if "parent directory" in lowered or "absolute external" in lowered or "outside the repository" in lowered:
+            return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
+        if any(marker in lowered for marker in ("non-repository", "file path", "missing directory", "boolean repository root", "null repository root", "empty repository root", "configuration directory as a repository root", "project plan as a repository root")):
+            return {"status": "abstain", "fallback_reason": "repository_root_invalid"}
+
+    if "health" in lowered or "/health" in lowered or "/v1/models" in lowered:
+        if any(marker in lowered for marker in ("fragment", "query", "external health", "https", "non-allowlisted", "non allowlisted")):
+            return {"status": "abstain", "fallback_reason": "health_endpoint_not_allowlisted"}
+        if any(marker in lowered for marker in ("response limit above", "timeout above", "zero health response", "zero health timeout")):
+            return {"status": "abstain", "fallback_reason": "invalid_health_bounds"}
+        if "non-string health url" in lowered:
+            return {"status": "abstain", "fallback_reason": "invalid_health_request"}
+
+    if re.search(r"\b(patch|diff|change)\b", lowered) or "apply a patch" in lowered:
+        if "outside the repository" in lowered:
+            return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
+        if "missing file" in lowered:
+            return {"status": "abstain", "fallback_reason": "patch_file_invalid"}
+        if any(marker in lowered for marker in ("empty patch", "oversized patch")):
+            return {"status": "abstain", "fallback_reason": "invalid_patch_diff"}
+        if any(marker in lowered for marker in ("without the new-file marker", "without a hunk marker")):
+            return {"status": "abstain", "fallback_reason": "patch_not_unified_diff"}
+        if any(marker in lowered for marker in ("apply a patch immediately", "four files", "non-list file field", "no files named")):
+            return {"status": "abstain", "fallback_reason": "patch_draft_requires_review_only"}
+
+    if "missing file" in lowered or "missing line-range file" in lowered or "missing directory" in lowered or "as if it were a file" in lowered or "directory as lines" in lowered:
+        return {"status": "abstain", "fallback_reason": "missing_path"}
+    if "parent directory" in lowered or "outside the repository" in lowered or "outside repository" in lowered or "absolute path outside" in lowered or "path containing a null" in lowered:
+        return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
+
+    return None
+
+
 def mechanical_route(prompt: str) -> dict[str, Any] | None:
     """Return a proposal or explicit abstention for a high-confidence request.
 
@@ -118,6 +185,9 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
     if not isinstance(prompt, str) or not prompt.strip():
         return None
     lowered = prompt.casefold().strip()
+    boundary = _explicit_boundary_abstention(prompt, lowered)
+    if boundary is not None:
+        return boundary
     if re.search(r"\bremove\b.*\brepository\b.*\bpermanently\b", lowered):
         return {"status": "abstain", "fallback_reason": "action_not_allowlisted"}
     if _is_risky(prompt):

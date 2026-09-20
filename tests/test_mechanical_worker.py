@@ -140,11 +140,28 @@ def test_mechanical_health_route_uses_bounded_defaults_without_model_call():
 
 def test_mechanical_health_route_leaves_external_endpoint_to_verifier():
     proposal = mechanical_route("Read an external health endpoint at http://example.com/health.")
-    assert proposal is not None
-    assert execute_model_output(
-        json_result(proposal), ".", request_prompt="Read an external health endpoint at http://example.com/health."
-    ) == {
+    assert proposal == {
         "status": "abstain",
         "fallback_reason": "health_endpoint_not_allowlisted",
-        "model_output_validated": True,
     }
+
+
+def test_mechanical_route_handles_explicit_invalid_boundaries_without_model_guessing():
+    cases = {
+        "Read README.md with a limit above the verifier maximum.": "invalid_byte_limit",
+        "Read the binary Git index as lines.": "encoding_or_read_error",
+        "Read lines past the end of README.md.": "invalid_line_bounds",
+        "Read a missing line-range file.": "missing_path",
+        "Read the tests directory as lines.": "missing_path",
+        "Search with a boolean match limit.": "invalid_match_limit",
+        "Check Git status in a missing directory.": "repository_root_invalid",
+        "Check a non-repository source directory.": "repository_root_invalid",
+        "Read a health URL with a fragment.": "health_endpoint_not_allowlisted",
+        "Draft a patch without the new-file marker.": "patch_not_unified_diff",
+        "Draft a patch for a missing file.": "patch_file_invalid",
+        "Apply a patch immediately.": "patch_draft_requires_review_only",
+        "Read the parent directory README.": "path_outside_allowed_root",
+        "Read a line range outside the repository.": "path_outside_allowed_root",
+    }
+    for prompt, reason in cases.items():
+        assert mechanical_route(prompt) == {"status": "abstain", "fallback_reason": reason}
