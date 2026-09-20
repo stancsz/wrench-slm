@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.public-v42-sync.v1",
+  "status": "PASS_PUBLIC_METADATA_SYNC",
+  "repository": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "commits": [
+    "86130291987be51b445f4ef4c3042f45ffde92ad",
+    "e75273a37b43281fa88fef65298155bd7e478a49"
+  ],
+  "files": {
+    "config.json": {
+      "sha256": "A00F1694B8B49380D448ABAA06C25D280D5B794444230E34689001AB195F0422",
+      "remote_matches_local": true
+    },
+    "wrench-text-only-receipt.json": {
+      "sha256": "F3233F7D103057100BD7D4F421AD9FFFA98D9D809C303DDB4FFD588B7BE05E15",
+      "remote_matches_local": true
+    },
+    "wrench_runtime/sitecustomize.py": {
+      "sha256": "67CC11F81E73ED6E86D1556439C69DAA125DB76441B9FD4E6DE9DBE0FCD9BB67",
+      "remote_matches_local": true
+    }
+  },
+  "latest_runtime_commit": "a1629bb86a9b18abc7074b653396b418561646b6",
+  "weights_changed": false,
+  "quality_claim": false,
+  "production_claim": false
+}

@@ -564,15 +564,22 @@ def _install_qwen_long_context_overlay() -> None:
                 )
             except Exception:
                 try:
-                    from mechanical import (
+                    from wrench_mechanical import (
                         active_intent_suffix as embedded_active_intent_suffix,
                         mechanical_route as embedded_mechanical_route,
                         reference_lookup_route as embedded_reference_lookup_route,
                     )
                 except Exception:
-                    embedded_active_intent_suffix = None
-                    embedded_mechanical_route = None
-                    embedded_reference_lookup_route = None
+                    try:
+                        from mechanical import (
+                            active_intent_suffix as embedded_active_intent_suffix,
+                            mechanical_route as embedded_mechanical_route,
+                            reference_lookup_route as embedded_reference_lookup_route,
+                        )
+                    except Exception:
+                        embedded_active_intent_suffix = None
+                        embedded_mechanical_route = None
+                        embedded_reference_lookup_route = None
 
             # Native serving starts from the model directory, while the
             # developer-tool proposal normally targets the user's checkout.

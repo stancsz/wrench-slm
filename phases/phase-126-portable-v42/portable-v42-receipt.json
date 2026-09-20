@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.portable-v42-receipt.v1",
+  "status": "PASS_EMBEDDED_ROUTE_AND_TEXT_ONLY_CONFIG",
+  "package": {
+    "local_path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v42",
+    "config_sha256": "A00F1694B8B49380D448ABAA06C25D280D5B794444230E34689001AB195F0422",
+    "parameter_count": 3434672768,
+    "declared_context_tokens": 4000000,
+    "vision_metadata_removed": true
+  },
+  "freetoken": {
+    "status": "PASS_MODEL_LOAD_AND_SHORT_COMPLETION",
+    "configured_kv_tokens": 4000000,
+    "allocated_kv_gib": 1.59,
+    "short_completion_http_status": 200,
+    "short_completion_elapsed_ms": 467.18
+  },
+  "embedded_mechanical_route": {
+    "request_count": 220,
+    "mechanical_fast_path_requests": 220,
+    "model_calls": 0,
+    "prohibited_accepts": 0,
+    "outcome_matches": 200,
+    "eligible_exact_accepts": 82,
+    "p95_latency_ms": 37.952,
+    "patch_gap_reason": "20 historical eligible patch prompts omit concrete diff content"
+  },
+  "ollama_isolated": {
+    "version": "0.34.2",
+    "runner": "MLX CUDA 13",
+    "context_length_reported": 4000000,
+    "loaded_tensor_count": 3993,
+    "short_completion_http_status": 200,
+    "stock_windows_runtime": false,
+    "patched_mlx_dll_for_local_cudnn_path": true,
+    "public_release_ready": false
+  },
+  "quality_claim": false,
+  "minimax_parity_claim": false
+}

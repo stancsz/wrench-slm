@@ -1437,3 +1437,15 @@ vision tower. An isolated text-only metadata experiment reached prefill, then
 hit the host's missing cuDNN directory. Ollama Windows completion therefore
 remains unverified. Evidence: `phases/phase-124-v41-frontier-coverage` and
 `phases/phase-125-ollama-portable-runtime`.
+
+2026-09-20 v42 portable package repair: the bundled FreeToken overlay now
+imports the embedded mechanical router from the actual package-local runtime,
+and the text-only exporter removes the multimodal config fields that make
+Ollama demand absent vision tensors. A v42 package loaded with 4,000,000-token
+KV capacity and completed a short model request. Its embedded route processed
+all 220 historical prompts as mechanical fast paths with zero model calls and
+zero prohibited accepts. The receipt records 200/220 outcome matches and
+82/120 exact eligible proposals because 20 accepted patch prompts omit their
+diff; the verifier correctly refuses to invent one. An isolated Ollama 0.34.2
+MLX run also reached HTTP 200 after a local cuDNN path workaround, but stock
+Windows Ollama remains unverified. Evidence: `phases/phase-126-portable-v42`.
