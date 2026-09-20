@@ -50,3 +50,11 @@ def test_materializer_embeds_worker_runtime():
     assert "--num-tokens 4000000" in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "dynamic_staged_prefill" in script
+
+
+def test_materializer_keeps_toolbelt_distinct_from_verifier():
+    script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
+    assert 'src" / "wrench_harness" / "toolbelt.py", runtime_dir / "toolbelt.py"' in script
+    assert 'src" / "wrench_harness" / "core.py", runtime_dir / "toolbelt.py"' not in script
+    wrapper = Path("packaging/wrench_toolbelt.py").read_text(encoding="utf-8")
+    assert "from wrench_runtime.toolbelt import *" in wrapper

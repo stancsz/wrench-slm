@@ -12,17 +12,17 @@ tags:
 
 # Wrench-4B-Qwen3.6-8E
 
-This Hub repository currently contains the safety-calibrated v7 native-2M
-candidate, distributed as a 4M-declared portable package. Its stable candidate
-identity is `Wrench-4B-Qwen3.6-8E-Safety-v7-native2M`.
+This Hub repository contains the NVFP4 native-4M experimental candidate,
+distributed as one copy-pasteable portable package. Its candidate identity is
+`Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M`.
 
 Wrench is a pruned, task-specific developer-tool SLM derived from Qwen3.6-35B-A3B.
 It contains 3,881,244,016 parameters and stays below the 4.25B parameter ceiling.
 
-This is a public experimental artifact. It is downloadable and reproducible, but it
-is not a claim that the final 4M retrieval-quality or MiniMax-parity gates have
-passed. The safety candidate is the better bounded-worker checkpoint found so
-far, but it still requires a complete matched 220-case release evaluation.
+This is a public experimental artifact. It is downloadable and reproducible, but
+it is not a claim that the final 4M retrieval-quality, MiniMax-parity, or
+production-throughput gates have passed. The package still requires the complete
+matched 220-case release evaluation.
 
 ## Copy the package
 
@@ -48,7 +48,9 @@ The embedded worker API is available directly from the downloaded directory:
 ```python
 from wrench_worker import WrenchWorker
 
-worker = WrenchWorker.from_pretrained("./Wrench-4B-Qwen3.6-8E", load_model=False)
+worker = WrenchWorker.from_pretrained(
+    "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False
+)
 result = worker.propose([
     {"role": "user", "content": "Read README.md with a 65536 byte limit."}
 ])
@@ -133,6 +135,11 @@ long-context quality or MiniMax-parity claim.
 - vLLM: requires a registered Wrench architecture adapter.
 - Ollama, llama.cpp, and GGUF: not verified for Wrench hybrid attention and lookup
   semantics. Do not assume a generic GGUF conversion preserves these features.
+
+GGUF is not a file-extension conversion. A valid GGUF release needs a tested
+llama.cpp or Ollama architecture adapter, tokenizer mapping, hybrid KV policy,
+and bundled lookup semantics. Until that adapter is verified, Hugging Face
+Safetensors is the canonical copy-paste format.
 
 ## Known limits
 

@@ -70,14 +70,20 @@ def materialize(
         runtime_dir = target / "wrench_runtime"
         runtime_dir.mkdir()
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", runtime_dir / "prefill.py")
-        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "toolbelt.py")
+        # Keep the read-only lookup helpers separate from the execution
+        # verifier.  The package ships both modules, and callers may import
+        # the toolbelt directly from the downloaded directory.
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "toolbelt.py", runtime_dir / "toolbelt.py")
         shutil.copy2(
             repo_root / "runtime" / "freetoken_wrench_long_context" / "sitecustomize.py",
             runtime_dir / "sitecustomize.py",
         )
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
-        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", target / "wrench_toolbelt.py")
+        shutil.copy2(
+            repo_root / "packaging" / "wrench_toolbelt.py",
+            target / "wrench_toolbelt.py",
+        )
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
