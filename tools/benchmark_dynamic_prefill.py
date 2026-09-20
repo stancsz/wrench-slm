@@ -20,6 +20,12 @@ def main() -> int:
     parser.add_argument("--words-per-old-message", type=int, default=2_000)
     parser.add_argument("--hot-budget", type=int, default=48_000)
     parser.add_argument("--model-budget", type=int, default=64_000)
+    parser.add_argument(
+        "--current-intent",
+        default="read the newest file and return a bounded proposal",
+        help="active intent used to exercise the old-reference query path",
+    )
+    parser.add_argument("--output", type=Path, help="optional JSON receipt path")
     args = parser.parse_args()
     messages = [
         {"role": "system", "content": "bounded read-only mechanical worker"},
@@ -34,7 +40,7 @@ def main() -> int:
             }
             for index in range(args.old_messages)
         ],
-        {"role": "user", "content": "read the newest file and return a bounded proposal"},
+        {"role": "user", "content": args.current_intent},
     ]
     ingest_started = time.perf_counter()
     index = MechanicalPrefillIndex()
@@ -50,6 +56,9 @@ def main() -> int:
     )
     receipt["ingest_ms"] = round(ingest_ms, 3)
     receipt["selection_ms"] = round((time.perf_counter() - started) * 1000, 3)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(receipt, indent=2))
     return 0
 

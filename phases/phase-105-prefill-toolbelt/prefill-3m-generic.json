@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.dynamic-prefill-receipt.v1",
+  "mode": "staged_single_pass",
+  "raw_token_count": 3333344,
+  "model_prefill_token_count": 37,
+  "compression_ratio": 1.1e-05,
+  "hot_token_budget": 48000,
+  "model_prefill_budget": 64000,
+  "reference_index_budget": 12000,
+  "current_intent_source_index": 2,
+  "hot_message_count": 0,
+  "reference_card_count": 1,
+  "deduplicated_reference_count": 0,
+  "lookup_table_ids": [
+    "ref-00000001"
+  ],
+  "lookup_table": {},
+  "raw_payload_sha256": "6e152c10b44d2e342c1da878755d93f1a2ed6ca8dfa244267750b2ea3cd1677b",
+  "native_input_claim": false,
+  "ingest_ms": 74.617,
+  "selection_ms": 0.135
+}

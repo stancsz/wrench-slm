@@ -12,6 +12,11 @@ import json
 import re
 from typing import Any
 
+try:
+    from .toolbelt import extract_dependencies, parse_source_ast
+except ImportError:  # pragma: no cover - used by the root portable module
+    from wrench_runtime.toolbelt import extract_dependencies, parse_source_ast
+
 
 def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -98,12 +103,101 @@ _SYMBOL_RE = re.compile(
 _ID_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]{3,}\b")
 _URL_RE = re.compile(r"https?://[^\s)]+")
 _TERM_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
+_CODE_FENCE_RE = re.compile(r"```(?P<language>[A-Za-z0-9_+.-]*)\n(?P<body>.*?)```", re.DOTALL)
+_CODE_SUFFIXES = {".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".go", ".rs", ".cpp", ".c", ".h"}
+_MAX_TOOLBELT_SOURCE_BYTES = 128 * 1024
+_MAX_TOOLBELT_CODE_BLOCK_BYTES = 64 * 1024
+_GENERIC_QUERY_TERMS = {
+    "a",
+    "an",
+    "and",
+    "after",
+    "all",
+    "bounded",
+    "check",
+    "current",
+    "file",
+    "for",
+    "from",
+    "inspect",
+    "intent",
+    "latest",
+    "newest",
+    "one",
+    "proposal",
+    "read",
+    "reference",
+    "return",
+    "review",
+    "show",
+    "source",
+    "the",
+    "with",
+}
 
 
 def _estimate_token_count(value: str) -> int:
     """Cheap conservative count without allocating a word list."""
 
     return max(1, value.count(" ") + value.count("\n") + 1)
+
+
+def _code_path_hint(text: str, query_terms: set[str]) -> str:
+    candidates = [
+        value
+        for value in _PATH_RE.findall(text)
+        if any(value.casefold().endswith(suffix) for suffix in _CODE_SUFFIXES)
+    ]
+    candidates.extend(
+        term
+        for term in query_terms
+        if any(term.casefold().endswith(suffix) for suffix in _CODE_SUFFIXES)
+    )
+    return candidates[0] if candidates else "reference.py"
+
+
+def _bounded_toolbelt_evidence(text: str, query_terms: set[str]) -> dict[str, Any]:
+    """Extract structural code evidence only when a bounded source is present.
+
+    Monster references must not trigger a full AST parse. Code fences are
+    preferred because they provide an explicit source boundary. Small payloads
+    with a code path and declaration markers are also safe to parse. The
+    result is reference evidence only and never grants execution authority.
+    """
+
+    candidates: list[tuple[str, str]] = []
+    for match in _CODE_FENCE_RE.finditer(text):
+        body = match.group("body")
+        if len(body.encode("utf-8")) <= _MAX_TOOLBELT_CODE_BLOCK_BYTES:
+            candidates.append((_code_path_hint(text, query_terms), body))
+        if len(candidates) >= 2:
+            break
+    if not candidates:
+        code_like = bool(re.search(r"\b(?:class|def|function|interface|import|from)\b", text))
+        if len(text.encode("utf-8")) <= _MAX_TOOLBELT_SOURCE_BYTES and code_like:
+            candidates.append((_code_path_hint(text, query_terms), text))
+    if not candidates:
+        return {"ast_symbols": [], "dependencies": [], "toolbelt_scan": "skipped_unbounded_or_non_code"}
+
+    ast_symbols: list[dict[str, Any]] = []
+    dependencies: list[dict[str, Any]] = []
+    for path, source in candidates:
+        ast_result = parse_source_ast(path, source)
+        ast_symbols.extend(ast_result.get("symbols", [])[:24])
+        dependency_result = extract_dependencies(path, source)
+        dependencies.append(
+            {
+                "path": path,
+                "imports": dependency_result.get("imports", [])[:24],
+                "calls": dependency_result.get("calls", [])[:24],
+                "syntax_error": dependency_result.get("syntax_error"),
+            }
+        )
+    return {
+        "ast_symbols": ast_symbols[:48],
+        "dependencies": dependencies[:2],
+        "toolbelt_scan": "bounded_ast_and_dependency",
+    }
 
 
 def split_monolithic_current_message(
@@ -213,6 +307,7 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
             "identifiers": identifiers,
             "anchors": anchors,
             "normalized_sha256": source_digest,
+            **_bounded_toolbelt_evidence(text, query_terms),
         }
     lines = text.splitlines()
     paths = sorted(set(_PATH_RE.findall(text)))[:16]
@@ -248,6 +343,7 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
         "identifiers": identifiers,
         "anchors": anchors,
         "normalized_sha256": _sha256(normalized),
+        **_bounded_toolbelt_evidence(text, query_terms),
     }
 
 
@@ -280,6 +376,9 @@ def _lightweight_reference_card(
         "identifiers": [],
         "anchors": [],
         "normalized_sha256": digest,
+        "ast_symbols": [],
+        "dependencies": [],
+        "toolbelt_scan": "skipped_unbounded_or_non_code",
         "cold_scan": "bounded_prefix_suffix",
     }
 
@@ -362,9 +461,16 @@ class MechanicalPrefillIndex:
         # the scan exits immediately. Do not casefold the entire monster
         # payload, which would allocate another multi-million-token string.
         terms = sorted(
-            (term for term in query_terms if len(term) >= 3),
+            (
+                term
+                for term in query_terms
+                if len(term) >= 4
+                and term.casefold() not in _GENERIC_QUERY_TERMS
+            ),
             key=lambda term: (not any(marker in term for marker in ("_", "/", "\\", ".", ":", "-")), -len(term)),
         )[:16]
+        if not terms:
+            return {**base, "query_scan": "skipped_no_specific_terms"}
         preferred_terms = [
             term
             for term in terms
@@ -398,6 +504,7 @@ class MechanicalPrefillIndex:
                 "anchors": anchors,
                 "mechanical_score": len(hits) * 8 + len(paths) * 3 + len(symbols) * 2,
                 "query_scan": "bounded_exact_terms",
+                **_bounded_toolbelt_evidence(text, query_terms),
             }
         )
         return card
@@ -468,7 +575,16 @@ def build_dynamic_prefill(
             card = mechanical_index.query_card(message, query_terms)
             card["mechanical_score"] = sum(
                 8 * sum(term in value.casefold() for term in query_terms)
-                for value in [*card["paths"], *card["symbols"], *card["errors"], *card["urls"], *card["identifiers"], *card["anchors"]]
+                for value in [
+                    *card["paths"],
+                    *card["symbols"],
+                    *card["errors"],
+                    *card["urls"],
+                    *card["identifiers"],
+                    *card["anchors"],
+                    *[symbol.get("name", "") for symbol in card.get("ast_symbols", [])],
+                    *[item for dependency in card.get("dependencies", []) for item in dependency.get("imports", [])],
+                ]
             )
         card["_source_message"] = message
         all_cards.append(card)
@@ -489,7 +605,23 @@ def build_dynamic_prefill(
             source_sha256=card["source_sha256"],
             role=card["_source_message"]["role"],
             card=json.dumps(
-                {key: card[key] for key in ("reference_id", "source_sha256", "mechanical_score", "paths", "symbols", "errors", "urls", "identifiers", "anchors")},
+                {
+                    key: card[key]
+                    for key in (
+                        "reference_id",
+                        "source_sha256",
+                        "mechanical_score",
+                        "paths",
+                        "symbols",
+                        "errors",
+                        "urls",
+                        "identifiers",
+                        "anchors",
+                        "ast_symbols",
+                        "dependencies",
+                        "toolbelt_scan",
+                    )
+                },
                 ensure_ascii=False,
                 separators=(",", ":"),
             ),
