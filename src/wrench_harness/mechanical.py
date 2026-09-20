@@ -60,8 +60,92 @@ _WORD_NUMBERS = {
 }
 
 
+_REFERENCE_QUERY_STOPWORDS = frozenset(
+    {
+        "this", "that", "with", "from", "into", "older", "old", "history",
+        "reference", "only", "current", "intent", "task", "output", "exactly",
+        "one", "json", "object", "using", "schema", "action", "return", "read",
+        "file", "find", "search", "look", "for", "the", "and", "or", "not",
+        "never", "emit", "proposal", "now", "newest", "active", "bounded", "limit",
+        "limited", "bytes", "byte", "inspect", "source", "symbol",
+    }
+)
+
+
 def _proposal(action: str, **fields: Any) -> dict[str, Any]:
     return {"schema": "wrench.proposal.v1", "action": action, **fields}
+
+
+def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[str, Any] | None:
+    """Resolve a bounded read path from a literal in old reference text.
+
+    The newest intent supplies a quoted or code-like symbol. Only the matching
+    old source line can contribute a relative path. This is a deterministic
+    package-local lookup, not a model summary and not an execution authority.
+    """
+
+    if not isinstance(prompt, str) or not prompt.strip() or suffix_chars < 1:
+        return None
+    tail = prompt[-suffix_chars:]
+    if not re.search(r"\b(?:read|inspect|open|show)\b", tail, re.IGNORECASE):
+        return None
+    query_text = tail[-4096:]
+    quoted = re.findall(r"['\"`]([^'\"`\n]{3,160})['\"`]", query_text)
+    lexical = re.findall(r"[A-Za-z_][A-Za-z0-9_./\\:-]{3,95}", query_text)
+    priority = [
+        value for value in lexical
+        if any(marker in value for marker in ("_", "/", "\\", ".", ":", "-"))
+    ]
+    candidates = quoted or priority or lexical
+    terms: list[str] = []
+    seen: set[str] = set()
+    for value in candidates:
+        value = value.strip().strip(".,:;()[]{}")
+        folded = value.casefold()
+        if len(value) < 4 or folded in _REFERENCE_QUERY_STOPWORDS or folded in seen:
+            continue
+        seen.add(folded)
+        terms.append(value)
+        if len(terms) >= 32:
+            break
+    if not terms:
+        return None
+    # For a compact payload, the caller may provide the reference and current
+    # intent together in fewer than ``suffix_chars`` characters. Keep that
+    # compact payload searchable. For a large payload, retain the strict
+    # old-versus-tail split so a path mentioned only by the current intent is
+    # never treated as a historical lookup result.
+    old = prompt[:-len(tail)] if len(prompt) > len(tail) else prompt
+    if not old:
+        return None
+    pattern = re.compile("(?:" + "|".join(re.escape(term) for term in terms) + ")", re.IGNORECASE)
+    # Usually the reference occupies the prefix. A compact control block can
+    # place the matching reference line just inside the suffix, though, so a
+    # full-payload fallback is required for correctness at that boundary.
+    search_regions = [old] if old == prompt else [old, prompt]
+    limit_match = re.search(
+        r"(?:with\s+a?\s*|capped\s+at\s*|limit(?:ed)?\s+to\s*)([0-9][0-9,]*)\s*bytes?",
+        tail,
+        re.IGNORECASE,
+    )
+    max_bytes = int(limit_match.group(1).replace(",", "")) if limit_match else 4096
+    if not 1 <= max_bytes <= 256 * 1024:
+        return None
+    for region in search_regions:
+        for match in pattern.finditer(region):
+            start = region.rfind("\n", 0, match.start()) + 1
+            end = region.find("\n", match.end())
+            if end < 0:
+                end = len(region)
+            line = region[start:end].strip()
+            path_match = re.search(r"\bpath\s*=\s*([A-Za-z0-9_./\\-]+)", line, re.IGNORECASE)
+            if not path_match:
+                continue
+            path = path_match.group(1)
+            if path.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:[\\/]", path) or ".." in re.split(r"[\\/]", path):
+                continue
+            return _proposal("read_file", path=path, max_bytes=max_bytes)
+    return None
 
 
 def _path(prompt: str) -> str | None:

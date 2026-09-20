@@ -3,7 +3,7 @@ from __future__ import annotations
 from tools.score_mechanical_worker import evaluate_manifest
 from wrench_harness import execute_model_output
 from wrench_harness.core import json_result
-from wrench_harness.mechanical import mechanical_route
+from wrench_harness.mechanical import mechanical_route, reference_lookup_route
 
 
 def _arm(*, frontier_tokens: int, success: bool = True, fallback: bool = False, unsafe: bool = False) -> dict:
@@ -177,6 +177,20 @@ def test_mechanical_health_route_leaves_external_endpoint_to_verifier():
     assert proposal == {
         "status": "abstain",
         "fallback_reason": "health_endpoint_not_allowlisted",
+    }
+
+
+def test_reference_lookup_route_scans_suffix_boundary_when_reference_is_recent():
+    prompt = (
+        ("historical payload\n" * 2000)
+        + "symbol=run_worker path=src/wrench_harness/worker.py line=218\n"
+        + 'Inspect the source for symbol "run_worker" with a 65536 byte limit.'
+    )
+    assert reference_lookup_route(prompt) == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "src/wrench_harness/worker.py",
+        "max_bytes": 65536,
     }
 
 

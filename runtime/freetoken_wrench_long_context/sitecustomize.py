@@ -474,12 +474,19 @@ def _install_qwen_long_context_overlay() -> None:
             from fastapi.responses import JSONResponse
             import freetoken.server.openai_api as openai_api
             try:
-                from wrench_harness.mechanical import mechanical_route as embedded_mechanical_route
+                from wrench_harness.mechanical import (
+                    mechanical_route as embedded_mechanical_route,
+                    reference_lookup_route as embedded_reference_lookup_route,
+                )
             except Exception:
                 try:
-                    from mechanical import mechanical_route as embedded_mechanical_route
+                    from mechanical import (
+                        mechanical_route as embedded_mechanical_route,
+                        reference_lookup_route as embedded_reference_lookup_route,
+                    )
                 except Exception:
                     embedded_mechanical_route = None
+                    embedded_reference_lookup_route = None
 
             original_handle_chat_completion = openai_api.handle_chat_completion
 
@@ -510,6 +517,13 @@ def _install_qwen_long_context_overlay() -> None:
                     lookup_card = _build_reference_lookup_card(content, route_tail)
                     if candidate is None:
                         candidate = _reference_proposal_hint(route_tail, lookup_card)
+                    if candidate is None and embedded_reference_lookup_route is not None:
+                        try:
+                            routed = embedded_reference_lookup_route(content)
+                            if isinstance(routed, dict) and routed.get("schema") == "wrench.proposal.v1":
+                                candidate = routed
+                        except Exception:
+                            candidate = None
                     if (
                         isinstance(candidate, dict)
                         and candidate.get("schema") == "wrench.proposal.v1"

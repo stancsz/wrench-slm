@@ -1188,3 +1188,16 @@ default long-context setting; short-context residency and full-sequence
 prefill have different bottlenecks. Evidence:
 `phases/phase-86-nvfp4-cache-tuning/native-16k-cache320.json` and
 `phases/phase-86-nvfp4-cache-tuning/native-2m-cache320.json`.
+
+2026-09-20 package-local reference lookup hardening: the deterministic lookup
+route is now shared by `mechanical_route`, `WrenchWorker`, and the long-context
+OpenAI overlay. It scans the old prefix first and falls back to the full
+payload when a structured reference line lands inside the recent suffix
+boundary. The full suite passes `100 passed`; a fresh v15 portable package
+passes structural validation, and a package-local 38K simulated payload is
+accepted as a bounded `read_file` proposal with `backend=embedded-mechanical`
+and zero model calls. The public Hub revision is recorded separately. This is
+still embedded-toolbelt and package-integrity evidence, not native 4M retrieval
+quality, MiniMax parity, GGUF/Ollama/vLLM compatibility, or production
+readiness. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v15-validation.json`;
+tests `100 passed`.

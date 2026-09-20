@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .mechanical import mechanical_route
+from .mechanical import mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 
@@ -75,7 +75,7 @@ class WrenchWorker:
         users = [item.get("content") for item in messages if item.get("role") == "user"]
         prompt = users[-1] if users and isinstance(users[-1], str) else ""
         if use_mechanical_route:
-            mechanical = mechanical_route(prompt)
+            mechanical = mechanical_route(prompt) or reference_lookup_route(prompt)
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":
