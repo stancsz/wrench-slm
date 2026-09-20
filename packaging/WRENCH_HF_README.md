@@ -119,6 +119,13 @@ Wrench harness. It still does not claim dense native attention quality over
 every 4M token. It provides the practical model-local path while that native
 quality and throughput work continues.
 
+The current boundary-repaired runtime has also passed a direct native
+3,995,331-token provider probe: HTTP 200, `truncated=false`, and
+`native_context_pass=true` at a configured 4,000,000-token limit. The measured
+single-request prefill was 173,384.564 ms on the development RTX 5070 Ti with
+the default 64K recent tail. This is a capacity and serving-path result, not a
+claim of general retrieval quality or MiniMax parity.
+
 With `load_model=True`, ambiguous requests use the standard Transformers model
 and still pass through the same fail-closed verifier. High-confidence
 mechanical requests use the embedded route without a model call.
@@ -195,7 +202,8 @@ Safetensors is the canonical copy-paste format.
 The base checkpoint config is 2M position-capable. The 4M probe uses a runtime RoPE
 extension and is not long-context training. Native 4M retrieval quality, throughput
 under production concurrency, and the full MiniMax matched-workflow acceptance suite
-remain open measurements.
+remain open measurements. The current native fast-history profile is still
+experimental and opt-in.
 
 The standard Transformers path has verified architecture/configuration,
 tokenization, and full weight loading. Generation quality through plain
