@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.public-hf-copy-paste-receipt.v1",
+  "status": "PUBLIC_DOWNLOADABLE_PACKAGE",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "1a9548c659410582250f0bd5091fdd3824467888",
+  "visibility": "public",
+  "canonical_format": "huggingface-safetensors",
+  "weights_changed": false,
+  "updated_files": [
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md"
+  ],
+  "verified_remote_files": {
+    "model-00001-of-00002.safetensors": true,
+    "model-00002-of-00002.safetensors": true,
+    "wrench_server.py": true,
+    "wrench_runtime/worker.py": true,
+    "serve_freetoken.ps1": true
+  },
+  "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "backend_boundary": {
+    "model_local_server": "included and verified for the deterministic mechanical route",
+    "freetoken": "included experimental launcher and locally verified",
+    "vllm": "not yet verified",
+    "ollama_gguf": "not yet verified"
+  },
+  "release_boundary": "public experimental artifact, not production-ready or MiniMax-parity proof"
+}

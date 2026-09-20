@@ -97,11 +97,10 @@ that staging and sends the complete chat payload to the backend tokenizer. The
 portable package records which mode was used in its receipt, so a fast result
 cannot be reported as native-input evidence.
 
-The bundled FreeToken launcher enables native direct mode and uses an explicit
-16-slot MoE cache for the pure-SWA profile. FreeToken's automatic MoE cache
-sizing currently assumes a full-attention group and is not compatible with the
-zero-full-layer capacity profile. Adjust the launcher's `-MoeCacheSize` when
-the target GPU has a different memory budget.
+The bundled FreeToken launcher enables native direct mode, pins a 4M KV
+capacity, and uses automatic expert-cache sizing with an 8K reserve for the
+pure-SWA profile. Adjust the launcher's `-KvReserveTokens` when the target GPU
+has a different memory budget.
 
 ## Long-context labels
 
