@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.native-startup-boundary.v1",
+  "status": "FAIL_CLOSED_HOST_COMMIT_PRESSURE",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v54-direct-switch",
+  "runtime": "FreeToken daemon on 127.0.0.1:19000",
+  "attempts": [
+    {
+      "port": 28201,
+      "kv_tokens": 4000000,
+      "error": "WinError 1455 paging file too small while loading nvperf_host.dll, followed by shm.dll initialization failure"
+    },
+    {
+      "port": 28202,
+      "kv_tokens": 65536,
+      "error": "WinError 1455 paging file too small while loading cufft64_12.dll, followed by OpenBLAS allocation failure"
+    }
+  ],
+  "gpu_memory_used_mib": 15797,
+  "gpu_memory_total_mib": 16303,
+  "free_physical_memory_gib": 1.84,
+  "free_virtual_memory_gib": 2.77,
+  "model_generation_claim": false,
+  "native_4m_claim": false,
+  "processes_terminated": 0
+}

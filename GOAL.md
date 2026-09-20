@@ -1654,3 +1654,15 @@ tokens are now copied into the receipt when available. These are protocol and
 accounting receipts, not native model generation or retrieval-quality passes.
 Evidence: `phases/phase-147-native-direct-receipt` and
 `phases/phase-148-public-v55`.
+
+2026-09-20 real FreeToken startup boundary: the current public NVFP4 package
+was launched through the installed daemon on ports 28201 and 28202. Both
+backend attempts failed before model generation because spawned Torch workers
+hit Windows `WinError 1455` while loading CUDA DLLs; the 64K KV retry also hit
+OpenBLAS allocation failure. The daemon ended with `running=false` and
+`pid=null`. At measurement time the host had 1.84GB free physical memory and
+the GPU reported 15,797MiB of 16,303MiB used. No process was terminated.
+This closes the current host's native measurement attempt, not the product
+goal. A clean host or independent 5060Ti run is required for native 2M/4M
+generation and retrieval evidence. Evidence:
+`phases/phase-149-native-startup-boundary`.
