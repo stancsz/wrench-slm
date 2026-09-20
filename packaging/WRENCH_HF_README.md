@@ -114,6 +114,10 @@ automatic expert cache. This avoids allocating an oversized sparse address
 mapping on GPUs with limited memory. It improves the native serving profile,
 but it does not by itself prove fast dense generation at 4M.
 
+The launcher uses FreeToken's `--num-tokenizer 0` shared-tokenizer mode. This
+avoids an extra Torch tokenizer process and lowers Windows startup memory
+pressure when the native model is loading CUDA libraries.
+
 To expose the native FreeToken backend through the same package-local
 Ollama-shaped endpoint, use:
 

@@ -122,11 +122,13 @@ def materialize(
                     "native_mode": {
                         "native_direct_input": True,
                         "declared_input_context_tokens": 4000000,
-                        "kv_capacity_tokens_override": 4000000,
-                        "swa_window_tokens": 8192,
-                        "swa_pool_tokens": 8192,
-                        "expert_cache": "auto",
-                        "rope_max_position_runtime": 4000000,
+                    "kv_capacity_tokens_override": 4000000,
+                    "swa_window_tokens": 8192,
+                    "swa_pool_tokens": 8192,
+                    "expert_cache": "auto",
+                    "tokenizer_processes": 0,
+                    "shared_tokenizer_detokenizer": True,
+                    "rope_max_position_runtime": 4000000,
                         "max_prefill_length_tokens": 32768,
                         "native_direct_payload_verified": True,
                         "fast_history_profile": "opt_in_reference_only",
@@ -148,6 +150,13 @@ def materialize(
         launcher_path = target / "serve_freetoken.ps1"
         launcher_text = launcher_path.read_text(encoding="utf-8").replace(
             "--max-prefill-length 8192", "--max-prefill-length 32768"
+        )
+        # FreeToken's default starts an extra tokenizer process. Sharing the
+        # tokenizer with the detokenizer materially lowers Windows startup
+        # pressure when the native model also has to load CUDA DLLs.
+        launcher_text = launcher_text.replace(
+            "    --moe-strategy offload `\n",
+            "    --moe-strategy offload `\n    --num-tokenizer 0 `\n",
         )
         launcher_text = launcher_text.replace(
             '[string]$FreeTokenExecutable = "ft"',
@@ -218,6 +227,7 @@ def materialize(
             '    "--port", $nativeServePort,\n'
             '    "--served-model-name", "wrench-4b-qwen3.6-8e",\n'
             '    "--moe-strategy", "offload",\n'
+            '    "--num-tokenizer", 0,\n'
             '    "--kv-reserve-tokens", $KvReserveTokens,\n'
             '    "--num-tokens", 4000000,\n'
             '    "--max-running-requests", 1,\n'

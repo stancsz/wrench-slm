@@ -69,6 +69,8 @@ def test_materializer_embeds_worker_runtime():
     assert "--moe-cache-auto" in script
     assert "--kv-reserve-tokens $KvReserveTokens" in script
     assert "--num-tokens 4000000" in script
+    assert '"--num-tokenizer", 0' in script
+    assert '"tokenizer_processes": 0' in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "WRENCH_ALLOWED_ROOT" in script
     assert "dynamic_staged_prefill" in script

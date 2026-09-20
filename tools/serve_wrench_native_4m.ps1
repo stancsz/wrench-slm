@@ -22,6 +22,7 @@ $env:WRENCH_SWA_WINDOW = [string]$SlidingWindow
     --max-seq-len-override 4000000 `
     --max-prefill-length 32768 `
     --max-running-requests 1 `
+    --num-tokenizer 0 `
     --memory-ratio 0.90 `
     --moe-strategy offload `
     --moe-cache-auto `

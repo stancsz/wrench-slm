@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.native-startup-shared-tokenizer.v1",
+  "date": "2026-09-20",
+  "port": 28203,
+  "model": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v54-direct-switch",
+  "requested": {
+    "num_tokenizer": 0,
+    "num_tokens": 65536,
+    "max_seq_len_override": 4000000,
+    "moe_cache_size": 16,
+    "kv_reserve_tokens": 1024,
+    "max_prefill_length": 32768
+  },
+  "parsed_server_args": {
+    "num_tokenizer": 0,
+    "num_token_override": 65536,
+    "max_seq_len_override": 4000000
+  },
+  "status": "FAIL_NATIVE_STARTUP_WINDOWS_COMMIT_LIMIT",
+  "model_generation_reached": false,
+  "errors": [
+    "WinError 1455 loading torch/lib/cufft64_12.dll",
+    "WinError 1455 loading torch/lib/nvperf_host.dll"
+  ],
+  "scope": "real FreeToken startup probe; no native completion or retrieval claim",
+  "process_cleanup": "serve exited on backend worker failure; no unrelated process terminated"
+}

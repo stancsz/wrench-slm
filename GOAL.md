@@ -1666,3 +1666,13 @@ This closes the current host's native measurement attempt, not the product
 goal. A clean host or independent 5060Ti run is required for native 2M/4M
 generation and retrieval evidence. Evidence:
 `phases/phase-149-native-startup-boundary`.
+2026-09-20 native launcher memory-pressure repair: the generated portable
+launcher and standalone native launcher now pass FreeToken `--num-tokenizer 0`,
+sharing tokenization with the detokenizer so an extra Torch worker is not
+started. The generated package metadata records this startup profile and the
+targeted regression suite passed 12 tests. A fresh 64K-KV startup parsed
+`num_tokenizer=0`, but the scheduler and shared detokenizer still failed before
+generation with Windows `WinError 1455` while loading CUDA DLLs. This is a
+real startup improvement and sharper diagnosis, not native 2M/4M generation,
+retrieval quality, MiniMax parity, or production evidence. Evidence:
+`phases/phase-150-native-shared-tokenizer`.

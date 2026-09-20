@@ -143,6 +143,10 @@ expert-cache sizing with an 8K reserve for the pure-SWA profile. Adjust the
 launcher's `-KvReserveTokens` when the target GPU has a different memory
 budget.
 
+The launcher passes `--num-tokenizer 0` to FreeToken. This shares tokenization
+with the detokenizer instead of starting another Torch worker, which reduces
+Windows startup memory pressure while preserving the native request path.
+
 To keep the native backend inside the downloaded model package while exposing
 the package-local Ollama-shaped API, run:
 
