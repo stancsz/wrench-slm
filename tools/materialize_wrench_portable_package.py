@@ -221,6 +221,7 @@ def materialize(
             ),
             encoding="utf-8",
         )
+        shutil.copy2(repo_root / "packaging" / "Modelfile", target / "Modelfile")
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
             "package_name": "Wrench",
@@ -261,6 +262,7 @@ def materialize(
                     else "local experimental backend"
                 ),
                 "vllm": "requires registered Wrench architecture",
+                "ollama_safetensors": "experimental local import via bundled Modelfile; must be runtime-verified",
                 "ollama_gguf": "not verified",
             },
             "publication": {
@@ -296,6 +298,7 @@ def materialize(
                 "wrench_runtime/server.py",
                 "wrench-runtime.json",
                 "serve_freetoken.ps1",
+                "Modelfile",
             ],
             "quality_claim": False,
             "native_attention_claim": False,

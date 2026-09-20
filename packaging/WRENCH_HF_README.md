@@ -167,6 +167,11 @@ general native attention retrieval quality or MiniMax parity.
 - Ollama, llama.cpp, and GGUF: not verified for Wrench hybrid attention and lookup
   semantics. Do not assume a generic GGUF conversion preserves these features.
 
+The package also includes an experimental Ollama `Modelfile`. Ollama 0.32+
+may attempt local Safetensors import with `ollama create --experimental`, but
+this path is not considered verified until the exact Ollama build loads this
+architecture and passes a completion plus context smoke.
+
 GGUF is not a file-extension conversion. A valid GGUF release needs a tested
 llama.cpp or Ollama architecture adapter, tokenizer mapping, hybrid KV policy,
 and bundled lookup semantics. Until that adapter is verified, Hugging Face

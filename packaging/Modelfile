@@ -1,0 +1,6 @@
+# Experimental Ollama import for the downloaded Wrench Safetensors package.
+# The package-local Wrench runtime remains the canonical verified path.
+FROM .
+
+PARAMETER num_ctx 4000000
+PARAMETER temperature 0
