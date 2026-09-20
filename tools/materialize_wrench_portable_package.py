@@ -106,8 +106,10 @@ def materialize(
                     "native_mode": {
                         "native_direct_input": True,
                         "declared_input_context_tokens": 4000000,
+                        "kv_capacity_tokens_override": 4000000,
                         "swa_window_tokens": 8192,
                         "swa_pool_tokens": 8192,
+                        "expert_cache": "auto",
                         "rope_max_position_runtime": 4000000,
                         "max_prefill_length_tokens": 32768,
                         "native_direct_payload_verified": True,
@@ -126,6 +128,14 @@ def materialize(
         launcher_path = target / "serve_freetoken.ps1"
         launcher_text = launcher_path.read_text(encoding="utf-8").replace(
             "--max-prefill-length 8192", "--max-prefill-length 32768"
+        )
+        launcher_text = launcher_text.replace(
+            "    [int]$MoeCacheSize = 16",
+            "    [int]$KvReserveTokens = 8192",
+        )
+        launcher_text = launcher_text.replace(
+            "    --moe-cache-size $MoeCacheSize `",
+            "    --moe-cache-auto `\n    --kv-reserve-tokens $KvReserveTokens `\n    --num-tokens 4000000 `",
         )
         launcher_text = launcher_text.replace(
             '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"',
@@ -215,7 +225,7 @@ def materialize(
             "backends": {
                 "transformers": "Transformers >=5.17.0 config/tokenizer verified; full generation backend-dependent",
                 "freetoken": (
-                    "local experimental backend with ModelOpt NVFP4"
+                    "local experimental backend with ModelOpt NVFP4, pinned 4M KV capacity, and auto expert cache"
                     if quantized_candidate
                     else "local experimental backend"
                 ),

@@ -67,6 +67,11 @@ this model-local process. The response includes the raw input estimate,
 effective route, model-call count, and dynamic-prefill receipt. Remove
 `--mechanical-only` when the local backend is ready to load the model weights.
 
+The bundled FreeToken launcher pins the 4M KV capacity explicitly and uses an
+automatic expert cache. This avoids allocating an oversized sparse address
+mapping on GPUs with limited memory. It improves the native serving profile,
+but it does not by itself prove fast dense generation at 4M.
+
 This endpoint is part of the downloaded package, not a separately installed
 Wrench harness. It still does not claim dense native attention quality over
 every 4M token. It provides the practical model-local path while that native

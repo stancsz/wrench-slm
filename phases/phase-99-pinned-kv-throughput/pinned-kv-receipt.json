@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.pinned-kv-throughput-receipt.v1",
+  "candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v27",
+  "huggingface_revision": "9eafc5a6101675d38bdac4957f72fe8ffa35cd52",
+  "geometry_fix": {
+    "max_seq_len_override": 4000000,
+    "num_tokens_override": 4000000,
+    "moe_cache": "auto",
+    "kv_reserve_tokens": 8192
+  },
+  "before": {
+    "kv_gib": 8.69,
+    "free_gpu_after_init_gib": 0.0,
+    "actual_prompt_tokens": 65470,
+    "elapsed_ms": 77205.615
+  },
+  "after": {
+    "kv_gib": 1.59,
+    "free_gpu_after_init_gib": 8.29,
+    "actual_prompt_tokens": 65471,
+    "elapsed_ms": 23449.596,
+    "truncated": false,
+    "http_status": 200
+  },
+  "speedup_ratio": 3.292,
+  "native_generation_throughput_pass": false,
+  "production_ready": false
+}

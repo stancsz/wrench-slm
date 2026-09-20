@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "9eafc5a6101675d38bdac4957f72fe8ffa35cd52",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v27",
+  "canonical_format": "huggingface-safetensors",
+  "weights_changed": false,
+  "launcher_changes": [
+    "--num-tokens 4000000",
+    "--moe-cache-auto",
+    "--kv-reserve-tokens 8192"
+  ],
+  "remote_hash_verification": {
+    "serve_freetoken.ps1": "matched",
+    "wrench-package.json": "matched"
+  },
+  "native_64k_after_fix_elapsed_ms": 23449.596,
+  "native_64k_before_fix_elapsed_ms": 77205.615,
+  "native_4m_generation_quality_verified": false,
+  "production_ready": false
+}

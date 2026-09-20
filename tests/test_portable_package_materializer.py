@@ -45,7 +45,8 @@ def test_materializer_embeds_worker_runtime():
     assert "wrench_runtime/worker.py" in script
     assert "wrench_runtime/patching.py" in script
     assert "WrenchWorker" in script
-    assert "--moe-cache-size $MoeCacheSize" in script
-    assert "--moe-cache-auto" not in script
+    assert "--moe-cache-auto" in script
+    assert "--kv-reserve-tokens $KvReserveTokens" in script
+    assert "--num-tokens 4000000" in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "dynamic_staged_prefill" in script

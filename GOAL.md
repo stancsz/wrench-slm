@@ -1332,3 +1332,17 @@ estimate, effective working tokens, and input mode instead of reporting zero
 prompt tokens. This is direct endpoint capacity plus fast mechanical routing,
 not dense native generation quality or MiniMax parity. Evidence:
 `phases/phase-98-native-embedded-route`.
+
+2026-09-20 native KV geometry optimization: the 4M long-context overlay was
+letting FreeToken's cache planner create an approximately `885M`-page mapping,
+which consumed `8.69 GiB` of KV allocation and left no usable GPU headroom.
+Pinning `--num-tokens 4000000` keeps the 4M capacity while reducing the actual
+KV allocation to `1.59 GiB` and leaving `8.29 GiB` free for expert serving. On
+matched direct 64K input, native latency improved from `77,205.615` ms to
+`23,449.596` ms, about `3.3x`; a roughly 1K input completed in `706.233` ms.
+This is a real native serving improvement, but the 64K result remains too slow
+for the throughput gate. Evidence: `phases/phase-99-pinned-kv-throughput`.
+
+The pinned launcher is now public in v27 at Hub revision
+`9eafc5a6101675d38bdac4957f72fe8ffa35cd52`; its remote launcher and package
+manifest hashes match the local candidate. The weights remain unchanged.

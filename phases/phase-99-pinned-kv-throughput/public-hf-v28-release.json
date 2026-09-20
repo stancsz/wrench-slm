@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "9dd2d4f4039ce0e0affa8d3f6fb1d153ac626f9f",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v28",
+  "canonical_format": "huggingface-safetensors",
+  "weights_changed": false,
+  "documentation_update": "pinned 4M KV capacity and automatic expert cache",
+  "remote_hash_verification": {
+    "serve_freetoken.ps1": "matched",
+    "README.md": "matched"
+  },
+  "native_64k_after_fix_elapsed_ms": 23449.596,
+  "native_64k_before_fix_elapsed_ms": 77205.615,
+  "native_4m_generation_quality_verified": false,
+  "production_ready": false
+}
