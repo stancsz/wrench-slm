@@ -16,6 +16,12 @@ pass and bounded multi-file reference retrieval to
   120/120 exact eligible proposals, zero prohibited accepts, zero transport or
   runtime abstentions, 220 mechanical fast paths, zero model calls, 0.578 ms
   median, 28.323 ms p95.
+- The unchanged historical 220-case fixture also ran through the same public
+  package: 200/220 outcome matches, 82/120 exact eligible proposals, zero
+  prohibited accepts, zero transport or runtime abstentions, zero model calls,
+  0.265 ms median, and 46.639 ms p95. All 20 mismatches were historical
+  eligible patch prompts that omit the requested edit content, so the worker
+  correctly returned `patch_content_missing` rather than inventing a diff.
 
 ## Fresh Hub verification
 
