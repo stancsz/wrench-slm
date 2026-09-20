@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.public-hf-sync.v1",
+  "status": "PASS_PUBLIC_RUNTIME_SYNC",
+  "repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "72bbc1e748f6ca35f41a972f13c2b224720c771b",
+  "commit_url": "https://huggingface.co/stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M/commit/72bbc1e748f6ca35f41a972f13c2b224720c771b",
+  "files": {
+    "wrench_runtime/server.py": "DADE0A78A9F6E7CC5302AFCD1E583785232E2CF03E9C2B398D1654A6E7FF037A",
+    "serve_freetoken.ps1": "99497EC6A55A88BAF0028704153A4374943A501B718984DDD06D105F33C9E579",
+    "README.md": "9B84412FA810FB99DC41F23A7DBEFFDEB29ABE925AEBB68BA85CFFFD83421DCF",
+    "WRENCH_PORTABLE_DISTRIBUTION.md": "896F7F72BAFB2B0B9EBF2724C67F13C5C38043A2D11CED301BAFCA4D657AE2EE"
+  },
+  "remote_hashes_match_local": true,
+  "weights_changed": false,
+  "claims_unchanged": [
+    "stock Ollama checkpoint loading remains unverified",
+    "native dense 4M retrieval quality remains unverified",
+    "MiniMax parity remains unverified",
+    "production readiness remains unverified"
+  ]
+}

@@ -1534,4 +1534,6 @@ route, and 109.977 ms request time. Source and materializer tests pass, and the
 full repository regression is 141 passed. This closes a package integration
 gap, not stock Ollama loading, native dense 4M retrieval quality, MiniMax
 parity, or production readiness. Evidence:
-`phases/phase-133-native-ollama-bridge`.
+`phases/phase-133-native-ollama-bridge`. The updated runtime and launcher were
+also synchronized to the public Hub revision
+`72bbc1e748f6ca35f41a972f13c2b224720c771b`; the weights were unchanged.
