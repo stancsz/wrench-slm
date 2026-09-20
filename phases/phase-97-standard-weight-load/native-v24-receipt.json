@@ -1,0 +1,37 @@
+{
+  "schema": "wrench.native-backend-receipt.v1",
+  "package_candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v24",
+  "backend": "FreeToken",
+  "weight_format": "ModelOpt NVFP4 W4A16",
+  "model_load": {
+    "status": "PASS_FREETOKEN_WEIGHT_LOAD",
+    "max_seq_len": 4000000,
+    "kv_cache_allocation_gib": 8.69,
+    "moe_strategy": "offload",
+    "global_full_layers": "none",
+    "swa_window": 8192
+  },
+  "standard_transformers": {
+    "status": "NOT_VERIFIED",
+    "workstation_version": "4.57.1",
+    "freetoken_environment_version": "5.16.1",
+    "required_minimum": "5.17.0"
+  },
+  "native_64k_probe": {
+    "status": "PASS_NATIVE_DIRECT_INPUT_SLOW",
+    "requested_prompt_tokens": 65536,
+    "actual_prompt_tokens": 65470,
+    "truncated": false,
+    "http_status": 200,
+    "completion_tokens": 63,
+    "elapsed_ms": 77205.615,
+    "decode_tokens_per_second": 0.52
+  },
+  "fused_profile": {
+    "status": "REJECTED_BY_BACKEND",
+    "reason": "nvfp4 experts require offload or cpu"
+  },
+  "native_4m_retrieval_quality_verified": false,
+  "throughput_gate": "FAIL",
+  "production_ready": false
+}

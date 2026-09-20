@@ -1311,3 +1311,14 @@ the request in `138.212` ms. The 64K and 2M probes completed in `35.488` ms and
 mechanical route intentionally bypasses dense native attention. Native dense
 4M retrieval quality, learned MiniMax parity, and production readiness remain
 open. Evidence: `phases/phase-96-model-local-server`.
+
+2026-09-20 native backend load probe: the v24 NVFP4 package loaded through
+FreeToken with a 4,000,000-token address space and an 8.69 GiB KV allocation.
+A ready native endpoint accepted a direct 65,470-token prompt with no
+truncation and returned HTTP 200, proving the direct-input capacity path at
+64K. However, the same request took `77,205.615` ms and decoded at about
+`0.52 token/s` under expert offload. The fused MoE profile was rejected by the
+backend for NVFP4. Standard Transformers full-weight loading remains
+unverified because the available environments are below the package's 5.17
+minimum. This is a native capacity pass but a throughput fail. Evidence:
+`phases/phase-97-standard-weight-load`.
