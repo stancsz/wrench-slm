@@ -210,6 +210,9 @@ _SYMBOL_RE = re.compile(
 _ID_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]{3,}\b")
 _URL_RE = re.compile(r"https?://[^\s)]+")
 _TERM_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
+_QUERY_ANCHOR_RE = re.compile(
+    r"\b[A-Za-z][A-Za-z0-9]*(?:[-_\/:.][A-Za-z0-9][A-Za-z0-9._\/-]*)+\b"
+)
 _CODE_FENCE_RE = re.compile(r"```(?P<language>[A-Za-z0-9_+.-]*)\n(?P<body>.*?)```", re.DOTALL)
 _CODE_SUFFIXES = {".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".go", ".rs", ".cpp", ".c", ".h"}
 _MAX_TOOLBELT_SOURCE_BYTES = 128 * 1024
@@ -608,13 +611,16 @@ class MechanicalPrefillIndex:
             return {**base, "query_scan": "skipped_no_specific_terms"}
         fallback_terms = [term for term in terms if term not in preferred_terms]
         for term in [*preferred_terms, *fallback_terms]:
+            # One hit per distinct query anchor keeps the hot reducer bounded
+            # on a 4M reference. More occurrences of the same path or symbol
+            # add less evidence than a second independent error, URL, or path.
             position = text.find(term)
             if position < 0 and term.casefold() != term:
                 position = text.find(term.casefold())
             if position >= 0:
                 hits.append((position, term))
-                if term in preferred_terms or len(hits) >= 4:
-                    break
+            if len(hits) >= 8:
+                break
         anchors: list[str] = []
         evidence_windows: list[dict[str, Any]] = []
         for position, _ in sorted(hits)[:8]:
@@ -720,6 +726,7 @@ def build_dynamic_prefill(
     cold = [message for message in prior if id(message) not in hot_ids]
 
     current_terms = _TERM_RE.findall(current["content"])
+    current_terms.extend(_QUERY_ANCHOR_RE.findall(current["content"]))
     query_terms = set(current_terms)
     all_cards = []
     for index, message in enumerate(cold):

@@ -1847,3 +1847,15 @@ HTTP server accepted a 4,000,000-token estimated raw request, returned HTTP
 145.594 ms. The direct worker route measured 16.484 ms with zero model calls.
 This proves model-local 4M intake plus MapReduce, not dense native 4M
 attention. Evidence: `phases/phase-166-public-v67-4m-endpoint`.
+
+2026-09-20 bounded multi-anchor retrieval: the reducer now preserves one first
+hit for each distinct path, symbol, or error-code anchor, up to eight evidence
+windows. The 4M retrieval diagnostic retained 1.0 reference recall, 1.0
+evidence-window recall, 1.0 current-intent preservation, and 1.0 hash binding;
+cold ingest was 65.469 ms and hot selection 21.185 ms with a 52-token staged
+prefill. Full regression passed 153 tests. Evidence:
+`phases/phase-167-multi-anchor-retrieval`.
+
+The updated retrieval runtime was published in public v68 at Hub revision
+`33341a7551b4fd4e3cee9ef3a4b2baa28832e407`; fresh-downloaded runtime hashes
+match the local package.

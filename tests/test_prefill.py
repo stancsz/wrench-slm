@@ -152,6 +152,32 @@ def test_dynamic_prefill_keeps_hit_window_inside_one_line_monster_reference():
     assert receipt["model_prefill_token_count"] <= 4_000
 
 
+def test_dynamic_prefill_keeps_multiple_distinct_query_hits():
+    messages = [
+        {
+            "role": "assistant",
+            "content": (
+                "first src/services/worker.py class Worker\n"
+                + ("stale filler\n" * 200)
+                + "second ERR-220-7 src/services/worker.py timeout\n"
+            ),
+        },
+        {"role": "user", "content": "Find src/services/worker.py and ERR-220-7."},
+    ]
+    index = MechanicalPrefillIndex()
+    index.add_all(messages)
+    staged, receipt = build_dynamic_prefill(
+        messages,
+        model_prefill_budget=1_000,
+        hot_token_budget=100,
+        reference_index_budget=900,
+        mechanical_index=index,
+    )
+    rendered = "\n".join(message["content"] for message in staged)
+    assert "ERR-220-7" in rendered
+    assert receipt["evidence_window_count"] >= 2
+
+
 def test_dynamic_prefill_skips_ast_for_monster_reference():
     messages = [
         {"role": "assistant", "content": "class Worker:\n" + ("stale context\n" * 20_000)},
