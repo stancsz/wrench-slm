@@ -155,7 +155,7 @@ def _wait_for_ready(endpoint: str, model: str, timeout_seconds: float) -> dict[s
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
-    if len(rows) != 220:
+    if len(rows) != 220 and not args.allow_noncanonical_count:
         raise ValueError(f"expected the canonical 220-case fixture, got {len(rows)} rows")
     results: list[dict[str, Any]] = []
     latencies: list[float] = []
@@ -230,6 +230,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "cases_path": str(args.cases.resolve()),
         "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
         "request_count": len(results),
+        "canonical_case_count": len(rows) == 220,
         "mechanical_fast_path_enabled": not args.disable_mechanical_fast_path,
         "health_fixture_enabled": args.health_fixture,
         "readiness": readiness,
@@ -306,6 +307,11 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=10)
     parser.add_argument("--startup-timeout", type=float, default=60)
     parser.add_argument("--disable-mechanical-fast-path", action="store_true")
+    parser.add_argument(
+        "--allow-noncanonical-count",
+        action="store_true",
+        help="run a named held-out split without weakening the default 220-case contract",
+    )
     parser.add_argument(
         "--health-fixture",
         action="store_true",

@@ -2030,3 +2030,12 @@ calls, and passed TTC plus verifier checks. This confirms the direct monster
 context intake on the current package after the contract and localhost fixes;
 it remains MapReduce intake evidence rather than dense native 4M attention.
 Evidence: `phases/phase-189-v74-ollama-4m`.
+
+2026-09-20 v74 held-out final-split diagnostic: the runner now supports an
+explicit noncanonical split mode while retaining the default 220-case guard.
+The 44-row v2 final slice produced 43/44 expected outcomes, 23/24 eligible
+exact accepts, zero prohibited accepts, zero model calls, 23.267 ms median,
+and 77.761 ms p95. The one miss was a live localhost health-service error and
+the verifier failed closed. This split was not used for tuning, and the receipt
+is held-out diagnostic evidence rather than final production authorization.
+Evidence: `phases/phase-190-v74-final-heldout`.
