@@ -148,6 +148,98 @@ def test_localhost_health_probe_uses_deterministic_ipv4_resolution(monkeypatch, 
     assert result["status"] == "accepted"
     assert seen == {"host": "127.0.0.1", "request": ("GET", "/health")}
 
+
+def test_health_fixture_redirect_is_explicit_and_preserves_original_url(monkeypatch, tmp_path: Path):
+    import wrench_harness.core as core
+
+    seen = {}
+
+    class Response:
+        status = 200
+
+        def read(self, limit):
+            return b'{"fixture":true}'
+
+    class Connection:
+        def __init__(self, host, port, timeout):
+            seen["host"] = host
+            seen["port"] = port
+            self.sock = self
+
+        def connect(self):
+            return None
+
+        def settimeout(self, value):
+            return None
+
+        def request(self, method, path, headers):
+            seen["request"] = (method, path)
+
+        def getresponse(self):
+            return Response()
+
+        def close(self):
+            return None
+
+    monkeypatch.setenv("WRENCH_TEST_HEALTH_FIXTURE_BASE_URL", "http://127.0.0.1:28907")
+    monkeypatch.setattr(core.http.client, "HTTPConnection", Connection)
+    result = execute_proposal(
+        proposal(
+            "health_read",
+            url="http://localhost:4000/health",
+            timeout_seconds=3,
+            max_bytes=4096,
+        ),
+        tmp_path,
+    )
+    assert result["status"] == "accepted"
+    assert result["observation"]["url"] == "http://localhost:4000/health"
+    assert result["observation"]["transport_url"] == "http://127.0.0.1:28907/health"
+    assert seen == {"host": "127.0.0.1", "port": 28907, "request": ("GET", "/health")}
+
+
+def test_invalid_health_fixture_configuration_keeps_production_transport(monkeypatch, tmp_path: Path):
+    import wrench_harness.core as core
+
+    seen = {}
+
+    class Response:
+        status = 200
+
+        def read(self, limit):
+            return b"ok"
+
+    class Connection:
+        def __init__(self, host, port, timeout):
+            seen["host"] = host
+            seen["port"] = port
+            self.sock = self
+
+        def connect(self):
+            return None
+
+        def settimeout(self, value):
+            return None
+
+        def request(self, method, path, headers):
+            seen["request"] = (method, path)
+
+        def getresponse(self):
+            return Response()
+
+        def close(self):
+            return None
+
+    monkeypatch.setenv("WRENCH_TEST_HEALTH_FIXTURE_BASE_URL", "https://external.invalid")
+    monkeypatch.setattr(core.http.client, "HTTPConnection", Connection)
+    result = execute_proposal(
+        proposal("health_read", url="http://localhost:4000/health", timeout_seconds=3, max_bytes=4096),
+        tmp_path,
+    )
+    assert result["status"] == "accepted"
+    assert "transport_url" not in result["observation"]
+    assert seen == {"host": "127.0.0.1", "port": 4000, "request": ("GET", "/health")}
+
 def test_pruning_source_rejects_packed_ftw(tmp_path: Path):
     (tmp_path / "config.json").write_text(
         json.dumps(

@@ -222,6 +222,37 @@ def _git_read_status(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     return _accept("git_read_status", {"repo_root": str(repo), "output": completed.stdout, "mutated": False})
 
 
+def _health_transport_url(url: str) -> str:
+    """Optionally redirect local health reads to an explicit test fixture.
+
+    This is deliberately opt-in and loopback-only. The original request URL
+    remains in the observation, while the transport URL makes diagnostic
+    fixture use auditable. Production behavior is unchanged when the
+    test-only environment variable is absent or invalid.
+    """
+
+    raw_base = os.environ.get("WRENCH_TEST_HEALTH_FIXTURE_BASE_URL")
+    if not raw_base:
+        return url
+    try:
+        base = urllib.parse.urlparse(raw_base)
+        if (
+            base.scheme != "http"
+            or base.hostname not in ALLOWED_HEALTH_HOSTS
+            or base.path not in {"", "/"}
+            or base.query
+            or base.fragment
+        ):
+            return url
+        port = base.port
+    except ValueError:
+        return url
+    hostname = base.hostname or ""
+    display_host = f"[{hostname}]" if ":" in hostname else hostname
+    netloc = display_host + (f":{port}" if port is not None else "")
+    return urllib.parse.urlunparse((base.scheme, netloc, urllib.parse.urlparse(url).path, "", "", ""))
+
+
 def _health_read(proposal: dict[str, Any]) -> dict[str, Any]:
     url = proposal.get("url")
     timeout = proposal.get("timeout_seconds", 3)
@@ -233,17 +264,19 @@ def _health_read(proposal: dict[str, Any]) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != "http" or parsed.hostname not in ALLOWED_HEALTH_HOSTS or parsed.path not in ALLOWED_HEALTH_PATHS or parsed.query or parsed.fragment:
         return _abstain("health_endpoint_not_allowlisted")
+    transport_url = _health_transport_url(url)
+    transport = urllib.parse.urlparse(transport_url)
     # Resolve the allowlisted spelling to IPv4 explicitly. This keeps local
     # health probes deterministic on hosts where ``localhost`` resolves to an
     # IPv6 listener first while preserving the original URL in the receipt.
-    connection_host = "127.0.0.1" if parsed.hostname == "localhost" else parsed.hostname
-    connection = http.client.HTTPConnection(connection_host, parsed.port or 80, timeout=float(timeout))
+    connection_host = "127.0.0.1" if transport.hostname == "localhost" else transport.hostname
+    connection = http.client.HTTPConnection(connection_host, transport.port or 80, timeout=float(timeout))
     deadline = time.monotonic() + float(timeout)
     try:
         connection.connect()
         if connection.sock is not None:
             connection.sock.settimeout(max(0.1, deadline - time.monotonic()))
-        path = parsed.path or "/"
+        path = transport.path or "/"
         connection.request("GET", path, headers={"Accept": "application/json, text/plain, */*"})
         response = connection.getresponse()
         remaining = deadline - time.monotonic()
@@ -255,7 +288,10 @@ def _health_read(proposal: dict[str, Any]) -> dict[str, Any]:
         if len(data) > limit:
             return _abstain("health_response_size_limit")
         text = data.decode("utf-8")
-        return _accept("health_read", {"url": url, "status": response.status, "body": text})
+        observation = {"url": url, "status": response.status, "body": text}
+        if transport_url != url:
+            observation["transport_url"] = transport_url
+        return _accept("health_read", observation)
     except (http.client.HTTPException, TimeoutError, UnicodeDecodeError, OSError) as exc:
         return _abstain("health_read_error", type(exc).__name__)
     finally:
