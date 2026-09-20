@@ -30,7 +30,7 @@
   },
   "verification": {
     "launcher_powershell_parse_errors": 0,
-    "tests_passed": 121,
+    "tests_passed": 122,
     "tests_warnings": 10,
     "huggingface_public": true,
     "huggingface_revision": "86d72453123fbdd97bb3666f390f10d787922321",
