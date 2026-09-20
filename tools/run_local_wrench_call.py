@@ -23,7 +23,7 @@ def main() -> int:
         max_tokens=int(request["max_tokens"]),
         timeout_seconds=float(request["timeout"]),
         capture_trace=True,
-        mechanical_fast_path=True,
+        mechanical_fast_path=bool(request.get("mechanical_fast_path", True)),
     )
     sys.stdout.write(json.dumps(result, ensure_ascii=False))
     return 0

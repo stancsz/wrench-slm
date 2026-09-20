@@ -1970,3 +1970,18 @@ baseline only, with no execution or final workflow claim. It reinforces the
 Wrench value proposition: routine work should avoid frontier prefill whenever
 the deterministic reducer and verifier can establish a bounded safe action.
 Evidence: `phases/phase-178-prompt-complete-teacher-capture`.
+
+2026-09-20 matched downloaded-package replay: the diagnostic runner gained an
+explicit mode that sends every Wrench request through the model-local HTTP
+endpoint instead of short-circuiting in the client. Safe mechanical
+abstentions are now terminal and do not invoke the frontier teacher; only a
+non-mechanical local/model failure can use identical fallback. On the same
+220-case prompt-complete contract, the downloaded v73-style package produced
+93.5331% weighted mechanical frontier-token coverage, 98.4379% net frontier
+token savings, 96.5767% weighted final success, 2/220 fallbacks, zero
+prohibited accepts, zero unexpected mutations, 229.680 ms median latency, and
+440.378 ms p95. The evaluator status is `PASS_MECHANICAL_WORKER`. This is the
+strongest current mechanical-worker receipt, but it is not final production
+enablement because the trace set is historical, teacher capture is
+proposal-only, and native dense 4M attention remains unverified. Evidence:
+`phases/phase-180-matched-package-terminal-abstain`.

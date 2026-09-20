@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from tools.run_diagnostic_worker_arms import _strict_success, _unexpected_mutation, _verifier_success
+from tools.run_diagnostic_worker_arms import (
+    _strict_success,
+    _unexpected_mutation,
+    _verifier_success,
+    _wrench_needs_teacher_fallback,
+)
 import tools.run_diagnostic_worker_arms as diagnostic
 
 
@@ -66,3 +71,9 @@ def test_rules_arm_routes_explicit_abstention_to_teacher_fallback(tmp_path):
     }
     assert diagnostic._rule_result(accepted, str(tmp_path)) is not None
     assert diagnostic._rule_result(boundary, str(tmp_path)) is None
+
+
+def test_mechanical_abstention_is_terminal_and_does_not_pay_teacher_tokens():
+    assert _wrench_needs_teacher_fallback({"status": "abstain", "mechanical_fast_path": True}) is False
+    assert _wrench_needs_teacher_fallback({"status": "abstain", "mechanical_fast_path": False}) is True
+    assert _wrench_needs_teacher_fallback({"status": "accepted", "mechanical_fast_path": False}) is False

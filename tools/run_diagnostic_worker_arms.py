@@ -101,6 +101,12 @@ def _unexpected_mutation(result: dict[str, Any]) -> bool:
     return isinstance(observation, dict) and bool(observation.get("mutated") or observation.get("applied"))
 
 
+def _wrench_needs_teacher_fallback(result: dict[str, Any]) -> bool:
+    """Fallback only when the local/model path, not the mechanical boundary, failed."""
+
+    return result.get("status") != "accepted" and not bool(result.get("mechanical_fast_path", False))
+
+
 def _call_teacher(
     endpoint: str,
     model: str,
@@ -246,7 +252,7 @@ def _load_teacher_capture(path: Path, cases: list[dict[str, Any]], root: str) ->
 
 
 def _rule_result(row: dict[str, Any], root: str) -> dict[str, Any] | None:
-    proposal = mechanical_route(row["prompt"])
+    proposal = mechanical_route(row["prompt"], allowed_root=root)
     # A deterministic abstention is a routing miss, not a completed rules
     # arm. The named fallback arm must send that request to the identical
     # teacher, otherwise it silently measures "rules only" and understates
@@ -266,6 +272,7 @@ def _local_result(
     *,
     timeout: float,
     max_tokens: int,
+    mechanical_fast_path: bool = True,
 ) -> dict[str, Any]:
     """Run local Wrench inference with a hard batch deadline.
 
@@ -279,7 +286,7 @@ def _local_result(
     # the intended Wrench execution path for routine work and avoids spawning
     # a child process for cases that require no model inference at all.
     fast = _rule_result(row, root)
-    if fast is not None:
+    if mechanical_fast_path and fast is not None:
         return {
             "result": fast["result"],
             "latency_ms": (time.perf_counter() - started) * 1000,
@@ -299,6 +306,7 @@ def _local_result(
         "root": root,
         "timeout": timeout,
         "max_tokens": max_tokens,
+        "mechanical_fast_path": mechanical_fast_path,
     }
     try:
         completed = subprocess.run(
@@ -440,9 +448,14 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
             root,
             timeout=args.timeout,
             max_tokens=args.wrench_max_tokens,
+            mechanical_fast_path=not args.disable_client_mechanical_fast_path,
         )
         wrench_result = wrench_local["result"]
-        if wrench_result.get("status") == "accepted":
+        # The package endpoint owns its mechanical boundary. A deterministic
+        # abstention is already a safe terminal result and must not be sent to
+        # the frontier teacher. Only a non-mechanical local/model failure is
+        # eligible for identical-teacher fallback.
+        if not _wrench_needs_teacher_fallback(wrench_result):
             wrench_final = wrench_result
             wrench_frontier = 0
             wrench_cost = 0.0
@@ -521,6 +534,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         "authorization": "pending_human_approval",
         "teacher": {"endpoint": args.teacher_endpoint, "model": args.teacher_model, "identity_status": "endpoint_id_recorded"},
         "wrench": {"endpoint": args.wrench_endpoint, "model": args.wrench_model},
+        "client_mechanical_fast_path": not args.disable_client_mechanical_fast_path,
         "input_path": str(args.cases.resolve()),
         "input_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -553,6 +567,11 @@ def main() -> int:
     parser.add_argument("--wrench-max-tokens", type=int, default=256)
     parser.add_argument("--timeout", type=float, default=10.0)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument(
+        "--disable-client-mechanical-fast-path",
+        action="store_true",
+        help="send every Wrench-arm request to the configured HTTP endpoint",
+    )
     args = parser.parse_args()
     if not 1 <= args.teacher_workers <= 16:
         raise ValueError("teacher-workers must be between 1 and 16")
