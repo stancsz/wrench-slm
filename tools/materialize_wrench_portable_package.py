@@ -159,7 +159,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             "    [int]$KvReserveTokens = 8192",
-            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096",
+            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096,\n    [switch]$NativeDirectInput,\n    [switch]$OllamaApi,\n    [int]$NativePort = 28901,\n    [int]$UpstreamTimeoutSeconds = 9",
         )
         launcher_text = launcher_text.replace(
             "    [int]$Port = 28900,\n",
@@ -171,7 +171,11 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"',
-            '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n'
+            'if ($NativeDirectInput) {\n'
+            '    $env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n'
+            '} else {\n'
+            '    $env:WRENCH_NATIVE_DIRECT_INPUT = "0"\n'
+            '}\n'
             '$env:WRENCH_ALLOWED_ROOT = (Resolve-Path -LiteralPath $AllowedRoot).Path\n'
             '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
         )

@@ -222,11 +222,12 @@ The bundled launcher requires a compatible FreeToken build and a CUDA GPU:
 ```
 
 The package declares a 4M input endpoint and uses an 8K recent SWA window in the
-experimental native profile. The bundled launcher selects native direct input,
-pins a 4M KV capacity, and uses FreeToken's automatic expert cache with an 8K
-reserve. The embedded worker's default fast path mechanically reduces noisy
-payloads to a 64K effective working context. Native direct input and fast
-staged input are recorded separately in receipts.
+experimental native profile. The bundled launcher pins a 4M KV capacity and
+uses FreeToken's automatic expert cache with an 8K reserve. The default
+`-OllamaApi` path mechanically reduces noisy payloads to a 64K effective
+working context. Use `-NativeDirectInput` to send the complete raw request to
+the native backend. Native direct input and fast staged input are recorded
+separately in receipts.
 
 The embedded reducer has also passed a 4M mechanical stress diagnostic: 3,999,951
 estimated raw tokens reduced to a 92-token model prefill, with 1.0 target-reference

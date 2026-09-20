@@ -8,7 +8,9 @@ bounded model prefill. It is intentionally narrow and never executes tools.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import threading
 import time
 import uuid
@@ -204,6 +206,30 @@ def _latest_user_prompt(messages: list[dict[str, Any]]) -> str:
     return ""
 
 
+def _native_direct_input_receipt(
+    messages: list[dict[str, str]],
+    raw_tokens: int,
+) -> dict[str, Any]:
+    digest = hashlib.sha256()
+    for message in messages:
+        digest.update(
+            json.dumps(message, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        )
+        digest.update(b"\n")
+    return {
+        "schema": "wrench.dynamic-prefill-receipt.v1",
+        "mode": "native_direct_input",
+        "raw_token_count": raw_tokens,
+        "model_prefill_token_count": raw_tokens,
+        "compression_ratio": 1.0,
+        "native_input_claim": True,
+        "native_direct_input": True,
+        "source_payload_sha256": digest.hexdigest(),
+        "payload_hash_mode": "ordered_message_json",
+        "server_staging_elapsed_ms": 0.0,
+    }
+
+
 class WrenchRequestHandler(BaseHTTPRequestHandler):
     server_version = "WrenchModelServer/1.0"
 
@@ -342,12 +368,16 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     # deterministic hot set plus lookup cards. Preserve the
                     # original messages for verification and receipt hashing.
                     prefill_started = time.perf_counter()
-                    staged_messages, prefill_receipt = _dynamic_prefill_messages(messages)
-                    if prefill_receipt is not None:
-                        prefill_receipt["server_staging_elapsed_ms"] = round(
-                            (time.perf_counter() - prefill_started) * 1000,
-                            3,
-                        )
+                    if os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") == "1":
+                        staged_messages = messages
+                        prefill_receipt = _native_direct_input_receipt(messages, raw_tokens)
+                    else:
+                        staged_messages, prefill_receipt = _dynamic_prefill_messages(messages)
+                        if prefill_receipt is not None:
+                            prefill_receipt["server_staging_elapsed_ms"] = round(
+                                (time.perf_counter() - prefill_started) * 1000,
+                                3,
+                            )
                     upstream_output = _forward_upstream(
                         server.upstream_url,
                         request,

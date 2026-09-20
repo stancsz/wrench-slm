@@ -284,6 +284,92 @@ def test_native_upstream_receives_staged_prefill_for_monster_payload(tmp_path: P
         upstream_thread.join(timeout=5)
 
 
+def test_native_direct_mode_forwards_raw_messages_and_binds_receipt(tmp_path: Path, monkeypatch):
+    (tmp_path / "README.md").write_text("native direct fixture\n", encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    class UpstreamHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            request = json.loads(self.rfile.read(length).decode("utf-8"))
+            captured["request"] = request
+            body = json.dumps(
+                {
+                    "choices": [
+                        {
+                            "message": {
+                                "role": "assistant",
+                                "content": json.dumps(
+                                    {
+                                        "schema": "wrench.proposal.v1",
+                                        "action": "read_file",
+                                        "path": "README.md",
+                                        "max_bytes": 4096,
+                                    }
+                                ),
+                            }
+                        }
+                    ]
+                }
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
+    upstream_thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    upstream_thread.start()
+    monkeypatch.setenv("WRENCH_NATIVE_DIRECT_INPUT", "1")
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+        upstream_url=f"http://127.0.0.1:{upstream.server_port}/v1/chat/completions",
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "stale reference record " * 20_000
+                    + " CURRENT INTENT: inspect the active repository state.",
+                }
+            ],
+            "stream": False,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = json.loads(response.read().decode("utf-8"))
+        upstream_request = captured["request"]
+        assert isinstance(upstream_request, dict)
+        assert len(upstream_request["messages"][0]["content"]) > 300_000
+        receipt = body["wrench"]["dynamic_prefill"]
+        assert receipt["mode"] == "native_direct_input"
+        assert receipt["native_input_claim"] is True
+        assert receipt["model_prefill_token_count"] == receipt["raw_token_count"]
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+        upstream.shutdown()
+        upstream.server_close()
+        upstream_thread.join(timeout=5)
+
+
 def test_model_local_server_maps_native_timeout_to_504(tmp_path: Path, monkeypatch):
     def timed_out(*args, **kwargs):
         raise TimeoutError("native prefill deadline")

@@ -124,13 +124,24 @@ GGUF that loads but silently loses retrieval or long-context behavior.
 The bundled tokenizer has two explicit modes. The default fast mode performs
 mechanical 4M-to-64K staging. Setting `WRENCH_NATIVE_DIRECT_INPUT=1` disables
 that staging and sends the complete chat payload to the backend tokenizer. The
-portable package records which mode was used in its receipt, so a fast result
-cannot be reported as native-input evidence.
+portable package server honors the same switch and records the mode in its
+receipt, so a fast result cannot be reported as native-input evidence.
 
-The bundled FreeToken launcher enables native direct mode, pins a 4M KV
-capacity, and uses automatic expert-cache sizing with an 8K reserve for the
-pure-SWA profile. Adjust the launcher's `-KvReserveTokens` when the target GPU
-has a different memory budget.
+The generated launcher defaults to fast staged mode with `-OllamaApi`. To send
+the complete raw request directly into the native backend, use:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -NativeDirectInput
+```
+
+That direct mode is the required path for a native-context capability probe. It
+may be slower and remains subject to the backend's real memory and
+retrieval-quality evidence.
+
+The bundled FreeToken launcher pins a 4M KV capacity and uses automatic
+expert-cache sizing with an 8K reserve for the pure-SWA profile. Adjust the
+launcher's `-KvReserveTokens` when the target GPU has a different memory
+budget.
 
 To keep the native backend inside the downloaded model package while exposing
 the package-local Ollama-shaped API, run:

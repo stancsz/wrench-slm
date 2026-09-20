@@ -1633,3 +1633,14 @@ request, delivered a 1,845-token staged prompt, and measured 85.714 ms for
 server-side staging with one verified upstream call. This is still a staging
 and integration result, not native dense 4M retrieval quality or MiniMax
 parity. Evidence: `phases/phase-144-prefill-profile`.
+
+2026-09-20 native direct-input truth boundary: the package server now honors
+`WRENCH_NATIVE_DIRECT_INPUT=1` instead of silently staging a request while the
+native tokenizer reports direct mode. The generated launcher defaults to the
+fast staged path and exposes `-NativeDirectInput` for the actual raw-input
+capability path. The direct receipt binds ordered-message payload SHA-256 and
+raw/model prompt token counts. Full regression passed 146 tests, and the v54
+package passed structural validation plus the 4M mechanical route in 17.715 ms
+with zero model calls. This repairs the evidence boundary, but clean-GPU native
+2M/4M generation and retrieval quality remain open. Evidence:
+`phases/phase-146-public-v54`.
