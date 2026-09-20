@@ -29,6 +29,8 @@ Wrench/
   wrench_prefill.py                   # dynamic-module-local dependency
   wrench_mechanical.py                # bundled high-confidence mechanical router
   wrench_toolbelt.py                  # bundled read-only verifier and executor
+  toolbelt.py                         # dynamic-module import target
+  core.py                             # dynamic-module verifier dependency
   modeling_wrench.py                  # only when the architecture is custom
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime

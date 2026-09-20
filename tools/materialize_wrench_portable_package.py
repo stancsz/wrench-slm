@@ -88,6 +88,12 @@ def materialize(
             repo_root / "packaging" / "wrench_toolbelt.py",
             target / "wrench_toolbelt.py",
         )
+        # Transformers dynamic-module loading resolves the relative import
+        # used by wrench_prefill.py from the model root. Keep the canonical
+        # toolbelt available under that exact module name as well as through
+        # the convenience wrench_toolbelt.py wrapper.
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "toolbelt.py", target / "toolbelt.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", target / "core.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
@@ -293,6 +299,8 @@ def materialize(
                 "wrench_prefill.py",
                 "wrench_mechanical.py",
                 "wrench_toolbelt.py",
+                "toolbelt.py",
+                "core.py",
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
                 "wrench_runtime/toolbelt.py",

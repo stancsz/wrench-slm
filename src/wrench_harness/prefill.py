@@ -8,14 +8,107 @@ message in the model request. It is therefore compatible with the native
 from __future__ import annotations
 
 import hashlib
+import ast
 import json
 import re
 from typing import Any
 
-try:
-    from .toolbelt import extract_dependencies, parse_source_ast
-except ImportError:  # pragma: no cover - used by the root portable module
-    from wrench_runtime.toolbelt import extract_dependencies, parse_source_ast
+
+def parse_source_ast(path: str, text: str) -> dict[str, object]:
+    """Parse bounded source without importing another dynamic module.
+
+    This small copy is intentional. Hugging Face's dynamic-module loader
+    copies the tokenizer's direct dependencies but does not recursively copy
+    relative imports from those dependencies. Keeping the prefill helper
+    self-contained makes the downloaded model package loadable offline.
+    """
+
+    if not isinstance(path, str) or not path:
+        raise ValueError("path must be a non-empty string")
+    if not isinstance(text, str):
+        raise ValueError("text must be a string")
+    suffix = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+    symbols: list[dict[str, object]] = []
+    syntax_error: str | None = None
+    if suffix == "py":
+        try:
+            tree = ast.parse(text, filename=path)
+        except SyntaxError as exc:
+            syntax_error = f"SyntaxError:{exc.lineno}:{exc.offset}:{exc.msg}"
+        else:
+            lines = text.splitlines()
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    line = getattr(node, "lineno", 1)
+                    end_line = getattr(node, "end_lineno", line)
+                    kind = "class" if isinstance(node, ast.ClassDef) else "function"
+                    symbols.append(
+                        {
+                            "name": node.name,
+                            "kind": kind,
+                            "path": path,
+                            "start_line": line,
+                            "end_line": end_line,
+                            "signature": lines[line - 1].strip() if lines else "",
+                        }
+                    )
+    else:
+        for index, line in enumerate(text.splitlines(), start=1):
+            match = re.search(r"\b(?:function|class|def|interface|type)\s+([A-Za-z_$][\w$]*)", line)
+            if match:
+                symbols.append(
+                    {
+                        "name": match.group(1),
+                        "kind": "lexical_declaration",
+                        "path": path,
+                        "start_line": index,
+                        "end_line": index,
+                        "signature": line.strip(),
+                    }
+                )
+    symbols.sort(key=lambda item: (int(item["start_line"]), str(item["name"])))
+    return {
+        "schema": "wrench.source-ast.v1",
+        "path": path,
+        "source_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "language": suffix or "unknown",
+        "parser": "python_ast" if suffix == "py" else "lexical_fallback",
+        "syntax_error": syntax_error,
+        "symbols": symbols,
+    }
+
+
+def extract_dependencies(path: str, text: str) -> dict[str, object]:
+    """Extract conservative Python imports and calls without execution."""
+
+    imports: list[str] = []
+    calls: list[str] = []
+    syntax_error: str | None = None
+    if path.casefold().endswith(".py"):
+        try:
+            tree = ast.parse(text, filename=path)
+        except SyntaxError as exc:
+            syntax_error = f"SyntaxError:{exc.lineno}:{exc.offset}:{exc.msg}"
+        else:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports.extend(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    imports.append(node.module)
+                elif isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Name):
+                        calls.append(node.func.id)
+                    elif isinstance(node.func, ast.Attribute):
+                        calls.append(node.func.attr)
+    return {
+        "schema": "wrench.dependency-evidence.v1",
+        "path": path,
+        "source_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "imports": sorted(set(imports)),
+        "calls": sorted(set(calls)),
+        "syntax_error": syntax_error,
+        "read_only": True,
+    }
 
 
 def _sha256(value: str) -> str:
