@@ -1687,6 +1687,19 @@ and runtime metadata. This publishes the startup repair while keeping native
 2M/4M generation, retrieval quality, MiniMax parity, GGUF, and production
 claims explicitly open. Evidence: `phases/phase-151-public-v56`.
 
+2026-09-20 native low-memory environment profile: the launcher now enables
+lazy CUDA module loading and constrains OpenBLAS, OMP, MKL, and NumExpr pools
+to one thread, in addition to serial expert loading and shared tokenization.
+The full regression remained at 146 passing tests. A direct Torch import
+changed from OpenBLAS allocation failure to success with
+`torch 2.11.0+cu130` under the new variables. The v58 package passed
+structural validation and its 4M mechanical route measured 14.945 ms with
+zero model calls. A real native probe still failed before generation because
+both workers hit Windows `WinError 1455` loading CUDA DLLs. The profile was
+published at Hub revision `0e9b16a70cff945eb9976079f6315e3bcf35963a`.
+Native 2M/4M generation, retrieval quality, MiniMax parity, and production
+readiness remain open. Evidence: `phases/phase-154-native-low-memory-env`.
+
 2026-09-20 native serial expert-load profile: the launcher now combines
 FreeToken `--expert-load serial` with `--num-tokenizer 0`, and the v57 package
 was published at revision `b47ced8c6ccec42d24104418a29c6401f848a369`.

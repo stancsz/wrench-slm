@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.native-startup-low-memory-env.v1",
+  "date": "2026-09-20",
+  "port": 28205,
+  "package_revision": "0e9b16a70cff945eb9976079f6315e3bcf35963a",
+  "single_process_torch_import": {
+    "default_environment": "FAIL_OPENBLAS_MEMORY_ALLOCATION",
+    "low_memory_environment": "PASS",
+    "torch_version": "2.11.0+cu130"
+  },
+  "native_probe": {
+    "expert_load": "serial",
+    "num_tokenizer": 0,
+    "num_tokens": 65536,
+    "max_seq_len_override": 4000000,
+    "status": "FAIL_NATIVE_STARTUP_WINDOWS_COMMIT_LIMIT",
+    "model_generation_reached": false,
+    "errors": [
+      "WinError 1455 loading torch/lib/nvperf_host.dll",
+      "WinError 1455 loading torch/lib/shm.dll"
+    ]
+  },
+  "scope": "real FreeToken startup probe; no native completion or retrieval claim"
+}
