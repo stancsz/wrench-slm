@@ -1038,3 +1038,26 @@ native 4M quality, vLLM/Ollama support, or MiniMax parity. Evidence is in
 `f6e47637a8c1a5b2aabe0ee33287b5ac51044057`,
 `6e2cb942574df589166d313ceb7360409b97e458`, and
 `4acffe441fc8914af8824b1f202fa977d57dc83c`.
+
+2026-09-20 public safety-candidate package replacement: replaced the public
+Hub contents with the safety-calibrated v7 native-2M candidate materialized as
+a 4M-declared portable package. The package contains five BF16 Safetensors
+shards, 3,881,244,016 parameters, the embedded read-only toolbelt and
+mechanical reducer, a portable FreeToken launcher, and no machine-local source
+paths in its public metadata. The remote index now references only the five
+new shards; the superseded nine-shard package and runtime cache files were
+removed. The package-local structural validator passes with
+`config_max_position_embeddings=4000000`.
+
+The downloaded package was served through FreeToken 0.1.3+g52322e984 with a
+4,000,000 max sequence length, loaded all five shards, allocated about 5.22 GiB
+of KV cache, and returned a strict schema-valid read-only proposal in 9,309.977
+ms for an 85-token prompt. This is a package and backend smoke pass only. Plain
+Transformers has passed config, tokenizer, and full weight loading, but its
+generation smoke is still invalid and is not claimed as a quality pass. The
+public package remains `EXPERIMENTAL_PUBLIC_ARTIFACT`; native 4M retrieval
+quality, production throughput, GGUF/Ollama/vLLM adapters, and the full matched
+220-case MiniMax-worker acceptance gate remain open. Evidence:
+`phases/phase-84-standard-hf-loader/safety-v5-package-validation-4m.json`,
+`safety-v5-standard-hf-load-weights.json`, and
+`safety-v5-freetoken-package-smoke.json`.

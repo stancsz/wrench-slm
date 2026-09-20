@@ -1,0 +1,12 @@
+{
+  "schema": "wrench.standard-hf-generation.v1",
+  "status": "FAIL_STANDARD_HF_GENERATION_SCHEMA",
+  "model": "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M",
+  "transformers": "5.17.0",
+  "load_status": "PASS_STANDARD_HF_WEIGHT_LOAD",
+  "output_prefix": "n } n } n }",
+  "schema_valid": false,
+  "elapsed_ms_approx": 139400,
+  "quality_claim": false,
+  "interpretation": "The safety candidate loads through standard Transformers, but plain Transformers generation is not a valid Wrench worker path yet. The bundled FreeToken backend is the currently verified generation path."
+}

@@ -26,6 +26,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
     if target.exists():
         raise FileExistsError(f"refusing to overwrite existing target: {target}")
     target.mkdir(parents=True)
+    safety_candidate = "safety" in source.name.lower() or "calibrated" in source.name.lower()
     weight_materialization_mode = "hardlink"
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
@@ -98,7 +99,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             encoding="utf-8",
         )
         (target / "serve_freetoken.ps1").write_text(
-            """param(\n    [string]$FreeTokenPython = \"python\",\n    [int]$Port = 28900\n)\n\n$env:PYTHONPATH = \"$PSScriptRoot\\wrench_runtime;$env:PYTHONPATH\"\n$env:WRENCH_LONG_CONTEXT_OVERLAY = \"1\"\n$env:WRENCH_GLOBAL_FULL_LAYERS = \"none\"\n$env:WRENCH_SWA_WINDOW = \"8192\"\n$env:WRENCH_SWA_POOL_TOKENS = \"8192\"\n$env:WRENCH_ROPE_MAX_POSITION = \"4000000\"\n$env:WRENCH_NATIVE_DIRECT_INPUT = \"1\"\n& $FreeTokenPython -m freetoken.cli serve `\n    --model-path $PSScriptRoot `\n    --host 127.0.0.1 `\n    --port $Port `\n    --moe-strategy fused `\n    --max-running-requests 1 `\n    --max-seq-len-override 4000000 `\n    --num-tokens 4000000 `\n    --memory-ratio 0.9 `\n    --cuda-graph-max-bs 0 `\n    --text-model-only `\n    --mm-disable vision audio `\n    --max-prefill-length 8192\n""",
+            """param(\n    [string]$FreeTokenExecutable = \"ft\",\n    [int]$Port = 28900\n)\n\n$env:PYTHONPATH = \"$PSScriptRoot\\wrench_runtime;$env:PYTHONPATH\"\n$env:WRENCH_LONG_CONTEXT_OVERLAY = \"1\"\n$env:WRENCH_GLOBAL_FULL_LAYERS = \"none\"\n$env:WRENCH_SWA_WINDOW = \"8192\"\n$env:WRENCH_SWA_POOL_TOKENS = \"8192\"\n$env:WRENCH_ROPE_MAX_POSITION = \"4000000\"\n$env:WRENCH_NATIVE_DIRECT_INPUT = \"1\"\n& $FreeTokenExecutable serve `\n    --model $PSScriptRoot `\n    --host 127.0.0.1 `\n    --port $Port `\n    --served-model-name wrench-4b-qwen3.6-8e `\n    --moe-strategy offload `\n    --moe-cache-auto `\n    --max-running-requests 1 `\n    --max-seq-len-override 4000000 `\n    --max-prefill-length 32768 `\n    --memory-ratio 0.9 `\n    --text-model-only `\n    --cache-type radix `\n    --tool-call-parser qwen `\n    --reasoning-parser off\n""",
             encoding="utf-8",
         )
         launcher_path = target / "serve_freetoken.ps1"
@@ -117,6 +118,12 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             "canonical_format": "huggingface-safetensors",
             "verified_total_parameters": PARAMETER_COUNT,
             "hard_parameter_ceiling": PARAMETER_CEILING,
+            "model_lineage": "Qwen3.6-35B-A3B -> Wrench 8E structural prune",
+            "candidate_identity": (
+                "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M"
+                if safety_candidate
+                else "Wrench-4B-Qwen3.6-8E-base"
+            ),
             "context": {
                 "declared_input_context_tokens": 4_000_000,
                 "native_attention_context_tokens_target": 2_000_000,
@@ -147,8 +154,8 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         receipt = {
             "schema": "wrench.portable-package-materialization.v1",
             "status": "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED",
-            "source": str(source.resolve()),
-            "target": str(target.resolve()),
+            "source_artifact_name": source.name,
+            "target_package_name": target.name,
             "weight_link_count": len(list(target.glob("*.safetensors"))),
             "weight_materialization_mode": weight_materialization_mode,
             "runtime_files": [

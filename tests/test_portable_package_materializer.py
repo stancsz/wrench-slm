@@ -18,5 +18,7 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
 def test_standard_hf_load_verifier_is_metadata_only():
     script = Path("tools/verify_standard_hf_load.py").read_text(encoding="utf-8")
     assert "PASS_STANDARD_HF_CONFIG_TOKENIZER" in script
+    assert "--load-weights" in script
+    assert "full_weight_load_verified" in script
     assert "full_weight_generation_verified" in script
     assert "native_long_context_quality_verified" in script

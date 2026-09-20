@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.standard-hf-generation.v1",
+  "status": "FAIL_STANDARD_HF_GENERATION_SCHEMA",
+  "model": "public v4 base snapshot",
+  "transformers": "5.17.0",
+  "load_status": "PASS_STANDARD_HF_WEIGHT_LOAD",
+  "smokes": [
+    {
+      "mode": "staged_prefill",
+      "output": "< w r >",
+      "schema_valid": false,
+      "elapsed_ms_approx": 41900
+    },
+    {
+      "mode": "native_direct_input",
+      "output": ".",
+      "schema_valid": false,
+      "elapsed_ms_approx": 30400
+    }
+  ],
+  "quality_claim": false,
+  "interpretation": "Standard Transformers architecture, tokenizer, and weight loading work, but plain Transformers generation is not a valid Wrench worker path yet."
+}

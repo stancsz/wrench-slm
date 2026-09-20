@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.portable-package.freetoken-smoke.v1",
+  "status": "PASS_FREETOKEN_PACKAGE_GENERATION_SMOKE",
+  "package": "artifacts/Wrench-Qwen3.6-8expert-BF16-safety-native4M-portable-v5",
+  "backend": "FreeToken 0.1.3+g52322e984",
+  "served_model": "wrench-4b-qwen3.6-8e",
+  "endpoint": "http://127.0.0.1:28911/v1/chat/completions",
+  "config_max_position_embeddings": 4000000,
+  "max_seq_len_override": 4000000,
+  "weight_shards_loaded": 5,
+  "kv_cache": {
+    "tokens": 490811392,
+    "bytes_gib": 5.22
+  },
+  "request": {
+    "prompt_tokens": 85,
+    "completion_tokens": 22,
+    "total_tokens": 107,
+    "elapsed_ms": 9309.977,
+    "temperature": 0
+  },
+  "response": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"git_read_status\",\"repo_root\":\".\"}",
+  "quality_claim": false,
+  "scope": "Package-local generation smoke only. This does not prove 4M retrieval quality, MiniMax parity, production throughput, or release readiness."
+}

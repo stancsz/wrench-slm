@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.standard-hf-load-receipt.v1",
+  "status": "PASS_STANDARD_HF_CONFIG_TOKENIZER",
+  "model_dir": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\Wrench-Qwen3.6-8expert-BF16-native4M-portable-v4",
+  "transformers_version": "5.17.0",
+  "config_class": "Qwen3_5MoeConfig",
+  "config_model_type": "qwen3_5_moe",
+  "mapped_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "tokenizer_class": "WrenchTokenizer",
+  "tokenizer_model_max_length": 4000000,
+  "declared_input_context_tokens": 4000000,
+  "full_weight_load_verified": true,
+  "full_weight_generation_verified": false,
+  "native_long_context_quality_verified": false,
+  "file_hashes": {
+    "config.json": "440a85ef4465d6feaed1cae318278c065131597be60b9140fd03732c2b27d9a2",
+    "tokenizer_config.json": "99f713f9baeb55d2b76ba0eba94fe855c2cac6728f487ece424a5f986e25db55",
+    "tokenization_wrench.py": "6a91df915df9ae4b52b0eb8008dacb891b26313279a819d329044ca25a437548"
+  },
+  "loaded_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "loaded_parameter_count": 3881244016,
+  "weight_load_elapsed_ms": 5539.805
+}
