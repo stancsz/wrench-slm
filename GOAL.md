@@ -2189,3 +2189,13 @@ package manifest reports 3,881,244,016 parameters below the 4.25B ceiling,
 4M declared input context, and 64K default effective working context. This is
 the intended hybrid product surface, not dense attention over every raw token.
 Evidence: `phases/phase-200-v81-model-local-2m-4m`.
+
+2026-09-20 Ollama importer and runtime validation: Ollama 0.34.2 with the
+matching MLX CUDA runtime imported the v81 Safetensors checkpoint, preserving
+the `qwen3_5_moe` 3.4B NVFP4 model and reporting a 4,000,000-token context.
+The imported model loaded all 3993 tensors and initialized the Qwen3.5 MoE
+runner, but generation failed before the first token because this machine does
+not have the compiled-in `C:/Program Files/NVIDIA/CUDNN/bin/x64` directory.
+The weights and importer are compatible; portable Windows MLX plus cuDNN
+runtime validation remains open. Evidence:
+`phases/phase-201-ollama-import-runtime`.
