@@ -108,6 +108,16 @@ reference-only, use:
 .\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
 ```
 
+When the native endpoint is serving a user's repository, point the embedded
+mechanical route at that repository explicitly:
+
+```powershell
+.\serve_freetoken.ps1 -AllowedRoot C:\path\to\your\repo
+```
+
+The root is read-only proposal scope. Wrench never applies a patch; the
+external verifier remains responsible for approval and execution.
+
 This keeps the complete raw request and model-side prompt accounting for the
 actual request length, then skips attention and MLP work before the recent-token
 boundary. It therefore scales between 2M and 4M requests. It is opt-in

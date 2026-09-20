@@ -61,6 +61,9 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "WRENCH_HISTORY_CONTROL_PREFIX_TOKENS" in source
     assert "WRENCH_HISTORY_CONTROL_SUFFIX" in source
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in source
+    assert "WRENCH_ALLOWED_ROOT" in source
+    assert "allowed_root=allowed_root" in source
+    assert "embedded_execute_model_output" in source
     assert "embedded_active_intent_suffix" in source
     assert "route_tail = embedded_active_intent_suffix" in source
     assert "raw_input_tokens_estimate" in source

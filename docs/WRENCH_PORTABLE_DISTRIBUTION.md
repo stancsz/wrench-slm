@@ -123,6 +123,16 @@ reference-only, use:
 .\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
 ```
 
+For native mechanical proposals against a local checkout, pass its explicit
+read-only root:
+
+```powershell
+.\serve_freetoken.ps1 -AllowedRoot C:\path\to\your\repo
+```
+
+The default root is the current directory. The launcher passes this root to
+the embedded route and patch verifier without granting mutation authority.
+
 This keeps the complete raw request and model-side prompt accounting for the
 actual request length, then skips attention and MLP work before the recent-token
 boundary. It therefore scales between 2M and 4M requests. It is opt-in

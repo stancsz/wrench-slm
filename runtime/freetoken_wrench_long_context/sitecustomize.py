@@ -574,6 +574,18 @@ def _install_qwen_long_context_overlay() -> None:
                     embedded_mechanical_route = None
                     embedded_reference_lookup_route = None
 
+            # Native serving starts from the model directory, while the
+            # developer-tool proposal normally targets the user's checkout.
+            # Keep that authority boundary explicit and configurable.
+            allowed_root = Path(os.environ.get("WRENCH_ALLOWED_ROOT", ".")).expanduser().resolve()
+            try:
+                from wrench_harness.core import execute_model_output as embedded_execute_model_output
+            except Exception:
+                try:
+                    from core import execute_model_output as embedded_execute_model_output
+                except Exception:
+                    embedded_execute_model_output = None
+
             original_handle_chat_completion = openai_api.handle_chat_completion
 
             async def handle_chat_completion_with_embedded_route(req, request, state, model_sampling):
@@ -603,7 +615,7 @@ def _install_qwen_long_context_overlay() -> None:
                     candidate = None
                     if embedded_mechanical_route is not None:
                         try:
-                            routed = embedded_mechanical_route(route_tail)
+                            routed = embedded_mechanical_route(route_tail, allowed_root=allowed_root)
                             if isinstance(routed, dict) and routed.get("schema") == "wrench.proposal.v1":
                                 candidate = routed
                         except Exception:
@@ -618,6 +630,24 @@ def _install_qwen_long_context_overlay() -> None:
                             routed = embedded_reference_lookup_route(reference_payload)
                             if isinstance(routed, dict) and routed.get("schema") == "wrench.proposal.v1":
                                 candidate = routed
+                        except Exception:
+                            candidate = None
+                    if (
+                        isinstance(candidate, dict)
+                        and candidate.get("action") == "patch_draft"
+                        and embedded_execute_model_output is not None
+                    ):
+                        # Validate generated diffs against the selected root
+                        # before returning the no-model fast path. This is
+                        # proposal-only and never applies the patch.
+                        try:
+                            verified = embedded_execute_model_output(
+                                json.dumps(candidate, ensure_ascii=False, separators=(",", ":")),
+                                allowed_root,
+                                request_prompt=route_tail,
+                            )
+                            if not isinstance(verified, dict) or verified.get("status") != "accepted":
+                                candidate = None
                         except Exception:
                             candidate = None
                     if (

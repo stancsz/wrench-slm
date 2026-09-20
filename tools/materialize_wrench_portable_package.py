@@ -162,12 +162,18 @@ def materialize(
             "    [int]$KvReserveTokens = 8192,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096",
         )
         launcher_text = launcher_text.replace(
+            "    [int]$Port = 28900,\n",
+            "    [int]$Port = 28900,\n    [string]$AllowedRoot = \".\",\n",
+        )
+        launcher_text = launcher_text.replace(
             "    --moe-cache-size $MoeCacheSize `",
             "    --moe-cache-auto `\n    --kv-reserve-tokens $KvReserveTokens `\n    --num-tokens 4000000 `",
         )
         launcher_text = launcher_text.replace(
             '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"',
-            '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
+            '$env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n'
+            '$env:WRENCH_ALLOWED_ROOT = (Resolve-Path -LiteralPath $AllowedRoot).Path\n'
+            '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',
         )
         launcher_text = launcher_text.replace(
             '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',

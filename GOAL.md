@@ -1394,3 +1394,26 @@ large file. The historical 220-case fixture is unchanged at 200/220 routes
 and `78.9999%` eligible weighted frontier-token mass because its uncovered
 patch prompts omit their actual diffs. Evidence:
 `phases/phase-103-bounded-default-read`.
+
+2026-09-20 native 4M runtime boundary repair: the FreeToken overlay now
+handles `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` as a real dynamic policy and
+propagates the complete request length from chunked prefill into the decoder
+boundary. A direct native request reached `3,995,331` actual prompt tokens with
+HTTP 200, `truncated=false`, and a configured 4,000,000-token model limit. The
+default 64K recent-tail profile completed in `173,384.564` ms on the RTX 5070
+Ti. This proves native capacity and the repaired fast-history boundary, not
+native 4M retrieval quality or MiniMax parity. Evidence:
+`phases/phase-122-native-fast-history`.
+
+2026-09-20 native launcher workspace boundary and full regression: the
+portable FreeToken launcher now accepts `-AllowedRoot` and passes the selected
+read-only repository root into the embedded mechanical route. Review-only
+patch proposals are validated against that root before the no-model response
+is returned, while mutation remains external. A v41 package passed structural
+validation, and a ready native endpoint passed the complete prompt-complete
+220-case contract with 220/220 outcome matches, 120/120 exact eligible
+proposals, 220/220 mechanical fast paths, 0 model calls, 0 prohibited accepts,
+0 transport/runtime failures, median `0.544` ms, and p95 `39.022` ms. The
+result is still a package and mechanical-route gate, not MiniMax parity,
+native 4M retrieval quality, or the approved matched workflow savings gate.
+Evidence: `phases/phase-123-native-fast-history-220`.

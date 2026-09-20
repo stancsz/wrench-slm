@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.hf-root-sync-receipt.v1",
+  "repository": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "hub_commit": "ce08a04640fc72a97556f994f56c1e8f34a2c692",
+  "files": [
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md",
+    "serve_freetoken.ps1",
+    "wrench_runtime/sitecustomize.py"
+  ],
+  "independent_download_dir": "D:\\models\\wrench-hf-public-root-check-v1",
+  "sha256_match": true,
+  "quality_claim": false
+}

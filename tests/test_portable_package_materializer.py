@@ -18,6 +18,9 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert '$env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "auto"' in launcher
     assert '$env:WRENCH_HISTORY_SKIP_KEEP_TOKENS = "$FastHistoryKeepTokens"' in launcher
     assert "$env:WRENCH_HISTORY_CONTROL_SUFFIX = \"1\"" in launcher
+    assert '[string]$AllowedRoot = "."' in launcher
+    assert '$env:WRENCH_ALLOWED_ROOT = (Resolve-Path -LiteralPath $AllowedRoot).Path' in launcher
+    assert launcher.count('[string]$AllowedRoot = "."') == 1
 
 
 def test_materializer_is_available_and_does_not_overwrite_by_contract():
@@ -55,6 +58,7 @@ def test_materializer_embeds_worker_runtime():
     assert "--kv-reserve-tokens $KvReserveTokens" in script
     assert "--num-tokens 4000000" in script
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
+    assert "WRENCH_ALLOWED_ROOT" in script
     assert "dynamic_staged_prefill" in script
     assert "FastHistoryKeepTokens" in script
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in script
