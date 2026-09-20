@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from wrench_harness import mechanical_route
@@ -164,3 +166,26 @@ def test_reference_patch_route_recovers_exact_old_diff():
         "review_only": True,
         "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old line\n+new line\n",
     }
+
+
+def test_reference_patch_route_recovers_explicit_multi_file_diff():
+    prompt = (
+        "Historical review artifact:\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old readme\n"
+        "+new readme\n"
+        "--- a/config/policy.json\n"
+        "+++ b/config/policy.json\n"
+        "@@ -1 +1 @@\n"
+        "-old policy\n"
+        "+new policy\n"
+        "CURRENT INTENT: prepare an unapplied unified diff for README.md and config/policy.json for review."
+    )
+
+    proposal = reference_patch_route(prompt)
+    assert proposal is not None
+    assert proposal["files"] == ["README.md", "config/policy.json"]
+    assert len(re.findall(r"(?m)^@@", proposal["diff"])) == 2
+    assert proposal["review_only"] is True

@@ -1888,3 +1888,13 @@ replay recorded 220/220 outcome matches, 120/120 exact eligible proposals,
 zero prohibited accepts, zero transport/runtime abstentions, zero model calls,
 0.538 ms median latency, and 40.040 ms p95. This remains deterministic
 contract evidence, not MiniMax matched-workflow parity.
+
+2026-09-20 bounded multi-file reference patch retrieval: the MapReduce-first
+worker now recovers up to three explicitly named relative files from an exact
+old unified diff, then sends the proposal through the unchanged verifier and
+embedded TTC gates. A temporary fixture accepted a 4,000,253-character
+payload in 24.447 ms, 22.102 ms, and 22.715 ms across three runs, with zero
+model calls and no file mutation. Full regression passed at 155 tests. This
+supports the fast multi-pass production path, not dense native 4M attention,
+MiniMax matched-workflow parity, or the final 90 percent coverage and 95
+percent savings gates. Evidence: `phases/phase-171-multifile-reference-patch`.

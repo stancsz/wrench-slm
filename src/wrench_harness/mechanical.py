@@ -227,7 +227,12 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
 
 
 def reference_patch_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[str, Any] | None:
-    """Recover one exact bounded review diff from old reference text."""
+    """Recover exact bounded review diffs from old reference text.
+
+    A review-only request may legitimately contain a small multi-file unified
+    diff in the old reference portion. Recover at most three explicitly named
+    relative files and never synthesize missing hunks.
+    """
 
     if not isinstance(prompt, str) or not prompt.strip() or suffix_chars < 1:
         return None
@@ -246,21 +251,35 @@ def reference_patch_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[st
         r"\b(?:patch|diff|change|replace|update)\b", lowered
     ):
         return None
-    target_path = _path(current)
-    if not target_path or target_path.startswith(("/", "\\")) or ".." in re.split(r"[/\\]", target_path):
+    target_paths: list[str] = []
+    seen_targets: set[str] = set()
+    for candidate in _PATH_RE.findall(current):
+        normalized = candidate.replace("\\", "/")
+        if normalized.casefold() in _RESERVED_SCHEMA_PATHS:
+            continue
+        if normalized.startswith(("/", "\\")) or ".." in normalized.split("/"):
+            return None
+        folded = normalized.casefold()
+        if folded not in seen_targets:
+            seen_targets.add(folded)
+            target_paths.append(normalized)
+    if not target_paths or len(target_paths) > 3:
         return None
     old_prefix = prompt[:-len(tail)] if len(prompt) > len(tail) else ""
     old_suffix = tail[:current_start] if current_start > 0 else ""
     old = old_prefix + old_suffix
     if not old:
         return None
-    target_folded = target_path.replace("\\", "/").casefold()
-    for match in _UNIFIED_DIFF_HEADER_RE.finditer(old):
+    matches = list(_UNIFIED_DIFF_HEADER_RE.finditer(old))
+    if not matches:
+        return None
+    sections: dict[str, tuple[str, str]] = {}
+    for index, match in enumerate(matches):
         old_path = match.group("old_path").strip().replace("\\", "/")
         new_path = match.group("new_path").strip().replace("\\", "/")
-        if old_path != new_path or old_path.casefold() != target_folded:
+        if old_path != new_path or old_path.startswith(("/", "\\")) or ".." in old_path.split("/"):
             continue
-        lines = old[match.start() :].splitlines(keepends=True)
+        lines = old[match.start() : matches[index + 1].start() if index + 1 < len(matches) else len(old)].splitlines(keepends=True)
         selected: list[str] = lines[:2]
         saw_hunk = False
         saw_change = False
@@ -278,12 +297,25 @@ def reference_patch_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[st
             if saw_hunk:
                 break
         diff = "".join(selected)
-        if not saw_hunk or not saw_change or len(diff.encode("utf-8")) > 128 * 1024:
+        if not saw_hunk or not saw_change:
             continue
         if not diff.endswith("\n"):
             diff += "\n"
-        return _proposal("patch_draft", files=[target_path], review_only=True, diff=diff)
-    return None
+        if len(diff.encode("utf-8")) > 128 * 1024:
+            return None
+        sections[old_path.casefold()] = (old_path, diff)
+    selected_sections: list[str] = []
+    selected_files: list[str] = []
+    for target in target_paths:
+        section = sections.get(target.casefold())
+        if section is None:
+            return None
+        selected_files.append(section[0])
+        selected_sections.append(section[1])
+    combined = "".join(selected_sections)
+    if not combined or len(combined.encode("utf-8")) > 128 * 1024:
+        return None
+    return _proposal("patch_draft", files=selected_files, review_only=True, diff=combined)
 
 
 def _path(prompt: str) -> str | None:
