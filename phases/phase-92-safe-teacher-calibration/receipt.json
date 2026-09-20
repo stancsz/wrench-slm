@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.safe-teacher-calibration.v1",
+  "status": "SAFE_DEVELOPMENT_CALIBRATION_READY",
+  "input_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-76-teacher-calibration\\teacher-calibration-224.json",
+  "input_sha256": "daba4bc48ce81fe29205a772e3f7c41e819b10363370dc3f87f64b69aba9acde",
+  "output_path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-92-safe-teacher-calibration\\train-safe-oracle.jsonl",
+  "output_sha256": "04202bc2627db97e66b43d71642b998b1854a311ddf476791a60b66bb2b7ba88",
+  "source_request_count": 224,
+  "valid_row_count": 176,
+  "teacher_exact_oracle_count": 125,
+  "family_counts": {
+    "git_read_status": 20,
+    "health_read": 20,
+    "literal_search": 40,
+    "patch_draft": 16,
+    "read_file": 40,
+    "read_lines": 40
+  },
+  "rejected": {
+    "not_development_train_id": 24,
+    "oracle_not_accepted": 24
+  },
+  "final_split_used": false,
+  "boundary_rows_used_for_training": false,
+  "oracle_targets_used": true,
+  "quality_claim": false,
+  "training_note": "Use deterministic verifier and mechanical router for boundary behavior; do not train unsafe teacher proposals."
+}

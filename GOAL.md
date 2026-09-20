@@ -1257,3 +1257,14 @@ internal reducer is reachable without the repository harness. It still does
 not prove dense native 4M attention quality, MiniMax parity, or production
 readiness. Evidence: `tools/probe_standard_hf_tokenizer_prefill.py` and
 `phases/phase-91-hf-tokenizer-prefill/standard-hf-tokenizer-4m-v20.json`.
+
+2026-09-20 safe teacher calibration probe: a new builder retained only 176
+development rows whose frozen oracle was an accepted allowlisted action and
+excluded all 44 boundary rows from training. A 300-step rank-8 LoRA reached a
+training loss of `0.0001155123`, but on the same 44-case final split it
+produced 16/44 correct outcomes, 6/24 correct eligible accepts, zero
+prohibited accepts, and 7 transport failures. The v7 safety baseline on that
+split also produced 16/44 correct outcomes but only 5/24 correct eligible
+accepts and 4 prohibited accepts. Neither arm is a quality or release pass,
+and the LoRA checkpoint is not published. Evidence:
+`phases/phase-92-safe-teacher-calibration/README.md` and its four receipts.

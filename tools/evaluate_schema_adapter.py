@@ -63,6 +63,11 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--few-shot", action="store_true", help="prepend one canonical schema example")
     parser.add_argument("--adaptive-few-shot", action="store_true", help="use a safety example for boundary-like prompts")
+    parser.add_argument(
+        "--disable-mechanical-fast-path",
+        action="store_true",
+        help="force every row through the model endpoint for a model-only diagnostic",
+    )
     args = parser.parse_args()
 
     rows = [json.loads(line) for line in args.calibration.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -95,6 +100,7 @@ def main() -> int:
             str(args.root.resolve()),
             max_tokens=128,
             capture_trace=True,
+            mechanical_fast_path=not args.disable_mechanical_fast_path,
         )
         correctness = score_case(row, result)
         requests.append(
@@ -141,6 +147,7 @@ def main() -> int:
         "scope": "unseen schema-guided adapter evaluation; diagnostic only",
         "few_shot": args.few_shot,
         "adaptive_few_shot": args.adaptive_few_shot,
+        "mechanical_fast_path_enabled": not args.disable_mechanical_fast_path,
         "quality_claim": False,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
