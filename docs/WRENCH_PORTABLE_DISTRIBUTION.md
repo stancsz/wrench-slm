@@ -59,6 +59,12 @@ This starts the bounded mechanical endpoint on `http://127.0.0.1:28900`.
 Pass `-LoadModel` only when the local Transformers backend is configured and
 you want ambiguous requests to load the checkpoint.
 
+The package-local server also exposes a small Ollama-compatible surface at
+`/api/tags`, `/api/show`, `/api/chat`, and `/api/generate`. The `/api/chat`
+route accepts `options.num_ctx=4000000` while keeping the complete request
+inside the package-local reducer. This is an API compatibility layer, not a
+claim that stock Ollama can load the Wrench hybrid checkpoint.
+
 The portable worker can be used directly from the downloaded directory:
 
 ```python

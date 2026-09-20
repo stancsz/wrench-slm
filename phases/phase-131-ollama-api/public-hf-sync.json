@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.public-hf-ollama-api-sync.v1",
+  "status": "PUBLIC_HF_RUNTIME_SYNCED",
+  "repository": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "visibility": "public",
+  "huggingface_revision": "0637271f3d8ffd8d26badc8e8907bdf487f8ad21",
+  "commit_url": "https://huggingface.co/stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M/commit/0637271f3d8ffd8d26badc8e8907bdf487f8ad21",
+  "updated_files": [
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md",
+    "wrench_runtime/server.py"
+  ],
+  "remote_runtime_sha256": "06D15746FF4841FBD60A4BEA0422486D22A0157C139A448C5A1356CC4E111F7A",
+  "remote_checks": {
+    "api_chat_documented": true,
+    "api_generate_documented": true,
+    "api_show_post_implemented": true,
+    "stock_ollama_load_claim": false,
+    "gguf_claim": false
+  },
+  "weights_changed": false,
+  "quality_claim": false
+}

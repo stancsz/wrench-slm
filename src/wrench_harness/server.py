@@ -78,6 +78,54 @@ def _completion_response(
     return response
 
 
+def _ollama_response(
+    result: dict[str, Any],
+    *,
+    model_name: str,
+    raw_chars: int,
+    raw_tokens: int,
+    elapsed_ms: float,
+    chat: bool,
+    declared_context_tokens: int | None,
+) -> dict[str, Any]:
+    """Return the small Ollama-compatible response shape used by local clients.
+
+    This is an API compatibility layer inside the package. It does not claim
+    that the stock Ollama binary can load Wrench's hybrid checkpoint.
+    """
+
+    content = result.get("raw_model_output")
+    if not isinstance(content, str):
+        content = json.dumps(result, ensure_ascii=False, separators=(",", ":"))
+    completion_tokens = _estimated_tokens(content)
+    wrench = {
+        "raw_input_chars": raw_chars,
+        "raw_input_tokens_estimate": raw_tokens,
+        "elapsed_ms": round(elapsed_ms, 3),
+        "status": result.get("status"),
+        "backend": result.get("backend"),
+        "mechanical_fast_path": result.get("mechanical_fast_path", False),
+        "model_calls": result.get("model_calls", 0),
+        "dynamic_prefill": result.get("dynamic_prefill"),
+        "fallback_reason": result.get("fallback_reason"),
+        "declared_context_tokens": declared_context_tokens,
+    }
+    response: dict[str, Any] = {
+        "model": model_name,
+        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "done": True,
+        "done_reason": "stop",
+        "prompt_eval_count": raw_tokens,
+        "eval_count": completion_tokens,
+        "wrench": wrench,
+    }
+    if chat:
+        response["message"] = {"role": "assistant", "content": content}
+    else:
+        response["response"] = content
+    return response
+
+
 class WrenchRequestHandler(BaseHTTPRequestHandler):
     server_version = "WrenchModelServer/1.0"
 
@@ -88,6 +136,14 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
         body = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_ndjson(self, status: int, payload: dict[str, Any]) -> None:
+        body = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/x-ndjson")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -106,11 +162,69 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 },
             )
             return
+        if self.path == "/api/tags":
+            self._send_json(
+                200,
+                {
+                    "models": [
+                        {
+                            "name": server.model_name,
+                            "model": server.model_name,
+                            "modified_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                            "size": 0,
+                            "details": {
+                                "family": "wrench",
+                                "parameter_size": "3.88B",
+                                "quantization_level": "NVFP4-W4A16",
+                            },
+                        }
+                    ]
+                },
+            )
+            return
+        if self.path == "/api/show":
+            self._send_json(
+                200,
+                {
+                    "name": server.model_name,
+                    "details": {
+                        "family": "wrench",
+                        "parameter_size": "3.88B",
+                        "context_length": 4_000_000,
+                    },
+                    "parameters": "num_ctx 4000000\ntemperature 0",
+                    "wrench": {
+                        "declared_input_context_tokens": 4_000_000,
+                        "effective_working_context_tokens": 64_000,
+                        "native_attention_context_tokens_verified": None,
+                    },
+                },
+            )
+            return
         self._send_json(404, {"error": {"message": "not_found", "type": "invalid_request_error"}})
 
     def do_POST(self) -> None:  # noqa: N802
         server = self._server()
-        if self.path != "/v1/chat/completions":
+        if self.path == "/api/show":
+            self._send_json(
+                200,
+                {
+                    "name": server.model_name,
+                    "details": {
+                        "family": "wrench",
+                        "parameter_size": "3.88B",
+                        "context_length": 4_000_000,
+                    },
+                    "parameters": "num_ctx 4000000\ntemperature 0",
+                    "wrench": {
+                        "declared_input_context_tokens": 4_000_000,
+                        "effective_working_context_tokens": 64_000,
+                        "native_attention_context_tokens_verified": None,
+                    },
+                },
+            )
+            return
+        if self.path not in {"/v1/chat/completions", "/api/chat", "/api/generate"}:
             self._send_json(404, {"error": {"message": "not_found", "type": "invalid_request_error"}})
             return
         try:
@@ -118,11 +232,25 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             if length < 1 or length > server.max_request_bytes:
                 raise ValueError("request_body_too_large_or_empty")
             request = json.loads(self.rfile.read(length).decode("utf-8"))
-            messages = request.get("messages")
+            if self.path == "/api/generate":
+                prompt = request.get("prompt")
+                if not isinstance(prompt, str):
+                    raise ValueError("prompt must be a string")
+                messages = []
+                system = request.get("system")
+                if isinstance(system, str) and system:
+                    messages.append({"role": "system", "content": system})
+                messages.append({"role": "user", "content": prompt})
+            else:
+                messages = request.get("messages")
             if not isinstance(messages, list):
                 raise ValueError("messages must be a list")
             model_name = str(request.get("model") or server.model_name)
             raw_chars, raw_tokens = _request_token_estimate(messages)
+            options = request.get("options")
+            declared_context_tokens = None
+            if isinstance(options, dict) and isinstance(options.get("num_ctx"), int):
+                declared_context_tokens = options["num_ctx"]
             started = time.perf_counter()
             with server.worker_lock:
                 result = server.worker.propose(
@@ -130,14 +258,30 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     max_tokens=int(request.get("max_tokens", 256)),
                     use_mechanical_route=True,
                 )
-            response = _completion_response(
-                result,
-                model_name=model_name,
-                raw_chars=raw_chars,
-                raw_tokens=raw_tokens,
-                elapsed_ms=(time.perf_counter() - started) * 1000,
-            )
-            self._send_json(200, response)
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            if self.path == "/v1/chat/completions":
+                response = _completion_response(
+                    result,
+                    model_name=model_name,
+                    raw_chars=raw_chars,
+                    raw_tokens=raw_tokens,
+                    elapsed_ms=elapsed_ms,
+                )
+                self._send_json(200, response)
+            else:
+                response = _ollama_response(
+                    result,
+                    model_name=model_name,
+                    raw_chars=raw_chars,
+                    raw_tokens=raw_tokens,
+                    elapsed_ms=elapsed_ms,
+                    chat=self.path == "/api/chat",
+                    declared_context_tokens=declared_context_tokens,
+                )
+                if bool(request.get("stream", False)):
+                    self._send_ndjson(200, response)
+                else:
+                    self._send_json(200, response)
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
             self._send_json(
                 400,

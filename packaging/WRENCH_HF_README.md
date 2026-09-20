@@ -96,6 +96,19 @@ this model-local process. The response includes the raw input estimate,
 effective route, model-call count, and dynamic-prefill receipt. Remove
 `--mechanical-only` when the local backend is ready to load the model weights.
 
+The same process exposes a small Ollama-compatible local surface for clients
+that expect Ollama-shaped requests:
+
+```powershell
+curl http://127.0.0.1:28900/api/tags
+curl http://127.0.0.1:28900/api/show -d '{"name":"wrench-4b"}'
+curl http://127.0.0.1:28900/api/chat -d '{"model":"wrench-4b","messages":[{"role":"user","content":"Read README.md with a 4096 byte limit."}],"stream":false,"options":{"num_ctx":4000000}}'
+```
+
+This is an Ollama API compatibility layer inside the downloaded package. It
+does not claim that stock Ollama can load the Wrench hybrid checkpoint or that
+a generic GGUF conversion preserves the package-local toolbelt.
+
 The bundled FreeToken launcher pins the 4M KV capacity explicitly and uses an
 automatic expert cache. This avoids allocating an oversized sparse address
 mapping on GPUs with limited memory. It improves the native serving profile,

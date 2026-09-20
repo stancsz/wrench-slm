@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.package-local-ollama-api-4m-smoke.v1",
+  "status": "PASS_PACKAGE_LOCAL_4M_INTAKE",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v44-ollama-api",
+  "routes": {
+    "tags": "GET /api/tags",
+    "show": "POST /api/show",
+    "chat": "POST /api/chat",
+    "generate": "POST /api/generate"
+  },
+  "declared_context_tokens": 4000000,
+  "raw_input_tokens_estimate": 3999998,
+  "latest_intent_action": "read_file",
+  "latest_intent_path": "README.md",
+  "backend": "embedded-mechanical",
+  "model_calls": 0,
+  "elapsed_ms": 5.779,
+  "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+  "stock_ollama_load_claim": false,
+  "native_dense_4m_attention_claim": false,
+  "quality_claim": false
+}

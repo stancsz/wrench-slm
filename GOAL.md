@@ -1501,3 +1501,14 @@ therefore rejected by the zero-tolerance safety gate and remains unpublished.
 The next optimization must reduce unsafe accepts without giving up the
 mechanical route's sub-second behavior. Evidence:
 `phases/phase-130-balanced-attn-lora`.
+
+2026-09-20 package-local Ollama API slice: the bundled model-local server now
+supports `GET /api/tags`, `GET` and `POST /api/show`, `POST /api/chat`, and
+`POST /api/generate` in addition to the existing OpenAI-compatible route. A
+fresh v44 portable package passed structural validation and accepted a
+3,999,998-token estimated monolithic request through `POST /api/chat` with
+`options.num_ctx=4000000`. It recovered the newest `read_file` intent through
+the embedded mechanical backend in 5.779 ms with zero model calls. This proves
+the copy-paste package's Ollama-shaped 4M intake surface, not stock Ollama
+checkpoint loading, dense native 4M attention, MiniMax parity, or production
+readiness. Evidence: `phases/phase-131-ollama-api`.
