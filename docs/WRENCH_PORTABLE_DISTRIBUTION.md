@@ -35,6 +35,7 @@ Wrench/
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime
     toolbelt.py                        # same verifier for package-local imports
+    ttc.py                             # bounded test-time-compute verifier
     mechanical.py                      # bounded no-model route
     worker.py                           # embedded worker API
   wrench_worker.py                     # convenience import

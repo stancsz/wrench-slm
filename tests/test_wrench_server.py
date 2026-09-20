@@ -181,6 +181,7 @@ def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: 
         assert body["message"]["content"].startswith('{"schema": "wrench.proposal.v1"')
         assert body["wrench"]["backend"] == "native-upstream-verified"
         assert body["wrench"]["status"] == "accepted"
+        assert body["wrench"]["ttc"]["passed"] is True
         assert body["wrench"]["model_calls"] == 1
     finally:
         server.shutdown()

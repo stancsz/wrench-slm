@@ -20,6 +20,7 @@ from typing import Any
 from urllib import request as urllib_request
 
 from .core import execute_model_output
+from .ttc import enforce_ttc
 from .worker import WrenchWorker, _dynamic_prefill_messages
 
 
@@ -77,6 +78,7 @@ def _completion_response(
             "model_calls": result.get("model_calls", 0),
             "dynamic_prefill": result.get("dynamic_prefill"),
             "fallback_reason": result.get("fallback_reason"),
+            "ttc": result.get("ttc"),
         },
     }
     return response
@@ -112,6 +114,7 @@ def _ollama_response(
         "model_calls": result.get("model_calls", 0),
         "dynamic_prefill": result.get("dynamic_prefill"),
         "fallback_reason": result.get("fallback_reason"),
+        "ttc": result.get("ttc"),
         "declared_context_tokens": declared_context_tokens,
     }
     response: dict[str, Any] = {
@@ -399,6 +402,17 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         server.worker.allowed_root,
                         request_prompt=_latest_user_prompt(messages),
                     )
+                    if verified.get("status") == "accepted":
+                        try:
+                            upstream_proposal = json.loads(upstream_output)
+                        except json.JSONDecodeError:
+                            upstream_proposal = None
+                        verified = enforce_ttc(
+                            upstream_proposal,
+                            _latest_user_prompt(messages),
+                            verified,
+                            context_pressure=prefill_receipt is not None,
+                        )
                     verified.update(
                         {
                             "backend": "native-upstream-verified",

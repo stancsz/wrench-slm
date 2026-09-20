@@ -25,6 +25,7 @@
     "core.py",
     "wrench_runtime/prefill.py",
     "wrench_runtime/toolbelt.py",
+    "wrench_runtime/ttc.py",
     "wrench_runtime/core.py",
     "wrench_runtime/mechanical.py",
     "wrench_runtime/patching.py",

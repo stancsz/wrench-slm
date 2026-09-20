@@ -119,3 +119,33 @@ def run_ttc_verification(
         "passed": passed,
         "base_verifier": base,
     }
+
+
+def enforce_ttc(
+    proposal: object,
+    request_prompt: str | None,
+    execution_result: dict[str, Any],
+    *,
+    context_pressure: bool = False,
+) -> dict[str, Any]:
+    """Attach and enforce the bounded local TTC receipt on accepted output."""
+
+    if execution_result.get("status") != "accepted":
+        return execution_result
+    receipt = run_ttc_verification(
+        proposal,
+        request_prompt,
+        execution_result,
+        context_pressure=context_pressure,
+    )
+    enriched = dict(execution_result)
+    enriched["ttc"] = receipt
+    if receipt["passed"]:
+        return enriched
+    failed = ",".join(str(item) for item in receipt.get("failed_checks", [])) or "unknown"
+    return {
+        "status": "abstain",
+        "fallback_reason": "multi_pass_verification_failed",
+        "detail": failed,
+        "ttc": receipt,
+    }

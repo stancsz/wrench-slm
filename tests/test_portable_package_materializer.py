@@ -101,6 +101,7 @@ def test_materializer_embeds_worker_runtime():
 def test_materializer_keeps_toolbelt_distinct_from_verifier():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert 'src" / "wrench_harness" / "toolbelt.py", runtime_dir / "toolbelt.py"' in script
+    assert 'src" / "wrench_harness" / "ttc.py", runtime_dir / "ttc.py"' in script
     assert 'src" / "wrench_harness" / "core.py", runtime_dir / "toolbelt.py"' not in script
     wrapper = Path("packaging/wrench_toolbelt.py").read_text(encoding="utf-8")
     assert "from wrench_runtime.toolbelt import *" in wrapper

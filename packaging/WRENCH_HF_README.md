@@ -152,6 +152,11 @@ so one slow or malformed native generation cannot stall the whole mechanical
 worker. Override `-UpstreamTimeoutSeconds` only when the caller uses a longer
 matching timeout.
 
+Accepted proposals include a `wrench.test-time-compute-receipt.v1` in the
+response metadata. The receipt records bounded local schema, authority,
+evidence, consistency, and blind-critic checks. A failed TTC gate becomes a
+fail-closed abstention before the response leaves the package.
+
 When `-OllamaApi` is enabled, the launcher performs a real native completion
 smoke test before starting the public package server. A `/v1/models` response
 alone is not sufficient readiness. Startup diagnostics are saved in

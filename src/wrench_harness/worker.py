@@ -17,6 +17,7 @@ from typing import Any
 from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route, reference_patch_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
+from .ttc import enforce_ttc
 from .prefill import (
     MechanicalPrefillIndex,
     build_dynamic_prefill,
@@ -248,6 +249,13 @@ class WrenchWorker:
                         self.allowed_root,
                         request_prompt=route_prompt,
                     )
+                    if result.get("status") == "accepted":
+                        result = enforce_ttc(
+                            mechanical,
+                            route_prompt,
+                            result,
+                            context_pressure=len(reference_payload) > 256_000,
+                        )
                 result.update(
                     {
                         "backend": "embedded-mechanical",
@@ -292,6 +300,17 @@ class WrenchWorker:
             generated = output[0, batch["input_ids"].shape[-1] :]
             content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
             result = execute_model_output(content, self.allowed_root, request_prompt=prompt)
+            if result.get("status") == "accepted":
+                try:
+                    proposal = json.loads(content)
+                except json.JSONDecodeError:
+                    proposal = None
+                result = enforce_ttc(
+                    proposal,
+                    prompt,
+                    result,
+                    context_pressure=prefill_receipt is not None,
+                )
             retryable = result.get("fallback_reason") in {
                 "model_output_not_text",
                 "model_output_invalid_json",

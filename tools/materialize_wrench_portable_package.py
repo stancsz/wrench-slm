@@ -78,6 +78,7 @@ def materialize(
         # verifier.  The package ships both modules, and callers may import
         # the toolbelt directly from the downloaded directory.
         shutil.copy2(repo_root / "src" / "wrench_harness" / "toolbelt.py", runtime_dir / "toolbelt.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "ttc.py", runtime_dir / "ttc.py")
         shutil.copy2(
             repo_root / "runtime" / "freetoken_wrench_long_context" / "sitecustomize.py",
             runtime_dir / "sitecustomize.py",
@@ -446,6 +447,7 @@ def materialize(
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
                 "wrench_runtime/toolbelt.py",
+                "wrench_runtime/ttc.py",
                 "wrench_runtime/core.py",
                 "wrench_runtime/mechanical.py",
                 "wrench_runtime/patching.py",

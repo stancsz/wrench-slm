@@ -16,6 +16,17 @@ def test_embedded_worker_handles_mechanical_proposal_without_model(tmp_path: Pat
     assert result["mechanical_fast_path"] is True
 
 
+def test_embedded_worker_attaches_ttc_receipt_to_accepted_mechanical_result(tmp_path: Path):
+    (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    result = worker.propose(
+        [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+    )
+    assert result["status"] == "accepted"
+    assert result["ttc"]["passed"] is True
+    assert result["ttc"]["profile"] == "fast"
+
+
 def test_embedded_worker_rejects_unsafe_mechanical_request(tmp_path: Path):
     worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
     result = worker.propose(

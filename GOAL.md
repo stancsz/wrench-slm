@@ -1873,3 +1873,11 @@ generation because of CUDA memory pressure, and MiniMax matched-workflow
 parity remains open. Evidence:
 `phases/phase-168-native-cpu-profile` and
 `phases/phase-169-public-v70-mapreduce-profile`.
+
+2026-09-20 embedded TTC enforcement: the bounded multi-pass verifier is now
+part of the actual worker and native-upstream response path, and is bundled as
+`wrench_runtime/ttc.py`. Accepted proposals expose a TTC receipt; failed gates
+become fail-closed abstentions. Full regression passed at 154 tests, v71
+structural validation passed, the local 4M mechanical route measured 16.037 ms
+with zero model calls, and the package prefill stress measured 380.976 ms with
+zero model calls. Evidence: `phases/phase-170-embedded-ttc-runtime`.
