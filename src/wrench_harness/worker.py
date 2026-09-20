@@ -17,7 +17,7 @@ from typing import Any
 from .mechanical import mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
-from .prefill import MechanicalPrefillIndex, build_dynamic_prefill
+from .prefill import MechanicalPrefillIndex, build_dynamic_prefill, split_monolithic_current_message
 
 
 def _estimated_tokens(value: str) -> int:
@@ -46,33 +46,12 @@ def _dynamic_prefill_messages(
     )
     if not large_by_chars and estimated_raw_tokens <= budget:
         return messages, None
-    current_indexes = [
-        index
-        for index, message in enumerate(messages)
-        if isinstance(message, dict)
-        and message.get("role") == "user"
-        and isinstance(message.get("content"), str)
-    ]
-    split_current_message = False
-    prepared_messages = messages
-    if current_indexes:
-        current_index = current_indexes[-1]
-        current_content = messages[current_index]["content"]
-        suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
-        current_is_large = len(current_content) > budget * 4
-        if len(current_content) > suffix_chars and (
-            current_is_large or _estimated_tokens(current_content) > budget
-        ):
-            # A caller may serialize the entire conversation into one user
-            # message. Preserve its old prefix as a separate lookup-only
-            # reference so the staged reducer still works in that shape.
-            prefix = current_content[:-suffix_chars]
-            suffix = current_content[-suffix_chars:]
-            prepared_messages = [dict(message) for message in messages[:current_index]]
-            prepared_messages.append({"role": "assistant", "content": prefix})
-            prepared_messages.append({"role": "user", "content": suffix})
-            prepared_messages.extend(dict(message) for message in messages[current_index + 1 :])
-            split_current_message = True
+    suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+    prepared_messages, split_current_message = split_monolithic_current_message(
+        messages,
+        model_prefill_budget=budget,
+        suffix_chars=suffix_chars,
+    )
     hot_budget = min(48_000, max(1, budget - 1))
     reference_budget = max(1, budget - hot_budget)
     mechanical_index = MechanicalPrefillIndex()

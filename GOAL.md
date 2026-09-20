@@ -1246,3 +1246,14 @@ working prefill to 1,852 tokens, made zero model calls, and completed in
 current evidence for the fast internal toolbelt path; it still does not prove
 dense native 4M attention quality or MiniMax parity. Evidence:
 `phases/phase-90-embedded-prefill/worker-4m.json`.
+
+2026-09-20 standard Hugging Face tokenizer staging: the public package's
+normal `AutoTokenizer.from_pretrained(..., trust_remote_code=True)` path now
+uses the same monolithic-message split as `WrenchWorker`. A fresh v20 package
+probe accepted a 4,000,000 estimated-token raw user payload, preserved the
+historical lookup marker and newest intent, and staged 1,850 model-prefill
+tokens in 87.041 ms after tokenizer load. This proves the package-shaped
+internal reducer is reachable without the repository harness. It still does
+not prove dense native 4M attention quality, MiniMax parity, or production
+readiness. Evidence: `tools/probe_standard_hf_tokenizer_prefill.py` and
+`phases/phase-91-hf-tokenizer-prefill/standard-hf-tokenizer-4m-v20.json`.

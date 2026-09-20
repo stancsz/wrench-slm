@@ -106,6 +106,51 @@ def _estimate_token_count(value: str) -> int:
     return max(1, value.count(" ") + value.count("\n") + 1)
 
 
+def split_monolithic_current_message(
+    messages: list[dict[str, str]],
+    *,
+    model_prefill_budget: int = 64_000,
+    suffix_chars: int = 16_000,
+) -> tuple[list[dict[str, str]], bool]:
+    """Expose one giant serialized conversation as reference plus intent.
+
+    Applications sometimes put an entire transcript into one final user
+    message. In that shape the normal ``current`` message would consume the
+    whole staged budget and the reducer could not distinguish stale history
+    from the active request. Keep the old prefix as a lookup-only assistant
+    reference and retain the newest suffix as the active user intent.
+    """
+
+    if not isinstance(messages, list) or not messages:
+        return messages, False
+    if not isinstance(model_prefill_budget, int) or model_prefill_budget < 1:
+        raise ValueError("model_prefill_budget must be positive")
+    if not isinstance(suffix_chars, int) or suffix_chars < 1:
+        raise ValueError("suffix_chars must be positive")
+    current_indexes = [
+        index
+        for index, message in enumerate(messages)
+        if isinstance(message, dict)
+        and message.get("role") == "user"
+        and isinstance(message.get("content"), str)
+    ]
+    if not current_indexes:
+        return messages, False
+    current_index = current_indexes[-1]
+    current_content = messages[current_index]["content"]
+    if len(current_content) <= suffix_chars:
+        return messages, False
+    if len(current_content) <= model_prefill_budget * 4 and _estimate_token_count(current_content) <= model_prefill_budget:
+        return messages, False
+    prefix = current_content[:-suffix_chars]
+    suffix = current_content[-suffix_chars:]
+    prepared = [dict(message) for message in messages[:current_index]]
+    prepared.append({"role": "assistant", "content": prefix})
+    prepared.append({"role": "user", "content": suffix})
+    prepared.extend(dict(message) for message in messages[current_index + 1 :])
+    return prepared, True
+
+
 def _bounded_matches(pattern: re.Pattern[str], text: str, *, limit: int, group: int | None = None) -> list[str]:
     """Scan with the regex engine but stop materializing after a small bound."""
 

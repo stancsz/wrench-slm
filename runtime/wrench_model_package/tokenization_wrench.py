@@ -18,13 +18,21 @@ from transformers import PreTrainedTokenizerFast
 try:
     # Transformers dynamic modules preserve this relative dependency when the
     # model directory is downloaded from the Hub.
-    from .wrench_prefill import MechanicalPrefillIndex, build_dynamic_prefill
+    from .wrench_prefill import (
+        MechanicalPrefillIndex,
+        build_dynamic_prefill,
+        split_monolithic_current_message,
+    )
     from .wrench_mechanical import mechanical_route
 except ImportError:
     _SOURCE_ROOT = Path(__file__).resolve().parents[2] / "src"
     if str(_SOURCE_ROOT) not in sys.path:
         sys.path.insert(0, str(_SOURCE_ROOT))
-    from wrench_harness.prefill import MechanicalPrefillIndex, build_dynamic_prefill
+    from wrench_harness.prefill import (
+        MechanicalPrefillIndex,
+        build_dynamic_prefill,
+        split_monolithic_current_message,
+    )
     from wrench_harness.mechanical import mechanical_route
 
 
@@ -45,6 +53,12 @@ class WrenchTokenizer(PreTrainedTokenizerFast):
             and all(isinstance(message, dict) and isinstance(message.get("content"), str) for message in conversation)
             and any(message.get("role") == "user" for message in conversation)
         ):
+            suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+            conversation, split_current_message = split_monolithic_current_message(
+                conversation,
+                model_prefill_budget=64_000,
+                suffix_chars=suffix_chars,
+            )
             self._wrench_mechanical_index.add_all(conversation)
             conversation, receipt = build_dynamic_prefill(
                 conversation,
@@ -53,6 +67,8 @@ class WrenchTokenizer(PreTrainedTokenizerFast):
                 reference_index_budget=16_000,
                 mechanical_index=self._wrench_mechanical_index,
             )
+            receipt["split_current_message"] = split_current_message
+            receipt["suffix_chars"] = suffix_chars if split_current_message else None
             self.last_wrench_prefill_receipt = receipt
         elif isinstance(conversation, list):
             self.last_wrench_prefill_receipt = {

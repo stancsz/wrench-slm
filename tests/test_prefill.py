@@ -1,4 +1,9 @@
-from wrench_harness.prefill import MechanicalPrefillIndex, build_dynamic_prefill, build_lossless_structured_prefill
+from wrench_harness.prefill import (
+    MechanicalPrefillIndex,
+    build_dynamic_prefill,
+    build_lossless_structured_prefill,
+    split_monolithic_current_message,
+)
 
 
 def test_structured_prefill_keeps_current_intent_and_all_reference_text():
@@ -69,3 +74,18 @@ def test_mechanical_index_reuses_cards_for_fresh_http_message_objects():
     assert first is second
     assert index.entry(fresh) is first
     assert index.token_count(fresh) == 5
+
+
+def test_split_monolithic_current_message_preserves_old_prefix_as_reference():
+    payload = "old reference\n" + ("stale context\n" * 20_000) + "CURRENT INTENT: read README.md"
+    prepared, split = split_monolithic_current_message(
+        [{"role": "user", "content": payload}],
+        model_prefill_budget=1_000,
+        suffix_chars=128,
+    )
+    assert split is True
+    assert prepared[0]["role"] == "assistant"
+    assert "old reference" in prepared[0]["content"]
+    assert prepared[1]["role"] == "user"
+    assert "CURRENT INTENT: read README.md" in prepared[1]["content"]
+    assert len(prepared[1]["content"]) == 128
