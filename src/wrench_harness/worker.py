@@ -73,9 +73,15 @@ class WrenchWorker:
         if not isinstance(messages, list) or not messages:
             return {"status": "abstain", "fallback_reason": "qwen_request_invalid"}
         users = [item.get("content") for item in messages if item.get("role") == "user"]
-        prompt = users[-1] if users and isinstance(users[-1], str) else ""
+        users = [content for content in users if isinstance(content, str)]
+        prompt = users[-1] if users else ""
+        reference_payload = "\n\n".join(users)
         if use_mechanical_route:
-            mechanical = mechanical_route(prompt) or reference_lookup_route(prompt)
+            # The latest user message owns the action. The complete user
+            # payload remains available as reference evidence for multi-turn
+            # conversations, including payloads whose old lookup lives in an
+            # earlier message.
+            mechanical = mechanical_route(prompt) or reference_lookup_route(reference_payload)
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":

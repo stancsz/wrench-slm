@@ -501,7 +501,9 @@ def _install_qwen_long_context_overlay() -> None:
                     for message in getattr(req, "messages", [])
                     if getattr(message, "role", None) == "user"
                 ]
-                content = contents[-1] if contents and isinstance(contents[-1], str) else ""
+                contents = [content for content in contents if isinstance(content, str)]
+                content = contents[-1] if contents else ""
+                reference_payload = "\n\n".join(contents)
                 if content:
                     route_tail = content[-suffix_chars:] if len(content) > suffix_chars else content
                     candidate = None
@@ -514,12 +516,12 @@ def _install_qwen_long_context_overlay() -> None:
                             candidate = None
                     if candidate is None:
                         candidate = _mechanical_read_hint_from_tail(route_tail)
-                    lookup_card = _build_reference_lookup_card(content, route_tail)
+                    lookup_card = _build_reference_lookup_card(reference_payload, route_tail)
                     if candidate is None:
                         candidate = _reference_proposal_hint(route_tail, lookup_card)
                     if candidate is None and embedded_reference_lookup_route is not None:
                         try:
-                            routed = embedded_reference_lookup_route(content)
+                            routed = embedded_reference_lookup_route(reference_payload)
                             if isinstance(routed, dict) and routed.get("schema") == "wrench.proposal.v1":
                                 candidate = routed
                         except Exception:

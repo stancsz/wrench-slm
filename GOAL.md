@@ -1201,3 +1201,16 @@ still embedded-toolbelt and package-integrity evidence, not native 4M retrieval
 quality, MiniMax parity, GGUF/Ollama/vLLM compatibility, or production
 readiness. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v15-validation.json`;
 tests `100 passed`.
+
+2026-09-20 multi-turn payload and portable copy-paste hardening: the embedded
+worker and OpenAI endpoint now preserve all user-message history as reference
+payload while using only the newest user message as the active intent. A fresh
+v16 package passed structural validation with two NVFP4 shards and declared
+4,000,000-token input, and its package-local multi-turn lookup returned an
+accepted bounded `read_file` proposal through `embedded-mechanical` with zero
+model calls. The materializer now also prevents a duplicated suffix in the
+published `hf download --local-dir` command. This advances the direct-model
+package path, but does not establish native 4M retrieval quality, MiniMax
+parity, GGUF/Ollama/vLLM compatibility, or production readiness. Evidence:
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v16-validation.json`;
+full suite `102 passed`.

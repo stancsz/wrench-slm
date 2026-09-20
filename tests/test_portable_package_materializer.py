@@ -1,6 +1,19 @@
 from pathlib import Path
 
 
+def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
+    from tools.materialize_wrench_portable_package import materialize
+
+    source = tmp_path / "source-native4M"
+    target = tmp_path / "Wrench-4B-Qwen3.6-8E-NVFP4-native4M"
+    source.mkdir()
+    (source / "config.json").write_text("{}\n", encoding="utf-8")
+    materialize(source, target, Path.cwd())
+    readme = (target / "README.md").read_text(encoding="utf-8")
+    assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M" in readme
+    assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-NVFP4-native4M" not in readme
+
+
 def test_materializer_is_available_and_does_not_overwrite_by_contract():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert "refusing to overwrite existing target" in script

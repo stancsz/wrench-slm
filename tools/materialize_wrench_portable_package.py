@@ -147,11 +147,11 @@ def materialize(
                 "and stays below the 4.25B parameter ceiling.",
             )
         package_dir_name = huggingface_repo_id.rsplit("/", 1)[-1]
-        readme = readme.replace("./Wrench-4B-Qwen3.6-8E", f"./{package_dir_name}")
         readme = readme.replace(
-            "--local-dir Wrench-4B-Qwen3.6-8E",
+            "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
             f"--local-dir {package_dir_name}",
         )
+        readme = readme.replace("./Wrench-4B-Qwen3.6-8E", f"./{package_dir_name}")
         readme_path.write_text(readme, encoding="utf-8")
         distribution_doc = target / "WRENCH_PORTABLE_DISTRIBUTION.md"
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", distribution_doc)
