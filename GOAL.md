@@ -1512,3 +1512,13 @@ the embedded mechanical backend in 5.779 ms with zero model calls. This proves
 the copy-paste package's Ollama-shaped 4M intake surface, not stock Ollama
 checkpoint loading, dense native 4M attention, MiniMax parity, or production
 readiness. Evidence: `phases/phase-131-ollama-api`.
+
+2026-09-20 fresh v44 prompt-complete replay: the current portable package was
+run against the derived 220-case executable mechanical contract. It matched
+220/220 outcomes and 120/120 exact eligible proposals, routed all 220 through
+the package-local mechanical path, made zero model calls, produced zero
+prohibited accepts, and measured 0.594 ms median with 42.204 ms p95. This
+revalidates the 90% mechanical-work target on a prompt-complete contract after
+the Ollama-shaped API update. It does not close native dense 4M retrieval
+quality, MiniMax parity, or family-disjoint production utility. Evidence:
+`phases/phase-132-v44-prompt-complete`.

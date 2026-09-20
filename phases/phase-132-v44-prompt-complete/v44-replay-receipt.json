@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.v44-prompt-complete-replay.v1",
+  "status": "PASS_PROMPT_COMPLETE_MECHANICAL_CONTRACT",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v44-ollama-api",
+  "cases_sha256": "72DFD13DD9D3607207BB23E139D1581CFBB23E25A390EAF453225DB3CDB8EF053",
+  "case_count": 220,
+  "eligible_case_count": 120,
+  "outcome_matches": 220,
+  "eligible_exact_accepts": 120,
+  "mechanical_fast_path_requests": 220,
+  "model_calls": 0,
+  "prohibited_accepts": 0,
+  "transport_or_runtime_abstentions": 0,
+  "median_latency_ms": 0.594,
+  "p95_latency_ms": 42.204,
+  "mean_latency_ms": 6.908,
+  "receipt_sha256": "9BD2E4796D8722807BB23E139D1581CFBB23E25A390EAF453225DB3CDB8EF053",
+  "native_dense_4m_quality_claim": false,
+  "minimax_parity_claim": false,
+  "production_enablement": false
+}
