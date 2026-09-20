@@ -44,7 +44,7 @@ cap. Requests asking for the entire or complete file remain fallback-required
 so a large file is never silently truncated.
 
 For `patch_draft`, the verifier requires a real review-only unified diff with
-both removed and added content. Header-only or empty diffs are rejected as
+actual added or removed content. Header-only or empty diffs are rejected as
 `invalid_patch_diff`; a schema-valid empty patch is never reported as useful
 work.
 

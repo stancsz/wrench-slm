@@ -269,7 +269,7 @@ def _patch_draft(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     diff_lines = diff.splitlines()
     has_removed_content = any(line.startswith("-") and not line.startswith("---") for line in diff_lines)
     has_added_content = any(line.startswith("+") and not line.startswith("+++") for line in diff_lines)
-    if not has_removed_content or not has_added_content:
+    if not has_removed_content and not has_added_content:
         return _abstain("invalid_patch_diff")
     resolved: list[str] = []
     for value in files:

@@ -77,6 +77,18 @@ def test_health_and_patch_fail_closed(tmp_path: Path):
     assert patch["observation"]["applied"] is False
     assert target.read_text(encoding="utf-8") == "old\n"
 
+    addition_only = execute_proposal(
+        proposal(
+            "patch_draft",
+            files=["note.txt"],
+            review_only=True,
+            diff="--- a/note.txt\n+++ b/note.txt\n@@ -1,1 +1,2 @@\n old\n+new\n",
+        ),
+        tmp_path,
+    )
+    assert addition_only["status"] == "accepted"
+    assert addition_only["observation"]["applied"] is False
+
     empty_patch = execute_proposal(
         proposal(
             "patch_draft",
