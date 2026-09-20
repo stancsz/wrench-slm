@@ -2131,3 +2131,13 @@ teacher tokens, 4,805 local tokens, zero fallbacks, 183.940 ms median, and
 323.980 ms p95. Prohibited accepts and unexpected mutations were both zero.
 This is sealed-split diagnostic evidence, not final production authorization.
 Evidence: `phases/phase-196-v79-final-slice`.
+
+2026-09-20 v79 package retrieval-quality probe: six direct bundled-worker
+cases placed unique lookup needles at 1%, 50%, and 99% of both 2M and 4M raw
+payloads. All six recovered the exact old-reference path and 65,536-byte
+bound from the newest intent, with `embedded-mechanical` routing and zero
+model calls. Elapsed time ranged from 12.507 ms to 473.255 ms, exposing the
+remaining linear-scan latency opportunity for a reusable offset/index layer.
+This proves package-local monster-context retrieval behavior, not dense-native
+attention or learned MiniMax parity. Evidence:
+`phases/phase-197-v79-retrieval-quality`.
