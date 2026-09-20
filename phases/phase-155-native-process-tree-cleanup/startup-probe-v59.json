@@ -1,0 +1,42 @@
+{
+  "phase": "phase-155-native-process-tree-cleanup",
+  "date": "2026-09-20",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v59-process-tree-cleanup",
+  "hub_repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "hub_revision": "5456c8942efc14950fec0d2ce57f73eaa9a02c5c",
+  "structural_validation": {
+    "status": "PASS_STRUCTURAL_PACKAGE",
+    "errors": []
+  },
+  "full_regression": {
+    "passed": 146,
+    "warnings": 14,
+    "duration_seconds": 20.85
+  },
+  "mechanical_4m_route": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "elapsed_ms": 16.051,
+    "model_calls": 0,
+    "payload_tokens": 4000000
+  },
+  "native_launcher_smoke": {
+    "status": "FAIL_HOST_RESOURCE_BOUNDARY",
+    "exit_code": 1,
+    "native_port": 28206,
+    "ollama_port": 28906,
+    "error": "CUDA out of memory while building rotary embeddings",
+    "free_gpu_memory_mib_reported_by_torch": 798.44,
+    "post_smoke_listeners": [],
+    "post_smoke_matching_processes": []
+  },
+  "published_launcher_controls": {
+    "process_tree_cleanup": true,
+    "expert_load": "serial",
+    "tokenizer_processes": 0,
+    "openblas_threads": 1,
+    "omp_threads": 1,
+    "mkldnn_threads": 1,
+    "numexpr_threads": 1,
+    "cuda_module_loading": "LAZY"
+  }
+}

@@ -1721,3 +1721,15 @@ the canonical v5 replay remains `QUALITY_GATE_OPEN` at
 zero prohibited accepts and zero unexpected mutations. This independently
 confirms the remaining gap to the 90%/95% North Star gates. Evidence:
 `phases/phase-152-independent-mini-max-score`.
+
+2026-09-20 native process-tree cleanup and public v59 portable package: the
+generated launcher now kills the complete FreeToken native process tree when
+startup fails. Full regression remained at 146 passing tests. The v59 package
+passed structural validation and its downloaded-package 4M mechanical route
+measured 16.051 ms with zero model calls. A real launcher smoke correctly
+returned a host-resource failure on the current GPU, with no test-port
+listener or matching process remaining afterward. The package was published
+at Hub revision `5456c8942efc14950fec0d2ce57f73eaa9a02c5c`. Native 2M/4M
+generation, retrieval quality, MiniMax parity, GGUF compatibility, and
+production readiness remain open. Evidence:
+`phases/phase-155-native-process-tree-cleanup`.
