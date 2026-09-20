@@ -48,11 +48,13 @@ both removed and added content. Header-only or empty diffs are rejected as
 `invalid_patch_diff`; a schema-valid empty patch is never reported as useful
 work.
 
-When a request contains one explicit quoted replacement, such as
-`Replace "old" with "new" in README.md`, the embedded route reads that one
+When a request contains one explicit quoted text operation, such as
+`Replace "old" with "new" in README.md`, `Append "line" to README.md`, or
+`Insert "line" after "anchor" in README.md`, the embedded route reads that one
 file, constructs a review-only unified diff, and leaves the working tree
-untouched. Ambiguous or under-specified patch requests return
-`patch_content_missing` without spending a model call.
+untouched. It supports replace, append, prepend, insert-after, and remove
+when the text match is unique. Ambiguous or under-specified patch requests
+return `patch_content_missing` without spending a model call.
 
 The embedded worker API is available directly from the downloaded directory:
 

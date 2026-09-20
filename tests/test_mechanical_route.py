@@ -1,3 +1,5 @@
+import pytest
+
 from wrench_harness import mechanical_route
 
 
@@ -117,3 +119,27 @@ def test_mechanical_route_defers_ambiguous_replacement_to_model(tmp_path):
         'Replace "before" with "updated" in README.md and leave the file unchanged.',
         allowed_root=tmp_path,
     ) is None
+
+
+@pytest.mark.parametrize(
+    ("instruction", "before", "removed", "added"),
+    [
+        ('Append "tail" to README.md and leave the file unchanged.', "head\n", "head", "tail"),
+        ('Prepend "top" to README.md and leave the file unchanged.', "head\n", "head", "top"),
+        ('Insert "middle" after "head" in README.md and leave the file unchanged.', "head\ntail\n", "tail", "middle"),
+        ('Remove "obsolete" from README.md and leave the file unchanged.', "keep\nobsolete\n", "obsolete", "keep"),
+    ],
+)
+def test_mechanical_route_builds_bounded_text_patch(tmp_path, instruction, before, removed, added):
+    target = tmp_path / "README.md"
+    target.write_text(before, encoding="utf-8")
+
+    proposal = mechanical_route(instruction, allowed_root=tmp_path)
+
+    assert proposal is not None
+    assert proposal["action"] == "patch_draft"
+    assert proposal["files"] == ["README.md"]
+    assert proposal["review_only"] is True
+    assert removed in proposal["diff"]
+    assert added in proposal["diff"]
+    assert target.read_text(encoding="utf-8") == before

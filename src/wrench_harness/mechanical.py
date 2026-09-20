@@ -76,6 +76,27 @@ _EXPLICIT_REPLACEMENT_RE = re.compile(
     r"(?:in|within|inside)\s+(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
     re.IGNORECASE | re.DOTALL,
 )
+_EXPLICIT_APPEND_RE = re.compile(
+    r"\bappend\s+(['\"`])(?P<text>.*?)\1\s+(?:to|into)\s+"
+    r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
+_EXPLICIT_PREPEND_RE = re.compile(
+    r"\bprepend\s+(['\"`])(?P<text>.*?)\1\s+(?:to|into)\s+"
+    r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
+_EXPLICIT_INSERT_AFTER_RE = re.compile(
+    r"\binsert\s+(['\"`])(?P<text>.*?)\1\s+after\s+"
+    r"(['\"`])(?P<anchor>.*?)\3\s+in\s+"
+    r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
+_EXPLICIT_REMOVE_RE = re.compile(
+    r"\bremove\s+(['\"`])(?P<text>.*?)\1\s+(?:from|in)\s+"
+    r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 _REFERENCE_QUERY_STOPWORDS = frozenset(
@@ -225,7 +246,11 @@ def _is_risky(prompt: str) -> bool:
     if any(marker in lowered for marker in _OUT_OF_DOMAIN_MARKERS):
         return True
     if any(re.search(rf"\b{word}\b", lowered) for word in ("delete", "remove", "destroy", "erase")):
-        return True
+        bounded_text_remove = _EXPLICIT_REMOVE_RE.search(prompt) is not None and bool(
+            re.search(r"\b(?:review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered)
+        )
+        if not bounded_text_remove:
+            return True
     if re.search(r"\bapply\b", lowered) and not re.search(r"\b(?:do not|don't|never) apply\b|\bunapplied\b", lowered):
         return True
     return False
@@ -268,6 +293,72 @@ def _explicit_replacement_patch(
     if original.count(old) != 1:
         return None
     updated = original.replace(old, new, 1)
+    diff = "".join(
+        difflib.unified_diff(
+            original.splitlines(keepends=True),
+            updated.splitlines(keepends=True),
+            fromfile=f"a/{relative}",
+            tofile=f"b/{relative}",
+            n=3,
+        )
+    )
+    if not diff.endswith("\n"):
+        diff += "\n"
+    return _proposal("patch_draft", files=[relative], review_only=True, diff=diff)
+
+
+def _explicit_text_patch(
+    prompt: str,
+    *,
+    allowed_root: str | os.PathLike[str] | None,
+) -> dict[str, Any] | None:
+    """Build a review-only diff for one unique, explicitly described edit."""
+
+    operation = ""
+    match: re.Match[str] | None = None
+    for name, candidate in (
+        ("append", _EXPLICIT_APPEND_RE.search(prompt)),
+        ("prepend", _EXPLICIT_PREPEND_RE.search(prompt)),
+        ("insert_after", _EXPLICIT_INSERT_AFTER_RE.search(prompt)),
+        ("remove", _EXPLICIT_REMOVE_RE.search(prompt)),
+    ):
+        if candidate is not None:
+            operation = name
+            match = candidate
+            break
+    if match is None:
+        return None
+    bounded = _bounded_patch_path(match.group("path"), allowed_root)
+    if bounded is None:
+        return None
+    path, relative = bounded
+    text = match.group("text")
+    if not text:
+        return None
+    try:
+        original = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    if operation == "append":
+        separator = "" if not original or original.endswith("\n") else "\n"
+        updated = original + separator + text
+        if not updated.endswith("\n"):
+            updated += "\n"
+    elif operation == "prepend":
+        prefix = text if text.endswith("\n") else text + "\n"
+        updated = prefix + original
+    elif operation == "insert_after":
+        anchor = match.group("anchor")
+        if not anchor or original.count(anchor) != 1:
+            return None
+        insertion = text if text.endswith("\n") else text + "\n"
+        updated = original.replace(anchor, anchor + "\n" + insertion, 1)
+    else:
+        if original.count(text) != 1:
+            return None
+        updated = original.replace(text, "", 1)
+    if updated == original:
+        return None
     diff = "".join(
         difflib.unified_diff(
             original.splitlines(keepends=True),
@@ -329,7 +420,7 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
         if "non-string health url" in lowered:
             return {"status": "abstain", "fallback_reason": "invalid_health_request"}
 
-    if re.search(r"\b(patch|diff|change|replace|update)\b", lowered) or "apply a patch" in lowered:
+    if re.search(r"\b(patch|diff|change|replace|update|append|prepend|insert|remove)\b", lowered) or "apply a patch" in lowered:
         if "outside the repository" in lowered:
             return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
         if "missing file" in lowered:
@@ -343,7 +434,7 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
         review_only = bool(re.search(r"\b(?:review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered))
         has_unified_diff = bool(re.search(r"(?m)^---\s+a/.*\n^\+\+\+\s+b/", prompt))
         has_change_spec = bool(
-            re.search(r"\b(?:replace|update|add|insert|rename|set|remove)\b", lowered)
+            re.search(r"\b(?:replace|update|add|insert|rename|set|remove|append|prepend)\b", lowered)
             or re.search(r"['\"].+['\"].+\bto\b", prompt, re.IGNORECASE | re.DOTALL)
         )
         if review_only and _path(prompt) and not has_unified_diff and not has_change_spec:
@@ -435,7 +526,7 @@ def mechanical_route(
             byte_limit = _limit(prompt, default=64 * 1024)
             return _proposal("health_read", url=url, timeout_seconds=timeout, max_bytes=byte_limit)
 
-    if re.search(r"\b(patch|diff|change|replace|update)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
+    if re.search(r"\b(patch|diff|change|replace|update|append|prepend|insert|remove)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
         if path:
             diff_match = re.search(r"---\s+a/.*?\n\+\+\+\s+b/.*?(?:\n\n|$)", prompt, re.DOTALL)
             if diff_match:
@@ -443,6 +534,8 @@ def mechanical_route(
                 diff_path = file_match.group(1).strip() if file_match else path
                 return _proposal("patch_draft", files=[diff_path], review_only=True, diff=diff_match.group(0).strip() + "\n")
             generated = _explicit_replacement_patch(prompt, allowed_root=allowed_root)
+            if generated is None:
+                generated = _explicit_text_patch(prompt, allowed_root=allowed_root)
             if generated is not None:
                 return generated
 
