@@ -21,4 +21,7 @@ They do not establish retrieval quality, MiniMax parity, safety parity, or a
 production default. The profile is therefore opt-in.
 
 The public package revision containing the profile is
-`6b890cbd4d33d69bed869881200503218772f046`.
+`ccd3bc7ecf786c9c5602c9a0e5885f776a5c6078`. The boundary is request-relative:
+the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
+computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
+the same endpoint safely.

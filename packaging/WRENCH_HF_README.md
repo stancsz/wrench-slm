@@ -84,8 +84,9 @@ reference-only, use:
 .\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
 ```
 
-This keeps the complete raw request and 4M model-side prompt accounting, but
-skips attention and MLP work before the recent-token boundary. It is opt-in
+This keeps the complete raw request and model-side prompt accounting for the
+actual request length, then skips attention and MLP work before the recent-token
+boundary. It therefore scales between 2M and 4M requests. It is opt-in
 because retrieval quality and MiniMax parity for this policy are not yet
 verified. The default launcher does not enable it.
 

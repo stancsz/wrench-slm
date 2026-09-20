@@ -30,10 +30,16 @@
   },
   "verification": {
     "launcher_powershell_parse_errors": 0,
-    "tests_passed": 120,
-    "tests_warnings": 8,
+    "tests_passed": 121,
+    "tests_warnings": 10,
     "huggingface_public": true,
-    "huggingface_revision": "6b890cbd4d33d69bed869881200503218772f046"
+    "huggingface_revision": "ccd3bc7ecf786c9c5602c9a0e5885f776a5c6078",
+    "request_relative_boundary_verified": true,
+    "boundary_examples": {
+      "two_million_keep_64000": 1936000,
+      "four_million_keep_64000": 3936000,
+      "shorter_than_keep": 0
+    }
   },
   "release_boundary": "opt-in throughput and capacity diagnostic; retrieval quality, MiniMax parity, and production default remain unverified"
 }

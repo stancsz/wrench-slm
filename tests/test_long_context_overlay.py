@@ -17,6 +17,15 @@ def test_long_context_overlay_allows_zero_global_full_layers():
     assert resolve((3, 7, 11), "") == (11,)
 
 
+def test_history_skip_boundary_scales_with_actual_request_length():
+    namespace = _load_overlay_source()
+    boundary = namespace["_history_skip_boundary"]
+    assert boundary(2_000_000, "auto", 64_000) == 1_936_000
+    assert boundary(4_000_000, "request_tail", 64_000) == 3_936_000
+    assert boundary(32_000, "dynamic", 64_000) == 0
+    assert boundary(2_000_000, "123456", 64_000) == 123456
+
+
 def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     source = Path("runtime/freetoken_wrench_long_context/sitecustomize.py").read_text(encoding="utf-8")
     assert "qwen_family.parse_config = parse_config_with_bounded_full_attention" in source
@@ -37,6 +46,8 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "proposal_only_external_verifier_required" in source
     assert "history_skip_mlp_before" in source
     assert "history_skip_layers_before" in source
+    assert "history_skip_layers_dynamic" in source
+    assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in source
     assert "history_control_prefix_tokens" in source
     assert "history_control_suffix_chars" in source
 

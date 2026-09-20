@@ -14,7 +14,8 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-NVFP4-native4M" not in readme
     launcher = (target / "serve_freetoken.ps1").read_text(encoding="utf-8")
     assert "[switch]$FastHistory" in launcher
-    assert "$historySkipBefore = 4000000 - $FastHistoryKeepTokens" in launcher
+    assert '$env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "auto"' in launcher
+    assert '$env:WRENCH_HISTORY_SKIP_KEEP_TOKENS = "$FastHistoryKeepTokens"' in launcher
     assert "$env:WRENCH_HISTORY_CONTROL_SUFFIX = \"1\"" in launcher
 
 
@@ -56,6 +57,7 @@ def test_materializer_embeds_worker_runtime():
     assert "dynamic_staged_prefill" in script
     assert "FastHistoryKeepTokens" in script
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in script
+    assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in script
     assert '"fast_history_profile": "opt_in_reference_only"' in script
 
 

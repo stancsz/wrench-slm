@@ -192,6 +192,19 @@ def _resolve_global_ids(full_ids: tuple[int, ...], requested: str) -> tuple[int,
     return tuple(layer_id for layer_id in selected if layer_id in full_ids)
 
 
+def _history_skip_boundary(request_tokens: int, configured: str, keep_tokens: int) -> int:
+    """Resolve a fixed or request-relative reference-only boundary."""
+
+    if request_tokens < 0 or keep_tokens < 1:
+        raise ValueError("history skip token bounds must be positive")
+    if configured.strip().casefold() in {"auto", "request_tail", "dynamic"}:
+        return max(0, request_tokens - keep_tokens)
+    boundary = int(configured)
+    if boundary < 0:
+        raise ValueError("WRENCH_HISTORY_SKIP_LAYERS_BEFORE must be non-negative")
+    return boundary
+
+
 def _install_qwen_long_context_overlay() -> None:
     if os.environ.get("WRENCH_LONG_CONTEXT_OVERLAY", "0") != "1":
         return
@@ -312,9 +325,21 @@ def _install_qwen_long_context_overlay() -> None:
     # while linear/SWA state is updated. The final recent window remains on the
     # normal full path. This is intentionally opt-in until quality is measured.
     history_skip_before = int(os.environ.get("WRENCH_HISTORY_SKIP_MLP_BEFORE", "0"))
-    history_skip_layers_before = int(os.environ.get("WRENCH_HISTORY_SKIP_LAYERS_BEFORE", "0"))
+    history_skip_layers_before_raw = os.environ.get("WRENCH_HISTORY_SKIP_LAYERS_BEFORE", "0")
+    history_skip_layers_dynamic = history_skip_layers_before_raw.strip().casefold() in {
+        "auto", "request_tail", "dynamic"
+    }
+    history_skip_layers_before = (
+        0 if history_skip_layers_dynamic else int(history_skip_layers_before_raw)
+    )
+    history_skip_layers_keep_tokens = int(os.environ.get("WRENCH_HISTORY_SKIP_KEEP_TOKENS", "64000"))
     history_control_prefix_tokens = int(os.environ.get("WRENCH_HISTORY_CONTROL_PREFIX_TOKENS", "0"))
-    if history_skip_before < 0 or history_skip_layers_before < 0 or history_control_prefix_tokens < 0:
+    if (
+        history_skip_before < 0
+        or history_skip_layers_before < 0
+        or history_skip_layers_keep_tokens < 1
+        or history_control_prefix_tokens < 0
+    ):
         raise ValueError("historical skip thresholds must be non-negative")
     if history_skip_before or history_skip_layers_before:
         from freetoken.models.qwen3_5_moe import model as qwen_model
@@ -329,11 +354,21 @@ def _install_qwen_long_context_overlay() -> None:
             if batch.is_prefill and len(batch.reqs) == 1:
                 request_start = int(batch.reqs[0].cached_len)
                 request_end = request_start + int(hidden.shape[0])
+                request_total = int(getattr(batch.reqs[0], "input_len", request_end))
+                active_history_skip_boundary = (
+                    _history_skip_boundary(
+                        request_total,
+                        history_skip_layers_before_raw,
+                        history_skip_layers_keep_tokens,
+                    )
+                    if history_skip_layers_dynamic
+                    else history_skip_layers_before
+                )
                 skip_mlp = history_skip_before and request_end <= history_skip_before
                 skip_layers = (
-                    history_skip_layers_before
+                    active_history_skip_boundary
                     and request_start >= history_control_prefix_tokens
-                    and request_end <= history_skip_layers_before
+                    and request_end <= active_history_skip_boundary
                 )
             if skip_layers:
                 # Preserve the residual stream while avoiding both attention and
@@ -370,6 +405,8 @@ def _install_qwen_long_context_overlay() -> None:
             policy += f";history_skip_mlp_before={history_skip_before}"
         if history_skip_layers_before:
             policy += f";history_skip_layers_before={history_skip_layers_before}"
+        if history_skip_layers_dynamic:
+            policy += f";history_skip_layers_before=auto;keep_tokens={history_skip_layers_keep_tokens}"
         if history_control_prefix_tokens:
             policy += f";history_control_prefix_tokens={history_control_prefix_tokens}"
         os.environ["WRENCH_LONG_CONTEXT_POLICY"] = policy

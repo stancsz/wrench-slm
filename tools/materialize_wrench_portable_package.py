@@ -121,6 +121,7 @@ def materialize(
                         "native_direct_payload_verified": True,
                         "fast_history_profile": "opt_in_reference_only",
                         "fast_history_keep_tokens_default": 64000,
+                        "fast_history_boundary_mode": "request_relative_auto",
                     },
                     "launch_note": "Native mode requires the bundled runtime overlay and a compatible FreeToken build.",
                 },
@@ -143,7 +144,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             "    [int]$KvReserveTokens = 8192",
-            "    [int]$KvReserveTokens = 8192,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000",
+            "    [int]$KvReserveTokens = 8192,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096",
         )
         launcher_text = launcher_text.replace(
             "    --moe-cache-size $MoeCacheSize `",
@@ -160,8 +161,9 @@ def materialize(
             '    if ($FastHistoryKeepTokens -lt 1 -or $FastHistoryKeepTokens -ge 4000000) {\n'
             '        throw "FastHistoryKeepTokens must be between 1 and 3999999"\n'
             '    }\n'
-            '    $historySkipBefore = 4000000 - $FastHistoryKeepTokens\n'
-            '    $env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "$historySkipBefore"\n'
+            '    $env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "auto"\n'
+            '    $env:WRENCH_HISTORY_SKIP_KEEP_TOKENS = "$FastHistoryKeepTokens"\n'
+            '    $env:WRENCH_HISTORY_CONTROL_PREFIX_TOKENS = "$FastHistoryControlPrefixTokens"\n'
             '    $env:WRENCH_HISTORY_CONTROL_SUFFIX = "1"\n'
             '    $env:WRENCH_HISTORY_CONTROL_SUFFIX_CHARS = "16000"\n'
             '}',
