@@ -1279,3 +1279,13 @@ used 4,460,544 trainable parameters and reached loss `0.0001005`, but the
 unseen 44-case split fell to 15/44 correct outcomes, 3/24 correct eligible
 accepts, and one prohibited accept. It is rejected and unpublished. Evidence:
 `phases/phase-93-native-skip-tuning/README.md`.
+
+2026-09-20 current-source mechanical route replay: a dedicated semantic-only
+runner replayed the canonical 220-case fixture without executing the dirty
+repository. The current implementation routed 200/220 requests mechanically
+(90.91%), matched 200 expected route outcomes, produced zero prohibited
+accepts, and completed the replay in `6.758` ms. All 30 read_file, 30
+read_lines, 30 literal_search, 30 git_read_status, and 30 health_read cases
+routed; 20 patch prompts without concrete diffs remained model-fallback
+required. This is current source coverage evidence, not weighted frontier-token
+coverage or MiniMax parity. Evidence: `phases/phase-94-mechanical-route`.
