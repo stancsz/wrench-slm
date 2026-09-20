@@ -1,7 +1,7 @@
 {
   "schema": "wrench.public-hf-release.v1",
   "status": "PUBLIC_EXPERIMENTAL_PACKAGE_V20_VERIFIED",
-  "source_commit": "45347ce",
+  "source_commit": "45347ce06d9d52da8b3c73b396c2569d79fba572",
   "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
   "huggingface_revision": "845432235d575ec7eb175e772b0e6f87094b8196",
   "local_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v20",

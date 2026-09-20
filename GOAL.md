@@ -1252,7 +1252,7 @@ normal `AutoTokenizer.from_pretrained(..., trust_remote_code=True)` path now
 uses the same monolithic-message split as `WrenchWorker`. A fresh v20 package
 probe accepted a 4,000,000 estimated-token raw user payload, preserved the
 historical lookup marker and newest intent, and staged 1,850 model-prefill
-tokens in 87.041 ms after tokenizer load. This proves the package-shaped
+tokens in 86.336 ms after tokenizer load. This proves the package-shaped
 internal reducer is reachable without the repository harness. It still does
 not prove dense native 4M attention quality, MiniMax parity, or production
 readiness. Evidence: `tools/probe_standard_hf_tokenizer_prefill.py` and
