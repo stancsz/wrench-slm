@@ -2199,3 +2199,14 @@ not have the compiled-in `C:/Program Files/NVIDIA/CUDNN/bin/x64` directory.
 The weights and importer are compatible; portable Windows MLX plus cuDNN
 runtime validation remains open. Evidence:
 `phases/phase-201-ollama-import-runtime`.
+
+2026-09-20 Ollama MLX relocation experiment: a copied 0.34.2 MLX runtime had
+its two compiled-in CUDA and cuDNN directory strings relocated to its own
+working directory. The imported v81 model then completed real GPU inference,
+with 16 prompt tokens and 8 generated tokens in 11.569 seconds including a
+4.207 second load. A direct 2M request reached the runner with 2,000,018
+tokens and no gateway truncation, but processed only 26,624 tokens in 88
+seconds before cancellation because full native prefill would take more than
+an hour. The text output was malformed, so this is runtime evidence only.
+It confirms the need for the fast first-layer pruner/cherrypicker or the
+hybrid MapReduce path. Evidence: `phases/phase-202-ollama-mlx-relocation`.
