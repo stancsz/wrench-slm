@@ -147,6 +147,12 @@ The native bridge defaults to a 9-second upstream timeout. Keep the caller's
 request timeout longer than this bound so a slow native generation fails closed
 without blocking later mechanical requests.
 
+In `-OllamaApi` mode the launcher now requires a real native completion smoke
+request before exposing the package API. `/v1/models` alone is not treated as
+model readiness. Native stdout and stderr are captured as
+`native-startup.log` and `native-startup-error.log`; a failed backend exits
+without publishing a misleading healthy API port.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

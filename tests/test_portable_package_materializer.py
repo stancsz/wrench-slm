@@ -29,6 +29,9 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert "MoeCacheSize must be at least 16" in launcher
     assert "[int]$UpstreamTimeoutSeconds = 9" in launcher
     assert "--upstream-timeout-seconds" in launcher
+    assert "native smoke response missing completion text" in launcher
+    assert "RedirectStandardError" in launcher
+    assert "native smoke readiness timeout" in launcher
     assert "Start-Process -FilePath $FreeTokenExecutable" in launcher
 
 
@@ -74,6 +77,7 @@ def test_materializer_embeds_worker_runtime():
     assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in script
     assert '"fast_history_profile": "opt_in_reference_only"' in script
     assert "OllamaApi" in script
+    assert "native smoke response missing completion text" in script
 
 
 def test_materializer_keeps_toolbelt_distinct_from_verifier():

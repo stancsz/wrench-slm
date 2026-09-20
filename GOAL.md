@@ -1592,3 +1592,22 @@ public Hub revision `e52b6d7e91ad3f88c1a00e3c64e8878ac70ad182`, with weights
 unchanged and a fresh remote SHA verification. This keeps the public package
 operationally bounded, but does not close native dense 4M retrieval quality or
 speed. Evidence: `phases/phase-139-public-v49`.
+
+2026-09-20 native readiness gate: the v50 launcher no longer treats
+FreeToken `/v1/models` as sufficient readiness. It requires a real native
+completion smoke request, captures `native-startup.log` and
+`native-startup-error.log`, and fails before exposing the public API when the
+backend worker exits. Under the current competing GPU/resource state, the
+`FastHistoryKeepTokens=8192` profile correctly failed closed during native
+worker initialization instead of presenting a false healthy endpoint. This
+improves operational correctness and diagnosis, but does not close native
+2M/4M speed or retrieval quality. Evidence:
+`phases/phase-140-fast-history-ab`.
+
+2026-09-20 public v51 readiness package: the portable launcher and docs now
+require a real native completion smoke before exposing the package API and
+capture native startup logs. The regenerated package passed structural
+validation and the 4M package-local mechanical route in 19.2 ms with zero
+model calls. Launcher and docs were synchronized to public Hub revision
+`ad66f828cf70442b77630142f83a0c2f9a26502c`; weights were unchanged and fresh
+remote hash verification passed. Evidence: `phases/phase-141-public-v51`.

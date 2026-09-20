@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.native-readiness-gate.v1",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v50-native-smoke-readiness",
+  "profile": {
+    "fast_history_keep_tokens": 8192,
+    "fast_history_control_prefix_tokens": 4096,
+    "moe_cache_size": 16,
+    "kv_reserve_tokens": 1024
+  },
+  "startup_probe": "real POST /v1/chat/completions native smoke completion",
+  "frontend_models_endpoint_only": false,
+  "public_api_started": false,
+  "status": "FAIL_CLOSED_NATIVE_BACKEND_NOT_READY",
+  "failure_summary": "FreeToken backend worker exited during CUDA/runtime initialization under current competing GPU/resource state",
+  "diagnostic_logs": ["native-startup.log", "native-startup-error.log"],
+  "quality_claim": false
+}

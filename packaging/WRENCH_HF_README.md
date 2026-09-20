@@ -142,6 +142,12 @@ so one slow or malformed native generation cannot stall the whole mechanical
 worker. Override `-UpstreamTimeoutSeconds` only when the caller uses a longer
 matching timeout.
 
+When `-OllamaApi` is enabled, the launcher performs a real native completion
+smoke test before starting the public package server. A `/v1/models` response
+alone is not sufficient readiness. Startup diagnostics are saved in
+`native-startup.log` and `native-startup-error.log`, and a failed native
+backend prevents a misleading healthy API from starting.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 
