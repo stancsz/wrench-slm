@@ -16,7 +16,12 @@ from typing import Any
 
 from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route, reference_patch_route
 from .core import execute_model_output
-from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
+from .patching import (
+    add_bounded_repair_instruction,
+    add_patch_retry_instruction,
+    add_patch_schema_examples,
+    is_patch_prompt,
+)
 from .ttc import enforce_ttc
 from .prefill import (
     MechanicalPrefillIndex,
@@ -274,6 +279,7 @@ class WrenchWorker:
         request_messages = add_patch_schema_examples(messages)
         request_messages, prefill_receipt = _dynamic_prefill_messages(request_messages)
         patch_retry_count = 0
+        repair_pass_count = 0
         model_calls = 0
         while True:
             prompt_text = self.tokenizer.apply_chat_template(
@@ -316,10 +322,14 @@ class WrenchWorker:
                 "model_output_invalid_json",
                 "model_output_not_object",
             }
-            if not (is_patch_prompt(prompt) and patch_retry_count == 0 and retryable):
+            if repair_pass_count > 0 or not retryable:
                 break
-            patch_retry_count = 1
-            request_messages = add_patch_retry_instruction(request_messages)
+            repair_pass_count = 1
+            if is_patch_prompt(prompt):
+                patch_retry_count = 1
+                request_messages = add_patch_retry_instruction(request_messages)
+            else:
+                request_messages = add_bounded_repair_instruction(request_messages, str(result.get("fallback_reason")))
         result.update(
             {
                 "backend": "transformers",
@@ -332,4 +342,6 @@ class WrenchWorker:
             result["dynamic_prefill"] = prefill_receipt
         if is_patch_prompt(prompt):
             result["patch_retry_count"] = patch_retry_count
+        if repair_pass_count:
+            result["repair_pass_count"] = repair_pass_count
         return result

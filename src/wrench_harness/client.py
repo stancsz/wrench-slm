@@ -14,7 +14,7 @@ from .toolbelt import track_recent_intent
 from .ttc import run_ttc_verification
 from .prefill import build_dynamic_prefill, build_lossless_structured_prefill
 from .mechanical import mechanical_route
-from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
+from .patching import add_bounded_repair_instruction, add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 
 
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -194,6 +194,7 @@ def execute_local_qwen(
     request_prompt = user_prompts[-1] if user_prompts else None
     patch_retry_allowed = is_patch_prompt(request_prompt)
     patch_retry_count = 0
+    repair_pass_count = 0
     while True:
         body = json.dumps(
             {
@@ -250,9 +251,13 @@ def execute_local_qwen(
             "model_output_invalid_json",
             "model_output_not_object",
         }
-        if patch_retry_allowed and patch_retry_count == 0 and retryable_malformed:
-            patch_retry_count = 1
-            request_messages = add_patch_retry_instruction(request_messages)
+        if repair_pass_count == 0 and retryable_malformed:
+            repair_pass_count = 1
+            if patch_retry_allowed:
+                patch_retry_count = 1
+                request_messages = add_patch_retry_instruction(request_messages)
+            else:
+                request_messages = add_bounded_repair_instruction(request_messages, str(result.get("fallback_reason")))
             continue
         break
     if result.get("status") == "accepted":
@@ -280,6 +285,8 @@ def execute_local_qwen(
         }
         if patch_retry_allowed:
             result["request_parameters"]["patch_retry_count"] = patch_retry_count
+        if repair_pass_count:
+            result["request_parameters"]["repair_pass_count"] = repair_pass_count
         if context_receipt is not None:
             result["request_parameters"]["context_session_hash"] = context_receipt["session_hash"]
             result["request_parameters"]["active_context_token_budget"] = active_context_token_budget

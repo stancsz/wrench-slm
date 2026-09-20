@@ -193,6 +193,56 @@ def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
     assert result["dynamic_prefill"]["pipeline"] == "map_reduce_dynamic_native"
 
 
+def test_model_worker_uses_one_bounded_repair_pass_for_malformed_json(tmp_path: Path):
+    (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
+
+    class RepairTokenizer:
+        eos_token_id = 2
+        pad_token_id = 2
+
+        def __init__(self):
+            self.decode_calls = 0
+            self.last_prompt = ""
+
+        def apply_chat_template(self, messages, **kwargs):
+            self.last_prompt = "\n".join(message["content"] for message in messages)
+            return self.last_prompt
+
+        def __call__(self, prompt, **kwargs):
+            return {"input_ids": torch.zeros((1, max(1, len(prompt.split()))), dtype=torch.long)}
+
+        def decode(self, generated, **kwargs):
+            self.decode_calls += 1
+            if self.decode_calls == 1:
+                return "not json"
+            return (
+                '{"schema":"wrench.proposal.v1","action":"read_file",'
+                '"path":"README.md","max_bytes":4096}'
+            )
+
+    class RepairModel:
+        def parameters(self):
+            yield torch.zeros(1)
+
+        def generate(self, **batch):
+            return torch.cat([batch["input_ids"], torch.tensor([[1]])], dim=1)
+
+    tokenizer = RepairTokenizer()
+    worker = WrenchWorker(tokenizer=tokenizer, model=RepairModel(), allowed_root=tmp_path)
+    result = worker.propose(
+        [
+            {"role": "system", "content": "bounded worker"},
+            {"role": "user", "content": "Return a bounded proposal after reviewing README.md."},
+        ]
+    )
+
+    assert result["status"] == "accepted"
+    assert result["backend"] == "transformers"
+    assert result["model_calls"] == 2
+    assert result["repair_pass_count"] == 1
+    assert "failed local format validation" in tokenizer.last_prompt
+
+
 def test_dynamic_prefill_splits_a_monolithic_current_payload():
     from wrench_harness.worker import _dynamic_prefill_messages
 

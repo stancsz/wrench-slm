@@ -1898,3 +1898,13 @@ model calls and no file mutation. Full regression passed at 155 tests. This
 supports the fast multi-pass production path, not dense native 4M attention,
 MiniMax matched-workflow parity, or the final 90 percent coverage and 95
 percent savings gates. Evidence: `phases/phase-171-multifile-reference-patch`.
+
+2026-09-20 bounded repair pass: worker and local-client model paths now allow
+one corrective pass for format-only failures such as invalid JSON or a
+non-object response. Safety refusals, authority failures, and verifier
+failures do not retry. Full regression passed at 156 tests, and the new
+worker test showed exactly two model calls with one repair pass before an
+accepted proposal. This is a frontier-token cost-control mechanism, not proof
+of net savings until local compute, retry, correction, and fallback costs are
+charged in the matched workflow replay. Evidence:
+`phases/phase-172-bounded-repair-pass`.
