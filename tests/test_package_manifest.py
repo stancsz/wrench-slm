@@ -20,3 +20,8 @@ def test_portable_manifest_keeps_native_and_effective_context_separate():
     assert manifest["retrieval"]["embedded_mechanical_route"] is True
     assert manifest["retrieval"]["dynamic_staged_prefill"] is True
     assert manifest["retrieval"]["model_prefill_budget_tokens"] == 64_000
+    gate = manifest["retrieval"]["context_gate"]
+    assert gate["stage"] == "first_model_side_pruner_cherrypicker"
+    assert gate["declared_raw_input_context_tokens"] == 4_000_000
+    assert gate["effective_working_context_tokens"] == 64_000
+    assert gate["dense_native_gate"] == "conditional_optional"

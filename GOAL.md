@@ -2260,3 +2260,13 @@ ms; fallbacks, prohibited accepts, and unexpected mutations were all zero.
 This remains sealed-split diagnostic evidence, not the family-disjoint final
 approval or production authorization. Evidence:
 `phases/phase-205-v83-final-replay`.
+
+2026-09-20 v84 package contract: the materializer now embeds the first-layer
+context gate in `wrench-runtime.json` and `wrench-package.json`. Fast mode is
+explicitly declared as a 4M raw-input pruner/cherrypicker plus MapReduce gate
+to 64K effective working context, with 48K hot context and 16K reference
+cards. Conditional dense-native mode declares a 32K to 64K target and the
+required preserved state, but remains optional and non-blocking. The v84
+package passed structural validation and a fresh 4M `/api/chat` handoff with
+3,999,942 raw estimated tokens, 1,955 staged tokens, and 100.293 ms server
+staging. Evidence: `phases/phase-206-v84-context-gate`.
