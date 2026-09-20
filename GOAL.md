@@ -1144,3 +1144,11 @@ but is a clear performance failure against the North Star. The result does not
 claim native retrieval quality or 4M speed. Evidence:
 `phases/phase-85-nvfp4-native4m/native-2m-swa8k-direct-v2.json`; related runtime
 tests pass in the full `91 passed` suite.
+
+The first chunk-size tuning experiment increased `max_prefill_length` from
+32,768 to 65,536 for the same direct 2M request. It produced no complete
+response within roughly 410 seconds while the GPU remained fully utilized, so
+the larger chunk was aborted and rejected as a performance tuning. Receipt:
+`phases/phase-85-nvfp4-native4m/native-2m-swa8k-p64k-timeout.json`. Keep the
+32K result as the current reproducible baseline until a kernel-level or
+multi-stage prefill optimization is implemented.

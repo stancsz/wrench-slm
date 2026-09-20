@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.native-context-probe-timeout.v1",
+  "status": "ABORTED_PERFORMANCE_TIMEOUT",
+  "endpoint": "http://127.0.0.1:28612/v1/chat/completions",
+  "model": "wrench-nvfp4-native4m-swa8k-p64k",
+  "configured_max_model_len": 4000000,
+  "requested_target_tokens": 2000000,
+  "max_prefill_length": 65536,
+  "native_direct_input": true,
+  "actual_prompt_tokens": null,
+  "truncated": null,
+  "http_status": null,
+  "observed_wall_time_ms_before_abort": 410000,
+  "gpu_utilization_at_abort_percent": 100,
+  "quality_claim": false,
+  "notes": [
+    "The direct request remained connected and the GPU stayed busy, but no complete response or provider prompt-token receipt arrived within the observed window.",
+    "This is a performance-negative tuning receipt, not a native-context pass.",
+    "The 32768 max-prefill direct 2M run remains the complete baseline receipt."
+  ]
+}
