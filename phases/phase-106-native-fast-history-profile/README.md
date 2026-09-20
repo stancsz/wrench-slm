@@ -20,8 +20,9 @@ The history-layer skip measurements are capacity and throughput evidence only.
 They do not establish retrieval quality, MiniMax parity, safety parity, or a
 production default. The profile is therefore opt-in.
 
-The public package revision containing the profile and lookup fix is
-`a5e2ec049b753f83fd1d67af24208ae669415e04`. The boundary is request-relative:
+The public package revision containing the profile, lookup fix, and PowerShell
+launcher fix is `5176fd64ff511a8f959cd505966d8af02b8efc9e`. The boundary is
+request-relative:
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
 the same endpoint safely.
@@ -44,6 +45,10 @@ tokens. After the fix, the same 2M canary passed at `112.471 ms`, and a
 `src/wrench_harness/worker.py` with `model_calls=0`. These are deterministic
 embedded lookup proofs, not a claim of general LLM retrieval quality or
 MiniMax parity.
+
+The portable launcher now defaults to `ft.exe`, avoiding the Windows
+PowerShell `ft` alias for `Format-Table`. An explicit FreeToken executable
+path can still be supplied when the binary is not on `PATH`.
 
 The full portable 220-case replay preserved `200/200` outcome matches and
 `0` prohibited accepts on the mechanical fast path. The remaining 20 eligible

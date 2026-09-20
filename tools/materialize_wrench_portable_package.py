@@ -139,6 +139,10 @@ def materialize(
             "--max-prefill-length 8192", "--max-prefill-length 32768"
         )
         launcher_text = launcher_text.replace(
+            '[string]$FreeTokenExecutable = "ft"',
+            '[string]$FreeTokenExecutable = "ft.exe"',
+        )
+        launcher_text = launcher_text.replace(
             "    [int]$MoeCacheSize = 16",
             "    [int]$KvReserveTokens = 8192",
         )
