@@ -1,6 +1,6 @@
 param(
     [string]$ModelPath = 'D:\models\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF-native2M-candidate',
-    [string]$Host = '127.0.0.1',
+    [string]$BindHost = '127.0.0.1',
     [int]$Port = 28180,
     [int]$GlobalFullLayer = 39,
     [int]$SlidingWindow = 65536,
@@ -15,7 +15,7 @@ $env:WRENCH_SWA_WINDOW = [string]$SlidingWindow
 
 & 'C:\Users\stanc\AppData\Local\FreeToken\venv\Scripts\ft.exe' serve `
     --model $ModelPath `
-    --host $Host `
+    --host $BindHost `
     --port $Port `
     --served-model-name $ServedModel `
     --max-seq-len-override 4000000 `

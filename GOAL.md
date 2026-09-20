@@ -888,3 +888,11 @@ teacher-parity, or production receipt. The trace is hash-bound at
 recorded at `phases/phase-78-mechanical-worker/teacher-traces-220-max768-replay.json`.
 The v1 evaluation manifest now records that teacher capture exists while keeping
 the workflow-arm and release gates open.
+
+The same phase attempted to start the calibrated NVFP4 4M candidate through the
+native FreeToken launcher. Weights and NVFP4 experts loaded, but the backend
+worker terminated while resolving hybrid SWA cache sizing with
+`ValueError: Expected at most one SWA attention group`; the API then stopped.
+This is recorded at
+`phases/phase-78-mechanical-worker/nvfp4-native4m-launch-failure.json`. The
+candidate therefore has no native NVFP4 serving or 220-case quality result yet.

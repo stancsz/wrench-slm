@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.native-serving-failure.v1",
+  "status": "FAIL_BACKEND_INIT",
+  "candidate": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF-native4M-candidate",
+  "endpoint": "http://127.0.0.1:28902/v1/chat/completions",
+  "configured_context_tokens": 4000000,
+  "swa_window_tokens": 8192,
+  "global_full_layer": 0,
+  "load_status": "weights_loaded_experts_loaded",
+  "failure": {
+    "type": "ValueError",
+    "message": "Expected at most one SWA attention group",
+    "component": "FreeToken hybrid_swa_pool._naive_swa_num_tokens"
+  },
+  "api_result": "backend_worker_gone_api_stopped",
+  "quality_claim": false,
+  "next_step": "Use the BF16 overlay path for direct native probing and add a backend adapter or config translation before claiming NVFP4 native serving."
+}
