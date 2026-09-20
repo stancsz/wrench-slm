@@ -25,3 +25,11 @@ This is diagnostic only. The historical trace manifest remains
 `pending_human_approval`, the teacher identity is endpoint-recorded rather than
 independently identity-bound, and this receipt does not establish the North
 Star workflow gates.
+
+The evaluation runner now performs a buffered mechanical readiness probe before
+the case loop. This avoids treating FreeToken's early `/v1/models` response as
+full readiness while expert banks are still loading. On the v41 package,
+`readiness-run.json` passed the probe on attempt 1 in `23.637` ms and then
+reproduced the prompt-complete 220-case result: 220/220 outcomes, 120/120
+exact eligible proposals, 0 model calls, 0 prohibited accepts, and p95
+`39.416` ms.

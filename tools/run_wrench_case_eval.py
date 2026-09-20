@@ -17,6 +17,8 @@ import socket
 import threading
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -98,6 +100,51 @@ def _percentile(values: list[float], fraction: float) -> float | None:
     return round(ordered[index], 3)
 
 
+def _wait_for_ready(endpoint: str, model: str, timeout_seconds: float) -> dict[str, Any]:
+    """Wait for a real buffered mechanical completion, not /v1/models alone."""
+
+    if not isinstance(timeout_seconds, (int, float)) or timeout_seconds <= 0:
+        raise ValueError("startup timeout must be positive")
+    body = json.dumps(
+        {
+            "model": model,
+            "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+            "temperature": 0,
+            "max_tokens": 1,
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        endpoint,
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    started = time.perf_counter()
+    attempts = 0
+    last_error = "not_started"
+    deadline = started + float(timeout_seconds)
+    while time.perf_counter() < deadline:
+        attempts += 1
+        try:
+            with urllib.request.urlopen(request, timeout=min(2.0, max(0.1, deadline - time.perf_counter()))) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            if response.status == 200 and isinstance(payload, dict) and isinstance(payload.get("choices"), list):
+                return {
+                    "status": "READY_MECHANICAL_COMPLETION",
+                    "attempts": attempts,
+                    "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+                    "last_error": None,
+                }
+            last_error = "readiness_response_invalid"
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+            last_error = type(exc).__name__
+        time.sleep(0.25)
+    raise RuntimeError(
+        f"endpoint did not pass a buffered mechanical readiness probe within {timeout_seconds}s; "
+        f"attempts={attempts} last_error={last_error}"
+    )
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
     if len(rows) != 220:
@@ -107,6 +154,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     health_fixture = _HealthFixture(args.health_fixture)
     health_fixture.start()
     try:
+        readiness = _wait_for_ready(args.endpoint, args.model, args.startup_timeout)
         for row in rows:
             target = json.loads(row["target"])
             started = time.perf_counter()
@@ -170,6 +218,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "request_count": len(results),
         "mechanical_fast_path_enabled": not args.disable_mechanical_fast_path,
         "health_fixture_enabled": args.health_fixture,
+        "readiness": readiness,
         "max_tokens": args.max_tokens,
         "timeout_seconds": args.timeout,
         "summary": {
@@ -214,6 +263,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-tokens", type=int, default=256)
     parser.add_argument("--timeout", type=float, default=10)
+    parser.add_argument("--startup-timeout", type=float, default=60)
     parser.add_argument("--disable-mechanical-fast-path", action="store_true")
     parser.add_argument(
         "--health-fixture",
