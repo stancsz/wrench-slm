@@ -29,6 +29,7 @@
     "wrench_runtime/worker.py",
     "wrench_runtime/sitecustomize.py",
     "wrench_worker.py",
+    "run_wrench.ps1",
     "wrench-runtime.json",
     "Modelfile",
     "serve_freetoken.ps1",

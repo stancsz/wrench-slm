@@ -42,6 +42,7 @@ def main() -> int:
         "wrench_runtime/sitecustomize.py",
         "wrench_worker.py",
         "wrench-runtime.json",
+        "run_wrench.ps1",
         "Modelfile",
         "serve_freetoken.ps1",
     ]

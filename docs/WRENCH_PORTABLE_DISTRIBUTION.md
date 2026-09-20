@@ -47,6 +47,16 @@ The user-facing path is one model name and one command. The runtime may contain
 regex, AST, hashing, indexing, and retrieval code, but these files are shipped
 inside the model package and are not a separate user-installed harness.
 
+On Windows, the downloaded directory can be started with one command:
+
+```powershell
+.\run_wrench.ps1
+```
+
+This starts the bounded mechanical endpoint on `http://127.0.0.1:28900`.
+Pass `-LoadModel` only when the local Transformers backend is configured and
+you want ambiguous requests to load the checkpoint.
+
 The portable worker can be used directly from the downloaded directory:
 
 ```python

@@ -30,6 +30,17 @@ matched 220-case release evaluation.
 hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
 ```
 
+On Windows, start the downloaded package with one command:
+
+```powershell
+cd .\Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+.\run_wrench.ps1
+```
+
+This starts the bounded mechanical endpoint at
+`http://127.0.0.1:28900`. Add `-LoadModel` only when the local model backend
+is configured and ambiguous requests should load the checkpoint.
+
 The canonical distribution format is Hugging Face Safetensors. The package embeds
 the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
 long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
