@@ -20,7 +20,12 @@ PARAMETER_COUNT = 3_881_244_016
 PARAMETER_CEILING = 4_250_000_000
 
 
-def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object]:
+def materialize(
+    source: Path,
+    target: Path,
+    repo_root: Path,
+    huggingface_repo_id: str = "stancsz/Wrench-4B-Qwen3.6-8E",
+) -> dict[str, object]:
     if not source.is_dir() or not (source / "config.json").is_file():
         raise ValueError(f"source artifact is missing config.json: {source}")
     if target.exists():
@@ -121,7 +126,24 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
             ),
             encoding="utf-8",
         )
-        shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", target / "README.md")
+        readme_path = target / "README.md"
+        shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", readme_path)
+        readme = readme_path.read_text(encoding="utf-8").replace(
+            "stancsz/Wrench-4B-Qwen3.6-8E", huggingface_repo_id
+        )
+        if quantized_candidate:
+            readme = readme.replace(
+                "This Hub repository currently contains the safety-calibrated v7 native-2M\n"
+                "candidate, distributed as a 4M-declared portable package.",
+                "This Hub repository contains the safety-calibrated v7 NVFP4 native-4M\n"
+                "candidate, distributed as a 4M-declared portable package.",
+            )
+            readme = readme.replace(
+                "It contains 3,881,244,016 parameters and stays below the 4.25B parameter ceiling.",
+                "It contains 3,881,244,016 parameters, uses ModelOpt NVFP4 W4A16 weights, "
+                "and stays below the 4.25B parameter ceiling.",
+            )
+        readme_path.write_text(readme, encoding="utf-8")
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
@@ -170,9 +192,9 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "ollama_gguf": "not verified",
             },
             "publication": {
-                "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E",
+                "huggingface_repo_id": huggingface_repo_id,
                 "public_upload_authorized": True,
-                "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E --local-dir Wrench-4B-Qwen3.6-8E",
+                "copy_paste_command": f"hf download {huggingface_repo_id} --local-dir {huggingface_repo_id.rsplit('/', 1)[-1]}",
             },
         }
         (target / "wrench-package.json").write_text(json.dumps(package_manifest, indent=2) + "\n", encoding="utf-8")
@@ -220,8 +242,13 @@ def main() -> int:
     parser.add_argument("source", type=Path)
     parser.add_argument("target", type=Path)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument(
+        "--huggingface-repo-id",
+        default="stancsz/Wrench-4B-Qwen3.6-8E",
+        help="Hub repo id embedded in the portable package copy command",
+    )
     args = parser.parse_args()
-    receipt = materialize(args.source, args.target, args.repo_root)
+    receipt = materialize(args.source, args.target, args.repo_root, args.huggingface_repo_id)
     print(json.dumps({"status": receipt["status"], "target": receipt["target"]}))
     return 0
 
