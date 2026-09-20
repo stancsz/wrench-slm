@@ -1236,3 +1236,13 @@ that dense native attention over 4M tokens is fast or that retrieval quality
 matches MiniMax. The v18 package manifest and README now expose this behavior
 as a bundled runtime feature. Evidence: `tests/test_embedded_worker.py` and
 `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v18-validation.json`.
+
+2026-09-20 4M package-worker latency optimization: the worker now uses a
+content-addressed lightweight index, bounded exact-term lookup, and a
+monolithic-message split for the newest suffix. The reproducible 4,000,000
+estimated-token probe preserved the target reference, reduced the model
+working prefill to 1,852 tokens, made zero model calls, and completed in
+70.139 ms. Full regression suite is `104 passed`. This is the strongest
+current evidence for the fast internal toolbelt path; it still does not prove
+dense native 4M attention quality or MiniMax parity. Evidence:
+`phases/phase-90-embedded-prefill/worker-4m.json`.

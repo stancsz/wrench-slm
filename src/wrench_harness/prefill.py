@@ -103,7 +103,7 @@ _TERM_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
 def _estimate_token_count(value: str) -> int:
     """Cheap conservative count without allocating a word list."""
 
-    return max(1, value.count(" ") + value.count("\n") + value.count("\t") + 1)
+    return max(1, value.count(" ") + value.count("\n") + 1)
 
 
 def _bounded_matches(pattern: re.Pattern[str], text: str, *, limit: int, group: int | None = None) -> list[str]:
@@ -121,6 +121,7 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
     """Extract high-value lookup anchors in one cheap pass over old text."""
 
     query_terms = query_terms or set()
+    normalized_query_terms = {term.casefold() for term in query_terms}
     source_digest = _sha256(text)
     if not query_terms:
         # Ingestion is the latency-sensitive path for a newly received monster
@@ -176,11 +177,14 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
     identifier_counts: dict[str, int] = {}
     for identifier in _ID_RE.findall(text.casefold()):
         identifier_counts[identifier] = identifier_counts.get(identifier, 0) + 1
-    identifiers = sorted(identifier_counts, key=lambda item: (-int(item in query_terms), -identifier_counts[item], item))[:32]
+    identifiers = sorted(
+        identifier_counts,
+        key=lambda item: (-int(item in normalized_query_terms), -identifier_counts[item], item),
+    )[:32]
     scored_lines: list[tuple[int, int, str]] = []
     for line_index, line in enumerate(lines):
         lowered = line.casefold()
-        overlap = sum(term in lowered for term in query_terms)
+        overlap = sum(term.casefold() in lowered for term in query_terms)
         anchor = bool(_PATH_RE.search(line) or _ERROR_RE.search(line) or _SYMBOL_RE.search(line) or _URL_RE.search(line))
         if overlap or anchor:
             scored_lines.append((overlap * 8 + int(anchor) * 3, -line_index, line.strip()))
@@ -202,7 +206,12 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
     }
 
 
-def _lightweight_reference_card(text: str, index: int) -> dict[str, Any]:
+def _lightweight_reference_card(
+    text: str,
+    index: int,
+    *,
+    source_digest: str | None = None,
+) -> dict[str, Any]:
     """Create a cheap cold-ingest card without scanning all identifiers.
 
     A monster payload is already bound by a full SHA-256. The expensive
@@ -212,7 +221,7 @@ def _lightweight_reference_card(text: str, index: int) -> dict[str, Any]:
     regex benchmark.
     """
 
-    digest = _sha256(text)
+    digest = source_digest or _sha256(text)
     return {
         "reference_id": f"ref-{index:08d}",
         "source_sha256": digest,
@@ -260,7 +269,11 @@ class MechanicalPrefillIndex:
             "role": message.get("role", "context"),
             "content": message["content"],
             "token_count": int(self._count(message["content"])),
-            "card": _lightweight_reference_card(message["content"], self._next_index),
+            "card": _lightweight_reference_card(
+                message["content"],
+                self._next_index,
+                source_digest=digest,
+            ),
         }
         self._next_index += 1
         self._entries[key] = entry
@@ -299,19 +312,30 @@ class MechanicalPrefillIndex:
             return dict(base)
         text = entry["content"]
         hits: list[tuple[int, str]] = []
-        # Exact substring lookup is implemented in optimized C and avoids a
-        # full regex/identifier materialization pass over the cold payload.
-        folded: str | None = None
-        for term in sorted((term for term in query_terms if len(term) >= 3), key=len, reverse=True)[:64]:
+        # Exact substring lookup is implemented in optimized C. Prefer
+        # code-like terms so a path or symbol usually hits near the front and
+        # the scan exits immediately. Do not casefold the entire monster
+        # payload, which would allocate another multi-million-token string.
+        terms = sorted(
+            (term for term in query_terms if len(term) >= 3),
+            key=lambda term: (not any(marker in term for marker in ("_", "/", "\\", ".", ":", "-")), -len(term)),
+        )[:16]
+        preferred_terms = [
+            term
+            for term in terms
+            if any(marker in term for marker in ("_", "/", "\\", ".", ":", "-"))
+        ]
+        fallback_terms = [term for term in terms if term not in preferred_terms]
+        for term in [*preferred_terms, *fallback_terms]:
             position = text.find(term)
-            if position < 0:
-                if folded is None:
-                    folded = text.casefold()
-                position = folded.find(term)
+            if position < 0 and term.casefold() != term:
+                position = text.find(term.casefold())
             if position >= 0:
                 hits.append((position, term))
+                if term in preferred_terms or len(hits) >= 4:
+                    break
         anchors: list[str] = []
-        for position, _ in sorted(hits)[:16]:
+        for position, _ in sorted(hits)[:8]:
             start = text.rfind("\n", 0, position) + 1
             end = text.find("\n", position)
             if end < 0:
@@ -389,7 +413,8 @@ def build_dynamic_prefill(
     hot_ids = {id(message) for message in hot}
     cold = [message for message in prior if id(message) not in hot_ids]
 
-    query_terms = set(_TERM_RE.findall(current["content"].casefold()))
+    current_terms = _TERM_RE.findall(current["content"])
+    query_terms = set(current_terms)
     all_cards = []
     for index, message in enumerate(cold):
         if mechanical_index is None:

@@ -134,3 +134,24 @@ def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
     assert result["dynamic_prefill"]["model_prefill_token_count"] <= 64_000
     assert "wrench:reference-index" in tokenizer.last_prompt
     assert "wrench:current-intent" in tokenizer.last_prompt
+
+
+def test_dynamic_prefill_splits_a_monolithic_current_payload():
+    from wrench_harness.worker import _dynamic_prefill_messages
+
+    payload = (
+        "old reference symbol=run_worker path=src/wrench_harness/worker.py\n"
+        + ("stale unrelated context\n" * 70_000)
+        + "CURRENT INTENT: return one bounded proposal for the active task."
+    )
+    staged, receipt = _dynamic_prefill_messages([
+        {"role": "system", "content": "bounded worker"},
+        {"role": "user", "content": payload},
+    ])
+    assert receipt is not None
+    assert receipt["mode"] == "staged_single_pass"
+    assert receipt["split_current_message"] is True
+    assert receipt["raw_token_count"] > 64_000
+    assert receipt["model_prefill_token_count"] <= 64_000
+    assert any(message["role"] == "user" and "CURRENT INTENT" in message["content"] for message in staged)
+    assert any(message["role"] == "user" and "wrench:reference-index" in message["content"] for message in staged)

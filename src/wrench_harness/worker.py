@@ -17,11 +17,14 @@ from typing import Any
 from .mechanical import mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
-from .prefill import build_dynamic_prefill
+from .prefill import MechanicalPrefillIndex, build_dynamic_prefill
 
 
 def _estimated_tokens(value: str) -> int:
-    return max(1, value.count(" ") + value.count("\n") + value.count("\t") + 1)
+    # Spaces and newlines dominate the cheap estimate. Avoid a third full
+    # scan for tabs on monster payloads; the exact tokenizer remains the
+    # authority once the bounded staged prompt reaches the model.
+    return max(1, value.count(" ") + value.count("\n") + 1)
 
 
 def _dynamic_prefill_messages(
@@ -29,22 +32,59 @@ def _dynamic_prefill_messages(
 ) -> tuple[list[dict[str, str]], dict[str, Any] | None]:
     """Keep monster payloads losslessly indexed but bounded for model work."""
 
-    estimated_raw_tokens = sum(
-        _estimated_tokens(message["content"])
+    budget = int(os.environ.get("WRENCH_MODEL_PREFILL_BUDGET", "64000"))
+    content_values = [
+        message["content"]
         for message in messages
         if isinstance(message, dict) and isinstance(message.get("content"), str)
+    ]
+    large_by_chars = sum(len(value) for value in content_values) > budget * 4
+    estimated_raw_tokens = (
+        budget + 1
+        if large_by_chars
+        else sum(_estimated_tokens(value) for value in content_values)
     )
-    budget = int(os.environ.get("WRENCH_MODEL_PREFILL_BUDGET", "64000"))
-    if estimated_raw_tokens <= budget:
+    if not large_by_chars and estimated_raw_tokens <= budget:
         return messages, None
+    current_indexes = [
+        index
+        for index, message in enumerate(messages)
+        if isinstance(message, dict)
+        and message.get("role") == "user"
+        and isinstance(message.get("content"), str)
+    ]
+    split_current_message = False
+    prepared_messages = messages
+    if current_indexes:
+        current_index = current_indexes[-1]
+        current_content = messages[current_index]["content"]
+        suffix_chars = int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+        current_is_large = len(current_content) > budget * 4
+        if len(current_content) > suffix_chars and (
+            current_is_large or _estimated_tokens(current_content) > budget
+        ):
+            # A caller may serialize the entire conversation into one user
+            # message. Preserve its old prefix as a separate lookup-only
+            # reference so the staged reducer still works in that shape.
+            prefix = current_content[:-suffix_chars]
+            suffix = current_content[-suffix_chars:]
+            prepared_messages = [dict(message) for message in messages[:current_index]]
+            prepared_messages.append({"role": "assistant", "content": prefix})
+            prepared_messages.append({"role": "user", "content": suffix})
+            prepared_messages.extend(dict(message) for message in messages[current_index + 1 :])
+            split_current_message = True
     hot_budget = min(48_000, max(1, budget - 1))
     reference_budget = max(1, budget - hot_budget)
+    mechanical_index = MechanicalPrefillIndex()
+    mechanical_index.add_all(prepared_messages)
+    source_payload_sha256 = mechanical_index.payload_sha256(prepared_messages)
     try:
         staged, receipt = build_dynamic_prefill(
-            messages,
+            prepared_messages,
             model_prefill_budget=budget,
             hot_token_budget=hot_budget,
             reference_index_budget=reference_budget,
+            mechanical_index=mechanical_index,
         )
     except (TypeError, ValueError):
         # Never turn a reducer failure into silent data loss. The caller can
@@ -56,6 +96,14 @@ def _dynamic_prefill_messages(
             "error": "dynamic_prefill_failed",
             "native_input_claim": False,
         }
+    receipt["source_payload_sha256"] = source_payload_sha256
+    receipt["payload_hash_mode"] = "content_addressed_message_digests"
+    receipt["split_current_message"] = split_current_message
+    receipt["suffix_chars"] = (
+        int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
+        if split_current_message
+        else None
+    )
     return staged, receipt
 
 

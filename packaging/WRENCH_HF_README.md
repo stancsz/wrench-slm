@@ -61,7 +61,9 @@ messages become hash-bound reference cards, the newest user message remains the
 active intent, and the default model working budget is 64K estimated tokens.
 The returned result includes a `dynamic_prefill` receipt. This is a bounded
 working-context optimization, not a claim that dense attention was performed
-over every 4M token.
+over every 4M token. If an application sends the whole conversation as one
+large user message, the package splits the old prefix from the newest suffix
+internally before building the same reference index.
 
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:
