@@ -1563,3 +1563,13 @@ accepts, 20 bounded native-path runtime abstentions, and 0.822 ms median /
 whose learned native generation exceeded the timeout. This is a stability
 and fail-closed diagnostic result, not a learned-quality, MiniMax parity, or
 production release pass. Evidence: `phases/phase-136-bounded-native-220`.
+
+2026-09-20 corrected-root native-package replay: the v48 package and the
+220-case evaluator were bound to the same fixture root, fixing the previous
+root mismatch that sent resolvable patch cases to native fallback. The full
+replay then matched 220/220 outcomes and 120/120 exact eligible proposals,
+with zero prohibited accepts, zero transport/runtime abstentions, 220/220
+mechanical fast-path requests, 0.584 ms median, and 45.084 ms p95. This closes
+the package-local mechanical regression for the canonical fixture. It does not
+close native dense 4M retrieval quality, MiniMax parity, or the matched
+workflow North Star gates. Evidence: `phases/phase-137-native-220-correct-root`.
