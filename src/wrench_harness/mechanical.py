@@ -41,6 +41,13 @@ _OUT_OF_DOMAIN_MARKERS = (
 
 
 _PATH_RE = re.compile(r"(?<![\w./\\])(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+")
+_RESERVED_SCHEMA_PATHS = frozenset(
+    {
+        "wrench.proposal.v1",
+        "wrench.dynamic-prefill.v1",
+        "wrench.context-assembly.v1",
+    }
+)
 _NUMBER_RE = re.compile(r"\b([0-9][0-9,]*)\b")
 _QUOTED_RE = re.compile(r"(['\"])(.*?)\1")
 _LINE_RANGE_RE = re.compile(r"\blines?\s*([0-9]+)\s*(?:through|to|-|–)\s*([0-9]+)\b", re.IGNORECASE)
@@ -169,7 +176,10 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
 
 def _path(prompt: str) -> str | None:
     matches = _PATH_RE.findall(prompt)
-    return matches[-1] if matches else None
+    for candidate in reversed(matches):
+        if candidate.casefold() not in _RESERVED_SCHEMA_PATHS:
+            return candidate
+    return None
 
 
 def _quoted(prompt: str) -> list[str]:

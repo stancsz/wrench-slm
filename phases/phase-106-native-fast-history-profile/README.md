@@ -35,3 +35,12 @@ The first real 2M fast-history lookup canary did not pass. It processed
 `fast-history-2m-lookup.json`. This keeps the release boundary honest: native
 capacity and fast-path throughput are demonstrated, while retrieval quality
 and MiniMax parity remain open.
+
+The failure was traced to a deterministic routing bug: the protocol token
+`wrench.proposal.v1` was being treated as a candidate filename before the
+historical lookup route ran. The route now excludes reserved Wrench schema
+tokens. After the fix, the same 2M canary passed at `112.471 ms`, and a
+`4,004,004` prompt-token canary passed at `460.155 ms`; both returned
+`src/wrench_harness/worker.py` with `model_calls=0`. These are deterministic
+embedded lookup proofs, not a claim of general LLM retrieval quality or
+MiniMax parity.

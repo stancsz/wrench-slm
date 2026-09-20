@@ -208,6 +208,16 @@ def test_reference_lookup_route_scans_suffix_boundary_when_reference_is_recent()
     }
 
 
+def test_mechanical_route_does_not_treat_protocol_schema_as_file_path():
+    prompt = (
+        "WRENCH CURRENT CONTROL BLOCK. Use the old reference only to resolve "
+        "the source path for the requested symbol. Inspect the source for "
+        'symbol "run_worker" from that old reference, with a 65536 byte limit. '
+        "Output exactly one JSON object using schema wrench.proposal.v1 and action read_file."
+    )
+    assert mechanical_route(prompt) is None
+
+
 def test_mechanical_route_handles_explicit_invalid_boundaries_without_model_guessing():
     cases = {
         "Read README.md with a limit above the verifier maximum.": "invalid_byte_limit",

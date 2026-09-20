@@ -55,5 +55,27 @@
     "expected_path": "src/wrench_harness/worker.py",
     "quality_claim": false
   },
+  "retrieval_quality_regression_after_schema_path_fix": {
+    "status": "PASS_DETERMINISTIC_LOOKUP_CANARY",
+    "source_fix": "ignore_reserved_wrench_protocol_schema_tokens_as_file_paths",
+    "two_million": {
+      "probe": "fast-history-2m-lookup-v2.json",
+      "prompt_tokens": 861242,
+      "elapsed_ms": 112.471,
+      "result": "accepted",
+      "path": "src/wrench_harness/worker.py",
+      "model_calls": 0
+    },
+    "four_million": {
+      "probe": "fast-history-4m-lookup-v2.json",
+      "prompt_tokens": 4004004,
+      "elapsed_ms": 460.155,
+      "result": "accepted",
+      "path": "src/wrench_harness/worker.py",
+      "model_calls": 0
+    },
+    "quality_claim": false,
+    "scope": "deterministic embedded lookup canary; not a matched MiniMax workflow result"
+  },
   "release_boundary": "opt-in throughput and capacity diagnostic; retrieval quality, MiniMax parity, and production default remain unverified"
 }
