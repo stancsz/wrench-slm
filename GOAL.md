@@ -1376,3 +1376,12 @@ public HF package at revision
 patch work, but does not alter the historical fixture's intentionally missing
 diffs or prove MiniMax parity. Evidence: `tests/test_mechanical_worker.py` and
 `phases/phase-101-public-copy-paste-package/public-hf-route-fix-receipt.json`.
+
+2026-09-20 pinned native 2M direct probe: the public v28 NVFP4 package was
+served with `--num-tokens 4000000`, `--kv-reserve-tokens 8192`, automatic expert
+cache, and native direct input. A direct request reached `1,999,929` actual
+prompt tokens with HTTP 200 and `truncated=false` under the configured 4M
+maximum. Elapsed time was `1,287,078.199` ms, about 21.45 minutes, with
+`max_tokens=1`. This is a real pinned 2M capacity pass and a decisive native
+throughput failure, not a practical-serving pass. Evidence:
+`phases/phase-102-native-pinned-2m/native-2m.json`.
