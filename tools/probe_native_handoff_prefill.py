@@ -37,6 +37,12 @@ def main() -> int:
         type=Path,
         help="load the bundled wrench_runtime from a materialized package",
     )
+    parser.add_argument(
+        "--surface",
+        choices=("api-chat", "api-generate", "v1"),
+        default="api-chat",
+        help="HTTP surface to exercise; api-chat is the default Ollama-shaped path",
+    )
     args = parser.parse_args()
     if args.payload_tokens < 1:
         raise SystemExit("--payload-tokens must be positive")
@@ -113,17 +119,31 @@ def main() -> int:
         server_thread.start()
         try:
             content = _build_payload(args.payload_tokens)
-            payload = {
-                "model": "wrench-test",
-                "messages": [{"role": "user", "content": content}],
-                "max_tokens": 64,
-                "stream": False,
-                "options": {"num_ctx": 4_000_000},
-            }
+            if args.surface == "api-generate":
+                payload = {
+                    "model": "wrench-test",
+                    "prompt": content,
+                    "max_tokens": 64,
+                    "stream": False,
+                    "options": {"num_ctx": 4_000_000},
+                }
+            else:
+                payload = {
+                    "model": "wrench-test",
+                    "messages": [{"role": "user", "content": content}],
+                    "max_tokens": 64,
+                    "stream": False,
+                    "options": {"num_ctx": 4_000_000},
+                }
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
             started = time.perf_counter()
             request = urllib.request.Request(
-                f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+                f"http://127.0.0.1:{server.server_port}/"
+                + {
+                    "api-chat": "api/chat",
+                    "api-generate": "api/generate",
+                    "v1": "v1/chat/completions",
+                }[args.surface],
                 data=body,
                 headers={"Content-Type": "application/json", "Content-Length": str(len(body))},
                 method="POST",
@@ -172,6 +192,7 @@ def main() -> int:
             else "FAIL"
         ),
         "mode": "native_direct_input" if direct_mode else "staged_single_pass",
+        "surface": args.surface,
         "runtime_import": runtime_import,
         "package_dir": str(args.package_dir.resolve()) if args.package_dir is not None else None,
         "requested_payload_tokens": args.payload_tokens,

@@ -5,7 +5,8 @@ Date: 2026-09-20
 ## Result
 
 The v81 portable package's bundled `wrench_runtime` accepted a direct
-4,000,000-token-class request at its model-local OpenAI-compatible endpoint.
+4,000,000-token-class request at its model-local Ollama-shaped `/api/chat`
+endpoint.
 The request was not sent through an external gateway. A local protocol stub
 stood in for the expensive backend so the handoff receipt could be inspected
 without spending model inference.
@@ -17,8 +18,8 @@ Receipt: `handoff-4m.json`
 - model-side staged tokens: 1,955
 - configured working budget: 64,000 tokens
 - compression ratio: 0.000489
-- server staging: 131.372 ms
-- full local request: 261.899 ms
+- server staging: 141.426 ms
+- full local request: 309.808 ms
 - model calls: 1 stub call
 - backend: `native-upstream-verified`
 - raw payload hash and prepared payload hash: recorded
@@ -35,5 +36,5 @@ receives the monster context, performs its embedded MapReduce and lookup
 selection, and only then exposes a bounded working context to the model
 backend. It is not dense native attention over all 4M tokens, and the local
 stub does not establish MiniMax parity. It does prove that the package-level
-Ollama-shaped serving path has the required raw intake, reduction, hash
-binding, and effective-context accounting in one request.
+Ollama-shaped `/api/chat` serving path has the required raw intake, reduction,
+hash binding, and effective-context accounting in one request.

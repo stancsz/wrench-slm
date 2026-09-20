@@ -2219,3 +2219,9 @@ complete local protocol-stub request was 261.899 ms. This proves the practical
 model-local raw-intake path and effective-context accounting, not dense native
 attention or MiniMax parity. Evidence:
 `phases/phase-203-v81-4m-model-local-handoff`.
+
+The same v81 package then passed the exact Ollama-shaped `/api/chat` surface:
+3,999,943 raw tokens became 1,955 staged tokens, with 141.426 ms server
+staging and 309.808 ms complete local stub round trip. This confirms that the
+MapReduce path is attached to the user-facing Ollama-shaped endpoint, not only
+to the OpenAI-compatible probe.
