@@ -17,6 +17,14 @@ $env:WRENCH_SWA_POOL_TOKENS = '8192'
 $env:WRENCH_ROPE_MAX_POSITION = '4000000'
 ```
 
+For an opt-in model-side speed experiment, set
+`WRENCH_HISTORY_SKIP_MLP_BEFORE` to an absolute token position. Prefill chunks
+ending before that position update the linear/SWA state but skip the expensive
+MoE MLP; the recent suffix remains on the normal full path. The complete raw
+request still reaches the model endpoint. This is a diagnostic fast-history
+policy and has no quality or release claim until matched retrieval and worker
+tests pass.
+
 This does not change the Safetensors weights. It is a serving architecture
 experiment and must be followed by long-context distillation or fine-tuning
 before quality is considered release-ready.

@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.native-context-probe.v1",
+  "endpoint": "http://127.0.0.1:28626/v1/chat/completions",
+  "model": "wrench-native-cpu-2m",
+  "configured_max_model_len": 4000000,
+  "requested_target_tokens": 2000000,
+  "prompt_build_method": "local_tokenizer_unit_estimate",
+  "prompt_salt": "cpu-native-2m",
+  "estimated_content_tokens": 1999880,
+  "tokenizer": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF-native4M-candidate",
+  "actual_prompt_tokens": 1999921,
+  "truncated": false,
+  "http_status": 200,
+  "prompt_utf8_bytes": 7764265,
+  "prompt_sha256": "8de2bcda3c9fd47d06cc142bc0d15ec4228760948b74957eb48ea27895662aa6",
+  "elapsed_ms": 1289639.332,
+  "usage": {
+    "prompt_tokens": 1999921,
+    "completion_tokens": 7,
+    "total_tokens": 1999928
+  },
+  "error": null,
+  "native_context_pass": true
+}

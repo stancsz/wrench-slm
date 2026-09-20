@@ -170,6 +170,48 @@ def _install_qwen_long_context_overlay() -> None:
     qwen_config.parse_config = parse_config_with_bounded_full_attention
     qwen_family.parse_config = parse_config_with_bounded_full_attention
 
+    # Optional model-side historical pass. The request still enters FreeToken
+    # with every token, but old prefill chunks can skip the expensive MoE MLP
+    # while linear/SWA state is updated. The final recent window remains on the
+    # normal full path. This is intentionally opt-in until quality is measured.
+    history_skip_before = int(os.environ.get("WRENCH_HISTORY_SKIP_MLP_BEFORE", "0"))
+    if history_skip_before < 0:
+        raise ValueError("WRENCH_HISTORY_SKIP_MLP_BEFORE must be non-negative")
+    if history_skip_before:
+        from freetoken.models.qwen3_5_moe import model as qwen_model
+
+        original_decoder_forward = qwen_model.Qwen3_5DecoderLayer.forward
+
+        def decoder_forward_with_historical_fast_pass(self, hidden, residual):
+            ctx = qwen_model.get_global_ctx()
+            batch = ctx.batch
+            skip_mlp = False
+            if batch.is_prefill and len(batch.reqs) == 1:
+                request_start = int(batch.reqs[0].cached_len)
+                request_end = request_start + int(hidden.shape[0])
+                skip_mlp = request_end <= history_skip_before
+            if not skip_mlp:
+                return original_decoder_forward(self, hidden, residual)
+
+            if residual is None:
+                residual = hidden
+                hidden = self.input_layernorm.forward(hidden)
+            else:
+                hidden, residual = self.input_layernorm.forward_add_residual(hidden, residual)
+            hidden = (
+                self.linear_attn.forward(hidden)
+                if self._is_linear
+                else self.self_attn.forward(hidden)
+            )
+            hidden, residual = self.post_attention_layernorm.forward_add_residual(hidden, residual)
+            return hidden, residual
+
+        qwen_model.Qwen3_5DecoderLayer.forward = decoder_forward_with_historical_fast_pass
+        os.environ["WRENCH_LONG_CONTEXT_POLICY"] = (
+            os.environ.get("WRENCH_LONG_CONTEXT_POLICY", "")
+            + f";history_skip_mlp_before={history_skip_before}"
+        )
+
     # The bundled FreeToken Wrench request hook normally performs deterministic
     # 4M-to-64K staging. Native-input probes must be able to disable that hook
     # explicitly, otherwise a direct 2M request can fail inside the reducer

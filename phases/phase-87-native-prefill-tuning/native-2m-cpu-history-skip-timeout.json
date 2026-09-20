@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.native-context-probe.v1",
+  "endpoint": "http://127.0.0.1:28636/v1/chat/completions",
+  "model": "wrench-native-history-skip-2m",
+  "configured_max_model_len": 4000000,
+  "requested_target_tokens": 2000000,
+  "runtime_policy": {
+    "moe_strategy": "cpu",
+    "history_skip_mlp_before": 1935000,
+    "swa_window": 8192,
+    "max_prefill_length": 32768
+  },
+  "status": "client_timeout_before_completion",
+  "prefill_batches_observed": 59,
+  "prefill_tokens_observed": 1933312,
+  "truncated": null,
+  "http_status": null,
+  "native_context_pass": null,
+  "completion_receipt": false,
+  "server_error": false,
+  "failure_reason": "The client timeout terminated the server before a final response and native-context receipt were returned.",
+  "evidence_log": "cpu-history-skip-2m.server.log",
+  "interpretation": "Diagnostic performance signal only. Not a successful 2M benchmark and not a quality result."
+}
