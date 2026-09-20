@@ -1268,3 +1268,14 @@ split also produced 16/44 correct outcomes but only 5/24 correct eligible
 accepts and 4 prohibited accepts. Neither arm is a quality or release pass,
 and the LoRA checkpoint is not published. Evidence:
 `phases/phase-92-safe-teacher-calibration/README.md` and its four receipts.
+
+2026-09-20 native skip and attention-LoRA probes: the native probe now loads
+the custom tokenizer explicitly and the serving script accepts an explicit
+`none` full-attention policy. Direct 1M and 4M inputs passed the no-truncation
+intake gate, but the aggressive 4M skip policy took `199.177` seconds and was
+slower than the earlier `129.291` second diagnostic, so it is rejected as a
+default. A 600-step rank-8 attention LoRA over the 10 full-attention layers
+used 4,460,544 trainable parameters and reached loss `0.0001005`, but the
+unseen 44-case split fell to 15/44 correct outcomes, 3/24 correct eligible
+accepts, and one prohibited accept. It is rejected and unpublished. Evidence:
+`phases/phase-93-native-skip-tuning/README.md`.

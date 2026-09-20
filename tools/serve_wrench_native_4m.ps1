@@ -2,7 +2,7 @@ param(
     [string]$ModelPath = 'D:\models\Wrench-Qwen3.6-8expert-profiled-W4A16-NVFP4-calibrated-v7-Safety-ExplicitSchema-TextOnly-HF-native2M-candidate',
     [string]$BindHost = '127.0.0.1',
     [int]$Port = 28180,
-    [int]$GlobalFullLayer = 39,
+    [string]$GlobalFullLayer = '39',
     [int]$SlidingWindow = 65536,
     [int]$MoeCacheSize = 16,
     [string]$ServedModel = 'wrench-8e-native4m'

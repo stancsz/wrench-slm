@@ -62,7 +62,11 @@ def _build_prompt(
     if tokenizer_path is not None:
         from transformers import AutoTokenizer
 
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, local_files_only=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_path,
+            local_files_only=True,
+            trust_remote_code=True,
+        )
         unit_tokens = len(tokenizer(PROMPT_UNIT, add_special_tokens=False).input_ids)
         content_target = max(1, target_tokens - 128)
         repetitions = max(1, (content_target + unit_tokens - 1) // unit_tokens)

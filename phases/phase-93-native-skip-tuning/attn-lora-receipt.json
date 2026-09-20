@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.attention-lora-probe.v1",
+  "status": "REJECTED_DEVELOPMENT_PROBE",
+  "source_model": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-calibrated-v7-safety",
+  "calibration": "phases/phase-92-safe-teacher-calibration/train-safe-oracle.jsonl",
+  "steps": 600,
+  "learning_rate": 0.0002,
+  "rank": 8,
+  "alpha": 16,
+  "full_attention_layer_count": 10,
+  "attention_projection_count": 40,
+  "trainable_parameter_count": 4460544,
+  "final_loss": 0.00010054614540422335,
+  "final_split": {
+    "request_count": 44,
+    "correct_outcomes": 15,
+    "eligible_case_count": 24,
+    "correct_eligible_accepts": 3,
+    "prohibited_accepts": 1,
+    "transport_failures": 2
+  },
+  "quality_claim": false,
+  "published": false
+}

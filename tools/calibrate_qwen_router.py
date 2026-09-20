@@ -43,6 +43,52 @@ class LoRALinear(nn.Module):
         return self.base
 
 
+def _replace_module(root: nn.Module, name: str, replacement: nn.Module) -> None:
+    parent_name, separator, attribute = name.rpartition(".")
+    if not separator:
+        setattr(root, attribute, replacement)
+        return
+    parent = root.get_submodule(parent_name)
+    setattr(parent, attribute, replacement)
+
+
+def _attach_attention_lora(
+    model: nn.Module,
+    *,
+    rank: int,
+    alpha: float,
+) -> tuple[list[nn.Parameter], list[str]]:
+    """Attach small adapters to actual full-attention projections only.
+
+    The pruned Qwen3.6 checkpoint has hybrid linear-attention layers. Restrict
+    this probe to named self-attention projections so it cannot accidentally
+    turn every expert MLP into a trainable dense adapter.
+    """
+
+    targets = (
+        ".self_attn.q_proj",
+        ".self_attn.k_proj",
+        ".self_attn.v_proj",
+        ".self_attn.o_proj",
+    )
+    trainable: list[nn.Parameter] = []
+    attached: list[str] = []
+    for name, module in list(model.named_modules()):
+        if not isinstance(module, nn.Linear) or not name.endswith(targets):
+            continue
+        adapter = LoRALinear(module, rank, alpha)
+        _replace_module(model, name, adapter)
+        trainable.extend([adapter.lora_a, adapter.lora_b])
+        attached.append(name)
+    return trainable, attached
+
+
+def _merge_lora_modules(root: nn.Module) -> None:
+    for name, module in list(root.named_modules())[::-1]:
+        if isinstance(module, LoRALinear):
+            _replace_module(root, name, module.merge())
+
+
 def _read_cases(path: Path) -> list[dict[str, Any]]:
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     if not rows or any(not isinstance(row.get("target"), str) or not row["target"] for row in rows):
@@ -109,6 +155,14 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         raise TypeError(f"expected a linear lm_head, got {type(output_head).__name__}")
     model.lm_head = LoRALinear(output_head, args.rank, args.alpha)
     trainable.extend([model.lm_head.lora_a, model.lm_head.lora_b])
+    attention_modules: list[str] = []
+    if args.attention_lora:
+        attention_trainable, attention_modules = _attach_attention_lora(
+            model,
+            rank=args.rank,
+            alpha=args.alpha,
+        )
+        trainable.extend(attention_trainable)
     optimizer = torch.optim.AdamW(trainable, lr=args.learning_rate, weight_decay=0.0)
     rows = _read_cases(args.calibration)
     encoded = [_example(tokenizer, row) for row in rows]
@@ -131,7 +185,7 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         if args.log_every and (step + 1) % args.log_every == 0:
             print(json.dumps({"step": step + 1, "loss": history[-1]}))
 
-    model.lm_head = model.lm_head.merge()
+    _merge_lora_modules(model)
     model.config.use_cache = True
     model.eval()
     args.output.mkdir(parents=True, exist_ok=False)
@@ -147,6 +201,9 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         "learning_rate": args.learning_rate,
         "lora_rank": args.rank,
         "lora_alpha": args.alpha,
+        "attention_lora": args.attention_lora,
+        "attention_lora_modules": attention_modules,
+        "trainable_parameter_count": sum(parameter.numel() for parameter in trainable),
         "trainable_router_parameters": router_count,
         "final_loss": history[-1],
         "initial_loss": history[0],
@@ -168,6 +225,11 @@ def main() -> int:
     parser.add_argument("--learning-rate", type=float, default=5e-4)
     parser.add_argument("--rank", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=16.0)
+    parser.add_argument(
+        "--attention-lora",
+        action="store_true",
+        help="also adapt q/k/v/o projections in the checkpoint's full-attention layers",
+    )
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--log-every", type=int, default=10)
     args = parser.parse_args()

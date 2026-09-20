@@ -24,7 +24,8 @@ def test_probe_uses_unit_token_estimate_for_large_payload(monkeypatch, tmp_path)
 
     class FakeAutoTokenizer:
         @classmethod
-        def from_pretrained(cls, path, *, local_files_only):
+        def from_pretrained(cls, path, *, local_files_only, trust_remote_code):
+            assert trust_remote_code is True
             return FakeTokenizer()
 
     monkeypatch.setitem(
@@ -54,7 +55,8 @@ def test_probe_salt_changes_the_prefix_for_radix_cache_ab(monkeypatch, tmp_path)
 
     class FakeAutoTokenizer:
         @classmethod
-        def from_pretrained(cls, path, *, local_files_only):
+        def from_pretrained(cls, path, *, local_files_only, trust_remote_code):
+            assert trust_remote_code is True
             return FakeTokenizer()
 
     monkeypatch.setitem(
