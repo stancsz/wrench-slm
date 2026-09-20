@@ -1687,6 +1687,18 @@ and runtime metadata. This publishes the startup repair while keeping native
 2M/4M generation, retrieval quality, MiniMax parity, GGUF, and production
 claims explicitly open. Evidence: `phases/phase-151-public-v56`.
 
+2026-09-20 native serial expert-load profile: the launcher now combines
+FreeToken `--expert-load serial` with `--num-tokenizer 0`, and the v57 package
+was published at revision `b47ced8c6ccec42d24104418a29c6401f848a369`.
+Repository regression remained green at 146 tests, structural validation
+passed, and the 4M mechanical route measured 15.403 ms with zero model calls.
+A real 64K-KV native probe parsed both low-memory flags but both remaining
+Torch workers still failed before generation with `WinError 1455` loading
+`nvperf_host.dll`. This narrows the blocker to host Windows commit/pagefile
+state, not parallel expert loading. Native 2M/4M generation, retrieval
+quality, MiniMax parity, and production readiness remain open. Evidence:
+`phases/phase-153-native-serial-expert-load`.
+
 2026-09-20 independent weighted MiniMax-worker score replay: the checked-in
 scorer was rerun against both existing 220-case diagnostic trace manifests.
 The complete-patch replay remains `QUALITY_GATE_OPEN` at

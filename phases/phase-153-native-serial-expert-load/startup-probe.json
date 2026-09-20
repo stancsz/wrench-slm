@@ -1,0 +1,27 @@
+{
+  "schema": "wrench.native-startup-serial-expert-load.v1",
+  "date": "2026-09-20",
+  "port": 28204,
+  "package_revision": "b47ced8c6ccec42d24104418a29c6401f848a369",
+  "requested": {
+    "expert_load": "serial",
+    "num_tokenizer": 0,
+    "num_tokens": 65536,
+    "max_seq_len_override": 4000000,
+    "moe_cache_size": 16,
+    "kv_reserve_tokens": 1024
+  },
+  "parsed_server_args": {
+    "expert_load": "serial",
+    "num_tokenizer": 0,
+    "num_token_override": 65536,
+    "max_seq_len_override": 4000000
+  },
+  "status": "FAIL_NATIVE_STARTUP_WINDOWS_COMMIT_LIMIT",
+  "model_generation_reached": false,
+  "errors": [
+    "WinError 1455 loading torch/lib/nvperf_host.dll in scheduler worker",
+    "WinError 1455 loading torch/lib/nvperf_host.dll in shared detokenizer worker"
+  ],
+  "scope": "real FreeToken startup probe; no native completion or retrieval claim"
+}
