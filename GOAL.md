@@ -1958,3 +1958,15 @@ accounting time was 2.219 ms. This proves direct model-directory intake plus
 MapReduce for eligible work, not dense native 4M attention or final MiniMax
 matched-workflow parity. Evidence:
 `phases/phase-177-direct-4m-token-endpoint`.
+
+2026-09-20 prompt-complete MiniMax teacher capture: a live endpoint replayed
+all 220 cases with zero transport failures at `max_tokens=1024`. The capture
+metadata recorded 4 invalid responses, all in patch rows, plus 19 incomplete
+raw outputs that were not usable as normalized proposals. The 216 usable
+provider responses reported 84,882 prompt tokens, 61,728 completion tokens,
+146,610 total tokens, 1,997.283 ms median latency, 7,716.028 ms p95, and
+`$0.08236908` provider-reported upstream inference cost. This is a proposal
+baseline only, with no execution or final workflow claim. It reinforces the
+Wrench value proposition: routine work should avoid frontier prefill whenever
+the deterministic reducer and verifier can establish a bounded safe action.
+Evidence: `phases/phase-178-prompt-complete-teacher-capture`.
