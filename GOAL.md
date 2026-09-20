@@ -1346,3 +1346,10 @@ for the throughput gate. Evidence: `phases/phase-99-pinned-kv-throughput`.
 The pinned launcher is now public in v27 at Hub revision
 `9eafc5a6101675d38bdac4957f72fe8ffa35cd52`; its remote launcher and package
 manifest hashes match the local candidate. The weights remain unchanged.
+
+2026-09-20 pinned native history-skip diagnostic: with the same v27 package,
+4M KV capacity pin, direct 64K input, and one-token decode, skipping historical
+MoE MLP computation before position `48,000` reduced latency from `23,108.787`
+ms to `17,004.096` ms, about `1.36x`. The setting remains opt-in because
+retrieval quality and MiniMax parity under skipped history are unverified.
+Evidence: `phases/phase-100-skipmlp-pinned`.

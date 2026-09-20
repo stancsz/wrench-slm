@@ -94,6 +94,7 @@ def main() -> int:
     parser.add_argument("--tokenizer", type=Path, help="Local tokenizer used to build a near-exact target prompt")
     parser.add_argument("--target-tokens", type=int, default=65536)
     parser.add_argument("--max-model-len", type=int, default=2_000_000)
+    parser.add_argument("--max-tokens", type=int, default=64)
     parser.add_argument("--timeout", type=float, default=900.0)
     parser.add_argument(
         "--prompt-salt",
@@ -118,7 +119,7 @@ def main() -> int:
             },
             {"role": "user", "content": prompt},
         ],
-        "max_tokens": 64,
+        "max_tokens": args.max_tokens,
         "temperature": 0,
         "stream": False,
     }
@@ -143,6 +144,7 @@ def main() -> int:
         "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),
         "elapsed_ms": round(elapsed_ms, 3),
         "usage": usage,
+        "max_tokens": args.max_tokens,
         "error": response.get("error") if isinstance(response, dict) else None,
         "native_context_pass": (
             status_code == 200

@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.skipmlp-pinned-receipt.v1",
+  "candidate": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v27",
+  "prompt_target_tokens": 65536,
+  "max_tokens": 1,
+  "no_skip": {
+    "actual_prompt_tokens": 65472,
+    "elapsed_ms": 23108.787,
+    "truncated": false,
+    "http_status": 200
+  },
+  "skip_history_mlp": {
+    "environment": "WRENCH_HISTORY_SKIP_MLP_BEFORE=48000",
+    "actual_prompt_tokens": 65473,
+    "elapsed_ms": 17004.096,
+    "truncated": false,
+    "http_status": 200
+  },
+  "speedup_ratio": 1.359,
+  "quality_verified": false,
+  "default_enabled": false,
+  "production_ready": false
+}
