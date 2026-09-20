@@ -2165,3 +2165,12 @@ The sealed 44-row diagnostic remained at 100% weighted coverage, 100% savings,
 violations. The full source suite is 166 passed. Final family-disjoint
 approval and current-commit 5060Ti verification remain open. Evidence:
 `phases/phase-199-v81-package-regression`.
+
+2026-09-20 v81 direct model-local intake: the bundled package's own local
+OpenAI-compatible endpoint accepted 2M and 4M raw payloads directly, reporting
+2,000,010 and 4,000,010 prompt tokens with HTTP 200 in 85.855 ms and 171.495
+ms. Both used the embedded mechanical route and made zero model calls. The
+package manifest reports 3,881,244,016 parameters below the 4.25B ceiling,
+4M declared input context, and 64K default effective working context. This is
+the intended hybrid product surface, not dense attention over every raw token.
+Evidence: `phases/phase-200-v81-model-local-2m-4m`.
