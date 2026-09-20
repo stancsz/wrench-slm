@@ -24,6 +24,9 @@ comparison mode, not the default value path.
   host.
 - Fresh v62 portable package: structural validation passed and the package
   runtime 4M prefill probe passed in `123.131 ms` with zero model calls.
+- The v62 package is public at Hub revision
+  `b31828264d7d9771674d313c2439f39556e3fdd1`; a fresh Hub download confirmed
+  the MapReduce README, serial native launcher, and process-tree cleanup.
 - 4M package-server native-handoff stub: `3,999,943` raw estimated tokens to
   `1,845` staged tokens, `pipeline=map_reduce_dynamic_native`, one bounded
   upstream model call, and `114.563 ms` server-side staging after the

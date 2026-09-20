@@ -1755,5 +1755,6 @@ reduces it to a bounded working context without a model call. A 4M native
 handoff stub measured 114.563 ms server-side staging after streaming hash
 optimization. The current diagnostic 220 workflow remains below the North
 Star at 0.559589 weighted coverage and 0.618292 net frontier-token savings, so
-the goal remains active. Evidence:
+the goal remains active. The updated public package is Hub revision
+`b31828264d7d9771674d313c2439f39556e3fdd1`. Evidence:
 `phases/phase-160-mapreduce-dynamic-native`.

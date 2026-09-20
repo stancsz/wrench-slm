@@ -1,6 +1,7 @@
 {
   "schema": "wrench.mapreduce-dynamic-native-phase.v1",
   "date": "2026-09-20",
+  "hub_revision": "b31828264d7d9771674d313c2439f39556e3fdd1",
   "regression": {
     "passed": 148,
     "warnings": 14,
