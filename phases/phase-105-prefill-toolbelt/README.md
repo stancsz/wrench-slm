@@ -32,3 +32,7 @@ model-backed path instead of fabricating a patch.
 
 The measurements establish a fast deterministic staging path. They do not
 establish native dense 4M attention quality or MiniMax parity.
+
+The synchronized public package revision is
+`6b404564d087d93ceb17904c06b9572bbe1af831`; both the root prefill module and
+`wrench_runtime/prefill.py` contain the bounded toolbelt path.
