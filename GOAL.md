@@ -1,7 +1,7 @@
 # Goal: Wrench 多快好省
 
 Status: active
-Updated: 2026-09-19
+Updated: 2026-09-20
 Owner: repository agent
 
 ## Outcome
@@ -1092,3 +1092,25 @@ strong package-integrity and safety evidence, but not a quality pass: the
 remaining tail is concentrated in model-backed patch or complex requests, and
 the historical fixture is not the sealed MiniMax workflow set. Receipt:
 `phases/phase-84-standard-hf-loader/safety-v5-model-220.json`.
+
+2026-09-20 NVFP4 native4M portable candidate: materialized and publicly
+published a two-shard ModelOpt NVFP4 W4A16 package with 3,881,244,016
+parameters and a declared 4,000,000-token endpoint. The package includes the
+bundled worker, verifier, mechanical reducer, tokenizer hook, and FreeToken
+launcher. Structural validation passed, and the public repository is
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M` at revision `7377cc4`.
+This is an experimental package, not a completed GGUF/Ollama/vLLM adapter or
+native retrieval-quality release.
+
+The NVFP4 candidate completed a 220-case replay with 190/220 outcomes,
+81/120 exact eligible accepts, zero prohibited accepts, 200/220 mechanical
+fast-path requests, 0.542 ms median, and 1,820.217 ms p95. A reproducible
+runner health fixture was then added so the allowlisted local health cases do
+not depend on an unrelated service. With that fixture enabled, the same
+candidate reached 200/220 outcomes (90.9%), 82/120 exact eligible accepts,
+zero prohibited accepts, 0.546 ms median, 368.268 ms p95, and 87.831 ms mean.
+The remaining historical eligible failures are concentrated in model-backed
+patch drafts. This is still regression evidence, not the sealed weighted
+MiniMax workflow gate. Evidence:
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-220-health-fixture-runner.json`;
+implementation commit `84464b6`.
