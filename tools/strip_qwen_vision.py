@@ -38,8 +38,25 @@ def strip_vision(source: Path, output: Path) -> dict:
         if tensors:
             save_file(tensors, output / target_name, metadata=metadata or {"format": "pt"})
 
-    # Preserve model/tokenizer/quantization metadata, but replace the index and
-    # add a receipt that makes the text-only scope explicit.
+    # Preserve model/tokenizer/quantization metadata, but make the model
+    # metadata text-only as well. Leaving vision_config in place makes Ollama
+    # select a multimodal runner and then reject this intentionally text-only
+    # checkpoint because the visual tensors were removed.
+    config_path = output / "config.json"
+    if config_path.is_file():
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        for key in (
+            "vision_config",
+            "image_token_id",
+            "video_token_id",
+            "vision_start_token_id",
+            "vision_end_token_id",
+        ):
+            config.pop(key, None)
+        config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+
+    # Replace the index and add a receipt that makes the text-only scope
+    # explicit.
     for source_file in source.iterdir():
         if not source_file.is_file() or source_file.name in source_files or source_file.name == "model.safetensors.index.json":
             continue
@@ -54,6 +71,13 @@ def strip_vision(source: Path, output: Path) -> dict:
         "removed_tensor_prefix": "model.visual.",
         "removed_tensor_count": len(removed),
         "removed_tensor_names_sha256": __import__("hashlib").sha256("\n".join(removed).encode()).hexdigest(),
+        "removed_config_fields": [
+            "vision_config",
+            "image_token_id",
+            "video_token_id",
+            "vision_start_token_id",
+            "vision_end_token_id",
+        ],
         "remaining_weight_bytes": total_size,
         "quality_claim": False,
     }

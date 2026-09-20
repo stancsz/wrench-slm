@@ -1,0 +1,43 @@
+{
+  "schema": "wrench.ollama-portable-runtime-receipt.v1",
+  "status": "BLOCKED_COMPLETION_BACKEND_COMPATIBILITY",
+  "ollama_version": "0.32.13",
+  "model": "wrench-4b-native4m-exp:latest",
+  "host": {
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "cuda_driver": "13.4"
+  },
+  "official_mlx_bundle": {
+    "asset": "ollama-windows-amd64-mlx.zip",
+    "sha256": "770E4F8CC7B191AA4217A2DDD1668054A3E6CA02D29625475DFACCD24F994773",
+    "bytes": 1068719409,
+    "installed_in_isolated_runtime": true
+  },
+  "normal_install_completion": {
+    "status": "FAIL",
+    "error": "mlx runner failed: MLX not available: failed to load MLX dynamic library"
+  },
+  "isolated_mlx_runner": {
+    "status": "RUNNER_READY_MODEL_LOAD_REACHED_PREFILL",
+    "runner_detected_gpu": true,
+    "loaded_tensor_count": 3993,
+    "published_manifest_completion": {
+      "status": "FAIL",
+      "error": "config declares a vision tower but vision weights are missing from the manifest"
+    },
+    "no_vision_metadata_experiment": {
+      "status": "FAIL_AFTER_MODEL_LOAD",
+      "model_load_reached_prefill": true,
+      "error": "directory_iterator: C:/Program Files/NVIDIA/CUDNN/bin/x64 was not found"
+    }
+  },
+  "release_boundary": {
+    "huggingface_safetensors": "experimental public artifact",
+    "freetoken": "locally verified experimental path",
+    "ollama_safetensors_windows_completion": "not verified",
+    "gguf": "not verified",
+    "vllm": "requires registered Wrench architecture",
+    "quality_claim": false,
+    "production_claim": false
+  }
+}

@@ -1424,3 +1424,16 @@ launcher root change: `3,995,322` actual model-side prompt tokens, HTTP 200,
 `4,000,000`, and `173,270.470` ms elapsed on the RTX 5070 Ti. This confirms
 no regression in the direct-input path, but it remains a capacity and serving
 receipt rather than retrieval-quality or MiniMax-parity proof.
+
+2026-09-20 frontier coverage and portable backend audit: the current
+deterministic route covers 100/120 eligible historical rows and `78.9999%` of
+eligible frontier-token mass. The 20 uncovered eligible rows are patch-draft
+prompts with no concrete diff, so fail-closed fallback is intentional. A
+complete ready-endpoint replay remained at 220/220 outcome matches with zero
+model calls and zero prohibited accepts. Separately, Ollama `0.32.13` was
+tested with its matching MLX CUDA bundle. The runner loaded 3,993 tensors, but
+the public text-only package was rejected because its config still declares a
+vision tower. An isolated text-only metadata experiment reached prefill, then
+hit the host's missing cuDNN directory. Ollama Windows completion therefore
+remains unverified. Evidence: `phases/phase-124-v41-frontier-coverage` and
+`phases/phase-125-ollama-portable-runtime`.
