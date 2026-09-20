@@ -93,6 +93,19 @@ intake plus deterministic reduction, retrieval, bounded model work, and
 verification. A hybrid pass must be labelled as hybrid, and a native stress
 pass must not be presented as workflow utility.
 
+### Conditional dense-native target
+
+If a dense-native 2M/4M lane is enabled, the first model-side stage must be a
+fast context gate, not ordinary full-cost attention. This stage is an
+integrated pruner plus cherrypicker that can inspect the complete raw sequence,
+rank useful spans, and emit a bounded 32K to 64K active working context before
+expensive attention or other high-memory layers run. It must preserve the
+newest intent, unresolved authority and dependency context, recent tool state,
+and hash-bound evidence selected from older lookups. The selected and omitted
+spans, raw-payload hash, effective context size, and gate latency must be
+observable in the serving receipt. This is a conditional architecture target,
+not a requirement to replace the faster hybrid MapReduce product path.
+
 ## Invariants
 
 - Wrench proposes bounded structured actions or abstains. It never owns the full
@@ -203,13 +216,15 @@ pass must not be presented as workflow utility.
 - [ ] Treat dense native 2M/4M attention as optional research evidence only.
   It is not required for the Wrench product claim and must not block the
   hybrid raw-intake plus effective-working-context path.
-- [ ] If a dense-native lane is enabled in the future, the model package must
-  include a first, low-cost context-gating layer that acts as a pruner and
-  cherrypicker before expensive attention. It must compact the raw sequence to
-  a bounded 32K to 64K active working context while preserving newest intent,
-  required authority/dependency context, and hash-bound lookup evidence. This
-  integrated model-side layer is an optional dense-native design target, not a
-  requirement for the hybrid product release.
+- [ ] Conditional dense-native first-layer target: if dense-native 2M/4M
+  serving is enabled, the portable model/runtime must include an integrated,
+  low-cost pruner plus cherrypicker as its first model-side stage. It must
+  receive the full raw sequence, compact it to a bounded 32K to 64K active
+  working context before expensive attention, preserve newest intent,
+  authority/dependency context, recent tool state, and hash-bound lookup
+  evidence, and receipt selected spans, omitted spans, raw hash, effective
+  context size, and gate latency. This target is optional and must not block
+  the hybrid product release.
 - [ ] Demonstrate bounded no-mutation shadow operation: health/metrics, finite
   attempt and token ceilings, cancellation, restart/recovery, circuit breaking,
   bypass, alerting, and hash-bound rollback.

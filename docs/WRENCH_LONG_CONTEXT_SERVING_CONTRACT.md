@@ -45,11 +45,24 @@ the portable artifact, not an external harness users must install.
 ```text
 direct request containing up to 4M tokens
     -> tokenizer in the selected serving runtime
+    -> first model-side context gate: fast pruner plus cherrypicker
+    -> bounded 32K to 64K active working context
     -> Wrench model with native max context >= 2M
     -> long-context attention/state/cache implementation
     -> bounded proposal or explicit abstention
     -> independent proposal verifier
 ```
+
+When the dense-native lane is enabled, the context gate is mandatory. It must
+be part of the portable model package or selected model runtime, receive the
+complete raw sequence, and run before expensive attention. The gate may use
+streaming, block, lexical, AST, retrieval, or learned lightweight scores, but
+it must emit a bounded 32K to 64K active context rather than passing the full
+sequence into ordinary dense attention. It must preserve the newest intent,
+unresolved authority and dependency context, recent tool state, and selected
+hash-bound lookup evidence. The receipt must expose the selected and omitted
+spans, raw-payload hash, effective context size, and gate latency. This is a
+conditional dense-native target and does not change the hybrid release gate.
 
 An optional gateway or context ledger may sit in front of this path for cache
 reuse, audit, and retrieval. It is an optimization and observability layer,
