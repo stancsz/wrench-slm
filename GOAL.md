@@ -2021,3 +2021,12 @@ ms median latency, and 296.324 ms p95. This passes the mechanical-worker
 gates on the corrected contract. Final family-disjoint approval, independent
 5060Ti verification, and dense native 2M/4M attention remain open. Evidence:
 `phases/phase-188-v74-v2-four-arm-replay`.
+
+2026-09-20 v74 Ollama-shaped 4M smoke: the fresh v74 portable package accepted
+an exact 4,000,000-token estimated raw request through `/api/chat` with
+`options.num_ctx=4000000`, returned HTTP 200 in 51.659 ms, reported
+`prompt_eval_count=4000000`, used embedded mechanical routing, made zero model
+calls, and passed TTC plus verifier checks. This confirms the direct monster
+context intake on the current package after the contract and localhost fixes;
+it remains MapReduce intake evidence rather than dense native 4M attention.
+Evidence: `phases/phase-189-v74-ollama-4m`.
