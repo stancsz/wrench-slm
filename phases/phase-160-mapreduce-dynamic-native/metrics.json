@@ -42,5 +42,17 @@
     "wrench_only_weighted_final_success": 0.82285503445913,
     "wrench_only_prohibited_accepts": 0,
     "wrench_only_unexpected_mutations": 0
+  },
+  "matched_capture_replays": {
+    "canonical_v5": {
+      "weighted_coverage": 0.5091198427476598,
+      "net_savings": 0.5966536852733304,
+      "status": "QUALITY_GATE_OPEN"
+    },
+    "complete_patch_v2": {
+      "weighted_coverage": 0.8546684503519975,
+      "net_savings": 1.0,
+      "status": "QUALITY_GATE_OPEN"
+    }
   }
 }

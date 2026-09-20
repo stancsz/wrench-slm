@@ -36,6 +36,11 @@ comparison mode, not the default value path.
   remains `QUALITY_GATE_OPEN`: weighted mechanical coverage `0.559589`, net
   frontier savings `0.618292`, Wrench-only weighted final success `0.822855`,
   zero Wrench-only prohibited accepts, and zero unexpected mutations.
+- Independent scorer replay of the existing matched MiniMax captures remains
+  `QUALITY_GATE_OPEN` at `0.509120` coverage and `0.596654` savings for the
+  canonical v5 trace, and `0.854668` coverage with `1.0` savings for the
+  complete-patch derivative. The latter is close to the 90% coverage gate,
+  but does not pass it.
 
 ## Boundary
 
