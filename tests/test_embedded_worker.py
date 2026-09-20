@@ -150,6 +150,7 @@ def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
     assert result["dynamic_prefill"]["model_prefill_token_count"] <= 64_000
     assert "wrench:reference-index" in tokenizer.last_prompt
     assert "wrench:current-intent" in tokenizer.last_prompt
+    assert result["dynamic_prefill"]["pipeline"] == "map_reduce_dynamic_native"
 
 
 def test_dynamic_prefill_splits_a_monolithic_current_payload():
@@ -169,5 +170,7 @@ def test_dynamic_prefill_splits_a_monolithic_current_payload():
     assert receipt["split_current_message"] is True
     assert receipt["raw_token_count"] > 64_000
     assert receipt["model_prefill_token_count"] <= 64_000
+    assert receipt["source_payload_sha256"] != receipt["prepared_payload_sha256"]
+    assert receipt["payload_hash_mode"] == "ordered_original_plus_content_addressed_prepared"
     assert any(message["role"] == "user" and "CURRENT INTENT" in message["content"] for message in staged)
     assert any(message["role"] == "user" and "wrench:reference-index" in message["content"] for message in staged)

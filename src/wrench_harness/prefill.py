@@ -1,8 +1,9 @@
-"""Structured, lossless prefill for native long-context serving.
+"""Structured MapReduce prefill for long-context serving.
 
-The prefill adds routing labels and evidence boundaries, but keeps every input
-message in the model request. It is therefore compatible with the native
-4M-input gate, unlike a compactor that silently drops old messages.
+The reducer keeps the newest intent and hot context verbatim, while old
+material is represented by hash-bound lookup cards and bounded evidence
+windows. This lets a package accept a monster raw request without forcing a
+small model to pay dense attention to every stale token.
 """
 
 from __future__ import annotations
@@ -115,6 +116,20 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def ordered_payload_sha256(messages: list[dict[str, str]]) -> str:
+    """Bind the exact ordered request before any staging or reduction."""
+
+    digest = hashlib.sha256()
+    digest.update(b"wrench.ordered-payload.v2\0")
+    for message in messages:
+        for key in ("role", "content"):
+            value = message.get(key, "")
+            encoded = value.encode("utf-8")
+            digest.update(len(encoded).to_bytes(8, "big"))
+            digest.update(encoded)
+    return digest.hexdigest()
+
+
 def build_lossless_structured_prefill(messages: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
     """Add intent/evidence framing without dropping or summarizing payload text."""
 
@@ -167,12 +182,11 @@ def build_lossless_structured_prefill(messages: list[dict[str, str]]) -> tuple[l
             "content": "<wrench:current-intent>\n" + current["content"] + "\n</wrench:current-intent>",
         },
     ]
-    source_json = json.dumps(messages, ensure_ascii=False, separators=(",", ":"))
     receipt = {
         "schema": "wrench.native-prefill-receipt.v1",
         "lossless": True,
         "source_message_count": len(messages),
-        "source_payload_sha256": _sha256(source_json),
+        "source_payload_sha256": ordered_payload_sha256(messages),
         "current_intent_source_index": current_index,
         "reference_message_count": len(evidence_messages),
         "system_message_count": len(system_messages),
@@ -413,6 +427,7 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
             "urls": urls,
             "identifiers": identifiers,
             "anchors": anchors,
+            "evidence_windows": [],
             "normalized_sha256": source_digest,
             **_bounded_toolbelt_evidence(text, query_terms),
         }
@@ -449,6 +464,7 @@ def _reference_card(text: str, index: int, query_terms: set[str] | None = None) 
         "urls": urls,
         "identifiers": identifiers,
         "anchors": anchors,
+        "evidence_windows": [],
         "normalized_sha256": _sha256(normalized),
         **_bounded_toolbelt_evidence(text, query_terms),
     }
@@ -482,6 +498,7 @@ def _lightweight_reference_card(
         "urls": [],
         "identifiers": [],
         "anchors": [],
+        "evidence_windows": [],
         "normalized_sha256": digest,
         "ast_symbols": [],
         "dependencies": [],
@@ -599,12 +616,35 @@ class MechanicalPrefillIndex:
                 if term in preferred_terms or len(hits) >= 4:
                     break
         anchors: list[str] = []
+        evidence_windows: list[dict[str, Any]] = []
         for position, _ in sorted(hits)[:8]:
             start = text.rfind("\n", 0, position) + 1
             end = text.find("\n", position)
             if end < 0:
                 end = len(text)
-            anchors.append(text[start:end].strip()[:240])
+            line = text[start:end].strip()
+            # A monster payload often has one logical line. Returning the
+            # first 240 characters of that line can discard the exact match
+            # that caused the lookup. Keep a bounded window around the hit so
+            # dynamic native receives evidence, not just a misleading prefix.
+            if len(line) > 480:
+                center = min(max(position, start), max(start, end - 1))
+                window_start = max(start, center - 220)
+                window_end = min(end, window_start + 480)
+                if window_end - window_start < 480:
+                    window_start = max(start, window_end - 480)
+                snippet = text[window_start:window_end].strip()
+            else:
+                snippet = line
+            if snippet and snippet not in anchors:
+                anchors.append(snippet[:480])
+                evidence_windows.append(
+                    {
+                        "term": next((term for hit_position, term in hits if hit_position == position), ""),
+                        "char_offset": position,
+                        "text": snippet[:480],
+                    }
+                )
         paths = sorted(set(_PATH_RE.findall("\n".join(anchors))))[:16]
         symbols = sorted(set(_SYMBOL_RE.findall("\n".join(anchors))))[:24]
         identifiers = sorted({term for _, term in hits})[:32]
@@ -615,6 +655,7 @@ class MechanicalPrefillIndex:
                 "symbols": symbols or list(base["symbols"]),
                 "identifiers": identifiers,
                 "anchors": anchors,
+                "evidence_windows": evidence_windows,
                 "mechanical_score": len(hits) * 8 + len(paths) * 3 + len(symbols) * 2,
                 "query_scan": "bounded_exact_terms",
                 **_bounded_toolbelt_evidence(text, query_terms),
@@ -728,9 +769,10 @@ def build_dynamic_prefill(
                         "symbols",
                         "errors",
                         "urls",
-                        "identifiers",
-                        "anchors",
-                        "ast_symbols",
+                    "identifiers",
+                    "anchors",
+                    "evidence_windows",
+                    "ast_symbols",
                         "dependencies",
                         "toolbelt_scan",
                     )
@@ -767,6 +809,7 @@ def build_dynamic_prefill(
     receipt = {
         "schema": "wrench.dynamic-prefill-receipt.v1",
         "mode": "staged_single_pass",
+        "pipeline": "map_reduce_dynamic_native",
         "raw_token_count": raw_token_count,
         "model_prefill_token_count": model_token_count,
         "compression_ratio": round(model_token_count / max(raw_token_count, 1), 6),
@@ -776,6 +819,18 @@ def build_dynamic_prefill(
         "current_intent_source_index": current_index,
         "hot_message_count": len(hot),
         "reference_card_count": len(cards),
+        "evidence_window_count": sum(len(card.get("evidence_windows", [])) for card in cards),
+        "map_stage": {
+            "indexed_reference_count": len(cold),
+            "raw_token_count": raw_token_count,
+            "index_type": "content_addressed_mechanical_prefill",
+        },
+        "reduce_stage": {
+            "hot_message_count": len(hot),
+            "selected_reference_card_count": len(cards),
+            "reference_index_token_count": card_tokens,
+            "evidence_window_count": sum(len(card.get("evidence_windows", [])) for card in cards),
+        },
         "deduplicated_reference_count": len(all_cards) - len(unique_cards),
         "lookup_table_ids": [card["reference_id"] for card in cards],
         "lookup_table": (
@@ -786,7 +841,7 @@ def build_dynamic_prefill(
         "raw_payload_sha256": (
             mechanical_index.payload_sha256(messages)
             if mechanical_index is not None
-            else _sha256(json.dumps(messages, ensure_ascii=False, separators=(",", ":")))
+            else ordered_payload_sha256(messages)
         ),
         "native_input_claim": False,
     }

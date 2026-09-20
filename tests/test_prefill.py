@@ -63,6 +63,7 @@ def test_dynamic_prefill_is_deterministic_for_same_payload():
     second = build_dynamic_prefill(messages, token_counter=lambda value: len(value.split()), model_prefill_budget=10_000, hot_token_budget=8)[1]
     assert first["raw_payload_sha256"] == second["raw_payload_sha256"]
     assert first["lookup_table"] == second["lookup_table"]
+    assert first["pipeline"] == "map_reduce_dynamic_native"
 
 
 def test_mechanical_index_reuses_cards_for_fresh_http_message_objects():
@@ -125,6 +126,30 @@ def test_dynamic_prefill_preserves_specific_old_lookup_evidence():
     assert receipt["reference_card_count"] == 1
     assert "src/wrench_harness/worker.py" in rendered
     assert "run_worker" in rendered
+
+
+def test_dynamic_prefill_keeps_hit_window_inside_one_line_monster_reference():
+    target = "TARGET_ERROR ERR-220-7 src/services/worker_220.py class Worker220"
+    messages = [
+        {
+            "role": "assistant",
+            "content": ("stale filler " * 12_000) + target + (" trailing filler" * 12_000),
+        },
+        {"role": "user", "content": "Find src/services/worker_220.py and ERR-220-7."},
+    ]
+    index = MechanicalPrefillIndex()
+    index.add_all(messages)
+    staged, receipt = build_dynamic_prefill(
+        messages,
+        model_prefill_budget=4_000,
+        hot_token_budget=800,
+        reference_index_budget=3_000,
+        mechanical_index=index,
+    )
+    rendered = "\n".join(message["content"] for message in staged)
+    assert receipt["reference_card_count"] == 1
+    assert target in rendered
+    assert receipt["model_prefill_token_count"] <= 4_000
 
 
 def test_dynamic_prefill_skips_ast_for_monster_reference():

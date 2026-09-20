@@ -66,14 +66,16 @@ inside the package-local reducer. This is an API compatibility layer, not a
 claim that stock Ollama can load the Wrench hybrid checkpoint.
 
 In `-OllamaApi` mode the reducer is embedded in the downloaded package server.
-The server accepts the original request, stages it deterministically, and sends
-only the staged messages to the internal native backend. The original payload
-hash and latest intent remain available for verification. This provides a
-practical 4M-to-64K native handoff, but it is not dense attention over every
-raw token. The latest 4M worker stress run completed with zero model calls and
-measured 92.763 ms locally. A real package-server handoff probe measured
-85.714 ms for server-side staging, separate from the 2.581 s raw HTTP intake
-and protocol-stub round trip. This is still not dense native 4M attention.
+The map stage builds content-addressed lookup cards and the reduce stage keeps
+the latest intent, hot context, matching cards, and bounded evidence windows.
+The server accepts the original request, sends only the staged messages to the
+internal native backend, and returns an original-payload hash plus a prepared-
+payload hash. This provides a practical 4M-to-64K native handoff, but it is
+not dense attention over every raw token. The current 4M handoff probe reduced
+about 4M estimated tokens to 1,845 staged tokens and measured 114.563 ms for
+server-side staging on the development host. The complete protocol-stub round
+trip was about 2.6 seconds because it also transfers a 35 MB request body.
+This is still not dense native 4M attention.
 
 The portable worker can be used directly from the downloaded directory:
 

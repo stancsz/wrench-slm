@@ -1743,3 +1743,17 @@ is `6eab44cd8c41b24de4c424b524cba670a1f3713b`. Native 2M/4M generation,
 retrieval quality, MiniMax parity, GGUF compatibility, and production
 readiness remain open. Evidence:
 `phases/phase-156-public-v60-path-fix`.
+
+2026-09-20 MapReduce plus dynamic native working-context path: old material is
+now reduced through content-addressed reference cards and bounded evidence
+windows, while the latest intent and hot context stay active. Receipts record
+the map stage, reduce stage, original payload hash, prepared payload hash, and
+evidence-window count. The full regression is 148 passing tests. Complete
+220-case deterministic retrieval remains at 1.0 target-reference recall and
+1.0 evidence-window recall. The package runtime accepts a 4M payload and
+reduces it to a bounded working context without a model call. A 4M native
+handoff stub measured 114.563 ms server-side staging after streaming hash
+optimization. The current diagnostic 220 workflow remains below the North
+Star at 0.559589 weighted coverage and 0.618292 net frontier-token savings, so
+the goal remains active. Evidence:
+`phases/phase-160-mapreduce-dynamic-native`.

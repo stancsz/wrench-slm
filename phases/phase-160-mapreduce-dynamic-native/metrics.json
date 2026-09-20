@@ -1,0 +1,45 @@
+{
+  "schema": "wrench.mapreduce-dynamic-native-phase.v1",
+  "date": "2026-09-20",
+  "regression": {
+    "passed": 148,
+    "warnings": 14,
+    "duration_seconds": 17.40
+  },
+  "retrieval_220": {
+    "target_reference_recall": 1.0,
+    "evidence_window_recall": 1.0,
+    "current_intent_preservation": 1.0,
+    "hash_bound_reference_rate": 1.0,
+    "model_calls": 0
+  },
+  "retrieval_4m": {
+    "raw_token_count": 3999951,
+    "model_prefill_token_count": 52,
+    "cold_map_ms": 87.696,
+    "hot_reduce_ms": 8.949,
+    "model_calls": 0
+  },
+  "package_4m_prefill": {
+    "status": "PASS_EMBEDDED_MONSTER_PREFILL",
+    "elapsed_ms": 123.131,
+    "model_calls": 0
+  },
+  "native_handoff_stub_4m": {
+    "status": "PASS_NATIVE_HANDOFF_STAGED_4M",
+    "raw_token_count": 3999943,
+    "staged_token_count": 1845,
+    "server_staging_ms": 114.563,
+    "end_to_end_ms": 2599.777,
+    "model_calls": 1,
+    "pipeline": "map_reduce_dynamic_native"
+  },
+  "workflow_220": {
+    "status": "QUALITY_GATE_OPEN",
+    "weighted_mechanical_coverage": 0.5595893454458808,
+    "net_frontier_token_savings": 0.6182917826111647,
+    "wrench_only_weighted_final_success": 0.82285503445913,
+    "wrench_only_prohibited_accepts": 0,
+    "wrench_only_unexpected_mutations": 0
+  }
+}

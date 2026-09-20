@@ -198,23 +198,26 @@ and still pass through the same fail-closed verifier. High-confidence
 mechanical requests use the embedded route without a model call.
 
 For a large multi-turn payload, the package worker applies the bundled
-deterministic staged prefill before model generation. Old user and assistant
-messages become hash-bound reference cards, the newest user message remains the
-active intent, and the default model working budget is 64K estimated tokens.
-The returned result includes a `dynamic_prefill` receipt. This is a bounded
-working-context optimization, not a claim that dense attention was performed
-over every 4M token. If an application sends the whole conversation as one
-large user message, the package splits the old prefix from the newest suffix
-internally before building the same reference index.
+deterministic MapReduce prefill before model generation. The map stage creates
+content-addressed reference cards. The reduce stage selects the newest intent,
+hot context, matching old cards, and bounded evidence windows around exact
+paths or symbols. The default model working budget is 64K estimated tokens.
+The returned `dynamic_prefill` receipt records the pipeline, original and
+prepared payload hashes, selected cards, and evidence-window count. This is a
+bounded working-context optimization, not a claim that dense attention was
+performed over every 4M token. If an application sends the whole conversation
+as one large user message, the package splits the old prefix from the newest
+suffix internally before building the same reference index.
 
 In `-OllamaApi` mode this reducer is embedded in the downloaded package server.
-The server accepts the original request, stages it deterministically, and sends
-the staged messages to the internal native backend while keeping the original
-payload hash and latest intent for verification. A fresh 4M worker stress run
-reduced the raw input to a bounded prefill with zero model calls. That run took
-92.763 ms locally. A real package-server handoff probe measured 85.714 ms for
-server-side staging, separate from raw HTTP intake and the protocol-stub round
-trip. This proves the staging shape, not dense native 4M attention.
+The server accepts the original request, runs the embedded MapReduce reducer,
+and sends only the staged messages to the internal native backend while keeping
+the original payload hash and latest intent for verification. The current 4M
+handoff probe reduced about 4M estimated tokens to 1,845 staged tokens and
+measured 114.563 ms for server-side staging on the development host. The
+complete protocol-stub round trip was about 2.6 seconds because it also
+transfers a 35 MB request body. This proves the practical staged handoff, not
+dense native 4M attention.
 
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:

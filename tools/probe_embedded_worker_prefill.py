@@ -11,9 +11,6 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "src"))
-
-from wrench_harness.worker import _dynamic_prefill_messages
 
 
 def _build_payload(target_tokens: int) -> tuple[list[dict[str, str]], str]:
@@ -34,10 +31,18 @@ def _build_payload(target_tokens: int) -> tuple[list[dict[str, str]], str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--payload-tokens", type=int, default=4_000_000)
+    parser.add_argument("--package-dir", type=Path, help="probe the bundled package runtime instead of source")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.payload_tokens < 1:
         raise SystemExit("--payload-tokens must be positive")
+
+    if args.package_dir is not None:
+        sys.path.insert(0, str(args.package_dir.resolve()))
+        from wrench_runtime.worker import _dynamic_prefill_messages
+    else:
+        sys.path.insert(0, str(REPO_ROOT / "src"))
+        from wrench_harness.worker import _dynamic_prefill_messages
 
     messages, marker = _build_payload(args.payload_tokens)
     started = time.perf_counter()
@@ -53,7 +58,9 @@ def main() -> int:
             "PASS_EMBEDDED_MONSTER_PREFILL"
             if receipt is not None
             and receipt.get("mode") == "staged_single_pass"
+            and receipt.get("pipeline") == "map_reduce_dynamic_native"
             and receipt.get("model_prefill_token_count", args.payload_tokens + 1) <= 64_000
+            and receipt.get("evidence_window_count", 0) >= 1
             and target_reference_preserved
             else "FAIL"
         ),
@@ -64,6 +71,8 @@ def main() -> int:
         "model_calls": 0,
         "target_reference_sha256": hashlib.sha256(marker.encode("utf-8")).hexdigest(),
         "target_reference_preserved": target_reference_preserved,
+        "pipeline": receipt.get("pipeline") if isinstance(receipt, dict) else None,
+        "evidence_window_count": receipt.get("evidence_window_count", 0) if isinstance(receipt, dict) else 0,
         "receipt": receipt,
         "staged_message_count": len(staged),
         "notes": [

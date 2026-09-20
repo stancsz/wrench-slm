@@ -108,6 +108,7 @@ def main() -> int:
         raise SystemExit("monster-payload mode requires --cases 1")
 
     hits = 0
+    evidence_window_hits = 0
     current_intent_preserved = 0
     hash_bound = 0
     raw_token_counts: list[int] = []
@@ -125,7 +126,7 @@ def main() -> int:
         index.add_all(messages)
         ingest_ms_values.append(round((time.perf_counter() - ingest_started) * 1000, 3))
         selection_started = time.perf_counter()
-        _, receipt = build_dynamic_prefill(
+        staged, receipt = build_dynamic_prefill(
             messages,
             model_prefill_budget=64_000,
             hot_token_budget=400,
@@ -138,6 +139,12 @@ def main() -> int:
         target_card = index.entry(target)["card"]
         if target_card["reference_id"] in receipt["lookup_table_ids"]:
             hits += 1
+        target_marker = (
+            f"src/services/worker_{case_id:03d}.py class Worker{case_id:03d}"
+        )
+        staged_text = "\n".join(message["content"] for message in staged)
+        if target_marker in staged_text:
+            evidence_window_hits += 1
         if receipt["current_intent_source_index"] == len(messages) - 1:
             current_intent_preserved += 1
         if target_card["source_sha256"] in " ".join(
@@ -153,6 +160,7 @@ def main() -> int:
         "quality_claim": False,
         "cases": args.cases,
         "target_reference_recall": hits / args.cases,
+        "evidence_window_recall": evidence_window_hits / args.cases,
         "current_intent_preservation": current_intent_preserved / args.cases,
         "hash_bound_reference_rate": hash_bound / args.cases,
         "model_calls": 0,

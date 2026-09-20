@@ -17,7 +17,12 @@ from typing import Any
 from .mechanical import active_intent_suffix, mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
-from .prefill import MechanicalPrefillIndex, build_dynamic_prefill, split_monolithic_current_message
+from .prefill import (
+    MechanicalPrefillIndex,
+    build_dynamic_prefill,
+    ordered_payload_sha256,
+    split_monolithic_current_message,
+)
 
 
 def _estimated_tokens(value: str) -> int:
@@ -33,6 +38,7 @@ def _dynamic_prefill_messages(
     """Keep monster payloads losslessly indexed but bounded for model work."""
 
     budget = int(os.environ.get("WRENCH_MODEL_PREFILL_BUDGET", "64000"))
+    original_payload_sha256 = ordered_payload_sha256(messages)
     content_values = [
         message["content"]
         for message in messages
@@ -75,8 +81,9 @@ def _dynamic_prefill_messages(
             "error": "dynamic_prefill_failed",
             "native_input_claim": False,
         }
-    receipt["source_payload_sha256"] = source_payload_sha256
-    receipt["payload_hash_mode"] = "content_addressed_message_digests"
+    receipt["source_payload_sha256"] = original_payload_sha256
+    receipt["prepared_payload_sha256"] = source_payload_sha256
+    receipt["payload_hash_mode"] = "ordered_original_plus_content_addressed_prepared"
     receipt["split_current_message"] = split_current_message
     receipt["suffix_chars"] = (
         int(os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000"))
