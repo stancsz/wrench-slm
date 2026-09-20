@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.public-hf-sync.v1",
+  "repo": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "fe02944596104af6efa14a292bc2fe669c51c4a4",
+  "weights_changed": false,
+  "verified_files": {
+    "serve_freetoken.ps1": "4B577CF528C66E5E9EFC4A4A75DE7E23DCD2B7C471D172A6305DF95F5F671060",
+    "README.md": "4664405C827DDC69782C3BD14D03C467450011DF26F0257F2DFBD96BF73568CC",
+    "WRENCH_PORTABLE_DISTRIBUTION.md": "F78CF7357BE0A96633E5CC3065ED3860D2230E79D3C88A2EAE83AF96FB8E637E",
+    "wrench_runtime/server.py": "DC00BF0F13A07A56AED1C375E90C6A5946B280B02180A41AD149AD5DBAF92E59"
+  },
+  "verification": "fresh hf download matched all four local hashes"
+}
