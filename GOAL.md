@@ -1908,3 +1908,14 @@ accepted proposal. This is a frontier-token cost-control mechanism, not proof
 of net savings until local compute, retry, correction, and fallback costs are
 charged in the matched workflow replay. Evidence:
 `phases/phase-172-bounded-repair-pass`.
+
+The bounded repair worker was materialized and published in public v72 at Hub
+revision `4d7c12facdc59e1adf47b76b00fb767c08b97fbc`. Structural validation
+passed. The package-local prompt-complete 220-case replay recorded 220/220
+outcome matches, 120/120 exact eligible proposals, zero prohibited accepts,
+zero transport/runtime abstentions, zero model calls, 0.578 ms median, and
+28.323 ms p95. A fresh runtime-only download at the exact revision matched the
+local patching, worker, TTC, and server hashes. This makes the fast mechanical
+worker publicly copy-pasteable, but does not close dense native 4M, MiniMax
+matched-workflow parity, or the final 90 percent coverage and 95 percent net
+savings gates. Evidence: `phases/phase-173-public-v72-worker`.
