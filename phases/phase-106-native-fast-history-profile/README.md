@@ -20,8 +20,8 @@ The history-layer skip measurements are capacity and throughput evidence only.
 They do not establish retrieval quality, MiniMax parity, safety parity, or a
 production default. The profile is therefore opt-in.
 
-The public package revision containing the profile is
-`86d72453123fbdd97bb3666f390f10d787922321`. The boundary is request-relative:
+The public package revision containing the profile and lookup fix is
+`a5e2ec049b753f83fd1d67af24208ae669415e04`. The boundary is request-relative:
 the launcher sets `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` and the overlay
 computes `actual_input_len - keep_tokens` per request, so 2M and 4M inputs use
 the same endpoint safely.
