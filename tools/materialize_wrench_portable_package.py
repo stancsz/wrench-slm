@@ -46,6 +46,12 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         if tokenizer_config_path.is_file():
             tokenizer_config = json.loads(tokenizer_config_path.read_text(encoding="utf-8"))
             tokenizer_config["tokenizer_class"] = "WrenchTokenizer"
+            # The base tokenizer metadata advertises 256K, which would make
+            # a standard Transformers caller truncate or reject a direct 4M
+            # request before the selected backend sees it. The runtime still
+            # owns the native no-truncation receipt, but the portable package
+            # must expose the declared endpoint limit at the tokenizer API.
+            tokenizer_config["model_max_length"] = 4_000_000
             tokenizer_config["auto_map"] = {
                 "AutoTokenizer": ["tokenization_wrench.WrenchTokenizer", None]
             }
@@ -126,7 +132,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "model_calls_for_mechanical_lookup": 0,
             },
             "backends": {
-                "transformers": "requires Wrench model adapter",
+                "transformers": "Transformers >=5.17.0 config/tokenizer verified; full generation backend-dependent",
                 "freetoken": "local experimental backend",
                 "vllm": "requires registered Wrench architecture",
                 "ollama_gguf": "not verified",
@@ -140,7 +146,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         (target / "wrench-package.json").write_text(json.dumps(package_manifest, indent=2) + "\n", encoding="utf-8")
         receipt = {
             "schema": "wrench.portable-package-materialization.v1",
-            "status": "MATERIALIZED_PACKAGE_RUNTIME_PENDING",
+            "status": "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED",
             "source": str(source.resolve()),
             "target": str(target.resolve()),
             "weight_link_count": len(list(target.glob("*.safetensors"))),
@@ -163,7 +169,6 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "validate package structure and hashes",
                 "complete reducer-bypassed native attention probe",
                 "register and verify backend adapters",
-                "obtain explicit publication authorization before upload",
             ],
         }
         (target / "wrench-package-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")

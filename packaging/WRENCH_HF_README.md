@@ -30,6 +30,13 @@ the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
 long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
 is intended to feel like one model directory, not a separately installed harness.
 
+For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
+or newer:
+
+```powershell
+python -m pip install -U "transformers>=5.17.0" huggingface_hub
+```
+
 ## Run the experimental native endpoint
 
 The bundled launcher requires a compatible FreeToken build and a CUDA GPU:
@@ -52,7 +59,8 @@ long-context quality or MiniMax-parity claim.
 
 ## Backend status
 
-- Hugging Face Safetensors: public experimental package.
+- Hugging Face Safetensors: public experimental package. Transformers 5.17.0+
+  recognizes the bundled Qwen3.5 MoE architecture and Wrench tokenizer metadata.
 - FreeToken: locally verified experimental backend.
 - vLLM: requires a registered Wrench architecture adapter.
 - Ollama, llama.cpp, and GGUF: not verified for Wrench hybrid attention and lookup

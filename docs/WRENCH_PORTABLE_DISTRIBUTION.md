@@ -55,6 +55,10 @@ tokenizer = AutoTokenizer.from_pretrained(
 )
 ```
 
+Use Transformers 5.17.0 or newer for the Qwen3.5 MoE architecture in this
+checkpoint. The config and tokenizer mapping are verified with that runtime;
+full generation still requires a compatible GPU backend.
+
 ## Backend boundaries
 
 The Safetensors package is the source of truth. Transformers or a compatible

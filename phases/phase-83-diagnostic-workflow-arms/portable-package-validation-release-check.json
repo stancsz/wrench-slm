@@ -16,7 +16,7 @@
     },
     "tokenizer_config.json": {
       "bytes": 15567,
-      "sha256": "3594e9a9965d23c483259358f8934b1c1b1169cdd105c0fc1b524812e8d1b62b"
+      "sha256": "99f713f9baeb55d2b76ba0eba94fe855c2cac6728f487ece424a5f986e25db55"
     },
     "tokenization_wrench.py": {
       "bytes": 3345,
@@ -79,8 +79,8 @@
       "sha256": "ade84ac5655ae45708afd998ad8718b9bd327628566b7ceb733e59e242fda431"
     },
     "wrench-package.json": {
-      "bytes": 1204,
-      "sha256": "b0d059c2ac761c8d5ae89a6eb22389acd1d9b06240485f6cfc8ffb6947fa1f5a"
+      "bytes": 1256,
+      "sha256": "3396a400fead0ed38601fff013b92c2c842870e6b1461e06450c6c6db44b42db"
     }
   },
   "quality_claim": false,

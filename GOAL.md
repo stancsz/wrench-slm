@@ -1024,3 +1024,17 @@ scoreable only under an explicitly labeled `legacy_all_traces` scope and are
 not promoted to release evidence. Ten focused scorer/router tests pass. This
 corrects the acceptance measurement boundary; it does not improve the current
 historical score or close the North Star gates.
+
+2026-09-20 standard Hugging Face loader verification: corrected the portable
+tokenizer metadata from a stale 262,144 limit to the declared 4,000,000 input
+limit, updated the public Hub revision, and verified both the local package and
+a fresh public Hub snapshot with Transformers 5.17.0. `AutoConfig` resolves
+`Qwen3_5MoeForConditionalGeneration`; `AutoTokenizer` resolves
+`WrenchTokenizer`; the package manifest and runtime files are present. This
+closes the standard config/tokenizer loading slice, not full-weight generation,
+native 4M quality, vLLM/Ollama support, or MiniMax parity. Evidence is in
+`phases/phase-84-standard-hf-loader/` and the public revisions
+`d2e045a0fe619ccdec4e6f215695bbb3bb3546da`,
+`f6e47637a8c1a5b2aabe0ee33287b5ac51044057`,
+`6e2cb942574df589166d313ceb7360409b97e458`, and
+`4acffe441fc8914af8824b1f202fa977d57dc83c`.
