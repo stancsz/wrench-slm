@@ -1,0 +1,50 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "status": "PUBLIC_EXPERIMENTAL_PACKAGE_VERIFIED",
+  "source_commit": "00258ab914a852e70c64d11bcf3e96b451a54f6f",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "dfd086ef84d8beeaf6d81ebf1ed1124a3f677c41",
+  "local_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v19",
+  "package_validation": "phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v19-validation.json",
+  "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "remote_core_hashes_match_local": true,
+  "runtime_overlay_sha256": "128FFB87BC25E1A2BB8DD54C39E7E1171765CDCE4211BE45FA5EED832C3C550E",
+  "worker_runtime_sha256": "8A54EB797978607DF0A2683781B5E62F424BB0DE7255CAD35977B11A8601C2B1",
+  "prefill_runtime_sha256": "1DC5C3E74834852CE68197640DD96E3211D75A8B9C43F838FFB728049397BA1F",
+  "mechanical_runtime_sha256": "3D95CBB932979985D811E1D7B2EE877286714F283712926037A0E1B1C463825B",
+  "package_manifest_sha256": "8D51ED14E7E1CFB79A23983CC1CCB6B5C80D68950017A97D2770BA650C1A86D8",
+  "weight_format": "Hugging Face Safetensors, two NVFP4 shards",
+  "package_size_bytes": 3423792946,
+  "embedded_runtime": true,
+  "embedded_mechanical_route": true,
+  "dynamic_staged_prefill": true,
+  "model_prefill_budget_tokens": 64000,
+  "copy_command_verified_without_duplicate_suffix": true,
+  "worker_smoke": {
+    "status": "accepted",
+    "backend": "embedded-mechanical",
+    "action": "read_file",
+    "multi_turn_reference": true,
+    "model_calls": 0,
+    "verifier": "package-local execute_model_output"
+  },
+  "monster_prefill_probe": {
+    "status": "PASS_EMBEDDED_MONSTER_PREFILL",
+    "requested_payload_tokens": 4000000,
+    "elapsed_ms": 70.139,
+    "raw_token_count": 3999945,
+    "model_prefill_token_count": 1852,
+    "target_reference_preserved": true,
+    "model_calls": 0
+  },
+  "claims": {
+    "downloadable_and_copy_pasteable": true,
+    "native_4m_input_receipt": true,
+    "native_4m_retrieval_quality": false,
+    "minimax_parity": false,
+    "vllm": false,
+    "ollama": false,
+    "gguf": false,
+    "production_ready": false
+  }
+}
