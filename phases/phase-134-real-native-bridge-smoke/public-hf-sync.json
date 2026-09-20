@@ -1,0 +1,15 @@
+{
+  "schema": "wrench.public-hf-sync.v1",
+  "status": "PASS_PUBLIC_NATIVE_LAUNCHER_SYNC",
+  "repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "revision": "b253262898aeda32576b785489e0043342e1a431",
+  "commit_url": "https://huggingface.co/stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M/commit/b253262898aeda32576b785489e0043342e1a431",
+  "weights_changed": false,
+  "remote_hashes_match_local": true,
+  "files": [
+    "serve_freetoken.ps1",
+    "README.md",
+    "WRENCH_PORTABLE_DISTRIBUTION.md",
+    "wrench_runtime/server.py"
+  ]
+}

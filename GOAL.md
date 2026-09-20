@@ -1550,4 +1550,6 @@ current competing GPU workload, while the exposed manual profile
 `MoeCacheSize=16, KvReserveTokens=1024` started successfully. This is a real
 native loading and fail-closed bridge pass, not a learned-quality, MiniMax
 parity, direct dense 4M, or production-throughput pass. Evidence:
-`phases/phase-134-real-native-bridge-smoke`.
+`phases/phase-134-real-native-bridge-smoke`. The updated launcher and docs were
+also synchronized to public Hub revision
+`b253262898aeda32576b785489e0043342e1a431`; weights were unchanged.
