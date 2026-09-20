@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import torch
+
 from wrench_harness import WrenchWorker
 
 
@@ -84,3 +86,51 @@ def test_embedded_worker_uses_earlier_user_message_as_reference(tmp_path: Path):
     assert result["fallback_reason"] == "missing_path"
     assert result["backend"] == "embedded-mechanical"
     assert result["mechanical_fast_path"] is True
+
+
+def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
+    (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
+
+    class FakeTokenizer:
+        eos_token_id = 2
+        pad_token_id = 2
+
+        def __init__(self):
+            self.last_prompt = ""
+
+        def apply_chat_template(self, messages, **kwargs):
+            self.last_prompt = "\n".join(message["content"] for message in messages)
+            return self.last_prompt
+
+        def __call__(self, prompt, **kwargs):
+            return {"input_ids": torch.zeros((1, max(1, len(prompt.split()))), dtype=torch.long)}
+
+        def decode(self, generated, **kwargs):
+            return (
+                '{"schema":"wrench.proposal.v1","action":"read_file",'
+                '"path":"README.md","max_bytes":4096}'
+            )
+
+    class FakeModel:
+        def parameters(self):
+            yield torch.zeros(1)
+
+        def generate(self, **batch):
+            return torch.cat([batch["input_ids"], torch.tensor([[1]])], dim=1)
+
+    tokenizer = FakeTokenizer()
+    worker = WrenchWorker(tokenizer=tokenizer, model=FakeModel(), allowed_root=tmp_path)
+    result = worker.propose(
+        [
+            {"role": "system", "content": "bounded worker"},
+            {"role": "assistant", "content": "old reference " * 70_000},
+            {"role": "user", "content": "Return a bounded proposal after reviewing the reference."},
+        ]
+    )
+    assert result["status"] == "accepted"
+    assert result["backend"] == "transformers"
+    assert result["dynamic_prefill"]["mode"] == "staged_single_pass"
+    assert result["dynamic_prefill"]["raw_token_count"] > 64_000
+    assert result["dynamic_prefill"]["model_prefill_token_count"] <= 64_000
+    assert "wrench:reference-index" in tokenizer.last_prompt
+    assert "wrench:current-intent" in tokenizer.last_prompt

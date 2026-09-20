@@ -9,6 +9,7 @@ the same strict parser and verifier before a proposal is returned.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,46 @@ from typing import Any
 from .mechanical import mechanical_route, reference_lookup_route
 from .core import execute_model_output
 from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
+from .prefill import build_dynamic_prefill
+
+
+def _estimated_tokens(value: str) -> int:
+    return max(1, value.count(" ") + value.count("\n") + value.count("\t") + 1)
+
+
+def _dynamic_prefill_messages(
+    messages: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], dict[str, Any] | None]:
+    """Keep monster payloads losslessly indexed but bounded for model work."""
+
+    estimated_raw_tokens = sum(
+        _estimated_tokens(message["content"])
+        for message in messages
+        if isinstance(message, dict) and isinstance(message.get("content"), str)
+    )
+    budget = int(os.environ.get("WRENCH_MODEL_PREFILL_BUDGET", "64000"))
+    if estimated_raw_tokens <= budget:
+        return messages, None
+    hot_budget = min(48_000, max(1, budget - 1))
+    reference_budget = max(1, budget - hot_budget)
+    try:
+        staged, receipt = build_dynamic_prefill(
+            messages,
+            model_prefill_budget=budget,
+            hot_token_budget=hot_budget,
+            reference_index_budget=reference_budget,
+        )
+    except (TypeError, ValueError):
+        # Never turn a reducer failure into silent data loss. The caller can
+        # still use the original model path and the verifier remains in force.
+        return messages, {
+            "schema": "wrench.dynamic-prefill-receipt.v1",
+            "mode": "fallback_original_messages",
+            "raw_token_count_estimate": estimated_raw_tokens,
+            "error": "dynamic_prefill_failed",
+            "native_input_claim": False,
+        }
+    return staged, receipt
 
 
 @dataclass
@@ -108,6 +149,7 @@ class WrenchWorker:
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or not 1 <= max_tokens <= 512:
             return {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"}
         request_messages = add_patch_schema_examples(messages)
+        request_messages, prefill_receipt = _dynamic_prefill_messages(request_messages)
         patch_retry_count = 0
         while True:
             prompt_text = self.tokenizer.apply_chat_template(
@@ -143,6 +185,8 @@ class WrenchWorker:
             patch_retry_count = 1
             request_messages = add_patch_retry_instruction(request_messages)
         result.update({"backend": "transformers", "mechanical_fast_path": False, "raw_model_output": content})
+        if prefill_receipt is not None:
+            result["dynamic_prefill"] = prefill_receipt
         if is_patch_prompt(prompt):
             result["patch_retry_count"] = patch_retry_count
         return result

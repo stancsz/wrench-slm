@@ -1224,3 +1224,14 @@ selection on the local development machine. This validates the deterministic
 map-reduce layer and its latency target, not LLM native attention quality or
 MiniMax parity. Evidence: `phases/phase-89-mechanical-retrieval/mechanical-220.json`
 and `phases/phase-89-mechanical-retrieval/mechanical-4m.json`.
+
+2026-09-20 package worker dynamic prefill: `WrenchWorker` now applies the
+same bounded staged prefill inside the downloaded model package for model-backed
+requests above the 64K estimated raw-token threshold. It keeps hash-bound
+reference cards and the newest intent, while exposing the reducer receipt to
+callers. A fake-model integration test confirms a 70K+ payload becomes a
+model prefill of at most 64K, and the full suite passes `103 passed`. This is
+the portable internal toolbelt path toward 4M practical use; it is not a claim
+that dense native attention over 4M tokens is fast or that retrieval quality
+matches MiniMax. Evidence: `tests/test_embedded_worker.py` and the next v17
+package validation receipt.
