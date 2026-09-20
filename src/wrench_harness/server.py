@@ -379,6 +379,11 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 400,
                 {"error": {"message": str(exc), "type": "invalid_request_error"}},
             )
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
+            # The client may enforce a shorter deadline than the native
+            # backend. The worker request is already bounded by the upstream
+            # timeout, and there is no response left to write to this socket.
+            return
         except Exception as exc:  # pragma: no cover - defensive serving boundary
             self._send_json(
                 500,

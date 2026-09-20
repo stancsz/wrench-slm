@@ -1553,3 +1553,13 @@ parity, direct dense 4M, or production-throughput pass. Evidence:
 `phases/phase-134-real-native-bridge-smoke`. The updated launcher and docs were
 also synchronized to public Hub revision
 `b253262898aeda32576b785489e0043342e1a431`; weights were unchanged.
+
+2026-09-20 bounded native 220-case replay: the v48 portable launcher added a
+9-second native upstream timeout and safely handled clients that disconnect
+after their own deadline. The full 220-case replay completed without hanging:
+200/220 outcome matches, 100/120 eligible exact accepts, zero prohibited
+accepts, 20 bounded native-path runtime abstentions, and 0.822 ms median /
+146.683 ms p95 measured latency. The 20 misses are all `patch_draft` cases
+whose learned native generation exceeded the timeout. This is a stability
+and fail-closed diagnostic result, not a learned-quality, MiniMax parity, or
+production release pass. Evidence: `phases/phase-136-bounded-native-220`.

@@ -27,6 +27,8 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert "$env:PYTHONPATH = $null" in launcher
     assert "[int]$MoeCacheSize = 0" in launcher
     assert "MoeCacheSize must be at least 16" in launcher
+    assert "[int]$UpstreamTimeoutSeconds = 9" in launcher
+    assert "--upstream-timeout-seconds" in launcher
     assert "Start-Process -FilePath $FreeTokenExecutable" in launcher
 
 

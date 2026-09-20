@@ -137,6 +137,11 @@ instead of changing the model package:
 `MoeCacheSize` must be at least 16 for this 8-expert package. The default
 remains automatic sizing.
 
+The package bridge bounds a native upstream request to 9 seconds by default,
+so one slow or malformed native generation cannot stall the whole mechanical
+worker. Override `-UpstreamTimeoutSeconds` only when the caller uses a longer
+matching timeout.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

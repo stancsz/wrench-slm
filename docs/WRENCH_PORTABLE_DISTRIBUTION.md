@@ -143,6 +143,10 @@ sizing, use the bounded manual cache profile:
 
 The default launcher still uses automatic cache sizing.
 
+The native bridge defaults to a 9-second upstream timeout. Keep the caller's
+request timeout longer than this bound so a slow native generation fails closed
+without blocking later mechanical requests.
+
 For an experimental faster native profile that treats old history as
 reference-only, use:
 

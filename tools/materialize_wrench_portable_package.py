@@ -193,7 +193,8 @@ def materialize(
             '    [int]$FastHistoryControlPrefixTokens = 4096\n',
             '    [int]$FastHistoryControlPrefixTokens = 4096,\n'
             '    [switch]$OllamaApi,\n'
-            '    [int]$NativePort = 28901\n',
+            '    [int]$NativePort = 28901,\n'
+            '    [int]$UpstreamTimeoutSeconds = 9\n',
         )
         # Optional Ollama API mode keeps the native backend private to the
         # downloaded model directory. The package-local server owns the public
@@ -250,6 +251,7 @@ def materialize(
             '        }\n'
             '    }\n'
             '    if (-not $ready) { throw "FreeToken readiness timeout on port $NativePort" }\n'
+            '    if ($UpstreamTimeoutSeconds -lt 1 -or $UpstreamTimeoutSeconds -gt 600) { throw "UpstreamTimeoutSeconds must be between 1 and 600" }\n'
             '    $python = (Get-Command python -ErrorAction Stop).Source\n'
             '    $server = Join-Path $PSScriptRoot "wrench_server.py"\n'
             '    $savedPythonPath = $env:PYTHONPATH\n'
@@ -257,7 +259,7 @@ def materialize(
             '    # package API process must not auto-import that sitecustomize.\n'
             '    $env:PYTHONPATH = $null\n'
             '    try {\n'
-            '        & $python $server --model-dir $PSScriptRoot --allowed-root $AllowedRoot --port $Port --mechanical-only --upstream-url "http://127.0.0.1:$NativePort/v1/chat/completions" --max-request-bytes 536870912\n'
+            '        & $python $server --model-dir $PSScriptRoot --allowed-root $AllowedRoot --port $Port --mechanical-only --upstream-url "http://127.0.0.1:$NativePort/v1/chat/completions" --upstream-timeout-seconds $UpstreamTimeoutSeconds --max-request-bytes 536870912\n'
             '        $exitCode = $LASTEXITCODE\n'
             '    } finally {\n'
             '        $env:PYTHONPATH = $savedPythonPath\n'

@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.bounded-native-replay.v1",
+  "package": "Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v48-bounded-timeout",
+  "launcher": {
+    "ollama_api": true,
+    "fast_history": true,
+    "moe_cache_size": 16,
+    "kv_reserve_tokens": 1024,
+    "upstream_timeout_seconds": 9
+  },
+  "evaluator_timeout_seconds": 10,
+  "request_count": 220,
+  "outcome_matches": 200,
+  "eligible_case_count": 120,
+  "eligible_exact_accepts": 100,
+  "prohibited_accepts": 0,
+  "transport_or_runtime_abstentions": 20,
+  "mechanical_fast_path_requests": 200,
+  "model_calls": 0,
+  "median_latency_ms": 0.822,
+  "p95_latency_ms": 146.683,
+  "status": "DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY",
+  "receipt": "full-220-v48.json"
+}
