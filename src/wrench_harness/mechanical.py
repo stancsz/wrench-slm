@@ -194,13 +194,17 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     # compact payload searchable. For a large payload, retain the strict
     # old-versus-tail split so a path mentioned only by the current intent is
     # never treated as a historical lookup result.
-    old = prompt[:-len(tail)] if len(prompt) > len(tail) else prompt
-    if not old:
+    old_end = len(prompt) - len(tail) if len(prompt) > len(tail) else 0
+    if old_end <= 0:
         return None
     # Usually the reference occupies the prefix. A compact control block can
     # place the matching reference line just inside the suffix, though, so a
     # full-payload fallback is required for correctness at that boundary.
-    search_regions = [old] if old == prompt else [old, prompt]
+    # Keep one string object and bound the search range instead of slicing a
+    # multi-million-character prefix. The old implementation copied the
+    # entire reference before ``str.find`` could begin, which made a 4M tail
+    # lookup pay a second memory-bandwidth pass.
+    search_regions = [(prompt, old_end), (prompt, len(prompt))]
     limit_match = re.search(
         r"(?:with\s+a?\s*|capped\s+at\s*|limit(?:ed)?\s+to\s*)([0-9][0-9,]*)\s*bytes?",
         tail,
@@ -209,7 +213,7 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
     max_bytes = int(limit_match.group(1).replace(",", "")) if limit_match else 4096
     if not 1 <= max_bytes <= 256 * 1024:
         return None
-    for region in search_regions:
+    for region, region_end in search_regions:
         for term in terms:
             # ``str.find`` is implemented in C and avoids the expensive
             # backtracking-style full regex scan that made a 4M reference
@@ -218,18 +222,28 @@ def reference_lookup_route(prompt: str, *, suffix_chars: int = 16_000) -> dict[s
             # compact payloads, but deliberately skipped for monster regions
             # so a casing mismatch fails closed instead of causing a latency
             # spike.
-            position = region.find(term)
-            if position < 0 and len(region) <= 256 * 1024:
-                match = re.search(re.escape(term), region, re.IGNORECASE)
+            position = prompt.find(term, 0, region_end)
+            if position < 0 and region_end <= 256 * 1024:
+                match = re.search(re.escape(term), prompt[:region_end], re.IGNORECASE)
                 position = match.start() if match else -1
             if position < 0:
                 continue
             end_position = position + len(term)
             start = region.rfind("\n", 0, position) + 1
-            end = region.find("\n", end_position)
+            end = prompt.find("\n", end_position, region_end)
             if end < 0:
-                end = len(region)
-            line = region[start:end].strip()
+                end = region_end
+            # A serialized transcript may be one enormous logical line. Do
+            # not slice or regex-scan that whole line just to recover a
+            # nearby ``path=`` field. The lookup term is the center anchor,
+            # so a bounded window preserves the evidence while keeping this
+            # route proportional to the active lookup neighborhood.
+            if end - start > 4096:
+                window_start = max(start, position - 1024)
+                window_end = min(end, position + 4096)
+                line = prompt[window_start:window_end].strip()
+            else:
+                line = prompt[start:end].strip()
             path_match = re.search(r"\bpath\s*=\s*([A-Za-z0-9_./\\-]+)", line, re.IGNORECASE)
             if not path_match:
                 continue

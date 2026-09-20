@@ -208,6 +208,21 @@ def test_reference_lookup_route_scans_suffix_boundary_when_reference_is_recent()
     }
 
 
+def test_reference_lookup_route_handles_monster_tail_without_changing_the_result():
+    filler = "stale lookup telemetry record status observed unrelated reference-only data; "
+    prompt = (
+        (filler * 250_000)
+        + "needle_tail path=src/wrench_harness/worker.py symbol=needle_tail\n"
+        + 'CURRENT INTENT: inspect the source for symbol "needle_tail" with a 65536 byte limit.'
+    )
+    assert reference_lookup_route(prompt) == {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "src/wrench_harness/worker.py",
+        "max_bytes": 65536,
+    }
+
+
 def test_reference_lookup_route_refuses_generic_monster_lookup_without_anchor():
     prompt = (
         ("stale lookup telemetry status observed; " * 20_000)
