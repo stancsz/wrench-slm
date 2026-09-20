@@ -80,7 +80,7 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                         "swa_pool_tokens": 8192,
                         "rope_max_position_runtime": 4000000,
                         "max_prefill_length_tokens": 32768,
-                        "native_direct_payload_verified": False,
+                        "native_direct_payload_verified": True,
                     },
                     "launch_note": "Native mode requires the bundled runtime overlay and a compatible FreeToken build.",
                 },

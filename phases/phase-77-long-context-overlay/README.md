@@ -37,6 +37,13 @@ elapsed, about 19.8 minutes. A 65,536-token chunk was also tested at 64K and
 was slower at 218,836.114 ms, so the portable launcher keeps the measured 32K
 chunk rather than assuming the largest chunk is fastest.
 
+With the same runtime overlay, the reducer-bypassed 4M probe completed with
+3,999,928 actual model-side prompt tokens, no truncation, HTTP 200, and
+3,203,402.919 ms elapsed, about 53.4 minutes. This closes native direct-input
+correctness at 4M. It is not a fast-serving pass, and it does not establish
+retrieval quality because the checkpoint remains a 2M-position candidate with
+runtime RoPE extension and bounded recent SWA attention.
+
 The earlier 256K attempt with the 65,536-token window was stopped after the
 same backend showed unacceptable latency. After fixing the package-level
 FreeToken parser alias and adding a pure-SWA bookkeeping path, BF16 startup
@@ -75,6 +82,7 @@ Receipts: `long-context-overlay-policy.json`,
 `native-64k-bf16-maxprefill32768.json`,
 `native-256k-bf16-maxprefill32768.json`,
 `native-2m-bf16-maxprefill32768.json`,
+`native-4m-bf16-maxprefill32768.json`,
 `native-64k-bf16-maxprefill65536.json`,
 `native-2m-swa-only-startup.json`,
 `native-4m-swa-only-startup.json`,

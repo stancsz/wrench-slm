@@ -840,6 +840,14 @@ or the fast-serving target. Receipts:
 `phases/phase-77-long-context-overlay/native-2m-bf16-maxprefill32768.json`,
 and `phases/phase-77-long-context-overlay/native-64k-bf16-maxprefill65536.json`.
 
+The reducer-bypassed 4M direct probe then completed with 3,999,928 actual
+prompt tokens, HTTP 200, no truncation, and 3,203,402.919 ms elapsed, about
+53.4 minutes at 1,248.65 input tokens/s. This closes the direct model endpoint
+4M input correctness gate. It does not pass the fast-serving target or long
+context retrieval quality: the runtime uses bounded recent SWA attention and a
+runtime RoPE extension over a checkpoint whose original config remains 2M.
+Receipt: `phases/phase-77-long-context-overlay/native-4m-bf16-maxprefill32768.json`.
+
 The same phase then loaded the 4M-configured NVFP4 candidate with Triton
 experts and completed a warm 16K direct probe at 16,318 actual prompt tokens,
 without truncation, in 6,021.138 ms. Cold offload chunks were only about 28 to
