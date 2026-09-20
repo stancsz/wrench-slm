@@ -120,5 +120,15 @@
     "p95_latency_ms": 48.718,
     "quality_claim": false
   },
+  "downloaded_package_4m_route": {
+    "receipt": "portable-v8-4m-route.json",
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "requested_payload_tokens": 4000000,
+    "raw_payload_chars": 35199491,
+    "elapsed_ms": 10.124,
+    "model_calls": 0,
+    "model_side_native_attention_quality": "unverified",
+    "quality_claim": false
+  },
   "release_boundary": "opt-in throughput and capacity diagnostic; retrieval quality, MiniMax parity, and production default remain unverified"
 }
