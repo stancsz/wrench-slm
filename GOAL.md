@@ -2153,3 +2153,15 @@ all-case median was 6.895 ms, p95 16.063 ms, and worst observed latency
 advances the fast hybrid product path; dense-native attention and learned
 MiniMax parity remain separate open evidence. Evidence:
 `phases/phase-198-v80-bounded-lookup-window`.
+
+2026-09-20 v81 package regression after compact-payload repair: the v81
+bundled package passed structural validation, retained `PASS_PACKAGE_RETRIEVAL_2M_4M`
+with 6/6 exact recoveries and a 16.972 ms worst retrieval case, and passed the
+package-local 220-case replay at 96.2576% weighted coverage, 96.1611% net
+savings, 99.6767% Wrench-plus-fallback success, 194.680 ms median, 356.599 ms
+p95, five fallbacks, zero prohibited accepts, and zero unexpected mutations.
+The sealed 44-row diagnostic remained at 100% weighted coverage, 100% savings,
+100% Wrench success, 203.554 ms median, 344.058 ms p95, and zero safety
+violations. The full source suite is 166 passed. Final family-disjoint
+approval and current-commit 5060Ti verification remain open. Evidence:
+`phases/phase-199-v81-package-regression`.
