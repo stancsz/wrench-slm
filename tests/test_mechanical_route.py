@@ -57,3 +57,22 @@ def test_mechanical_route_abstains_on_risky_or_ambiguous_requests():
     assert mechanical_route("Draft a review-only change for README.md and do not apply it.") is None
     assert mechanical_route("Read a missing file safely.")["fallback_reason"] == "missing_path"
     assert mechanical_route("Use a boolean repository root.")["fallback_reason"] == "repository_root_invalid"
+
+
+def test_mechanical_route_normalizes_unified_diff_b_path():
+    prompt = (
+        "Draft a review-only change for README.md and do not apply it.\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+    )
+
+    assert mechanical_route(prompt) == {
+        "schema": "wrench.proposal.v1",
+        "action": "patch_draft",
+        "files": ["README.md"],
+        "review_only": True,
+        "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old\n+new\n",
+    }

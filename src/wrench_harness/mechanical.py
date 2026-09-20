@@ -349,6 +349,8 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
         if path:
             diff_match = re.search(r"---\s+a/.*?\n\+\+\+\s+b/.*?(?:\n\n|$)", prompt, re.DOTALL)
             if diff_match:
-                return _proposal("patch_draft", files=[path], review_only=True, diff=diff_match.group(0).strip() + "\n")
+                file_match = re.search(r"^\+\+\+\s+b/(.+?)\s*$", diff_match.group(0), re.MULTILINE)
+                diff_path = file_match.group(1).strip() if file_match else path
+                return _proposal("patch_draft", files=[diff_path], review_only=True, diff=diff_match.group(0).strip() + "\n")
 
     return None
