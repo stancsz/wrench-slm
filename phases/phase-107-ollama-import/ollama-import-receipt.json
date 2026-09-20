@@ -1,0 +1,45 @@
+{
+  "schema": "wrench.ollama-import-receipt.v1",
+  "status": "IMPORT_PASS_COMPLETION_BACKEND_BLOCKED",
+  "ollama_version": "0.32.13",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-fast-history-auto-smoke-v9",
+  "model_name": "wrench-4b-native4m-exp",
+  "import": {
+    "command": "ollama create wrench-4b-native4m-exp -f Modelfile --experimental",
+    "status": "PASS",
+    "tensor_count": 3993,
+    "layer_count": 1585,
+    "preserved_source_quantization": true
+  },
+  "show": {
+    "status": "PASS",
+    "format": "safetensors",
+    "family": "qwen3_5_moe",
+    "quantization_level": "nvfp4",
+    "context_length": 4000000,
+    "parameter_size": "3.4B",
+    "model_info_parameter_count": 3434672768,
+    "num_ctx_parameter": "4e+06"
+  },
+  "completion": {
+    "status": "FAIL_MLX_UNAVAILABLE",
+    "error": "MLX not available: failed to load MLX dynamic library",
+    "selected_runner": "mlx",
+    "cuda_isolated_server": {
+      "status": "CUDA_DISCOVERY_PASS_MLX_SELECTION_STILL_FORCED",
+      "library": "CUDA",
+      "device": "NVIDIA GeForce RTX 5070 Ti",
+      "compute": "12.0",
+      "vram_total": "15.9 GiB",
+      "vram_available": "14.7 GiB"
+    }
+  },
+  "quantized_export": {
+    "status": "FAIL_UNSUPPORTED_GGUF_QUANTIZER_TARGET",
+    "requested": "q4_K_M",
+    "supported_safetensors_types": ["int4", "int8", "nvfp4", "mxfp4", "mxfp8"]
+  },
+  "quality_claim": false,
+  "native_attention_claim": false,
+  "release_authorization": false
+}

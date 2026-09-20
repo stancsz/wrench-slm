@@ -42,6 +42,7 @@ def main() -> int:
         "wrench_runtime/sitecustomize.py",
         "wrench_worker.py",
         "wrench-runtime.json",
+        "Modelfile",
         "serve_freetoken.ps1",
     ]
     for name in required:
@@ -77,6 +78,7 @@ def main() -> int:
         args.model_dir / "wrench_runtime" / "patching.py",
         args.model_dir / "wrench_runtime" / "worker.py",
         args.model_dir / "wrench_worker.py",
+        args.model_dir / "Modelfile",
         *safetensors,
         package_manifest,
     ]:
