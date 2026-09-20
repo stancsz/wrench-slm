@@ -2288,3 +2288,12 @@ and 4M metadata are verified while native generation quality failed on the
 validation host. Structural validation passed, and a fresh package-local 4M
 handoff passed with 3,999,942 raw estimated tokens, 1,955 staged tokens, and
 101.524 ms server staging. Evidence: `phases/phase-208-v85-package-refresh`.
+
+2026-09-20 v85 one-command package smoke: starting the downloaded package's
+own `run_wrench.ps1` without repository `PYTHONPATH` returned `READY`. Its
+`/api/show` reported 4,000,000 declared input tokens and 64,000 effective
+working tokens, while `/api/chat` with `options.num_ctx=4000000` returned a
+valid embedded mechanical `read_file` proposal with zero model calls. This
+confirms the copy-paste model-local path for the high-volume mechanical lane.
+It does not repair the separate stock-Ollama native NVFP4 generation failure.
+Evidence: `phases/phase-209-v85-one-command-smoke`.
