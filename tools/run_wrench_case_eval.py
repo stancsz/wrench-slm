@@ -85,6 +85,14 @@ def _proposal_from_result(result: dict[str, Any]) -> dict[str, Any] | None:
     return proposal if isinstance(proposal, dict) else None
 
 
+def _cost_accounting_from_result(result: dict[str, Any]) -> dict[str, Any] | None:
+    endpoint_receipt = result.get("endpoint_receipt")
+    if not isinstance(endpoint_receipt, dict):
+        return None
+    accounting = endpoint_receipt.get("cost_accounting")
+    return accounting if isinstance(accounting, dict) else None
+
+
 def _exact_match(result: dict[str, Any], target: dict[str, Any]) -> bool:
     proposal = _proposal_from_result(result)
     if proposal is None:
@@ -149,7 +157,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
     if len(rows) != 220:
         raise ValueError(f"expected the canonical 220-case fixture, got {len(rows)} rows")
-    results: list[dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
     latencies: list[float] = []
     health_fixture = _HealthFixture(args.health_fixture)
     health_fixture.start()
@@ -203,10 +211,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "raw_model_output": model_result.get("raw_model_output"),
                     "parsed_proposal": model_result.get("parsed_proposal"),
                     "multi_pass_verifier": model_result.get("multi_pass_verifier"),
+                    "cost_accounting": _cost_accounting_from_result(model_result),
                 }
             )
     finally:
         health_fixture.stop()
+    accounting_rows = [
+        item["cost_accounting"]
+        for item in results
+        if isinstance(item.get("cost_accounting"), dict)
+    ]
     eligible = [item for item in results if item["category"] == "eligible"]
     receipt = {
         "schema": "wrench.historical-220-model-evaluation.v1",
@@ -240,6 +254,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "median_latency_ms": _percentile(latencies, 0.5),
             "p95_latency_ms": _percentile(latencies, 0.95),
             "mean_latency_ms": round(statistics.mean(latencies), 3) if latencies else None,
+            "cost_accounting": {
+                "receipt_count": len(accounting_rows),
+                "total_raw_input_tokens": sum(
+                    int(item.get("raw_input_tokens", 0)) for item in accounting_rows
+                ),
+                "total_model_prompt_tokens": sum(
+                    int(item.get("model_prompt_tokens", 0)) for item in accounting_rows
+                ),
+                "total_model_completion_tokens": sum(
+                    int(item.get("model_completion_tokens", 0)) for item in accounting_rows
+                ),
+                "total_local_model_tokens": sum(
+                    int(item.get("local_model_tokens", 0)) for item in accounting_rows
+                ),
+                "total_input_tokens_not_sent_to_model": sum(
+                    int(item.get("input_tokens_not_sent_to_model", 0)) for item in accounting_rows
+                ),
+                "total_repair_passes": sum(
+                    int(item.get("repair_passes", 0)) for item in accounting_rows
+                ),
+                "total_local_elapsed_ms": round(
+                    sum(float(item.get("total_local_elapsed_ms", 0.0)) for item in accounting_rows),
+                    3,
+                ),
+                "usd_cost": None,
+                "usd_cost_status": "not_priced_local_runtime",
+            },
         },
         "quality_claim": False,
         "limitations": [

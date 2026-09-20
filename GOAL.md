@@ -1919,3 +1919,12 @@ local patching, worker, TTC, and server hashes. This makes the fast mechanical
 worker publicly copy-pasteable, but does not close dense native 4M, MiniMax
 matched-workflow parity, or the final 90 percent coverage and 95 percent net
 savings gates. Evidence: `phases/phase-173-public-v72-worker`.
+
+2026-09-20 token-flow accounting: the model-local OpenAI and Ollama response
+receipts now separate raw input tokens from actual model prompt and completion
+tokens, report input tokens not sent to the model, bounded repair passes, and
+total local elapsed time. The 220-case runner aggregates the same fields for
+matched cost scoring. Full regression passed at 156 tests. USD pricing remains
+explicitly unpriced until provider and hardware rates are supplied by an
+authorized matched workflow capture. Evidence:
+`phases/phase-174-token-flow-accounting`.

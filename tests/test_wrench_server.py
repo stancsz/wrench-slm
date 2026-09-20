@@ -39,6 +39,12 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         assert body["wrench"]["backend"] == "embedded-mechanical"
         assert body["wrench"]["model_calls"] == 0
         assert body["usage"]["prompt_tokens"] > 0
+        accounting = body["wrench"]["cost_accounting"]
+        assert accounting["schema"] == "wrench.cost-accounting-receipt.v1"
+        assert accounting["raw_input_tokens"] == body["usage"]["prompt_tokens"]
+        assert accounting["model_prompt_tokens"] == 0
+        assert accounting["local_model_tokens"] == 0
+        assert accounting["input_tokens_not_sent_to_model"] > 0
     finally:
         server.shutdown()
         server.server_close()

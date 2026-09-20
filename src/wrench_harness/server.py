@@ -39,6 +39,46 @@ def _request_token_estimate(messages: list[dict[str, Any]]) -> tuple[int, int]:
     return raw_chars, raw_tokens
 
 
+def _cost_accounting_receipt(
+    result: dict[str, Any],
+    *,
+    raw_tokens: int,
+    completion_tokens: int,
+    elapsed_ms: float,
+) -> dict[str, Any]:
+    """Expose token-flow facts without pretending they are dollar costs."""
+
+    model_calls = result.get("model_calls", 0)
+    model_calls = model_calls if isinstance(model_calls, int) and model_calls >= 0 else 0
+    dynamic_prefill = result.get("dynamic_prefill")
+    model_prompt_tokens = 0
+    if model_calls:
+        if isinstance(dynamic_prefill, dict):
+            native_prompt = dynamic_prefill.get("native_backend_prompt_tokens")
+            staged_prompt = dynamic_prefill.get("model_prefill_token_count")
+            if isinstance(native_prompt, int) and native_prompt >= 0:
+                model_prompt_tokens = native_prompt
+            elif isinstance(staged_prompt, int) and staged_prompt >= 0:
+                model_prompt_tokens = staged_prompt
+        if model_prompt_tokens == 0:
+            model_prompt_tokens = raw_tokens
+    model_completion_tokens = completion_tokens if model_calls else 0
+    return {
+        "schema": "wrench.cost-accounting-receipt.v1",
+        "raw_input_tokens": raw_tokens,
+        "model_prompt_tokens": model_prompt_tokens,
+        "model_completion_tokens": model_completion_tokens,
+        "local_model_tokens": model_prompt_tokens + model_completion_tokens,
+        "input_tokens_not_sent_to_model": max(0, raw_tokens - model_prompt_tokens),
+        "model_calls": model_calls,
+        "repair_passes": result.get("repair_pass_count", 0),
+        "mechanical_fast_path": bool(result.get("mechanical_fast_path", False)),
+        "total_local_elapsed_ms": round(elapsed_ms, 3),
+        "usd_cost": None,
+        "usd_cost_status": "not_priced_local_runtime",
+    }
+
+
 def _completion_response(
     result: dict[str, Any],
     *,
@@ -79,6 +119,12 @@ def _completion_response(
             "dynamic_prefill": result.get("dynamic_prefill"),
             "fallback_reason": result.get("fallback_reason"),
             "ttc": result.get("ttc"),
+            "cost_accounting": _cost_accounting_receipt(
+                result,
+                raw_tokens=raw_tokens,
+                completion_tokens=completion_tokens,
+                elapsed_ms=elapsed_ms,
+            ),
         },
     }
     return response
@@ -116,6 +162,12 @@ def _ollama_response(
         "fallback_reason": result.get("fallback_reason"),
         "ttc": result.get("ttc"),
         "declared_context_tokens": declared_context_tokens,
+        "cost_accounting": _cost_accounting_receipt(
+            result,
+            raw_tokens=raw_tokens,
+            completion_tokens=completion_tokens,
+            elapsed_ms=elapsed_ms,
+        ),
     }
     response: dict[str, Any] = {
         "model": model_name,
