@@ -15,6 +15,7 @@ from typing import Any
 
 from .mechanical import mechanical_route
 from .core import execute_model_output
+from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 
 
 @dataclass
@@ -34,16 +35,17 @@ class WrenchWorker:
         load_model: bool = True,
         **model_kwargs: Any,
     ) -> "WrenchWorker":
-        from transformers import AutoModelForImageTextToText, AutoTokenizer
-
         model_path = Path(model_dir)
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_path,
-            trust_remote_code=True,
-            local_files_only=True,
-        )
+        tokenizer = None
         model = None
         if load_model:
+            from transformers import AutoModelForImageTextToText, AutoTokenizer
+
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_path,
+                trust_remote_code=True,
+                local_files_only=True,
+            )
             import torch
 
             model_kwargs.setdefault("dtype", torch.bfloat16)
@@ -95,30 +97,46 @@ class WrenchWorker:
 
         if self.model is None:
             return {"status": "abstain", "fallback_reason": "model_not_loaded"}
+        if self.tokenizer is None:
+            return {"status": "abstain", "fallback_reason": "tokenizer_not_loaded"}
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or not 1 <= max_tokens <= 512:
             return {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"}
-        prompt_text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False,
-        )
-        batch = self.tokenizer(prompt_text, return_tensors="pt", add_special_tokens=False)
-        try:
-            input_device = next(self.model.parameters()).device
-            batch = {key: value.to(input_device) for key, value in batch.items()}
-        except StopIteration:
-            pass
-        output = self.model.generate(
-            **batch,
-            max_new_tokens=max_tokens,
-            do_sample=False,
-            use_cache=True,
-            eos_token_id=self.tokenizer.eos_token_id,
-            pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
-        )
-        generated = output[0, batch["input_ids"].shape[-1] :]
-        content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
-        result = execute_model_output(content, self.allowed_root, request_prompt=prompt)
+        request_messages = add_patch_schema_examples(messages)
+        patch_retry_count = 0
+        while True:
+            prompt_text = self.tokenizer.apply_chat_template(
+                request_messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
+            )
+            batch = self.tokenizer(prompt_text, return_tensors="pt", add_special_tokens=False)
+            try:
+                input_device = next(self.model.parameters()).device
+                batch = {key: value.to(input_device) for key, value in batch.items()}
+            except StopIteration:
+                pass
+            output = self.model.generate(
+                **batch,
+                max_new_tokens=max_tokens,
+                do_sample=False,
+                use_cache=True,
+                eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+            )
+            generated = output[0, batch["input_ids"].shape[-1] :]
+            content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
+            result = execute_model_output(content, self.allowed_root, request_prompt=prompt)
+            retryable = result.get("fallback_reason") in {
+                "model_output_not_text",
+                "model_output_invalid_json",
+                "model_output_not_object",
+            }
+            if not (is_patch_prompt(prompt) and patch_retry_count == 0 and retryable):
+                break
+            patch_retry_count = 1
+            request_messages = add_patch_retry_instruction(request_messages)
         result.update({"backend": "transformers", "mechanical_fast_path": False, "raw_model_output": content})
+        if is_patch_prompt(prompt):
+            result["patch_retry_count"] = patch_retry_count
         return result

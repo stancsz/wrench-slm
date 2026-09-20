@@ -14,6 +14,7 @@ from .toolbelt import track_recent_intent
 from .ttc import run_ttc_verification
 from .prefill import build_dynamic_prefill, build_lossless_structured_prefill
 from .mechanical import mechanical_route
+from .patching import add_patch_retry_instruction, add_patch_schema_examples, is_patch_prompt
 
 
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -184,45 +185,59 @@ def execute_local_qwen(
             return _abstain("qwen_dynamic_prefill_invalid", str(exc))
         context_receipt = dict(context_receipt or {})
         context_receipt["dynamic_prefill"] = prefill_receipt
-    body = json.dumps(
-        {
-            "model": model,
-            "messages": request_messages,
-            "temperature": 0,
-            "max_tokens": max_tokens,
-            "chat_template_kwargs": {"enable_thinking": False},
-        }
-    ).encode("utf-8")
-    request = urllib.request.Request(endpoint, data=body, headers={"Content-Type": "application/json"}, method="POST")
-    opener = urllib.request.build_opener(_NoRedirect())
-    try:
-        with opener.open(request, timeout=float(timeout_seconds)) as response:
-            raw = response.read(MAX_RESPONSE_BYTES + 1)
-            if len(raw) > MAX_RESPONSE_BYTES:
-                return _abstain("qwen_response_size_limit")
-            payload = json.loads(raw.decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        return _abstain("qwen_http_error", str(exc.code))
-    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError, OSError) as exc:
-        return _abstain("qwen_transport_error", type(exc).__name__)
-    if not isinstance(payload, dict):
-        return _abstain("qwen_response_invalid")
-    response_model = payload.get("model")
-    choices = payload.get("choices")
-    if response_model != model or not isinstance(choices, list) or not choices:
-        return _abstain("qwen_response_identity_invalid")
-    message = choices[0].get("message") if isinstance(choices[0], dict) else None
-    content = message.get("content") if isinstance(message, dict) else None
-    if not isinstance(content, str):
-        return _abstain("qwen_response_content_invalid")
+    request_messages = add_patch_schema_examples(request_messages)
     user_prompts = [
         message.get("content")
         for message in request_messages
         if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str)
     ]
     request_prompt = user_prompts[-1] if user_prompts else None
-    result = execute_model_output(content, allowed_root, request_prompt=request_prompt)
-    result["model"] = response_model
+    patch_retry_allowed = is_patch_prompt(request_prompt)
+    patch_retry_count = 0
+    while True:
+        body = json.dumps(
+            {
+                "model": model,
+                "messages": request_messages,
+                "temperature": 0,
+                "max_tokens": max_tokens,
+                "chat_template_kwargs": {"enable_thinking": False},
+            }
+        ).encode("utf-8")
+        request = urllib.request.Request(endpoint, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        opener = urllib.request.build_opener(_NoRedirect())
+        try:
+            with opener.open(request, timeout=float(timeout_seconds)) as response:
+                raw = response.read(MAX_RESPONSE_BYTES + 1)
+                if len(raw) > MAX_RESPONSE_BYTES:
+                    return _abstain("qwen_response_size_limit")
+                payload = json.loads(raw.decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            return _abstain("qwen_http_error", str(exc.code))
+        except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError, OSError) as exc:
+            return _abstain("qwen_transport_error", type(exc).__name__)
+        if not isinstance(payload, dict):
+            return _abstain("qwen_response_invalid")
+        response_model = payload.get("model")
+        choices = payload.get("choices")
+        if response_model != model or not isinstance(choices, list) or not choices:
+            return _abstain("qwen_response_identity_invalid")
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str):
+            return _abstain("qwen_response_content_invalid")
+        result = execute_model_output(content, allowed_root, request_prompt=request_prompt)
+        result["model"] = response_model
+        retryable_malformed = result.get("fallback_reason") in {
+            "model_output_not_text",
+            "model_output_invalid_json",
+            "model_output_not_object",
+        }
+        if patch_retry_allowed and patch_retry_count == 0 and retryable_malformed:
+            patch_retry_count = 1
+            request_messages = add_patch_retry_instruction(request_messages)
+            continue
+        break
     if result.get("status") == "accepted":
         try:
             proposal = json.loads(content)
@@ -246,6 +261,8 @@ def execute_local_qwen(
             "max_tokens": max_tokens,
             "enable_thinking": False,
         }
+        if patch_retry_allowed:
+            result["request_parameters"]["patch_retry_count"] = patch_retry_count
         if context_receipt is not None:
             result["request_parameters"]["context_session_hash"] = context_receipt["session_hash"]
             result["request_parameters"]["active_context_token_budget"] = active_context_token_budget

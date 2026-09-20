@@ -30,4 +30,5 @@ def test_standard_hf_load_verifier_is_metadata_only():
 def test_materializer_embeds_worker_runtime():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert "wrench_runtime/worker.py" in script
+    assert "wrench_runtime/patching.py" in script
     assert "WrenchWorker" in script

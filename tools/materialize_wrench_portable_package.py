@@ -79,6 +79,7 @@ def materialize(
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", target / "wrench_toolbelt.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "core.py")
         shutil.copy2(repo_root / "wrench_worker.py", target / "wrench_worker.py")
@@ -143,8 +144,37 @@ def materialize(
                 "It contains 3,881,244,016 parameters, uses ModelOpt NVFP4 W4A16 weights, "
                 "and stays below the 4.25B parameter ceiling.",
             )
+        package_dir_name = huggingface_repo_id.rsplit("/", 1)[-1]
+        readme = readme.replace("./Wrench-4B-Qwen3.6-8E", f"./{package_dir_name}")
+        readme = readme.replace(
+            "--local-dir Wrench-4B-Qwen3.6-8E",
+            f"--local-dir {package_dir_name}",
+        )
         readme_path.write_text(readme, encoding="utf-8")
-        shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", target / "WRENCH_PORTABLE_DISTRIBUTION.md")
+        distribution_doc = target / "WRENCH_PORTABLE_DISTRIBUTION.md"
+        shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", distribution_doc)
+        distribution_text = distribution_doc.read_text(encoding="utf-8").replace(
+            "stancsz/Wrench-4B-Qwen3.6-8E", "__WRENCH_HF_URL__"
+        )
+        distribution_text = distribution_text.replace(
+            "Wrench-4B-Qwen3.6-8E", package_dir_name
+        ).replace("__WRENCH_HF_URL__", huggingface_repo_id)
+        distribution_doc.write_text(distribution_text, encoding="utf-8")
+        candidate_identity = (
+            "Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M"
+            if quantized_candidate and native4m_candidate
+            else (
+                "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M"
+                if safety_candidate
+                else "Wrench-4B-Qwen3.6-8E-base"
+            )
+        )
+        readme_path.write_text(
+            readme_path.read_text(encoding="utf-8").replace(
+                "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M", candidate_identity
+            ),
+            encoding="utf-8",
+        )
         package_manifest = {
             "schema": "wrench.portable-model-package.v1",
             "package_name": "Wrench",
@@ -153,15 +183,7 @@ def materialize(
             "verified_total_parameters": PARAMETER_COUNT,
             "hard_parameter_ceiling": PARAMETER_CEILING,
             "model_lineage": "Qwen3.6-35B-A3B -> Wrench 8E structural prune",
-            "candidate_identity": (
-                "Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M"
-                if quantized_candidate and native4m_candidate
-                else (
-                    "Wrench-4B-Qwen3.6-8E-Safety-v7-native2M"
-                    if safety_candidate
-                    else "Wrench-4B-Qwen3.6-8E-base"
-                )
-            ),
+            "candidate_identity": candidate_identity,
             "quantization": (
                 "NVFP4-W4A16-ModelOpt"
                 if quantized_candidate
@@ -216,6 +238,7 @@ def materialize(
                 "wrench_runtime/toolbelt.py",
                 "wrench_runtime/core.py",
                 "wrench_runtime/mechanical.py",
+                "wrench_runtime/patching.py",
                 "wrench_runtime/worker.py",
                 "wrench_worker.py",
                 "wrench_runtime/sitecustomize.py",

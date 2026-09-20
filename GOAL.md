@@ -1114,3 +1114,18 @@ patch drafts. This is still regression evidence, not the sealed weighted
 MiniMax workflow gate. Evidence:
 `phases/phase-84-standard-hf-loader/native4m-nvfp4-220-health-fixture-runner.json`;
 implementation commit `84464b6`.
+
+2026-09-20 patch-draft bounded retry and portable release cleanup: embedded the
+patch schema examples and one bounded corrective retry in both the model-backed
+client and the package worker. On the same 220-case health-fixture replay, this
+raised expected outcomes to 219/220 (99.5%) with 82/120 exact eligible accepts,
+zero prohibited accepts, 200/220 mechanical fast-path requests, 0.540 ms
+median, 475.684 ms p95, and 71.147 ms mean. The one remaining miss is a
+nested-path patch draft. The portable package now includes the patching module,
+lazy-loads Transformers for mechanical-only use, passes the full suite at
+91 tests, and passes structural validation with two NVFP4 shards and
+`config_max_position_embeddings=4000000`. The public NVFP4 repository remains
+an experimental artifact at revision `5f915e35`, with no GGUF/Ollama/vLLM
+quality claim. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-220-patch-twoshot-retry.json`,
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v9-validation.json`,
+and public Hub revision `5f915e35455be361a8b64d632b8fcf9f90769c4c`.
