@@ -1781,3 +1781,15 @@ Star at 0.559589 weighted coverage and 0.618292 net frontier-token savings, so
 the goal remains active. The updated public package is Hub revision
 `b31828264d7d9771674d313c2439f39556e3fdd1`. Evidence:
 `phases/phase-160-mapreduce-dynamic-native`.
+
+2026-09-20 exact reference patch retrieval: the package-local MapReduce route
+now recovers an already-present unified diff from old reference text when the
+newest intent asks for an unapplied review-only patch. Matching paths, hunk
+presence, bounded size, existing-file checks, and the normal verifier remain
+required; missing content still abstains. Full regression passed, a fresh v64
+portable package passed structural validation, and a fresh package smoke
+accepted the recovered proposal with `applied=false`. The public Hub update is
+revision `829dbe7cb15c52f5ac483079139e741504912a15`; fresh downloaded package
+hashes match the local runtime and contain `reference_patch_route`. This adds
+safe old-lookup utility but does not close the 90%/95% workflow gates.
+Evidence: `phases/phase-161-reference-patch-package-validation.json`.
