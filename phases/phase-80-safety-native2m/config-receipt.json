@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.native-context-config-candidate.v1",
+  "status": "CONFIG_ONLY_NOT_QUALITY_PROOF",
+  "source_config": "D:\\models\\Wrench-Qwen3.6-8expert-profiled-BF16-calibrated-v7-safety\\config.json",
+  "source_sha256": "b3324ec95b37c34223290e4eb6ad1fdbc5cf086347c17656f13bc6bd04d58b0f",
+  "output_config": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-80-safety-native2m\\config.native2m.json",
+  "output_sha256": "9e1a072965b675f28cbdaec73686efbabc5a8a1809e7d5ca6d49ed6fe5d1e7c3",
+  "source_context_tokens": 262144,
+  "target_context_tokens": 2000000,
+  "rope_type": "yarn",
+  "rope_factor": 7.62939453125,
+  "weights_unchanged": true,
+  "quality_proof": false,
+  "next_required": [
+    "load the complete standard artifact in the selected runtime",
+    "send a direct model request and verify actual prompt_tokens",
+    "run long-context recall and mechanical-worker task evaluation",
+    "measure prefill, memory, throughput, and failure behavior"
+  ]
+}

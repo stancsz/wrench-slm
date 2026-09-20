@@ -917,3 +917,20 @@ and prohibited accepts fell from 5 to 0. Mechanical fast-path coverage stayed
 `phases/phase-78-mechanical-worker/wrench-safety-bf16-220-guarded.json`. The
 candidate remains below the quality gate because health-read and patch-draft
 families are weak and the long fallback tail remains.
+
+The BF16 safety-calibrated checkpoint was tested as a possible replacement for
+the public portable package. Its worker quality is better than the public base
+candidate, but structural package validation rejected it because the checkpoint
+config declares only 262,144 maximum positions, below the required 2M native
+model-input contract. No package from that attempt was published. Receipt:
+`phases/phase-79-safety-portable-package/portable-package-validation.json`.
+
+To test the candidate intersection, the safety weights were given a derived
+2M YaRN context config without modifying the original tensors. FreeToken then
+loaded the five-shard candidate, allocated the 4M runtime KV address space, and
+completed warmup. Its 220 replay produced 160/220 outcome matches, 80/120
+eligible exact accepts, 1 prohibited accept before the latest patch-format
+guard, 137/220 mechanical fast-path requests, 46.513 ms median latency, and
+10,033.084 ms p95. This is startup and diagnostic quality evidence, not a
+native direct 2M/4M quality pass. Receipt:
+`phases/phase-80-safety-native2m/wrench-safety-native2m-220.json`.

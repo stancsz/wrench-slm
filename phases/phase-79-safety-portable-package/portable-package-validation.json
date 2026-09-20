@@ -1,0 +1,66 @@
+{
+  "schema": "wrench.portable-model-package-validation.v1",
+  "model_dir": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\Wrench-Qwen3.6-8expert-BF16-safety4M-portable-v3",
+  "status": "FAIL_STRUCTURAL_PACKAGE",
+  "errors": [
+    "config:max_position_embeddings_below_2m_target"
+  ],
+  "config_max_position_embeddings": 262144,
+  "safetensors_shard_count": 5,
+  "file_hashes": {
+    "config.json": {
+      "bytes": 3337,
+      "sha256": "b3324ec95b37c34223290e4eb6ad1fdbc5cf086347c17656f13bc6bd04d58b0f"
+    },
+    "tokenizer.json": {
+      "bytes": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    "tokenizer_config.json": {
+      "bytes": 1269,
+      "sha256": "0e0ed8a8a675b577e6d40617b6f84c97dc913f55613760ec8ccfd2f8b1d176e7"
+    },
+    "tokenization_wrench.py": {
+      "bytes": 3345,
+      "sha256": "6a91df915df9ae4b52b0eb8008dacb891b26313279a819d329044ca25a437548"
+    },
+    "wrench_prefill.py": {
+      "bytes": 18234,
+      "sha256": "1c608b1423930d80c3523188c3ac6483b0b5bf54da80a59aa9869a4a239a9883"
+    },
+    "wrench_mechanical.py": {
+      "bytes": 7733,
+      "sha256": "eec9a95a8c9c7dac7463bc619ace1ee61cf8ca41e368dec885c78c85e55d8817"
+    },
+    "wrench_runtime/prefill.py": {
+      "bytes": 18234,
+      "sha256": "1c608b1423930d80c3523188c3ac6483b0b5bf54da80a59aa9869a4a239a9883"
+    },
+    "model-00001-of-00005.safetensors": {
+      "bytes": 1017118848,
+      "sha256": "8cecb339791dedbe1b4926b351003f1723670f8442ab670148d3b533d6fff2f7"
+    },
+    "model-00002-of-00005.safetensors": {
+      "bytes": 1984490648,
+      "sha256": "90172d3492d15b881b58c53445043ba38dae74495ec053f17c4965615c06382e"
+    },
+    "model-00003-of-00005.safetensors": {
+      "bytes": 1984410440,
+      "sha256": "b052f28e4bc8fe6e30996d61753141ae19f37d1c8d1c1abe678ee149bb585867"
+    },
+    "model-00004-of-00005.safetensors": {
+      "bytes": 1995412680,
+      "sha256": "d1d5b77907a97726a01041cb32e4d8155ab5505295099dd35bdb479afc356d86"
+    },
+    "model-00005-of-00005.safetensors": {
+      "bytes": 781184352,
+      "sha256": "e54ceae0b0345e91b2f74ddf80cb09e86566ed8a5485fa1aa6ae4f92a2f491f2"
+    },
+    "wrench-package.json": {
+      "bytes": 1170,
+      "sha256": "af78e4ae7f782100699ad976897fdacd0f5c3197ad8c62ebc9a01d94e77e8668"
+    }
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}

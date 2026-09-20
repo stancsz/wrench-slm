@@ -116,3 +116,8 @@ def test_prompt_semantic_boundary_guards_fail_closed():
         ".",
         request_prompt="Read the binary Git index as text.",
     ) == {"status": "abstain", "fallback_reason": "encoding_or_read_error"}
+    assert execute_model_output(
+        '{"schema":"wrench.proposal.v1","action":"patch_draft","files":["README.md"],"review_only":true,"diff":"--- a/README.md\\n+++ b/README.md\\n-old\\n+new\\n"}',
+        ".",
+        request_prompt="Draft a patch without a hunk marker.",
+    ) == {"status": "abstain", "fallback_reason": "patch_not_unified_diff"}

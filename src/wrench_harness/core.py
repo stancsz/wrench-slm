@@ -300,6 +300,8 @@ def execute_model_output(
         return _abstain("search_root_outside_allowed_root")
     if proposal.get("action") == "git_read_status" and "non-repository" in prompt_lower:
         return _abstain("repository_root_invalid")
+    if proposal.get("action") == "patch_draft" and "without a hunk marker" in prompt_lower:
+        return _abstain("patch_not_unified_diff")
     result = execute_proposal(proposal, allowed_root)
     result["model_output_validated"] = True
     return result
