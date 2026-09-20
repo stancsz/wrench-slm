@@ -8,7 +8,10 @@ the caller can preserve the original request and use the model fallback.
 
 from __future__ import annotations
 
+import difflib
+import os
 import re
+from pathlib import Path
 from typing import Any
 
 _OUT_OF_DOMAIN_MARKERS = (
@@ -67,6 +70,12 @@ _WORD_NUMBERS = {
 }
 
 _DEFAULT_READ_MAX_BYTES = 256 * 1024
+_EXPLICIT_REPLACEMENT_RE = re.compile(
+    r"\b(?:replace|change|update)\s+(['\"`])(?P<old>.*?)\1\s+"
+    r"(?:with|to)\s+(['\"`])(?P<new>.*?)\3\s+"
+    r"(?:in|within|inside)\s+(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 _REFERENCE_QUERY_STOPWORDS = frozenset(
@@ -222,6 +231,57 @@ def _is_risky(prompt: str) -> bool:
     return False
 
 
+def _bounded_patch_path(raw_path: str, allowed_root: str | os.PathLike[str] | None) -> tuple[Path, str] | None:
+    if allowed_root is None or not isinstance(raw_path, str) or not raw_path:
+        return None
+    root = Path(allowed_root).expanduser().resolve()
+    candidate = (root / raw_path).resolve()
+    try:
+        relative = candidate.relative_to(root)
+    except ValueError:
+        return None
+    if not candidate.is_file() or any(part.startswith(".") for part in relative.parts):
+        return None
+    return candidate, relative.as_posix()
+
+
+def _explicit_replacement_patch(
+    prompt: str,
+    *,
+    allowed_root: str | os.PathLike[str] | None,
+) -> dict[str, Any] | None:
+    match = _EXPLICIT_REPLACEMENT_RE.search(prompt)
+    if not match:
+        return None
+    bounded = _bounded_patch_path(match.group("path"), allowed_root)
+    if bounded is None:
+        return None
+    path, relative = bounded
+    old = match.group("old")
+    new = match.group("new")
+    if not old or old == new:
+        return None
+    try:
+        original = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    if original.count(old) != 1:
+        return None
+    updated = original.replace(old, new, 1)
+    diff = "".join(
+        difflib.unified_diff(
+            original.splitlines(keepends=True),
+            updated.splitlines(keepends=True),
+            fromfile=f"a/{relative}",
+            tofile=f"b/{relative}",
+            n=3,
+        )
+    )
+    if not diff.endswith("\n"):
+        diff += "\n"
+    return _proposal("patch_draft", files=[relative], review_only=True, diff=diff)
+
+
 def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] | None:
     """Return a stable abstention for an unambiguous boundary request.
 
@@ -269,7 +329,7 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
         if "non-string health url" in lowered:
             return {"status": "abstain", "fallback_reason": "invalid_health_request"}
 
-    if re.search(r"\b(patch|diff|change)\b", lowered) or "apply a patch" in lowered:
+    if re.search(r"\b(patch|diff|change|replace|update)\b", lowered) or "apply a patch" in lowered:
         if "outside the repository" in lowered:
             return {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
         if "missing file" in lowered:
@@ -280,6 +340,18 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
             return {"status": "abstain", "fallback_reason": "patch_not_unified_diff"}
         if any(marker in lowered for marker in ("apply a patch immediately", "four files", "non-list file field", "no files named")):
             return {"status": "abstain", "fallback_reason": "patch_draft_requires_review_only"}
+        review_only = bool(re.search(r"\b(?:review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered))
+        has_unified_diff = bool(re.search(r"(?m)^---\s+a/.*\n^\+\+\+\s+b/", prompt))
+        has_change_spec = bool(
+            re.search(r"\b(?:replace|update|add|insert|rename|set|remove)\b", lowered)
+            or re.search(r"['\"].+['\"].+\bto\b", prompt, re.IGNORECASE | re.DOTALL)
+        )
+        if review_only and _path(prompt) and not has_unified_diff and not has_change_spec:
+            # A patch request without a desired change is under-specified. Do
+            # not spend a model call inventing a diff that the user did not
+            # request. The caller can preserve the original request and ask
+            # the stronger model for clarification.
+            return {"status": "abstain", "fallback_reason": "patch_content_missing"}
 
     if "missing file" in lowered or "missing line-range file" in lowered or "missing directory" in lowered or "as if it were a file" in lowered or "directory as lines" in lowered:
         return {"status": "abstain", "fallback_reason": "missing_path"}
@@ -289,7 +361,11 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
     return None
 
 
-def mechanical_route(prompt: str) -> dict[str, Any] | None:
+def mechanical_route(
+    prompt: str,
+    *,
+    allowed_root: str | os.PathLike[str] | None = None,
+) -> dict[str, Any] | None:
     """Return a proposal or explicit abstention for a high-confidence request.
 
     ``None`` means the request is ambiguous and should be sent to the model.
@@ -359,12 +435,15 @@ def mechanical_route(prompt: str) -> dict[str, Any] | None:
             byte_limit = _limit(prompt, default=64 * 1024)
             return _proposal("health_read", url=url, timeout_seconds=timeout, max_bytes=byte_limit)
 
-    if re.search(r"\b(patch|diff|change)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
+    if re.search(r"\b(patch|diff|change|replace|update)\b", lowered) and re.search(r"\b(review[- ]only|leave .*unchanged|do not apply|unapplied)\b", lowered):
         if path:
             diff_match = re.search(r"---\s+a/.*?\n\+\+\+\s+b/.*?(?:\n\n|$)", prompt, re.DOTALL)
             if diff_match:
                 file_match = re.search(r"^\+\+\+\s+b/(.+?)\s*$", diff_match.group(0), re.MULTILINE)
                 diff_path = file_match.group(1).strip() if file_match else path
                 return _proposal("patch_draft", files=[diff_path], review_only=True, diff=diff_match.group(0).strip() + "\n")
+            generated = _explicit_replacement_patch(prompt, allowed_root=allowed_root)
+            if generated is not None:
+                return generated
 
     return None

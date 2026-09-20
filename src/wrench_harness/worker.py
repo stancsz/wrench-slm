@@ -157,7 +157,7 @@ class WrenchWorker:
             # The complete payload remains available to reference_lookup_route
             # for exact historical evidence.
             route_prompt = active_intent_suffix(prompt, suffix_chars=route_suffix_chars)
-            mechanical = mechanical_route(route_prompt) or reference_lookup_route(reference_payload)
+            mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root) or reference_lookup_route(reference_payload)
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":

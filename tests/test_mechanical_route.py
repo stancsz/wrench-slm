@@ -64,7 +64,10 @@ def test_mechanical_route_abstains_on_risky_or_ambiguous_requests():
         "fallback_reason": "task_family_not_allowlisted",
     }
     assert mechanical_route("Read the relevant thing and decide what to do.") is None
-    assert mechanical_route("Draft a review-only change for README.md and do not apply it.") is None
+    assert mechanical_route("Draft a review-only change for README.md and do not apply it.") == {
+        "status": "abstain",
+        "fallback_reason": "patch_content_missing",
+    }
     assert mechanical_route("Read a missing file safely.")["fallback_reason"] == "missing_path"
     assert mechanical_route("Use a boolean repository root.")["fallback_reason"] == "repository_root_invalid"
 
@@ -86,3 +89,31 @@ def test_mechanical_route_normalizes_unified_diff_b_path():
         "review_only": True,
         "diff": "--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-old\n+new\n",
     }
+
+
+def test_mechanical_route_builds_a_review_patch_for_one_explicit_replacement(tmp_path):
+    target = tmp_path / "README.md"
+    target.write_text("before\nkeep\nafter\n", encoding="utf-8")
+
+    proposal = mechanical_route(
+        'Replace "before" with "updated" in README.md and leave the file unchanged.',
+        allowed_root=tmp_path,
+    )
+
+    assert proposal is not None
+    assert proposal["action"] == "patch_draft"
+    assert proposal["files"] == ["README.md"]
+    assert proposal["review_only"] is True
+    assert "-before" in proposal["diff"]
+    assert "+updated" in proposal["diff"]
+    assert target.read_text(encoding="utf-8") == "before\nkeep\nafter\n"
+
+
+def test_mechanical_route_defers_ambiguous_replacement_to_model(tmp_path):
+    target = tmp_path / "README.md"
+    target.write_text("before\nbefore\n", encoding="utf-8")
+
+    assert mechanical_route(
+        'Replace "before" with "updated" in README.md and leave the file unchanged.',
+        allowed_root=tmp_path,
+    ) is None
