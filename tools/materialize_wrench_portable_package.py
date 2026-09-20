@@ -70,8 +70,17 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
         shutil.copy2(repo_root / "src" / "wrench_harness" / "prefill.py", target / "wrench_prefill.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", target / "wrench_mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", target / "wrench_toolbelt.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "core.py")
+        shutil.copy2(repo_root / "wrench_worker.py", target / "wrench_worker.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
-        (runtime_dir / "__init__.py").write_text("\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n", encoding="utf-8")
+        (runtime_dir / "__init__.py").write_text(
+            "\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n"
+            "from .worker import WrenchWorker\n\n"
+            "__all__ = [\"WrenchWorker\"]\n",
+            encoding="utf-8",
+        )
         (target / "wrench-runtime.json").write_text(
             json.dumps(
                 {
@@ -166,6 +175,10 @@ def materialize(source: Path, target: Path, repo_root: Path) -> dict[str, object
                 "wrench_runtime/__init__.py",
                 "wrench_runtime/prefill.py",
                 "wrench_runtime/toolbelt.py",
+                "wrench_runtime/core.py",
+                "wrench_runtime/mechanical.py",
+                "wrench_runtime/worker.py",
+                "wrench_worker.py",
                 "wrench_runtime/sitecustomize.py",
                 "wrench-runtime.json",
                 "serve_freetoken.ps1",

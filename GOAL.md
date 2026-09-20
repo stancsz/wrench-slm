@@ -1061,3 +1061,23 @@ quality, production throughput, GGUF/Ollama/vLLM adapters, and the full matched
 `phases/phase-84-standard-hf-loader/safety-v5-package-validation-4m.json`,
 `safety-v5-standard-hf-load-weights.json`, and
 `safety-v5-freetoken-package-smoke.json`.
+
+2026-09-20 embedded worker API slice: added `WrenchWorker` to the portable
+model directory. `wrench_worker.py` and `wrench_runtime/worker.py` expose one
+model-shaped entrypoint that routes high-confidence mechanical requests through
+the bundled deterministic route and verifier without a model call. Ambiguous
+requests can load the standard Transformers model and remain fail-closed when
+generation is malformed. The local v5 package worker returned an accepted
+read-only proposal directly from the downloaded directory with `load_model=False`;
+the structural package validator and full test suite pass (`90 passed`). A
+same-historical-fixture diagnostic of the embedded deterministic route produced
+190/220 expected outcomes, 81/120 eligible exact accepts, and zero prohibited
+accepts. This is lower than the model-plus-runtime diagnostic because ambiguous
+cases correctly abstain when no model is loaded; it is not a quality or parity
+claim. The
+public Hub audit confirms the worker files, verifier core, 4M config, five-shard
+index, and zero private-path leaks. This improves portability and zero-model-call
+mechanical latency, but does not claim standard Transformers generation quality,
+4M retrieval quality, Ollama/GGUF/vLLM support, or MiniMax parity. Evidence:
+`phases/phase-84-standard-hf-loader/safety-v5-package-validation-worker.json` and
+public commit `1ba309f60f58039b1aa49529b274208322a34f87`.

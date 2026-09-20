@@ -33,6 +33,9 @@ Wrench/
   configuration_wrench.py             # only when the architecture is custom
   wrench_runtime/                     # bundled deterministic lookup runtime
     toolbelt.py                        # same verifier for package-local imports
+    mechanical.py                      # bounded no-model route
+    worker.py                           # embedded worker API
+  wrench_worker.py                     # convenience import
   wrench-runtime.json                 # fast/native mode contract
   serve_freetoken.ps1                 # native 4M experimental launcher
   wrench-package.json
@@ -43,6 +46,21 @@ Wrench/
 The user-facing path is one model name and one command. The runtime may contain
 regex, AST, hashing, indexing, and retrieval code, but these files are shipped
 inside the model package and are not a separate user-installed harness.
+
+The portable worker can be used directly from the downloaded directory:
+
+```python
+from wrench_worker import WrenchWorker
+
+worker = WrenchWorker.from_pretrained("./Wrench", load_model=False)
+proposal = worker.propose([
+    {"role": "user", "content": "Read README.md with a 65536 byte limit."}
+])
+```
+
+The worker routes high-confidence mechanical requests through the embedded
+deterministic path. Ambiguous requests can set `load_model=True` and use the
+standard Transformers model, with every output still passing the verifier.
 
 For a local Hugging Face directory, the embedded hook is loaded through the
 normal Transformers API:

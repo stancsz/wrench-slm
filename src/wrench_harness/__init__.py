@@ -7,6 +7,7 @@ from .state import load_router_state, save_router_state
 from .tier import TierSelectionError, select_experimental_tier
 from .context import ContextAdmissionError, ContextError, ContextLedger, ContextSegment, ContextSelectionError
 from .mechanical import mechanical_route
+from .worker import WrenchWorker
 
 __all__ = [
     "CancellationToken",
@@ -25,4 +26,5 @@ __all__ = [
     "load_router_state",
     "save_router_state",
     "select_experimental_tier",
+    "WrenchWorker",
 ]

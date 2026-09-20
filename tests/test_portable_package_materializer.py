@@ -22,3 +22,9 @@ def test_standard_hf_load_verifier_is_metadata_only():
     assert "full_weight_load_verified" in script
     assert "full_weight_generation_verified" in script
     assert "native_long_context_quality_verified" in script
+
+
+def test_materializer_embeds_worker_runtime():
+    script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
+    assert "wrench_runtime/worker.py" in script
+    assert "WrenchWorker" in script

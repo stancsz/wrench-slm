@@ -35,7 +35,11 @@ def main() -> int:
         "wrench_toolbelt.py",
         "wrench_runtime/prefill.py",
         "wrench_runtime/toolbelt.py",
+        "wrench_runtime/core.py",
+        "wrench_runtime/mechanical.py",
+        "wrench_runtime/worker.py",
         "wrench_runtime/sitecustomize.py",
+        "wrench_worker.py",
         "wrench-runtime.json",
         "serve_freetoken.ps1",
     ]
@@ -67,6 +71,10 @@ def main() -> int:
         args.model_dir / "wrench_toolbelt.py",
         args.model_dir / "wrench_runtime" / "prefill.py",
         args.model_dir / "wrench_runtime" / "toolbelt.py",
+        args.model_dir / "wrench_runtime" / "core.py",
+        args.model_dir / "wrench_runtime" / "mechanical.py",
+        args.model_dir / "wrench_runtime" / "worker.py",
+        args.model_dir / "wrench_worker.py",
         *safetensors,
         package_manifest,
     ]:

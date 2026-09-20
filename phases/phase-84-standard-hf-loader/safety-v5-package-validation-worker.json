@@ -1,0 +1,88 @@
+{
+  "schema": "wrench.portable-model-package-validation.v1",
+  "model_dir": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\Wrench-Qwen3.6-8expert-BF16-safety-native4M-portable-v5",
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "errors": [],
+  "config_max_position_embeddings": 4000000,
+  "safetensors_shard_count": 5,
+  "file_hashes": {
+    "config.json": {
+      "bytes": 3294,
+      "sha256": "66dbef6efb89baaec187037822fd1fb512e3eb65610d69ea4689776ad21e4d8a"
+    },
+    "tokenizer.json": {
+      "bytes": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    "tokenizer_config.json": {
+      "bytes": 1270,
+      "sha256": "4ea568e1962e9162b087779b0bd72da9539f43b7f4a98aea0fd1feab9bd34eaa"
+    },
+    "tokenization_wrench.py": {
+      "bytes": 3345,
+      "sha256": "6a91df915df9ae4b52b0eb8008dacb891b26313279a819d329044ca25a437548"
+    },
+    "wrench_prefill.py": {
+      "bytes": 21061,
+      "sha256": "8a1cb29b6d9cc01c34c588cad73ff1a4d1d79661fb5b2f6007dc0051c25f18f6"
+    },
+    "wrench_mechanical.py": {
+      "bytes": 13020,
+      "sha256": "5925f96bd64409bf81d692bc174a1fc3d2d1f22f3f5391081dda79b224ee50d2"
+    },
+    "wrench_toolbelt.py": {
+      "bytes": 15196,
+      "sha256": "b5558bbcf0b9cd44c58fac7ca7c165e3a67c59f24bea2722fc8660b7d99fdee3"
+    },
+    "wrench_runtime/prefill.py": {
+      "bytes": 21061,
+      "sha256": "8a1cb29b6d9cc01c34c588cad73ff1a4d1d79661fb5b2f6007dc0051c25f18f6"
+    },
+    "wrench_runtime/toolbelt.py": {
+      "bytes": 15196,
+      "sha256": "b5558bbcf0b9cd44c58fac7ca7c165e3a67c59f24bea2722fc8660b7d99fdee3"
+    },
+    "wrench_runtime/core.py": {
+      "bytes": 15196,
+      "sha256": "b5558bbcf0b9cd44c58fac7ca7c165e3a67c59f24bea2722fc8660b7d99fdee3"
+    },
+    "wrench_runtime/mechanical.py": {
+      "bytes": 13020,
+      "sha256": "5925f96bd64409bf81d692bc174a1fc3d2d1f22f3f5391081dda79b224ee50d2"
+    },
+    "wrench_runtime/worker.py": {
+      "bytes": 4418,
+      "sha256": "27c048d2c62c3f22d9b5a107a9b20905db743b348b59ac96cb896788086e2f36"
+    },
+    "wrench_worker.py": {
+      "bytes": 137,
+      "sha256": "27f77e545710f734e22ec3641f8df6136e5baf0e93ce0335a822b2784f39332d"
+    },
+    "model-00001-of-00005.safetensors": {
+      "bytes": 1017118848,
+      "sha256": "8cecb339791dedbe1b4926b351003f1723670f8442ab670148d3b533d6fff2f7"
+    },
+    "model-00002-of-00005.safetensors": {
+      "bytes": 1984490648,
+      "sha256": "90172d3492d15b881b58c53445043ba38dae74495ec053f17c4965615c06382e"
+    },
+    "model-00003-of-00005.safetensors": {
+      "bytes": 1984410440,
+      "sha256": "b052f28e4bc8fe6e30996d61753141ae19f37d1c8d1c1abe678ee149bb585867"
+    },
+    "model-00004-of-00005.safetensors": {
+      "bytes": 1995412680,
+      "sha256": "d1d5b77907a97726a01041cb32e4d8155ab5505295099dd35bdb479afc356d86"
+    },
+    "model-00005-of-00005.safetensors": {
+      "bytes": 781184352,
+      "sha256": "e54ceae0b0345e91b2f74ddf80cb09e86566ed8a5485fa1aa6ae4f92a2f491f2"
+    },
+    "wrench-package.json": {
+      "bytes": 1422,
+      "sha256": "28ebd3a6d4db140132a23e9620530ad04d60afa7620e01dac9ff85bfed8593cb"
+    }
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}

@@ -12,4 +12,6 @@ def test_portable_manifest_keeps_native_and_effective_context_separate():
     assert manifest["publication"]["public_upload_authorized"] is True
     assert "wrench_toolbelt.py" in manifest["required_files"]
     assert "wrench_runtime/toolbelt.py" in manifest["required_files"]
+    assert "wrench_runtime/worker.py" in manifest["required_files"]
+    assert "wrench_worker.py" in manifest["required_files"]
     assert manifest["retrieval"]["verifier_is_bundled"] is True

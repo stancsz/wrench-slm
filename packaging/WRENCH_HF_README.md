@@ -35,6 +35,21 @@ the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
 long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
 is intended to feel like one model directory, not a separately installed harness.
 
+The embedded worker API is available directly from the downloaded directory:
+
+```python
+from wrench_worker import WrenchWorker
+
+worker = WrenchWorker.from_pretrained("./Wrench-4B-Qwen3.6-8E", load_model=False)
+result = worker.propose([
+    {"role": "user", "content": "Read README.md with a 65536 byte limit."}
+])
+```
+
+With `load_model=True`, ambiguous requests use the standard Transformers model
+and still pass through the same fail-closed verifier. High-confidence
+mechanical requests use the embedded route without a model call.
+
 For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
 or newer:
 
