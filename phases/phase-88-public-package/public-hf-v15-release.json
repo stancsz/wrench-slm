@@ -1,0 +1,35 @@
+{
+  "schema": "wrench.public-hf-release.v1",
+  "status": "PUBLIC_EXPERIMENTAL_PACKAGE_VERIFIED",
+  "source_commit": "73245916902eb0ed023faa843b628f527058b443",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "b3bebc49e42ac81119f3af859bcc31e8c233532e",
+  "local_package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v15",
+  "package_validation": "phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v15-validation.json",
+  "copy_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "runtime_overlay_sha256": "EEEF37C200FFC0677237F2D24A6F197FDB9EE25A2242DCCD393A738471F68B7D",
+  "mechanical_runtime_sha256": "3D95CBB932979985D811E1D7B2EE877286714F283712926037A0E1B1C463825B",
+  "remote_core_hashes_match_local": true,
+  "weight_format": "Hugging Face Safetensors, two NVFP4 shards",
+  "package_size_bytes": 3423747698,
+  "embedded_runtime": true,
+  "embedded_mechanical_route": true,
+  "worker_smoke": {
+    "status": "accepted",
+    "backend": "embedded-mechanical",
+    "action": "read_file",
+    "reference_payload_chars": 38128,
+    "model_calls": 0,
+    "verifier": "package-local execute_model_output"
+  },
+  "claims": {
+    "downloadable_and_copy_pasteable": true,
+    "native_4m_input_receipt": true,
+    "native_4m_retrieval_quality": false,
+    "minimax_parity": false,
+    "vllm": false,
+    "ollama": false,
+    "gguf": false,
+    "production_ready": false
+  }
+}
