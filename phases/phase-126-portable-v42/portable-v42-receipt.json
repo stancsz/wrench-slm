@@ -25,6 +25,16 @@
     "p95_latency_ms": 37.952,
     "patch_gap_reason": "20 historical eligible patch prompts omit concrete diff content"
   },
+  "complete_patch_payload_diagnostic": {
+    "cases_sha256": "D127003E81EE57A32ADD86B68056CD5393408488356C86C1ED23D65066B1FB95",
+    "outcome_matches": 220,
+    "eligible_exact_accepts": 102,
+    "mechanical_fast_path_requests": 220,
+    "model_calls": 0,
+    "prohibited_accepts": 0,
+    "weighted_frontier_mass_rate": 1.0,
+    "status": "DIAGNOSTIC_FIXTURE_ONLY"
+  },
   "ollama_isolated": {
     "version": "0.34.2",
     "runner": "MLX CUDA 13",

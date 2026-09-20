@@ -17,6 +17,12 @@ the package.
   200/220 outcome matches and 82/120 exact eligible proposals because the 20
   accepted patch-draft prompts in this historical fixture omit their actual
   diff. The fail-closed `patch_content_missing` result is intentional.
+- A separate complete-payload derivative of the same 220 rows inserted each
+  accepted patch's target diff into the user payload without changing the
+  oracle. That run reached 220/220 outcome matches, 220/220 mechanical fast
+  paths, zero model calls, zero prohibited accepts, and 1.0 weighted frontier
+  coverage. This is a diagnostic fixture repair, not a substitute for the
+  authorized family-disjoint real-workflow traces.
 - An isolated Ollama `0.34.2` MLX runtime loaded the corresponding no-vision
   manifest and reported a 4,000,000-token context length. A real
   `/api/generate` request with `num_ctx=4,000,000` returned HTTP 200, and
