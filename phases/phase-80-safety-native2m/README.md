@@ -1,6 +1,6 @@
 # Phase 80: safety-native2M candidate
 
-Status: `NATIVE_2M_DIRECT_INPUT_PASS_QUALITY_REPLAY_OPEN`
+Status: `NATIVE_2M_4M_DIRECT_INPUT_PASS_QUALITY_REPLAY_OPEN`
 
 The safety-calibrated BF16 8E weights were copied by immutable hardlink into a
 derived candidate with a 2,000,000-token `text_config.max_position_embeddings`
@@ -39,6 +39,15 @@ YaRN config, a 4M runtime KV allocation, and an 8K SWA serving window. This is
 direct-input capacity evidence for the safety candidate, not a claim of full
 2M global attention, retrieval quality, or fast serving. Receipt:
 `native-2m-bf16-direct.json`.
+
+The same reducer-bypassed native-attention profile then completed a direct 4M
+probe for this exact safety checkpoint. It returned HTTP 200 with 3,999,928
+actual model-side prompt tokens, no truncation, and
+`native_context_pass=true` in 3,232,073.278 ms, about 53.9 minutes. This
+closes the candidate-specific direct 4M input correctness milestone. It still
+does not claim full global attention, long-context retrieval recall, or fast
+serving: the runtime uses bounded 8K SWA attention and runtime RoPE extension.
+Receipt: `native-4m-bf16-direct.json`.
 
 After the direct probe, the mechanical router was tightened so a rigid local
 health request with an omitted numeric value uses the verifier's bounded

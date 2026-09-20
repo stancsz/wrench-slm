@@ -945,6 +945,15 @@ candidate gate, full-global-attention claim, retrieval quality, fast-serving
 target, or MiniMax matched-workflow gates. Receipt:
 `phases/phase-80-safety-native2m/native-2m-bf16-direct.json`.
 
+The same safety candidate then passed the reducer-bypassed direct 4M input
+probe: HTTP 200, 3,999,928 actual model-side prompt tokens, no truncation,
+and 3,232,073.278 ms elapsed, about 53.9 minutes. This closes the
+candidate-specific direct 4M input correctness milestone. It does not close
+full-global-attention, retrieval recall, fast-serving, or MiniMax
+matched-workflow gates because the serving profile uses bounded 8K SWA and a
+runtime RoPE extension. Receipt:
+`phases/phase-80-safety-native2m/native-4m-bf16-direct.json`.
+
 The mechanical health route was then changed to use the verifier's bounded
 defaults when a rigid local health request says only "bounded timeout" or
 "response cap". The verifier continues to own host, path, query, fragment,
