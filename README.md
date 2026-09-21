@@ -39,6 +39,13 @@ The first-layer receipt records selected and omitted spans, raw payload hash,
 effective working context, route source, and gate latency. Dense native 2M/4M
 attention is optional research. It is not the Wrench product claim.
 
+If a dense-native lane is enabled later, this is an explicit model/runtime
+requirement: the portable package must include a fast first model-side pruner
+and cherrypicker. It must inspect the complete raw sequence and compact it to a
+bounded 32K to 64K active working context before expensive attention runs. A
+gateway-only reducer or a metadata-only context setting does not satisfy this
+target.
+
 ## Current v88 evidence
 
 The current portable runtime is below the 4.25B parameter ceiling at
