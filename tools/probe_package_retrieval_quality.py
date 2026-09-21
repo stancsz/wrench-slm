@@ -76,6 +76,7 @@ def _run_case(package_dir: Path, target_tokens: int, placement: float, case_inde
         "status": result.get("status"),
         "backend": result.get("backend"),
         "mechanical_fast_path": result.get("mechanical_fast_path"),
+        "context_gate": result.get("context_gate"),
         "model_calls": result.get("model_calls", 0),
         "fallback_reason": result.get("fallback_reason"),
         "proposal": proposal,

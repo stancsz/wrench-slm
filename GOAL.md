@@ -2366,3 +2366,12 @@ gate p50 stayed at 23.952 ms at 4M, with nine staged working tokens in this
 simple mechanical prompt and zero model calls. This closes the current
 model-local intake matrix, while dense-native quality and family-disjoint
 approval remain open. Evidence: `phases/phase-216-v88-context-matrix`.
+
+2026-09-20 v88 retrieval-quality replay: unique old-reference needles at 1%,
+50%, and 99% in both 2M and 4M payloads were recovered exactly in 18/18
+cases across three repetitions. Every case used the model-local
+`mechanical_fast_pruner_cherrypicker` stage, `reference_lookup` route, and
+hash-bound receipt with zero model calls. Retrieval p50/p95 was 17.870/20.956
+ms at 2M and 32.560/40.772 ms at 4M. This verifies hybrid reference lookup,
+not dense-native attention or MiniMax parity. Evidence:
+`phases/phase-217-v88-retrieval-quality`.

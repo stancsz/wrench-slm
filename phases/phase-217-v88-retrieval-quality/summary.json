@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.v88-retrieval-quality.v1",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v88-mechanical-gate",
+  "repetitions": 3,
+  "placements": [0.01, 0.5, 0.99],
+  "targets": [2000000, 4000000],
+  "total_cases": 18,
+  "exact_proposals": 18,
+  "model_calls": 0,
+  "backend": "embedded-mechanical",
+  "route": "reference_lookup",
+  "context_gate_stage": "mechanical_fast_pruner_cherrypicker",
+  "all_raw_payloads_hash_bound": true,
+  "latency_ms": {
+    "2m_p50": 17.87,
+    "2m_p95": 20.956,
+    "4m_p50": 32.56,
+    "4m_p95": 40.772,
+    "all_p50": 20.956,
+    "all_p95": 40.772
+  },
+  "quality_claim": false
+}
