@@ -1,0 +1,49 @@
+{
+  "schema": "wrench.real-harness-integration.v2",
+  "status": "LOCAL_COMPACT_V97_DSH_SMOKE_PASSED",
+  "host": "RTX 5070 Ti development host",
+  "source_commit": "d42f4fa",
+  "package": {
+    "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate",
+    "format": "Hugging Face Safetensors NVFP4 W4A16",
+    "verified_parameters": 3881244016,
+    "raw_context_limit_tokens": 4000000,
+    "effective_working_context_tokens": 64000
+  },
+  "client": {
+    "name": "DeepSeek Harness",
+    "profile": "headless",
+    "protocol": "openai-chat-completions",
+    "endpoint": "http://127.0.0.1:28918/v1/chat/completions",
+    "model": "wrench-v97",
+    "work": "read README.md through the local filesystem tool"
+  },
+  "observed": {
+    "session_title_preflight": true,
+    "structured_tool_call": true,
+    "tool_name": "read",
+    "tool_executed_by_client": true,
+    "tool_result_settlement": true,
+    "final_text_response": true,
+    "model_calls": 0,
+    "mechanical_fast_path": true,
+    "mutation_observed": false,
+    "settlement_route": "embedded-mechanical-settlement",
+    "first_request_raw_tokens_estimate": 4902,
+    "first_request_gate_latency_ms": 9.009,
+    "settlement_elapsed_ms": 0.197,
+    "settlement_effective_working_context_tokens": 18
+  },
+  "trace": "compact-v97-dsh-trace.jsonl",
+  "claude_code_v97": {
+    "status": "NOT_VERIFIED",
+    "reason": "installed CLI used first-party provider and emitted no Wrench trace",
+    "further_attempts": "stopped_to_avoid_provider_spend"
+  },
+  "claims_not_authorized": [
+    "independent_rtx_5060_ti_verification",
+    "learned_minimax_parity",
+    "dense_native_4m_decoder_quality",
+    "production_readiness"
+  ]
+}

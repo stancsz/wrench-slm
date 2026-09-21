@@ -2642,3 +2642,18 @@ working tokens at settlement, and zero model calls. This is current-v97 local
 integration evidence on the RTX 5070 Ti, not 5060 Ti evidence, learned
 MiniMax parity, dense-native decoder quality, or production authorization.
 Evidence: `phases/phase-246-v97-opencode-integration`.
+
+2026-09-21 compact v97 DeepSeek Harness integration: the current NVFP4
+package was connected to the real `dsh --profile headless` client through a
+temporary local OpenAI-compatible endpoint. The client performed its session
+title preflight, sent the wrapper bundle, received and executed a structured
+`read` proposal for `README.md`, returned the tool result, and completed the
+final settlement. The trace records `mechanical_fast_path=true`, an 18-token
+effective working context, 9.009 ms first-request gate latency, 0.197 ms
+settlement latency, and zero model calls. This is current-v97 local evidence
+on the RTX 5070 Ti, not current Claude Code routing, independent 5060 Ti
+evidence, learned MiniMax parity, dense-native decoder quality, or production
+authorization. The installed Claude CLI continued to use its first-party
+provider during bounded endpoint-injection diagnostics, so Claude current-v97
+remains `NOT_VERIFIED` and no further provider-spend attempts were made.
+Evidence: `phases/phase-247-v97-claude-dsh`.
