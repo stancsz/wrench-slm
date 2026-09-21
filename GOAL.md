@@ -2578,3 +2578,14 @@ reduced the raw sequence to 58,539 model-prefill tokens: cold index ingestion
 was 137.134 ms and selection was 40.744 ms. This proves the bounded gate shape
 and exposes cold versus hot work, but it is not independent 5060 Ti evidence,
 dense-native attention quality, or MiniMax parity.
+
+2026-09-20 conditional dense-native first-layer gate: the FreeToken model
+overlay now exposes an explicit `-DenseNativeGate` launcher switch. When
+enabled, the raw request is accepted by the model-local native endpoint, then
+the same deterministic `FirstLayerContextGate` used by the hybrid worker runs
+before expensive native attention and compacts to a bounded 32K to 64K working
+context. Invalid bounds or raw input above 4M fail closed. A local gate-only
+4M stress measured 3,990,568 estimated raw tokens to 35 dense-attention input
+tokens in 137.329 ms with a hash-bound receipt. This is model-package gate
+evidence, not native decoder quality, 5060 Ti verification, or MiniMax parity.
+Evidence: `phases/phase-240-dense-native-first-layer`.

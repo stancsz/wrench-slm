@@ -56,6 +56,10 @@ def test_long_context_overlay_patches_engine_package_alias_and_swa_only_pool():
     assert "existing_swa_ids" in source
     assert "original group would create two SWA groups" in source
     assert "WRENCH_NATIVE_DIRECT_INPUT" in source
+    assert "WRENCH_DENSE_NATIVE_GATE" in source
+    assert "_compact_native_dense_messages" in source
+    assert "dense_native_first_layer=pruner_cherrypicker_to_" in source
+    assert "attach_dense_native_gate_receipt" in source
     assert "WRENCH_HISTORY_SKIP_MLP_BEFORE" in source
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in source
     assert "WRENCH_HISTORY_CONTROL_PREFIX_TOKENS" in source
@@ -118,3 +122,39 @@ def test_embedded_read_hint_is_bounded_and_relative():
         "max_bytes": 4096,
     }
     assert hint("Read file C:/secret.txt with a 4096 byte limit.")["path"] == "C:/secret.txt"
+
+
+def test_dense_native_gate_compacts_before_attention_and_binds_raw_payload():
+    namespace = _load_overlay_source()
+    compact = namespace["_compact_native_dense_messages"]
+    messages = [
+        {"role": "assistant", "content": "old lookup path=src/service.py " + ("stale context\n" * 17_000)},
+        {"role": "user", "content": "Inspect Worker in src/service.py."},
+    ]
+    staged, receipt = compact(
+        messages,
+        working_context_tokens=32_000,
+        suffix_chars=128,
+    )
+    assert staged
+    assert receipt["mode"] == "dense_native_first_layer"
+    assert receipt["native_dense_gate"] is True
+    assert receipt["model_side_stage"] == "before_expensive_attention"
+    assert receipt["raw_input_accepted_by_model_endpoint"] is True
+    assert receipt["raw_input_tokens"] > receipt["dense_attention_input_tokens"]
+    assert receipt["raw_payload_sha256"]
+    assert receipt["context_gate"]["stage"] == "first_model_side_pruner_cherrypicker"
+
+
+def test_dense_native_gate_rejects_working_context_outside_32k_to_64k():
+    namespace = _load_overlay_source()
+    compact = namespace["_compact_native_dense_messages"]
+    try:
+        compact(
+            [{"role": "user", "content": "read README.md"}],
+            working_context_tokens=65_000,
+        )
+    except ValueError as exc:
+        assert "between 32000 and 64000" in str(exc)
+    else:
+        raise AssertionError("expected dense-native working-context bound")

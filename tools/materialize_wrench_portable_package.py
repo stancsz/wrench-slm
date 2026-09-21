@@ -142,6 +142,8 @@ def materialize(
                                 "min": 32000,
                                 "max": 64000,
                             },
+                            "first_layer_required_when_enabled": True,
+                            "enable_with_launcher_switch": "DenseNativeGate",
                             "preserve": [
                                 "newest_intent",
                                 "authority_and_dependency_context",
@@ -207,7 +209,7 @@ def materialize(
         )
         launcher_text = launcher_text.replace(
             "    [int]$KvReserveTokens = 8192",
-            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [ValidateSet(\"offload\", \"cpu\", \"hybrid\", \"fused\")] [string]$MoeStrategy = \"offload\",\n    [string]$MoeCpuLayers = \"\",\n    [int]$MoeCpuThreads = 0,\n    [int]$MoeHybridMaxFetch = -1,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096,\n    [switch]$NativeDirectInput,\n    [switch]$OllamaApi,\n    [int]$NativePort = 28901,\n    [int]$UpstreamTimeoutSeconds = 9",
+            "    [int]$KvReserveTokens = 8192,\n    [int]$MoeCacheSize = 0,\n    [ValidateSet(\"offload\", \"cpu\", \"hybrid\", \"fused\")] [string]$MoeStrategy = \"offload\",\n    [string]$MoeCpuLayers = \"\",\n    [int]$MoeCpuThreads = 0,\n    [int]$MoeHybridMaxFetch = -1,\n    [switch]$FastHistory,\n    [int]$FastHistoryKeepTokens = 64000,\n    [int]$FastHistoryControlPrefixTokens = 4096,\n    [switch]$NativeDirectInput,\n    [switch]$DenseNativeGate,\n    [switch]$OllamaApi,\n    [int]$NativePort = 28901,\n    [int]$UpstreamTimeoutSeconds = 9",
         )
         launcher_text = launcher_text.replace(
             "    [int]$Port = 28900,\n",
@@ -223,6 +225,11 @@ def materialize(
             '    $env:WRENCH_NATIVE_DIRECT_INPUT = "1"\n'
             '} else {\n'
             '    $env:WRENCH_NATIVE_DIRECT_INPUT = "0"\n'
+            '}\n'
+            'if ($DenseNativeGate) {\n'
+            '    $env:WRENCH_DENSE_NATIVE_GATE = "1"\n'
+            '} else {\n'
+            '    $env:WRENCH_DENSE_NATIVE_GATE = "0"\n'
             '}\n'
             '$env:WRENCH_ALLOWED_ROOT = (Resolve-Path -LiteralPath $AllowedRoot).Path\n'
             '$env:WRENCH_EMBEDDED_MECHANICAL_ROUTE = "1"',

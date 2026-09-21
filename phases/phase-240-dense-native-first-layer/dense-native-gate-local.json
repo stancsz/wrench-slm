@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.dense-native-first-layer-receipt.v1",
+  "source": "runtime/freetoken_wrench_long_context/sitecustomize.py",
+  "mode": "gate_only_current_host",
+  "raw_input_tokens": 3990568,
+  "dense_attention_input_tokens": 35,
+  "effective_working_context_budget_tokens": 64000,
+  "raw_input_accepted_by_model_endpoint": true,
+  "model_side_stage": "before_expensive_attention",
+  "context_gate_stage": "first_model_side_pruner_cherrypicker",
+  "gate_elapsed_ms": 137.329,
+  "portable_package_gate_elapsed_ms": 114.284,
+  "portable_package_import_without_repository_pythonpath": true,
+  "raw_payload_sha256": "3de92007d828b768717c93868b3027ae7ee812cd6144471a5eccbe58084d4f74",
+  "native_decoder_loaded": false,
+  "native_retrieval_quality_verified": false,
+  "independent_5060ti_verified": false,
+  "production_release": false
+}

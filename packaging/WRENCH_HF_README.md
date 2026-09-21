@@ -51,6 +51,19 @@ The first-layer receipt records selected and omitted spans, raw payload hash,
 effective working context, route source, and gate latency. Dense native 2M/4M
 attention is optional research. It is not the Wrench product claim.
 
+When the optional dense-native lane is enabled, use the bundled launcher with
+`-DenseNativeGate`. The raw request still arrives at the model-local native
+endpoint, but the package's first model-side stage compacts it to 32K to 64K
+before expensive attention:
+
+```powershell
+.\serve_freetoken.ps1 -OllamaApi -NativeDirectInput -DenseNativeGate
+```
+
+The gate is fail-closed and records the raw payload hash, selected working
+context, and gate stage. Omitting `-DenseNativeGate` is reserved for separate
+reducer-bypassed native capacity probes, not the dense-native product path.
+
 ## Run the model-local endpoint
 
 ```powershell

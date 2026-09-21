@@ -156,6 +156,120 @@ def _mechanical_read_hint_from_tail(text: str) -> dict[str, object] | None:
     return None
 
 
+def _dense_native_gate_enabled() -> bool:
+    """Return whether the native model-side first layer is explicitly enabled."""
+
+    return os.environ.get("WRENCH_DENSE_NATIVE_GATE", "0").strip().casefold() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _compact_native_dense_messages(
+    messages: list[dict[str, str]],
+    *,
+    working_context_tokens: int = 64_000,
+    suffix_chars: int = 16_000,
+) -> tuple[list[dict[str, str]], dict[str, object]]:
+    """Run the model-package first layer before native dense attention.
+
+    The HTTP request has already arrived at the model package when this
+    helper runs. The raw ordered payload is therefore still model-local, but
+    only the selected working set is allowed to reach the expensive native
+    layers. This is intentionally the same deterministic gate used by the
+    Transformers worker so the hybrid and dense-native lanes share one
+    selection contract.
+    """
+
+    if not isinstance(messages, list) or not messages:
+        raise ValueError("native dense gate requires non-empty messages")
+    if not isinstance(working_context_tokens, int) or not 32_000 <= working_context_tokens <= 64_000:
+        raise ValueError("native dense working context must be between 32000 and 64000 tokens")
+    if not isinstance(suffix_chars, int) or suffix_chars < 1:
+        raise ValueError("native dense suffix_chars must be positive")
+    if any(
+        not isinstance(message, dict)
+        or not isinstance(message.get("role"), str)
+        or not isinstance(message.get("content"), str)
+        for message in messages
+    ):
+        raise ValueError("native dense gate requires role/content messages")
+
+    # Imports are delayed until the flag is used. The overlay must remain
+    # importable by FreeToken builds that do not ship the Wrench runtime.
+    try:
+        from wrench_harness.prefill import (
+            FirstLayerContextGate,
+            MechanicalPrefillIndex,
+            _estimate_token_count,
+            ordered_payload_sha256,
+            split_monolithic_current_message,
+        )
+    except ImportError:
+        try:
+            from wrench_prefill import (
+                FirstLayerContextGate,
+                MechanicalPrefillIndex,
+                _estimate_token_count,
+                ordered_payload_sha256,
+                split_monolithic_current_message,
+            )
+        except ImportError:
+            # The portable FreeToken process puts ``wrench_runtime`` on
+            # PYTHONPATH, but a caller may launch the overlay from another
+            # working directory. Load the bundled sibling directly so the
+            # native first layer does not depend on an ambient import path.
+            import importlib.util
+
+            bundled_prefill = Path(__file__).with_name("prefill.py")
+            loader_spec = importlib.util.spec_from_file_location(
+                "wrench_bundled_prefill", bundled_prefill
+            )
+            if loader_spec is None or loader_spec.loader is None:
+                raise ImportError("bundled Wrench prefill module is unavailable")
+            bundled_module = importlib.util.module_from_spec(loader_spec)
+            loader_spec.loader.exec_module(bundled_module)
+            FirstLayerContextGate = bundled_module.FirstLayerContextGate
+            MechanicalPrefillIndex = bundled_module.MechanicalPrefillIndex
+            _estimate_token_count = bundled_module._estimate_token_count
+            ordered_payload_sha256 = bundled_module.ordered_payload_sha256
+            split_monolithic_current_message = bundled_module.split_monolithic_current_message
+
+    raw_payload_sha256 = ordered_payload_sha256(messages)
+    raw_token_estimate = sum(
+        int(_estimate_token_count(message["content"])) for message in messages
+    )
+    if raw_token_estimate > 4_000_000:
+        raise ValueError("native_dense_raw_context_exceeds_4000000_tokens")
+
+    prepared, split_current_message = split_monolithic_current_message(
+        messages,
+        model_prefill_budget=working_context_tokens,
+        suffix_chars=suffix_chars,
+    )
+    index = MechanicalPrefillIndex()
+    index.add_all(prepared)
+    hot_budget = min(48_000, max(1, working_context_tokens - 1))
+    reference_budget = max(1, working_context_tokens - hot_budget)
+    staged, receipt = FirstLayerContextGate(
+        raw_context_limit_tokens=4_000_000,
+        working_context_tokens=working_context_tokens,
+        hot_context_tokens=hot_budget,
+        reference_card_tokens=reference_budget,
+    ).compact(prepared, mechanical_index=index)
+    receipt["mode"] = "dense_native_first_layer"
+    receipt["native_dense_gate"] = True
+    receipt["model_side_stage"] = "before_expensive_attention"
+    receipt["raw_payload_sha256"] = raw_payload_sha256
+    receipt["raw_input_tokens"] = raw_token_estimate
+    receipt["split_current_message"] = split_current_message
+    receipt["raw_input_accepted_by_model_endpoint"] = True
+    receipt["dense_attention_input_tokens"] = receipt["model_prefill_token_count"]
+    return staged, receipt
+
+
 if os.name == "nt" and not hasattr(os, "posix_fadvise"):
     # FreeToken's expert-bank loader calls this POSIX page-cache hint while
     # streaming packed shards. Windows has no equivalent, so the safe
@@ -467,7 +581,10 @@ def _install_qwen_long_context_overlay() -> None:
         original_wrench_prefill_enabled = generation._wrench_prefill_enabled
 
         def wrench_prefill_enabled_with_native_direct(state):
-            if os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") == "1":
+            if (
+                os.environ.get("WRENCH_NATIVE_DIRECT_INPUT", "0") == "1"
+                or _dense_native_gate_enabled()
+            ):
                 return False
             return original_wrench_prefill_enabled(state)
 
@@ -553,6 +670,48 @@ def _install_qwen_long_context_overlay() -> None:
                 + f";history_control_suffix_chars={suffix_chars}"
             )
 
+        # In dense-native mode the package must compact before the first
+        # expensive decoder layer. This hook runs after the raw request has
+        # reached the model-local generation endpoint, so it is not an API
+        # gateway shortcut. It is deliberately opt-in because reducer-bypassed
+        # capacity probes still need a separate full-input receipt.
+        if _dense_native_gate_enabled():
+            native_gate_budget = int(
+                os.environ.get("WRENCH_DENSE_NATIVE_WORKING_CONTEXT_TOKENS", "64000")
+            )
+            native_gate_suffix_chars = int(
+                os.environ.get("WRENCH_HISTORY_CONTROL_SUFFIX_CHARS", "16000")
+            )
+            original_submit_generation = generation.submit_generation
+
+            async def submit_generation_with_dense_native_gate(spec, state):
+                raw_messages = [dict(message) for message in spec.messages]
+                staged_messages, gate_receipt = _compact_native_dense_messages(
+                    raw_messages,
+                    working_context_tokens=native_gate_budget,
+                    suffix_chars=native_gate_suffix_chars,
+                )
+                # GenerationSpec is intentionally treated as an extensible
+                # request carrier by the overlay. The attribute gives later
+                # response/diagnostic hooks access to the exact receipt while
+                # keeping the standard FreeToken request schema untouched.
+                spec.messages = staged_messages
+                try:
+                    spec.wrench_context_gate_receipt = gate_receipt
+                except Exception:
+                    pass
+                try:
+                    state.wrench_context_gate_receipt = gate_receipt
+                except Exception:
+                    pass
+                return await original_submit_generation(spec, state)
+
+            generation.submit_generation = submit_generation_with_dense_native_gate
+            os.environ["WRENCH_LONG_CONTEXT_POLICY"] = (
+                os.environ.get("WRENCH_LONG_CONTEXT_POLICY", "")
+                + f";dense_native_first_layer=pruner_cherrypicker_to_{native_gate_budget}"
+            )
+
         if os.environ.get("WRENCH_EMBEDDED_MECHANICAL_ROUTE", "0") == "1":
             from fastapi.responses import JSONResponse
             import freetoken.server.openai_api as openai_api
@@ -595,12 +754,42 @@ def _install_qwen_long_context_overlay() -> None:
 
             original_handle_chat_completion = openai_api.handle_chat_completion
 
+            def attach_dense_native_gate_receipt(response, state):
+                """Expose the model-side gate receipt on buffered responses."""
+
+                receipt = getattr(state, "wrench_context_gate_receipt", None)
+                body = getattr(response, "body", None)
+                if not isinstance(receipt, dict) or not isinstance(body, (bytes, bytearray)):
+                    return response
+                try:
+                    payload = json.loads(bytes(body).decode("utf-8"))
+                except (ValueError, UnicodeDecodeError):
+                    return response
+                if not isinstance(payload, dict):
+                    return response
+                wrench = payload.get("wrench")
+                if not isinstance(wrench, dict):
+                    wrench = {}
+                wrench["context_gate"] = receipt
+                wrench["input_mode"] = "raw_model_endpoint_then_dense_first_layer"
+                payload["wrench"] = wrench
+                return JSONResponse(
+                    payload,
+                    status_code=getattr(response, "status_code", 200),
+                    media_type="application/json",
+                )
+
             async def handle_chat_completion_with_embedded_route(req, request, state, model_sampling):
                 # Streaming keeps the normal engine path. The bounded route is
                 # for the buffered proposal API only, where it can return one
                 # verifier-ready JSON object without spending a model pass.
                 if getattr(req, "stream", False):
                     return await original_handle_chat_completion(req, request, state, model_sampling)
+                if _dense_native_gate_enabled():
+                    try:
+                        state.wrench_context_gate_receipt = None
+                    except Exception:
+                        pass
                 contents = [
                     getattr(message, "content", None)
                     for message in getattr(req, "messages", [])
@@ -707,7 +896,8 @@ def _install_qwen_long_context_overlay() -> None:
                                 },
                             }
                         )
-                return await original_handle_chat_completion(req, request, state, model_sampling)
+                response = await original_handle_chat_completion(req, request, state, model_sampling)
+                return attach_dense_native_gate_receipt(response, state)
 
             openai_api.handle_chat_completion = handle_chat_completion_with_embedded_route
     except (ImportError, AttributeError):
