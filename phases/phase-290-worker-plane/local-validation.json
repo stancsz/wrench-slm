@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.phase-290-local-validation.v1",
+  "date": "2026-09-21",
+  "source_commit": "e017b1906de764938ab6838e12d51f696a02d68d",
+  "host": "RTX 5070 Ti",
+  "pytest": {
+    "passed": 194,
+    "warnings": 18
+  },
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+  "direct_4m": {
+    "status": "PASS_MODEL_LOCAL_SERVER_4M",
+    "raw_payload_chars": 31997963,
+    "elapsed_ms": 156.5,
+    "receipt": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\direct-4m.json",
+    "receipt_sha256": "D71A40207CEBBD8C9BF701D53D9C511F2CD98A569E42A3C016EB8E3C15F96CC8"
+  },
+  "retrieval": {
+    "status": "PASS_PACKAGE_RETRIEVAL_2M_4M",
+    "cases": 6,
+    "model_calls": 0,
+    "receipt": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\retrieval.json",
+    "receipt_sha256": "B2AA283AD7F74A64422FFC19D8C974E7495B0574DA1A6FC5F2E7A4375F750C36"
+  },
+  "package_only_220_repetitions": [
+    {"run": 1, "outcome_matches": 220, "exact_proposals": 120, "eligible": 120, "prohibited_accepts": 0, "p50_ms": 0.528, "p95_ms": 38.883, "model_calls": 0, "sha256": "B82354BE81C92421231FE78F0EE05808D6CDA7D7325CB9FF794AC534848DB194"},
+    {"run": 2, "outcome_matches": 220, "exact_proposals": 120, "eligible": 120, "prohibited_accepts": 0, "p50_ms": 0.531, "p95_ms": 40.814, "model_calls": 0, "sha256": "741A1F6532BE830545072B7E7D5B731E5329B3B671F4824897716B57AEC12DF5"},
+    {"run": 3, "outcome_matches": 220, "exact_proposals": 120, "eligible": 120, "prohibited_accepts": 0, "p50_ms": 0.503, "p95_ms": 39.67, "model_calls": 0, "sha256": "C121BC877E893D46B8DD4CC09F3CE0C27D01EAB92B6CAF9D6205DEE3767B4754"}
+  ],
+  "replay_interpretation": "Package-only diagnostic regression passes. It is not teacher parity, family-disjoint approval, or production enablement.",
+  "remote_5060_dispatch": {
+    "new_task_thread": "01a0c5e8-b7c4-7012-9912-d43a752b40e5",
+    "result": "LOCAL_WRONG_HOST",
+    "reported_host": "DESKTOP-AO7CHMG",
+    "reported_gpu": "RTX 5070 Ti",
+    "handoff_error": "No matching saved project was found on 5060TI",
+    "independent_5060_claim": false
+  },
+  "replay_provenance_failure": "The four-arm replay attempt was correctly rejected because the available teacher capture input hash did not match the current cases file. No hash was rewritten and no parity claim was made."
+}

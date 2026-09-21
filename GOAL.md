@@ -2970,3 +2970,21 @@ assistant message, command output, nonce echo, or external receipt. The
 watchdog and read-only extraction follow-ups also returned empty output. The
 prior stale partial 5060 evidence is not promoted. Evidence:
 `phases/phase-284-5060ti-current-verification-no-receipt`.
+
+2026-09-21 complete dispatch payload and local release regression: the worker
+contract now requires every delegated message or queue manifest to repeat its
+nonce, full objective, source and artifact identity, exact commands, resource
+reserve, stop conditions, and complete final response schema. An empty turn or
+wrong-host execution is explicitly unverified and must trigger a fresh worker
+session rather than more context on the failed thread. The current source
+passed `194` tests with `18` warnings. On the RTX 5070 Ti, the current v103
+package passed direct 4M intake for `31,997,963` raw characters in `156.5 ms`,
+and the six-case 2M/4M retrieval probe passed with zero model calls. Three
+package-only 220-case repetitions each produced `220/220` outcome matches,
+`120/120` exact proposals, zero prohibited accepts, zero model calls, and
+p50/p95 latencies of `0.528/38.883 ms`, `0.531/40.814 ms`, and
+`0.503/39.670 ms`. This is package diagnostic evidence only, not teacher
+parity, family-disjoint approval, production enablement, or independent RTX
+5060 Ti evidence. A clean new task ran locally on the RTX 5070 Ti, and the
+single handoff repair attempt failed with `No matching saved project was found
+on 5060TI`. Evidence: `phases/phase-290-worker-plane`.

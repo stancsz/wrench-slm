@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.advisor-consultation.v1",
+  "model": "codex-astra-advisor",
+  "packet_chars": 1477,
+  "usage": {
+    "completion_tokens": 183,
+    "prompt_tokens": 459,
+    "total_tokens": 642
+  },
+  "decision_changed": true,
+  "verdict": "Prioritize one bounded remote saved-project or dispatch repair experiment; more local work cannot satisfy the independent RTX 5060 Ti gate.",
+  "next_experiment": "Create or repair one 5060TI saved-project mapping using a supported control path, then dispatch exactly one nonce-bound job pinned to e017b19 and the current v103 package.",
+  "stop_condition": "Stop after one repair-and-dispatch attempt if mapping remains unavailable, the turn is empty, execution lands locally, or provenance is incomplete. Mark remote verification unverified and resume local work without waiving the release gates."
+}

@@ -1,0 +1,13 @@
+Decision/blocker: The Wrench hybrid product path has fresh local evidence, but the required independent RTX 5060 Ti verification cannot execute through the current Codex worker plane.
+
+Observed facts:
+- Current source is e017b19; local pytest is 194 passed with 18 warnings.
+- Current v103 package direct 4M probe passes on the RTX 5070 Ti: 31,997,963 raw characters, 156.5 ms, model-local deterministic route.
+- Current v103 retrieval probe passes 6 cases across 2M/4M with zero model calls.
+- Existing remote 5060Ti thread and a new forked thread both complete with empty items and no command output.
+- A clean newly-created project task ran on the local RTX 5070 Ti; handoff to 5060Ti failed with: No matching saved project was found on 5060TI.
+- The prior local queue dry-run already proved pending->running->failed state mechanics, but did not execute on the real worker.
+
+Constraints: Never claim 5060Ti evidence from a queue manifest, local 5070Ti results, or an empty remote turn. Preserve the full North Star: direct 2M/4M model-local intake, practical mechanical worker, real client integration, <4.25B candidate, and family-disjoint release gates.
+
+Question: What is the single highest-leverage next experiment: repair/create a remote saved-project or queue-worker dispatch path for one nonce-bound 5060Ti job, or continue local release/semantic work while the worker plane is unavailable? Give a verdict, the smallest safe experiment, and a concrete stop condition.
