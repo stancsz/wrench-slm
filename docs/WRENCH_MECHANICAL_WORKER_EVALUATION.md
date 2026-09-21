@@ -295,3 +295,14 @@ is verified. This is integration evidence only, not learned-model quality or
 provider parity.
 
 Evidence: `phases/phase-283-claude-code-local-route`.
+
+## Independent 5060 Ti verification state
+
+The current-source 5060 Ti verification attempt produced no receipt, command
+output, nonce echo, or final resource summary after the remote turn completed.
+The stale partial 5060 evidence is therefore not a current benchmark. The
+independent GPU gate remains open until a nonce-bound receipt reports exact
+source/package hashes, 220-case results, 4M intake/retrieval results, and the
+10% RAM/VRAM reserve.
+
+Evidence: `phases/phase-284-5060ti-current-verification-no-receipt`.

@@ -2962,3 +2962,11 @@ settlement. The client also emitted an `unrecognized_model` diagnostic for
 `MiniMax-M2.7`, which is retained as a warning, but the local trace proves the
 request did not fall through to a first-party provider. Evidence:
 `phases/phase-283-claude-code-local-route`.
+
+2026-09-21 current 5060 Ti verification attempt: the independent remote turn
+was dispatched against current `origin/main=4595a13` with nonce
+`WR-283-5060-20260921-01`, but completed after more than ten minutes with no
+assistant message, command output, nonce echo, or external receipt. The
+watchdog and read-only extraction follow-ups also returned empty output. The
+prior stale partial 5060 evidence is not promoted. Evidence:
+`phases/phase-284-5060ti-current-verification-no-receipt`.
