@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.5060ti-independent-verification.v1",
+  "status": "UNVERIFIED",
+  "nonce": "WR-312-5060-CLEAN-20260921-01",
+  "thread": {
+    "thread_id": "01a0c633-32c2-7a90-b54e-96316c225810",
+    "fork_source_thread_id": "01a0c5e5-75e8-7330-9b1a-95b45b438176",
+    "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+    "host_name": "DESKTOP-KET1SKP",
+    "turn_duration_ms": 44442,
+    "completed_without_observable_receipt": true,
+    "assistant_message_observed": false,
+    "command_marker_observed": false,
+    "tool_output_observed": false
+  },
+  "candidate": {
+    "expected_source_commit": "1dc52f31267e6ee681d3a8eef78c431f801da4be",
+    "expected_package_manifest_sha256": "d037dbccbeba4e7258466751952c409beac5104df1b556398f141b0c0b8894de",
+    "declared_context_tokens": 4000000,
+    "effective_working_context_tokens": 64000
+  },
+  "checks": {
+    "structural": false,
+    "hf_smoke": false,
+    "ollama_4m": false,
+    "retrieval_2m_4m": false,
+    "replay_220": false,
+    "resource_reserve": false,
+    "nonce_bound_worker_receipt": false
+  },
+  "failures": [
+    "fresh remote task completed without any observable assistant message, command output, tool marker, or receipt"
+  ],
+  "claims_not_authorized": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}

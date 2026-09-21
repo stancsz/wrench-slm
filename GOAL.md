@@ -3087,3 +3087,12 @@ regression receipts, not the final family-disjoint production gate. Evidence:
 `phases/phase-309-clean-candidate-220-replay-health-fixture`,
 `phases/phase-310-clean-candidate-220-replay-health-fixture-r2`, and
 `phases/phase-311-clean-candidate-220-replay-health-fixture-r3`.
+
+2026-09-21 fresh 5060 Ti fork after the controlled local repetitions: a new
+same-directory remote session with nonce `WR-312-5060-CLEAN-20260921-01` was
+given the complete self-contained current-candidate verification payload. It
+completed after `44.442 s` with no assistant message, command marker, tool
+output, or receipt. This was a new fork, not an append to the old failed
+thread, so the failure is classified as an unverified remote control-plane
+execution rather than missing task context. No 5060 Ti metric is promoted.
+Evidence: `phases/phase-312-5060ti-fresh-fork-no-receipt`.
