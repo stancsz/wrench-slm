@@ -58,8 +58,14 @@ the LF checkout and suite manifest reported `da64a33d...0a72`. The case
 content was unchanged. Evaluation receipts now use a canonical JSONL SHA-256
 with CRLF and CR normalized to LF, and also retain `cases_bytes_sha256` or
 `input_bytes_sha256` for raw-byte audit. `.gitattributes` keeps JSON and JSONL
-files at LF in future checkouts. A post-fix 5060TI rerun is still required
-before treating this cross-host receipt as a final independent verification.
+files at LF in future checkouts. The post-fix 5060TI rerun then verified
+`origin/main=aaf0c79`, matched both the canonical and LF-normalized exported
+case hashes, and confirmed that the dirty worker checkout was not modified.
+Its package-only diagnostic reported 220 requests, 200 outcome matches, 100
+exact proposals, 100 exact eligible accepts out of 120, zero prohibited
+accepts, zero transport/runtime abstentions, zero model calls, 2.516 ms median
+latency, and 108.383 ms p95 latency. No matching teacher capture was present,
+so this remains `DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`, not a parity result.
 
 ## North Star
 

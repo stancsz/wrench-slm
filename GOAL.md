@@ -2859,3 +2859,16 @@ the archived worker copy and the suite manifest. Evaluation provenance now
 normalizes JSONL line endings for the canonical hash and records raw-byte hashes
 separately. This is still diagnostic only. Evidence:
 `phases/phase-274-5060ti-provenance-and-v2-diagnostic`.
+
+2026-09-21 post-fix 5060 Ti verification: after `aaf0c79` reached
+`origin/main`, the worker's isolated export matched the canonical and
+LF-normalized v2 case hashes and contained the provenance helper plus
+`.gitattributes`. The dirty worker checkout was not modified. The package-only
+diagnostic completed 220 requests with 200 outcome matches, 100 exact
+proposals, 100 exact accepts across 120 eligible rows, zero prohibited
+accepts, zero transport/runtime abstentions, zero model calls, 2.516 ms median
+latency, and 108.383 ms p95 latency. RAM and VRAM reserves stayed above 10%.
+No matching teacher capture was available, so the result remains
+`DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`; it is not teacher parity or the 90%
+weighted gate. Evidence remains in the external worker audit and the phase 274
+receipt.

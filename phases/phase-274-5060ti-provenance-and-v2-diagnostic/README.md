@@ -54,8 +54,26 @@ hash and different raw-byte hashes. Targeted verification passed:
 24 passed in 0.42s
 ```
 
-This phase is a provenance and diagnostic checkpoint. It does not prove
-MiniMax parity, production readiness, dense-native 4M decoder quality, or the
-90% weighted mechanical-workload gate. After this commit is available on
-`origin/main`, rerun the temporary-export 5060TI task and require the canonical
-hash to match before recording a new worker quality receipt.
+## Post-fix 5060TI verification
+
+After commit `aaf0c79` reached `origin/main`, the worker repeated the audit in
+a fresh temporary export. It verified `origin/main=aaf0c79`, found both the
+canonical hash and the LF-normalized exported case hash equal to
+`da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72`, and
+confirmed that `evaluation_provenance.py` and `.gitattributes` were present.
+The original dirty checkout was not pulled, reset, or modified.
+
+The post-fix package-only diagnostic reported:
+
+- 220 requests and 200 outcome matches
+- 100 exact proposals and 100 exact accepts across 120 eligible rows
+- 0 prohibited accepts, 0 transport/runtime abstentions, and 0 model calls
+- 2.516 ms median and 108.383 ms p95 latency
+- RTX 5060 Ti with RAM and VRAM reserves above 10%
+- no matching MiniMax teacher capture, so no parity claim
+
+The status remained `DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`. This closes the
+cross-host provenance defect, but it does not prove MiniMax parity, production
+readiness, dense-native 4M decoder quality, or the 90% weighted
+mechanical-workload gate. The worker audit and evaluation receipts remain
+outside this checkout.
