@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.native-direct-context-performance-boundary.v1",
+  "status": "ABORTED_DIRECT_NATIVE_PREFILL_TOO_SLOW_FOR_PRODUCTION",
+  "candidate": "D:\\models\\_wrench-release-candidate-04090c1",
+  "requested_raw_tokens": 2000000,
+  "observed_prefill_batches": 13,
+  "observed_new_tokens_after_startup_smoke": 425984,
+  "completion_verified": false,
+  "native_capacity_verified_separately": true,
+  "cleanup_verified": true,
+  "production_default": "deterministic_mapreduce_to_32k_64k",
+  "claims_not_authorized": [
+    "dense-native 2M quality",
+    "dense-native 4M quality",
+    "native prefill latency target",
+    "MiniMax parity"
+  ],
+  "notes": [
+    "The request reached the native backend and real prefill began.",
+    "The probe was deliberately stopped before completion to preserve the fast product target and host resources."
+  ]
+}

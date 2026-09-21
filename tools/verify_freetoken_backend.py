@@ -115,16 +115,8 @@ def _reserve_ok(snapshot: dict[str, Any]) -> bool:
     return bool(fractions) and min(fractions) >= MIN_FREE_FRACTION
 
 
-def _post_chat(endpoint: str, prompt: str, timeout: float) -> tuple[int | None, dict[str, Any], str | None]:
-    body = json.dumps(
-        {
-            "model": "wrench-4b-qwen3.6-8e",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 2,
-            "temperature": 0,
-            "stream": False,
-        }
-    ).encode("utf-8")
+def _post_json(endpoint: str, payload: dict[str, Any], timeout: float) -> tuple[int | None, dict[str, Any], str | None]:
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
         endpoint,
         data=body,
@@ -144,6 +136,56 @@ def _post_chat(endpoint: str, prompt: str, timeout: float) -> tuple[int | None, 
         return error.code, {}, detail
     except Exception as error:
         return None, {}, str(error)
+
+
+def _post_chat(endpoint: str, prompt: str, timeout: float) -> tuple[int | None, dict[str, Any], str | None]:
+    return _post_json(
+        endpoint,
+        {
+            "model": "wrench-4b-qwen3.6-8e",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 2,
+            "temperature": 0,
+            "stream": False,
+        },
+        timeout,
+    )
+
+
+def _build_direct_payload(model_dir: Path, target_tokens: int) -> tuple[dict[str, Any], int]:
+    """Build a bounded payload whose actual tokenizer count is near the target."""
+    intent = " CURRENT INTENT: return exactly WRENCH_DIRECT_CONTEXT_OK and nothing else."
+    safety = 256
+    try:
+        from transformers import AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_dir,
+            local_files_only=True,
+            trust_remote_code=True,
+        )
+        intent_tokens = len(tokenizer.encode(intent, add_special_tokens=False))
+        repetitions = max(1, target_tokens - intent_tokens - safety)
+        content = "a " * repetitions + intent
+        actual_tokens = len(tokenizer.encode(content, add_special_tokens=False))
+        while actual_tokens > target_tokens - 32 and repetitions > 1_024:
+            repetitions -= max(1_024, actual_tokens - target_tokens + 32)
+            content = "a " * repetitions + intent
+            actual_tokens = len(tokenizer.encode(content, add_special_tokens=False))
+    except Exception:
+        repetitions = max(1, target_tokens - safety - len(intent.split()))
+        content = "a " * repetitions + intent
+        actual_tokens = repetitions + len(intent.split())
+    return (
+        {
+            "model": "wrench-4b-qwen3.6-8e",
+            "messages": [{"role": "user", "content": content}],
+            "max_tokens": 8,
+            "temperature": 0,
+            "stream": False,
+        },
+        actual_tokens,
+    )
 
 
 def _terminate_process(process: subprocess.Popen[str]) -> None:
@@ -256,6 +298,14 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
     status_code: int | None = None
     response: dict[str, Any] = {}
     error: str | None = None
+    native_probe: dict[str, Any] = {
+        "requested_tokens": args.probe_payload_tokens,
+        "sent_tokens": None,
+        "raw_payload_bytes": None,
+        "raw_payload_sha256": None,
+        "prompt_tokens": None,
+        "status": "NOT_REQUESTED",
+    }
     try:
         process = subprocess.Popen(
             command,
@@ -280,6 +330,36 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
             time.sleep(1)
         if status_code != 200 and error is None:
             error = "startup timeout"
+        if status_code == 200 and args.probe_payload_tokens:
+            payload, sent_tokens = _build_direct_payload(
+                model_dir, args.probe_payload_tokens
+            )
+            raw_content = payload["messages"][0]["content"]
+            native_probe["sent_tokens"] = sent_tokens
+            native_probe["raw_payload_bytes"] = len(
+                raw_content.encode("utf-8")
+            )
+            native_probe["raw_payload_sha256"] = hashlib.sha256(
+                raw_content.encode("utf-8")
+            ).hexdigest()
+            status_code, response, error = _post_json(
+                f"http://127.0.0.1:{args.port}/v1/chat/completions",
+                payload,
+                timeout=args.probe_timeout_seconds,
+            )
+            usage = response.get("usage") if isinstance(response, dict) else None
+            native_probe["prompt_tokens"] = (
+                usage.get("prompt_tokens")
+                if isinstance(usage, dict)
+                else None
+            )
+            native_probe["status"] = (
+                "PASS_DIRECT_RAW_CONTEXT"
+                if status_code == 200
+                and isinstance(native_probe["prompt_tokens"], int)
+                and native_probe["prompt_tokens"] >= args.probe_payload_tokens * 0.95
+                else "FAIL_DIRECT_RAW_CONTEXT"
+            )
     finally:
         after_ready = _resource_snapshot()
         if process is not None:
@@ -307,11 +387,12 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
     generation_ok = status_code == 200 and isinstance(response_choices, list) and bool(response_choices)
     reserves = [before, after_ready, after_stop]
     reserve_maintained = all(_reserve_ok(item) for item in reserves)
+    direct_probe_pass = native_probe["status"] in {"NOT_REQUESTED", "PASS_DIRECT_RAW_CONTEXT"}
     receipt: dict[str, Any] = {
         "schema": "wrench.freetoken-native-backend-receipt.v1",
         "status": (
             "PASS_FREETOKEN_MODEL_LOAD_AND_GENERATION"
-            if generation_ok and native_capacity and reserve_maintained
+            if generation_ok and native_capacity and reserve_maintained and direct_probe_pass
             else "FAIL_FREETOKEN_NATIVE_BACKEND"
         ),
         "model_dir": str(model_dir),
@@ -324,6 +405,8 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
         "native_context_capacity_configured": native_capacity,
         "full_weight_load_verified": status_code == 200 and native_capacity,
         "native_generation_verified": generation_ok,
+        "direct_raw_context_verified": native_probe["status"] == "PASS_DIRECT_RAW_CONTEXT",
+        "native_probe": native_probe,
         "dense_native_quality_verified": False,
         "http_status": status_code,
         "generated_text": generated_text,
@@ -354,6 +437,13 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=28982)
     parser.add_argument("--startup-timeout-seconds", type=float, default=300)
     parser.add_argument("--kv-reserve-tokens", type=int, default=8192)
+    parser.add_argument(
+        "--probe-payload-tokens",
+        type=int,
+        default=0,
+        help="after startup, send this many raw tokens directly to the native backend",
+    )
+    parser.add_argument("--probe-timeout-seconds", type=float, default=900)
     args = parser.parse_args()
     receipt = verify(args)
     return 0 if receipt["status"] == "PASS_FREETOKEN_MODEL_LOAD_AND_GENERATION" else 1

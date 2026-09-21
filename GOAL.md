@@ -3204,3 +3204,14 @@ resource-safe native verifier and its Windows process-tree cleanup fix. This
 is the package bound for the next direct 4M and independent-worker probes, not
 a publication or production approval. Evidence:
 `phases/phase-322-current-head-package-binding`.
+
+2026-09-21 direct native prefill boundary: a reducer-bypassed `2,000,000`
+token request was sent directly to the current candidate's FreeToken endpoint.
+The backend accepted it and processed `13` 32,768-token batches, about `425,984`
+tokens, in roughly three minutes before the bounded probe was stopped. No
+quality pass was claimed. The exact worker tree was cleaned up and GPU usage
+returned to about `0.8 GiB`. This confirms the product decision: Wrench keeps
+the model-local 2M/4M raw-input contract, but production mechanical work must
+use deterministic MapReduce and the first-layer pruner to reduce expensive
+attention to 32K to 64K. Evidence:
+`phases/phase-323-current-head-native-direct-2m`.

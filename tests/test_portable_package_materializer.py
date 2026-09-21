@@ -102,6 +102,8 @@ def test_freetoken_native_backend_verifier_is_explicit_about_scope():
     assert "resource_reserve_maintained" in script
     assert "dense_native_quality_verified" in script
     assert 'taskkill", "/PID", str(process.pid), "/T", "/F"' in script
+    assert "probe_payload_tokens" in script
+    assert "PASS_DIRECT_RAW_CONTEXT" in script
 
 
 def test_materializer_embeds_worker_runtime():
