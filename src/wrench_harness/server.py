@@ -26,6 +26,9 @@ from .ttc import enforce_ttc
 from .worker import WrenchWorker, _dynamic_prefill_messages
 
 
+MAX_INPUT_CONTEXT_TOKENS = 4_000_000
+
+
 def _estimated_tokens(value: str) -> int:
     return _estimate_token_count(value)
 
@@ -450,8 +453,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             raw_chars, raw_tokens, raw_payload_sha256 = _request_token_estimate(messages)
             options = request.get("options")
             declared_context_tokens = None
-            if isinstance(options, dict) and isinstance(options.get("num_ctx"), int):
-                declared_context_tokens = options["num_ctx"]
+            if isinstance(options, dict) and "num_ctx" in options:
+                declared_context_tokens = options.get("num_ctx")
+                if (
+                    not isinstance(declared_context_tokens, int)
+                    or isinstance(declared_context_tokens, bool)
+                    or declared_context_tokens < 1
+                ):
+                    raise ValueError("options.num_ctx must be a positive integer")
+                if declared_context_tokens > MAX_INPUT_CONTEXT_TOKENS:
+                    raise ValueError("options.num_ctx_exceeds_4000000_token_limit")
+            if raw_tokens > MAX_INPUT_CONTEXT_TOKENS:
+                raise ValueError("input_context_exceeds_4000000_token_limit")
             started = time.perf_counter()
             with server.worker_lock:
                 result = server.worker.propose(

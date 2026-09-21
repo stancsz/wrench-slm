@@ -2383,3 +2383,11 @@ and its own package-local `/api/chat` accepted 3,998,332 raw estimated tokens
 in 87.064 ms, returned the bounded proposal with zero model calls, and emitted
 the `mechanical_fast_pruner_cherrypicker` hash-bound receipt. Evidence:
 `phases/phase-219-v90-current-package`.
+
+2026-09-20 hard 4M admission boundary: the model-local server now rejects
+invalid or over-limit `options.num_ctx` values and raw input estimates above
+4,000,000 tokens. The v91 package passed structural validation, accepted a
+3,998,332-token direct request in 84.482 ms with zero model calls, and rejected
+`options.num_ctx=4000001` with HTTP 400. This makes the 4M endpoint limit
+enforceable rather than metadata-only. Evidence:
+`phases/phase-220-v91-hard-4m-limit`.

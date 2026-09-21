@@ -66,6 +66,20 @@ The `--mechanical-only` mode is the verified fast path. Remove it only when a
 compatible local native backend is available for ambiguous requests. Native
 generation is separately verified and must not be inferred from the API shape.
 
+The embedded worker API is also available directly from the downloaded
+directory:
+
+```python
+from wrench_worker import WrenchWorker
+
+worker = WrenchWorker.from_pretrained(
+    "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False
+)
+result = worker.propose([
+    {"role": "user", "content": "Read README.md with a 65536 byte limit."}
+])
+```
+
 ## Current evidence
 
 On the historical 220-case diagnostic replay, with client-side mechanical

@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.v91-hard-4m-limit.v1",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v91-hard-4m-limit",
+  "valid_request": {
+    "raw_input_tokens": 3998332,
+    "round_trip_ms": 84.482,
+    "status": "accepted",
+    "model_calls": 0,
+    "gate_stage": "mechanical_fast_pruner_cherrypicker",
+    "raw_payload_hash_bound": true,
+    "proposal": {
+      "schema": "wrench.proposal.v1",
+      "action": "read_file",
+      "path": "wrench-package.json",
+      "max_bytes": 4096
+    }
+  },
+  "over_limit_request": {
+    "declared_num_ctx": 4000001,
+    "http_status": 400,
+    "error": "options.num_ctx_exceeds_4000000_token_limit"
+  },
+  "dense_native_quality_claim": false,
+  "production_enablement": false
+}

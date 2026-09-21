@@ -121,6 +121,41 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
         thread.join(timeout=5)
 
 
+def test_model_local_server_rejects_context_above_declared_4m_limit(tmp_path: Path):
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+            "options": {"num_ctx": 4_000_001},
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/api/chat",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(request, timeout=5)
+        except urllib.error.HTTPError as exc:
+            assert exc.code == 400
+            body = json.loads(exc.read().decode("utf-8"))
+            assert body["error"]["message"] == "options.num_ctx_exceeds_4000000_token_limit"
+        else:
+            raise AssertionError("expected HTTP 400")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: Path):
     (tmp_path / "README.md").write_text("native upstream fixture\n", encoding="utf-8")
     captured: dict[str, object] = {}
