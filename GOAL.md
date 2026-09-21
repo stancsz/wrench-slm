@@ -3222,3 +3222,11 @@ passed structural validation. It bundles the direct raw-token probe and the
 resource-safe cleanup fix. This is the package bound for the next 4M or
 independent RTX 5060 Ti run. Evidence:
 `phases/phase-324-current-head-package-binding`.
+
+2026-09-21 current-head client integration: the `9cc0c68` portable candidate
+completed real read-only workflows through OpenCode, DeepSeek Harness, and
+Claude Code. All three exited `0`, structured/read tool results were observed,
+the Wrench backend was embedded mechanical plus settlement, model calls were
+`0`, and Claude's first gate completed in `2.547 ms`. Evidence:
+`phases/phase-325-current-head-client-smoke` and
+`phases/phase-325-current-head-client-integration.json`.

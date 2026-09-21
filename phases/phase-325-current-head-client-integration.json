@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.current-head-real-client-integration.v1",
+  "status": "PASS_REAL_CLIENT_INTEGRATION",
+  "package_dir": "D:\\models\\_wrench-release-candidate-9cc0c68",
+  "clients": {
+    "opencode": {"exit_code": 0, "structured_read_observed": true},
+    "deepseek_harness": {"exit_code": 0, "structured_read_observed": true},
+    "claude_code": {"exit_code": 0, "read_tool_result_observed": true}
+  },
+  "wrench_backend": "embedded-mechanical",
+  "wrench_settlement_backend": "embedded-mechanical-settlement",
+  "model_calls": 0,
+  "mutation_claim": false,
+  "claude_first_gate_latency_ms": 2.547,
+  "claims_not_authorized": [
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "independent RTX 5060 Ti verification",
+    "production readiness"
+  ]
+}

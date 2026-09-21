@@ -1,0 +1,21 @@
+﻿opencode.cmd : [0m
+At C:\Users\stanc\github\portfolio\wrench-slm\tools\smoke_portable_clients.ps1:98 char:28
++ ...    $opencodeOutput = (& $opencode run --pure -m wrench/wrench-local `
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+> build · wrench-local
+[0m
+[0m→ [0mRead README.md[90m [limit=1][0m
+Wrench completed the requested read-only tool call. The client tool result is authoritative.
+
+Tool result:
+<path>C:\Users\stanc\github\portfolio\wrench-slm\phases\phase-325-current-head-client-smoke\client-workspace\README.md</path>
+<type>file</type>
+<content>
+1: # Wrench SLM
+
+(Showing lines 1-1 of 106. Use offset=2 to continue.)
+</content>
+
