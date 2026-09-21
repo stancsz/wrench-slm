@@ -3109,3 +3109,12 @@ success `1.0`, weighted verifier success `1.0`, weighted frontier coverage
 The suite is still `DRAFT_PENDING_HUMAN_APPROVAL`, so this is held-out
 diagnostic evidence, not final family-disjoint approval. Evidence:
 `phases/phase-313-clean-candidate-heldout-final`.
+
+2026-09-21 current-source regression: after the clean-candidate held-out
+diagnostic and receipt updates, the complete local pytest suite passed `194`
+tests with `0` failures and `18` Python asyncio deprecation warnings in
+`18.41 s`. This confirms the long-context gate, embedded verifier, package
+materializer, Ollama-shaped server, and workflow scoring code remain
+regression-clean. It does not close independent 5060 Ti verification,
+family-disjoint approval, learned MiniMax parity, or production enablement.
+Evidence: `phases/phase-314-current-source-regression`.

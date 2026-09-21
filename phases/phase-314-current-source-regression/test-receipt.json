@@ -1,0 +1,26 @@
+{
+  "schema": "wrench.current-source-regression.v1",
+  "status": "PASS_SOURCE_REGRESSION",
+  "source_commit": "b00a2333cba12d7be917b75ec7e0f84754d53af7",
+  "command": "python -m pytest -q",
+  "tests_passed": 194,
+  "tests_failed": 0,
+  "warnings": 18,
+  "duration_seconds": 18.41,
+  "scope": [
+    "mechanical worker",
+    "independent verifier",
+    "long context overlay",
+    "dense-native optional first-layer gate",
+    "package materializer",
+    "Ollama-shaped server",
+    "workflow arm scoring"
+  ],
+  "claims_not_authorized": [
+    "family-disjoint human approval",
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}
