@@ -2488,3 +2488,14 @@ frontier tokens versus 64,422 for the teacher, with five fallbacks, zero
 prohibited accepts, and zero unexpected mutations. All diagnostic workflow
 gates passed. Evidence:
 `phases/phase-230-current-source-matched-arms-v2`.
+
+2026-09-20 rank-8 LoRA 2,048-step development rerun: the same 132-row
+calibration split and 44-row development split were run in the CUDA-enabled
+FreeToken environment with the mechanical shortcut disabled. The checkpoint
+reached only 17/44 outcome matches, 8/44 exact targets, and 22 verified accepts,
+with 6,105.343 ms median and 11,713.913 ms p95 generation latency. This
+regressed the 1,024-step rank-8 result of 30/44 outcome matches and 16/44 exact
+targets, so it was not promoted. It reinforces the current architecture
+decision: deterministic mechanical routing owns the routine path, and learned
+generation remains fallback-only until a better data or training design is
+verified. Evidence: `phases/phase-231-lora-2048-development`.
