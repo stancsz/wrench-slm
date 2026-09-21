@@ -2465,3 +2465,15 @@ transport behavior. This confirms LoRA is useful but not sufficient to own
 routine mechanical work; the deterministic route remains the high-leverage
 owner and the learned model remains fallback-only. Evidence:
 `phases/phase-228-real-lora-development-44-rerun`.
+
+2026-09-20 real worker 2M/4M generation: the repository probe sent nominal
+2,000,000 and 4,000,000 raw-token payloads through the actual Wrench worker,
+with the mechanical shortcut disabled and the fused LoRA model on `cuda:0`.
+The worker accepted the exact proposal in both runs with one model call each.
+The 2M run estimated 1,996,091 raw tokens, staged 1,987 tokens, and spent
+46.527 ms in the gate. The 4M run estimated 3,996,303 raw tokens, staged
+1,987 tokens, and spent 135.008 ms in the gate. Both stayed below the hard 4M
+boundary and emitted raw/prepared hash receipts. This proves real model-local
+monster-context generation through the hybrid gate, not dense-native attention
+or broad MiniMax parity. Evidence:
+`phases/phase-229-real-worker-2m-4m-generation`.

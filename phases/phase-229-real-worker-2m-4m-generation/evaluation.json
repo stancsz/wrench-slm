@@ -1,0 +1,39 @@
+{
+  "schema": "wrench.real-worker-2m-4m-generation.v1",
+  "status": "PASS_REAL_WORKER_LONG_CONTEXT",
+  "model": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-calibrated-v4-attn-lora-1024-fused-20260920",
+  "mechanical_shortcut": false,
+  "model_device": "cuda:0",
+  "model_calls_each": 1,
+  "model_prefill_budget": 64000,
+  "exact_target_match_each": true,
+  "runs": [
+    {
+      "payload_target_tokens": 2000000,
+      "raw_token_count": 1996091,
+      "model_prefill_token_count": 1987,
+      "context_gate_latency_ms": 46.527,
+      "elapsed_ms": 5402.649,
+      "raw_payload_sha256": "886162b5291673fa14d7c4863108990a78bd6019f7067caf2ae0e3b12fd47ff2",
+      "prepared_payload_sha256": "886162b5291673fa14d7c4863108990a78bd6019f7067caf2ae0e3b12fd47ff2",
+      "exact_target_match": true
+    },
+    {
+      "payload_target_tokens": 4000000,
+      "raw_token_count": 3996303,
+      "model_prefill_token_count": 1987,
+      "context_gate_latency_ms": 135.008,
+      "elapsed_ms": 5389.513,
+      "raw_payload_sha256": "ad434c62e020882eeb8c10fd15c04947e8e50b50dff876afff06b99dc548fa66",
+      "prepared_payload_sha256": "ad434c62e020882eeb8c10fd15c04947e8e50b50dff876afff06b99dc548fa66",
+      "exact_target_match": true
+    }
+  ],
+  "quality_claim": false,
+  "not_proven": [
+    "dense-native attention",
+    "family-disjoint quality",
+    "MiniMax teacher parity",
+    "production readiness"
+  ]
+}
