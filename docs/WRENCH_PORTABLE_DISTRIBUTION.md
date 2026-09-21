@@ -51,6 +51,7 @@ Wrench/
   serve_freetoken.ps1                 # native 4M experimental launcher
   run_claude_code.ps1                 # isolated local Claude Code launcher
   wrench_loopback_blocker.py          # fail-closed external proxy guard
+  verify_freetoken_backend.py         # native ModelOpt/NVFP4 load and generation probe
   opencode.wrench.json                # OpenCode local provider template
   dsh-wrench.patch.yml                # DeepSeek Harness local overlay
   wrench-package.json
@@ -129,8 +130,8 @@ proposal = worker.propose([
 ```
 
 The worker routes high-confidence mechanical requests through the embedded
-deterministic path. Ambiguous requests can set `load_model=True` and use the
-standard Transformers model, with every output still passing the verifier.
+deterministic path. Ambiguous requests can set `load_model=True` only when a
+compatible backend is installed, with every output still passing the verifier.
 An uncomplicated read with no byte limit uses a 256 KiB verifier cap; requests
 for the entire or complete file remain model/fallback-required.
 
@@ -146,15 +147,20 @@ tokenizer = AutoTokenizer.from_pretrained(
 ```
 
 Use Transformers 5.17.0 or newer for the Qwen3.5 MoE architecture in this
-checkpoint. The config and tokenizer mapping are verified with that runtime;
-full generation still requires a compatible GPU backend.
+checkpoint. The config and tokenizer mapping are verified with that runtime.
+The published NVFP4 tensors are ModelOpt-packed, so ordinary
+`AutoModel.from_pretrained()` is not a valid full-weight loading path for this
+artifact. Use the bundled `serve_freetoken.ps1` launcher with a compatible
+FreeToken ModelOpt runtime, and run `verify_freetoken_backend.py` before
+claiming native load or generation.
 
 ## Backend boundaries
 
-The Safetensors package is the source of truth. Transformers or a compatible
-custom backend can load it with the package code. vLLM and FreeToken need a
-registered architecture adapter for the Wrench hybrid attention and staged
-prefill behavior.
+The Safetensors package is the source of truth. Transformers can verify the
+config and tokenizer, but the current packed tensor representation requires
+the registered FreeToken ModelOpt adapter for full load. vLLM and stock
+Ollama still need registered Wrench architecture support for the hybrid
+attention and staged prefill behavior.
 
 GGUF is a second distribution artifact, not a replacement for the canonical
 package. GGUF stores model metadata and tensors, but does not by itself execute

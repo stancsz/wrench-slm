@@ -3171,3 +3171,18 @@ OOM. The portable release gate must not claim ordinary
 `AutoModel.from_pretrained()` compatibility until a compatible ModelOpt/NVFP4
 runtime is embedded or the weights are exported to a standard Transformers
 representation. Evidence: `phases/phase-319-current-head-standard-hf-load`.
+
+2026-09-21 current-head native backend: the exact NVFP4 model and tokenizer
+bytes were rematerialized under the new package contract and compared byte for
+byte with the package used in the native run. FreeToken's ModelOpt backend
+loaded both safetensor shards, configured a `4,000,000` token KV capacity, and
+returned a real `200 OK` completion in `26,828.449 ms`. GPU free fraction was
+approximately `50.9%` after initialization. This proves the direct native
+backend load and minimal generation path, not dense-native 4M retrieval
+quality, MiniMax parity, or independent 5060 Ti verification. The portable
+package now bundles a native backend verifier and explicitly documents that
+ordinary Transformers full-weight loading is not supported for the packed
+NVFP4 artifact. Evidence: `phases/phase-320-current-head-freetoken-native`,
+`phases/phase-320-current-head-freetoken-native.json`,
+`phases/phase-320-current-head-package-validation.json`, and
+`phases/phase-320-current-head-weight-equivalence.json`.

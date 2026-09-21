@@ -58,6 +58,7 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
     assert "refusing to overwrite existing target" in script
     assert "copy_cross_volume" in script
     assert "serve_freetoken.ps1" in script
+    assert "verify_freetoken_backend.py" in script
     assert "run_claude_code.ps1" in script
     assert "wrench_loopback_blocker.py" in script
     assert "opencode.wrench.json" in script
@@ -65,7 +66,7 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
     assert "wrench_toolbelt.py" in script
     assert "runtime_dir / \"toolbelt.py\"" in script
     assert 'tokenizer_config["model_max_length"] = 4_000_000' in script
-    assert 'Transformers >=5.17.0 config/tokenizer verified' in script
+    assert 'Transformers >=5.17.0 config/tokenizer verified; packed NVFP4 tensor load requires the FreeToken ModelOpt backend' in script
     assert "EXPERIMENTAL_PUBLIC_ARTIFACT" in script
     assert "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED" in script
     assert "public_upload_authorized" in script
@@ -91,6 +92,15 @@ def test_standard_hf_load_verifier_records_backend_failures():
     assert "standard_weight_load_status" in script
     assert "modelopt_nvfp4_shape_mismatch_or_unsupported_quantization" in script
     assert "return 0 if not args.load_weights" in script
+
+
+def test_freetoken_native_backend_verifier_is_explicit_about_scope():
+    script = Path("tools/verify_freetoken_backend.py").read_text(encoding="utf-8")
+    assert "freetoken_modelopt_nvfp4" in script
+    assert "PASS_FREETOKEN_MODEL_LOAD_AND_GENERATION" in script
+    assert "native_context_capacity_configured" in script
+    assert "resource_reserve_maintained" in script
+    assert "dense_native_quality_verified" in script
 
 
 def test_materializer_embeds_worker_runtime():

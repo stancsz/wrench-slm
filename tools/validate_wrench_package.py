@@ -47,6 +47,7 @@ def main() -> int:
         "run_wrench.ps1",
         "Modelfile",
         "serve_freetoken.ps1",
+        "verify_freetoken_backend.py",
     ]
     for name in required:
         if not (args.model_dir / name).is_file():
@@ -84,6 +85,7 @@ def main() -> int:
         args.model_dir / "wrench_runtime" / "worker.py",
         args.model_dir / "wrench_worker.py",
         args.model_dir / "Modelfile",
+        args.model_dir / "verify_freetoken_backend.py",
         *safetensors,
         package_manifest,
     ]:

@@ -1,0 +1,11 @@
+INFO:     Started server process [31136]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:28982 (Press CTRL+C to quit)
+C:\Users\stanc\AppData\Local\FreeToken\venv\Lib\site-packages\freetoken\server\launch.py:81: FutureWarning: torch.cuda._set_allocator_settings is deprecated. Use torch._C._accelerator_setAllocatorSettings instead.
+  scheduler = Scheduler(args)
+C:\Users\stanc\AppData\Local\FreeToken\venv\Lib\site-packages\torch\utils\_device.py:116: UserWarning: expandable_segments not supported on this platform (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\c10/cuda/CUDAAllocatorConfig.h:39.)
+  return func(*args, **kwargs)
+Loading weights:   0%|          | 0/2 [00:00<?, ?it/s]Loading weights:  50%|█████     | 1/2 [00:01<00:01,  1.28s/it]Loading weights: 100%|██████████| 2/2 [00:01<00:00,  1.21it/s]Loading weights: 100%|██████████| 2/2 [00:01<00:00,  1.12it/s]
+Loading Qwen3.5 NVFP4 experts (modelopt):   0%|          | 0/1 [00:00<?, ?it/s]Loading Qwen3.5 NVFP4 experts (modelopt): 100%|██████████| 1/1 [00:00<00:00,  1.89it/s]Loading Qwen3.5 NVFP4 experts (modelopt): 100%|██████████| 1/1 [00:00<00:00,  1.89it/s]
+Preparing for capturing CUDA graphs...:   0%|          | 0/1 [00:00<?, ?batch/s]Capturing graphs: bs = 1   | avail_mem = 8.26 GiB:   0%|          | 0/1 [00:00<?, ?batch/s]Capturing graphs: bs = 1   | avail_mem = 8.26 GiB: 100%|██████████| 1/1 [00:00<00:00,  1.95batch/s]Capturing graphs: bs = 1   | avail_mem = 8.26 GiB: 100%|██████████| 1/1 [00:00<00:00,  1.94batch/s]

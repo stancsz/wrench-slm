@@ -137,6 +137,14 @@ The `--mechanical-only` mode is the verified fast path. Remove it only when a
 compatible local native backend is available for ambiguous requests. Native
 generation is separately verified and must not be inferred from the API shape.
 
+Important loader boundary: this Experimental Preview contains ModelOpt NVFP4
+packed tensors. Transformers 5.17.0 can verify the config and tokenizer, but
+ordinary `AutoModel.from_pretrained()` cannot restore these packed weights. Use
+the bundled `serve_freetoken.ps1` launcher with a compatible FreeToken ModelOpt
+runtime for native loading. The package also includes
+`verify_freetoken_backend.py`, which records full-weight load, 4M KV-capacity
+configuration, a small generation smoke, and the 10% RAM/VRAM reserve check.
+
 The embedded worker API is also available directly from the downloaded
 directory:
 

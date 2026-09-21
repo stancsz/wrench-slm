@@ -109,6 +109,10 @@ def materialize(
         shutil.copy2(repo_root / "packaging" / "wrench_loopback_blocker.py", target / "wrench_loopback_blocker.py")
         shutil.copy2(repo_root / "packaging" / "opencode.wrench.json", target / "opencode.wrench.json")
         shutil.copy2(repo_root / "packaging" / "dsh-wrench.patch.yml", target / "dsh-wrench.patch.yml")
+        shutil.copy2(
+            repo_root / "tools" / "verify_freetoken_backend.py",
+            target / "verify_freetoken_backend.py",
+        )
         (runtime_dir / "__init__.py").write_text(
             "\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n"
             "from .worker import WrenchWorker\n\n"
@@ -463,7 +467,7 @@ def materialize(
             "model_calls_for_mechanical_lookup": 0,
             },
             "backends": {
-                "transformers": "Transformers >=5.17.0 config/tokenizer verified; full generation backend-dependent",
+                "transformers": "Transformers >=5.17.0 config/tokenizer verified; packed NVFP4 tensor load requires the FreeToken ModelOpt backend",
                 "freetoken": (
                     "local experimental backend with ModelOpt NVFP4, pinned 4M KV capacity, and auto expert cache"
                     if quantized_candidate
@@ -514,6 +518,7 @@ def materialize(
                 "wrench_runtime/server.py",
                 "wrench-runtime.json",
                 "serve_freetoken.ps1",
+                "verify_freetoken_backend.py",
                 "Modelfile",
             ],
             "quality_claim": False,
