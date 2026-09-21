@@ -2538,3 +2538,16 @@ local 4M mechanical route completed in 28.935 ms with zero model calls. This
 strengthens the portable hybrid product path, not dense-native attention
 quality or learned MiniMax parity. Evidence:
 `phases/phase-235-portable-hybrid-package`.
+
+2026-09-20 portable package direct 4M HTTP boundary: the package's own server
+was started from the copy-pasteable model directory and received a nominal
+4,000,000-token `/v1/chat/completions` request directly, without an external
+gateway. The package measured 3,999,963 raw estimated tokens in a
+32,497,800-byte request, returned HTTP 200, ran the first-layer mechanical
+pruner/cherrypicker in 23.576 ms, reduced the case to a 9-token effective
+working context, produced the exact bounded proposal, and used zero model
+calls. The probe now leaves a small fixture margin so the nominal 4M envelope
+does not exceed the hard input limit because of the active-intent suffix.
+This is direct hybrid package intake evidence, not dense-native attention
+quality or learned MiniMax parity. Evidence:
+`phases/phase-236-portable-package-http-4m`.

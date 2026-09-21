@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 UNIT = "old reference status observed record=000000; inert lookup only.\n"
+PAYLOAD_ESTIMATE_SAFETY_MARGIN = 300
 
 
 def main() -> int:
@@ -23,7 +24,17 @@ def main() -> int:
     args = parser.parse_args()
 
     unit_tokens = max(1, UNIT.count(" ") + UNIT.count("\n"))
-    repetitions = max(1, (args.target_tokens + unit_tokens - 1) // unit_tokens)
+    # The server also counts the live-intent suffix and samples very large
+    # payloads. Leave a small deterministic margin so a nominal 4M probe does
+    # not accidentally cross the hard input limit by a few hundred estimated
+    # tokens while building the fixture.
+    generation_target_tokens = max(
+        1,
+        args.target_tokens - PAYLOAD_ESTIMATE_SAFETY_MARGIN
+        if args.target_tokens >= 1_000_000
+        else args.target_tokens,
+    )
+    repetitions = max(1, (generation_target_tokens + unit_tokens - 1) // unit_tokens)
     content = UNIT * repetitions + (
         "\nCURRENT INTENT: Read src/wrench_harness/worker.py with a 65536 byte limit."
     )
@@ -74,6 +85,10 @@ def main() -> int:
         "endpoint": args.endpoint,
         "model": args.model,
         "requested_tokens": args.target_tokens,
+        "generation_target_tokens": generation_target_tokens,
+        "payload_estimate_safety_margin_tokens": (
+            PAYLOAD_ESTIMATE_SAFETY_MARGIN if args.target_tokens >= 1_000_000 else 0
+        ),
         "raw_payload_chars": len(content),
         "request_bytes": len(payload),
         "payload_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),

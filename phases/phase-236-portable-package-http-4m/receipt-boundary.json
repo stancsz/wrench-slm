@@ -1,0 +1,16 @@
+{
+  "schema": "wrench.openai-embedded-route-4m-probe.v1",
+  "status": "FAIL_OPENAI_EMBEDDED_ROUTE_4M",
+  "endpoint": "http://127.0.0.1:28913/v1/chat/completions",
+  "model": "wrench-hybrid-v93",
+  "requested_tokens": 3999740,
+  "raw_payload_chars": 31998027,
+  "request_bytes": 32498125,
+  "payload_sha256": "9a9f26e4c72cd06c134e880675ade8dd1d6c9126391dbb71809df45f0d98de1c",
+  "http_status": 400,
+  "elapsed_ms": 123.161,
+  "usage": {},
+  "wrench": {},
+  "assistant_content": "",
+  "error": "HTTP Error 400: Bad Request"
+}
