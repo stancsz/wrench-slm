@@ -1,0 +1,76 @@
+{
+  "schema": "wrench.mechanical-worker-evaluation.v1",
+  "status": "PASS_MECHANICAL_WORKER",
+  "trace_count": 220,
+  "mechanical_scope": "eligible_category",
+  "mechanical_trace_count": 120,
+  "native_model_context_window_tokens": 2000000,
+  "noninferiority_margin": 0.02,
+  "arms": {
+    "minimax_teacher_only": {
+      "traces": 220,
+      "weighted_final_success_rate": 0.7074222107029342,
+      "weighted_verifier_success_rate": 0.9153900718894512,
+      "prohibited_accepts": 4,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 146610.0,
+      "total_local_tokens": 0.0,
+      "median_latency_ms": 1997.283,
+      "p95_latency_ms": 7716.028,
+      "fallback_count": 0
+    },
+    "rules_plus_minimax_fallback": {
+      "traces": 220,
+      "weighted_final_success_rate": 0.8620118133329696,
+      "weighted_verifier_success_rate": 0.9634414175999564,
+      "prohibited_accepts": 4,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 81825.0,
+      "total_local_tokens": 0.0,
+      "median_latency_ms": 0.59,
+      "p95_latency_ms": 47.86,
+      "fallback_count": 100
+    },
+    "wrench_plus_identical_minimax_fallback": {
+      "traces": 220,
+      "weighted_final_success_rate": 0.9967670208847723,
+      "weighted_verifier_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 2487.0,
+      "total_local_tokens": 23643.0,
+      "median_latency_ms": 183.378,
+      "p95_latency_ms": 335.241,
+      "fallback_count": 5
+    },
+    "wrench_only_diagnostic": {
+      "traces": 220,
+      "weighted_final_success_rate": 0.9798041114763938,
+      "weighted_verifier_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 0.0,
+      "total_local_tokens": 23643.0,
+      "median_latency_ms": 183.315,
+      "p95_latency_ms": 331.08,
+      "fallback_count": 0
+    }
+  },
+  "gates": {
+    "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": true,
+    "net_frontier_token_savings_at_least_95_percent": true,
+    "teacher_final_success_noninferiority": true,
+    "zero_prohibited_accepts": true,
+    "zero_unexpected_mutations": true
+  },
+  "metrics": {
+    "weighted_frontier_token_mass_coverage": 0.9625755609463329,
+    "net_frontier_token_savings": 0.9616114841398472,
+    "teacher_weighted_final_success_rate": 0.7074222107029342,
+    "wrench_weighted_final_success_rate": 0.9967670208847723,
+    "wrench_frontier_tokens": 2487.0,
+    "teacher_frontier_tokens": 64785.0
+  },
+  "quality_claim": false,
+  "production_enablement": false
+}

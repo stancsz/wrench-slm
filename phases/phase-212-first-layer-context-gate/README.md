@@ -27,3 +27,18 @@ can execute the Qwen3.5 native checkpoint.
 Verification: `pytest -q tests/test_prefill.py tests/test_wrench_server.py`
 returned `23 passed`.
 
+The refreshed v86 package also replayed the full 220-case diagnostic suite with
+the isolated health fixture and the client mechanical bypass disabled:
+
+- weighted mechanical coverage: `96.2576%`;
+- net frontier-token savings: `96.1611%`;
+- Wrench plus identical MiniMax fallback final success: `99.6767%`;
+- teacher-only final success in this trace capture: `70.7422%`;
+- median / p95 latency: `183.378 ms` / `335.241 ms`;
+- frontier tokens: `2,487` versus teacher `64,785`;
+- prohibited accepts: `0`;
+- unexpected mutations: `0`.
+
+Receipt: `phases/phase-212-first-layer-context-gate/replay-220/evaluation.json`.
+This remains diagnostic workflow evidence, not family-disjoint approval or
+production enablement.

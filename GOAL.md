@@ -2321,3 +2321,10 @@ context, selected hot/reference spans, omitted spans, raw-hash binding, and
 gate latency under the explicit `first_model_side_pruner_cherrypicker` stage.
 The targeted prefill/server suite passed 23 tests. Evidence:
 `phases/phase-212-first-layer-context-gate`.
+
+The v86 package then replayed the 220-case diagnostic suite after this runtime
+change. It retained 96.2576% weighted mechanical coverage, 96.1611% net
+frontier-token savings, 99.6767% Wrench-plus-fallback weighted final success,
+183.378 ms median, 335.241 ms p95, 2,487 Wrench frontier tokens, zero
+prohibited accepts, and zero unexpected mutations. Evidence:
+`phases/phase-212-first-layer-context-gate/replay-220/evaluation.json`.
