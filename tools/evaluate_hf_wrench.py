@@ -24,6 +24,38 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from wrench_harness.core import execute_model_output  # noqa: E402
+try:
+    from tools.calibrate_qwen_router import LoRALinear, _attach_attention_lora  # type: ignore  # noqa: E402
+except ModuleNotFoundError:
+    from calibrate_qwen_router import LoRALinear, _attach_attention_lora  # type: ignore  # noqa: E402
+
+
+def _load_adapter(model: Any, adapter_path: Path) -> dict[str, Any]:
+    bundle = torch.load(adapter_path, map_location="cpu", weights_only=False)
+    if not isinstance(bundle, dict) or bundle.get("schema") != "wrench.qwen-router-adapter.v1":
+        raise ValueError(f"unsupported Wrench adapter: {adapter_path}")
+    rank = int(bundle.get("lora_rank", 8))
+    alpha = float(bundle.get("lora_alpha", 16.0))
+    base_head = model.lm_head
+    model.lm_head = LoRALinear(base_head, rank, alpha)
+    attention_modules: list[str] = []
+    if bundle.get("attention_lora"):
+        _, attention_modules = _attach_attention_lora(model, rank=rank, alpha=alpha)
+    state_dict = bundle.get("state_dict")
+    if not isinstance(state_dict, dict):
+        raise ValueError(f"adapter state_dict is missing: {adapter_path}")
+    missing, unexpected = model.load_state_dict(state_dict, strict=False)
+    unexpected = [name for name in unexpected if not name.endswith(".weight_scale")]
+    if unexpected:
+        raise ValueError(f"adapter has unexpected parameters: {unexpected[:5]}")
+    return {
+        "path": str(adapter_path.resolve()),
+        "rank": rank,
+        "alpha": alpha,
+        "attention_lora": bool(bundle.get("attention_lora")),
+        "attention_modules": attention_modules,
+        "missing_count": len(missing),
+    }
 
 
 def _messages(row: dict[str, Any]) -> list[dict[str, str]]:
@@ -60,6 +92,9 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         local_files_only=True,
         trust_remote_code=True,
     ).to("cuda" if torch.cuda.is_available() else "cpu")
+    adapter_receipt = None
+    if args.adapter:
+        adapter_receipt = _load_adapter(model, args.adapter)
     model.eval()
     device = next(model.parameters()).device
     results: list[dict[str, Any]] = []
@@ -133,6 +168,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         "median_latency_ms": _percentile([item["latency_ms"] for item in results], 50),
         "p95_latency_ms": _percentile([item["latency_ms"] for item in results], 95),
         "device": str(device),
+        "adapter": adapter_receipt,
         "quality_claim": False,
         "results": results,
     }
@@ -162,6 +198,7 @@ def main() -> int:
         help="development-only prefix limit for overfit and pipeline sanity checks",
     )
     parser.add_argument("--max-new-tokens", type=int, default=256)
+    parser.add_argument("--adapter", type=Path, default=None)
     args = parser.parse_args()
     receipt = evaluate(args)
     print(json.dumps({key: receipt[key] for key in (

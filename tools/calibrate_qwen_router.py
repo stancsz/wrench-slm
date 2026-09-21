@@ -89,6 +89,32 @@ def _merge_lora_modules(root: nn.Module) -> None:
             _replace_module(root, name, module.merge())
 
 
+def _enable_gradient_checkpointing(model: nn.Module) -> bool:
+    """Enable checkpointed activations when the model backend supports it."""
+
+    enable = getattr(model, "gradient_checkpointing_enable", None)
+    if not callable(enable):
+        return False
+    try:
+        enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    except TypeError:
+        enable()
+    input_grads = getattr(model, "enable_input_require_grads", None)
+    if callable(input_grads):
+        input_grads()
+    return True
+
+
+def _trainable_state_dict(model: nn.Module) -> dict[str, torch.Tensor]:
+    """Keep only router and adapter tensors for a portable LoRA artifact."""
+
+    return {
+        name: parameter.detach().cpu()
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+
+
 def _read_cases(path: Path) -> list[dict[str, Any]]:
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     if not rows or any(not isinstance(row.get("target"), str) or not row["target"] for row in rows):
@@ -145,6 +171,11 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
     model.config.use_cache = False
     model.train()
     model.requires_grad_(False)
+    gradient_checkpointing_enabled = False
+    if args.gradient_checkpointing:
+        gradient_checkpointing_enabled = _enable_gradient_checkpointing(model)
+        if not gradient_checkpointing_enabled:
+            raise RuntimeError("--gradient-checkpointing requested but the model backend does not support it")
 
     trainable: list[nn.Parameter] = []
     router_count = 0
@@ -193,12 +224,25 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         if args.log_every and (step + 1) % args.log_every == 0:
             print(json.dumps({"step": step + 1, "loss": history[-1]}))
 
-    _merge_lora_modules(model)
-    model.config.use_cache = True
-    model.eval()
     args.output.mkdir(parents=True, exist_ok=False)
-    model.save_pretrained(args.output, safe_serialization=True, max_shard_size="2GB")
-    tokenizer.save_pretrained(args.output)
+    if args.adapter_only:
+        torch.save(
+            {
+                "schema": "wrench.qwen-router-adapter.v1",
+                "state_dict": _trainable_state_dict(model),
+                "attention_lora": args.attention_lora,
+                "lora_rank": args.rank,
+                "lora_alpha": args.alpha,
+            },
+            args.output / "adapter.pt",
+        )
+        tokenizer.save_pretrained(args.output)
+    else:
+        _merge_lora_modules(model)
+        model.config.use_cache = True
+        model.eval()
+        model.save_pretrained(args.output, safe_serialization=True, max_shard_size="2GB")
+        tokenizer.save_pretrained(args.output)
     manifest = {
         "schema": "wrench.qwen-router-calibration.v1",
         "status": "EXPERIMENTAL_CALIBRATED_UNQUANTIZED",
@@ -213,6 +257,9 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         "lora_alpha": args.alpha,
         "attention_lora": args.attention_lora,
         "attention_lora_modules": attention_modules,
+        "gradient_checkpointing": args.gradient_checkpointing,
+        "gradient_checkpointing_enabled": gradient_checkpointing_enabled,
+        "artifact_type": "adapter_only" if args.adapter_only else "merged_full_checkpoint",
         "trainable_parameter_count": sum(parameter.numel() for parameter in trainable),
         "trainable_router_parameters": router_count,
         "final_loss": history[-1],
@@ -245,6 +292,16 @@ def main() -> int:
         "--attention-lora",
         action="store_true",
         help="also adapt q/k/v/o projections in the checkpoint's full-attention layers",
+    )
+    parser.add_argument(
+        "--gradient-checkpointing",
+        action="store_true",
+        help="checkpoint backbone activations to keep at least 10%% of VRAM available during calibration",
+    )
+    parser.add_argument(
+        "--adapter-only",
+        action="store_true",
+        help="save only trainable router/LoRA tensors instead of copying the full checkpoint",
     )
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--log-every", type=int, default=10)

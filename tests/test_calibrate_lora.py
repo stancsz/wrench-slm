@@ -1,7 +1,13 @@
 import torch
 from torch import nn
 
-from tools.calibrate_qwen_router import LoRALinear, _attach_attention_lora, _merge_lora_modules
+from tools.calibrate_qwen_router import (
+    LoRALinear,
+    _attach_attention_lora,
+    _enable_gradient_checkpointing,
+    _merge_lora_modules,
+    _trainable_state_dict,
+)
 
 
 class _TinyAttention(nn.Module):
@@ -31,3 +37,34 @@ def test_attention_lora_targets_only_full_attention_projections():
 
     _merge_lora_modules(model)
     assert not any(isinstance(module, LoRALinear) for module in model.modules())
+
+
+def test_gradient_checkpointing_reports_backend_support():
+    class Checkpointable(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.called = False
+
+        def gradient_checkpointing_enable(self, **kwargs):
+            self.called = bool(kwargs)
+
+        def enable_input_require_grads(self):
+            self.input_grads = True
+
+    model = Checkpointable()
+    assert _enable_gradient_checkpointing(model) is True
+    assert model.called is True
+    assert model.input_grads is True
+
+
+def test_gradient_checkpointing_reports_unsupported_backend():
+    assert _enable_gradient_checkpointing(nn.Linear(2, 2)) is False
+
+
+def test_trainable_state_dict_excludes_frozen_backbone():
+    model = nn.Sequential(nn.Linear(2, 2), nn.Linear(2, 2))
+    for parameter in model[0].parameters():
+        parameter.requires_grad_(False)
+    state = _trainable_state_dict(model)
+    assert state
+    assert all(name.startswith("1.") for name in state)
