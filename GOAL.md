@@ -2660,3 +2660,15 @@ first-party usage costing `$0.02156`, and left the Wrench trace empty. Claude
 current-v97 remains `NOT_VERIFIED`, and no further provider-spend attempts
 will be made.
 Evidence: `phases/phase-247-v97-claude-dsh`.
+
+2026-09-21 current package Ollama-compatible intake: the model-local server
+now implements the `/api/version` probe required before the Ollama API routes,
+with a regression test for `/api/version`, `/api/tags`, `/api/show`,
+`/api/chat`, and `/api/generate`. A fresh local v98 package accepted a direct
+Ollama-shaped `/api/chat` payload estimated at `3,999,995` tokens in a
+`32,498,051` byte request, returned HTTP 200 in `161.357 ms`, and recorded a
+`24.894 ms` first-layer gate, 9 effective working tokens, and zero model calls.
+The installed Ollama CLI did not reach the custom host, so this proves the
+model-local Ollama-compatible HTTP API, not stock Ollama native Safetensors
+loading. vLLM is not installed on this host. Evidence:
+`phases/phase-248-current-v97-ollama-cli`.
