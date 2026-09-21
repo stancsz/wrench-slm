@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.real-ollama-cli-smoke.v1",
+  "status": "PASS_OLLAMA_CLI_SHOW_LIST_RUN",
+  "cli_version": "0.32.13",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v100-ollama-cli",
+  "model": "wrench-4b-qwen3.6-8e",
+  "source_commit": "6a07add",
+  "endpoint": "http://127.0.0.1:11434",
+  "commands": {
+    "show": {
+      "exit_code": 0,
+      "declared_context_tokens": 4000000,
+      "parameter_size": "3.88B"
+    },
+    "list": {
+      "exit_code": 0,
+      "model_listed": true,
+      "digest_prefix": "sha256:00000"
+    },
+    "run": {
+      "exit_code": 0,
+      "observed_action": "read_file",
+      "observed_path": "README.md",
+      "model_calls": 0,
+      "mutation_observed": false
+    }
+  },
+  "claims_not_made": [
+    "stock_ollama_native_safetensors_loading",
+    "native_dense_attention_quality",
+    "MiniMax_parity",
+    "independent_RTX_5060_Ti"
+  ]
+}

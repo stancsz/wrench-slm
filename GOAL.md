@@ -2668,7 +2668,11 @@ with a regression test for `/api/version`, `/api/tags`, `/api/show`,
 Ollama-shaped `/api/chat` payload estimated at `3,999,995` tokens in a
 `32,498,051` byte request, returned HTTP 200 in `161.357 ms`, and recorded a
 `24.894 ms` first-layer gate, 9 effective working tokens, and zero model calls.
-The installed Ollama CLI did not reach the custom host, so this proves the
-model-local Ollama-compatible HTTP API, not stock Ollama native Safetensors
-loading. vLLM is not installed on this host. Evidence:
+After adding the bodyless `HEAD /` Ollama heartbeat and complete model metadata
+including a stable digest, the real Ollama `0.32.13` CLI passed `show`, `list`,
+and `run` against the package-local endpoint. `run` returned a Wrench
+`read_file` proposal with zero model calls and no mutation. This proves the
+model-local Ollama-compatible API and CLI transport, not stock Ollama native
+Safetensors loading or native dense attention quality. vLLM is not installed
+on this host. Evidence:
 `phases/phase-248-current-v97-ollama-cli`.
