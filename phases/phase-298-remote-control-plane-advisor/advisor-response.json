@@ -1,0 +1,20 @@
+{
+  "schema": "wrench.luna-advisor-escalation.v1",
+  "model": "codex-sol-advisor",
+  "decision_changed": true,
+  "packet_chars": 1687,
+  "advice_words": 85,
+  "usage": {
+    "completion_tokens": 317,
+    "prompt_tokens": 485,
+    "total_tokens": 802
+  },
+  "verdict": "Issue one user-visible remote control-plane repair request; do not queue another opaque worker turn or treat file polling as available without evidence.",
+  "next_action": "Ask the 5060Ti operator to restore one observable channel, run the repository exact replay at commit 77fdf44, and return timestamped command output plus machine/GPU identity and receipt hash.",
+  "stop_condition": "If no observable channel or authenticated receipt is produced after this single request, stop remote work, record 5060Ti as an external blocker, and advance only local release gates.",
+  "claims_not_authorized": [
+    "5060Ti benchmark completion",
+    "remote teacher parity",
+    "production readiness"
+  ]
+}

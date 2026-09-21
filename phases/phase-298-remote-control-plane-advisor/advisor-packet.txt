@@ -1,0 +1,14 @@
+Decision blocker: obtain one independently executed current-source Wrench replay on the actual RTX 5060 Ti without repeatedly dispatching remote turns that complete empty.
+
+Observed facts:
+- Direct network checks from the local host to DESKTOP-KET1SKP failed for ICMP, SSH 22, WinRM 5985/5986, and RDP 3389.
+- A fresh remote same-directory thread 01a0c615 received a self-contained payload, current source commit 77fdf44, cases hash da64a33d..., and teacher receipt hash 537D0F44..., then completed in 40.762 s with no assistant message, command output, or receipt.
+- The older remote worker did produce real package diagnostics on DESKTOP-KET1SKP, but from stale source/package state and without current teacher alignment.
+- The repository now contains the complete 220-row teacher receipt and exact replay command, so missing input is no longer the explanation.
+- Local current v103 evidence is strong: direct 2M/4M intake, three complete 220 replays, deterministic Wrench proposals identical 220/220, and zero local prohibited accepts.
+
+Constraints and rejected paths: do not use credentials, mutate the dirty remote checkout, spend through a new provider, repeat empty remote dispatches, or call local 5070Ti evidence independent 5060Ti evidence.
+
+Question: What is the smallest high-confidence next action to obtain an authenticated 5060Ti receipt: one file-based queue/trigger that the existing remote worker can consume, a user-visible remote control-plane repair request, or stopping remote work and explicitly treating 5060Ti as an external blocker while advancing the local release gates?
+
+Return a verdict, one smallest experiment if applicable, and a material stop condition.

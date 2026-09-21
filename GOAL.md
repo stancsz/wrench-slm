@@ -3063,3 +3063,12 @@ external receipt. This removes the missing-teacher-input explanation but does
 not produce any 5060Ti execution evidence. The remote control plane remains
 the blocker; no result from this empty turn is promoted. Evidence:
 `phases/phase-297-5060ti-fresh-thread-empty`.
+
+2026-09-21 remote control-plane advisor decision: after direct network checks
+failed and a fresh self-contained remote dispatch again completed with no
+observable output, Sol advised one user-visible control-plane repair request,
+not another opaque worker turn or an assumed file queue. The repair must
+restore an authenticated observable channel and run the exact current replay
+at `77fdf44`; if it still produces no timestamped command output and receipt,
+remote work stops and 5060Ti remains an external blocker while local release
+gates advance. Evidence: `phases/phase-298-remote-control-plane-advisor`.
