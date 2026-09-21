@@ -1,0 +1,112 @@
+{
+  "schema": "wrench.model-local-server-4m-probe.v1",
+  "status": "PASS_MODEL_LOCAL_SERVER_4M",
+  "package_dir": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-hybrid-v97-dense-native-gate",
+  "requested_payload_tokens": 2000000,
+  "raw_payload_chars": 15998987,
+  "request_bytes": 16249063,
+  "request_sha256": "a3af73795d2688b4876c3163d3a28d33a600b2c1e1939807f64c5b762f452727",
+  "http_status": 200,
+  "elapsed_ms": 102.565,
+  "shutdown_elapsed_ms": 422.149,
+  "response_model": "wrench-package",
+  "usage": {
+    "prompt_tokens": 1999998,
+    "completion_tokens": 1,
+    "total_tokens": 1999999
+  },
+  "wrench": {
+    "raw_input_chars": 15998987,
+    "raw_input_tokens_estimate": 1999998,
+    "elapsed_ms": 22.425,
+    "status": "accepted",
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "model_calls": 0,
+    "context_gate": {
+      "schema": "wrench.first-layer-context-gate.v1",
+      "stage": "mechanical_fast_pruner_cherrypicker",
+      "strategy": "latest_intent_plus_exact_lookup",
+      "raw_context_limit_tokens": 4000000,
+      "raw_input_tokens": 1999998,
+      "effective_working_context_tokens": 9,
+      "working_context_budget_tokens": 64000,
+      "selected_hot_spans": 1,
+      "selected_reference_spans": 0,
+      "omitted_reference_spans": 0,
+      "route_source": "latest_intent",
+      "raw_payload_sha256": "24241d0478fc482dc6e7ce6c372de98f5c43c5ecd15ae1ac29c8aeb9318d2b9d",
+      "raw_payload_hash_bound": true,
+      "native_input_claim": false,
+      "gate_latency_ms": 13.085,
+      "reference_scan_tokens": 1999998
+    },
+    "dynamic_prefill": null,
+    "fallback_reason": null,
+    "ttc": {
+      "schema": "wrench.test-time-compute-receipt.v1",
+      "profile": "guarded",
+      "max_model_passes": 2,
+      "passes_requested": [
+        "schema",
+        "authority",
+        "evidence",
+        "consistency",
+        "ast_gate",
+        "diff_gate"
+      ],
+      "checks": {
+        "schema": true,
+        "authority": true,
+        "evidence": true,
+        "consistency": true,
+        "blind_critic": true,
+        "ast_gate": true,
+        "diff_gate": true,
+        "final_gate": true
+      },
+      "failed_checks": [],
+      "early_exit": true,
+      "passed": true,
+      "base_verifier": {
+        "schema": "wrench.multi-pass-verifier.v1",
+        "passed": true,
+        "passes": [
+          {
+            "name": "schema",
+            "passed": true
+          },
+          {
+            "name": "authority",
+            "passed": true
+          },
+          {
+            "name": "evidence",
+            "passed": true
+          },
+          {
+            "name": "consistency",
+            "passed": true
+          }
+        ],
+        "proposal_sha256": "a11b7f2042d39f5df30d67b3302ac0d4d2af1660538659bac0a6765875cc2111",
+        "execution_status": "accepted"
+      }
+    },
+    "cost_accounting": {
+      "schema": "wrench.cost-accounting-receipt.v1",
+      "raw_input_tokens": 1999998,
+      "model_prompt_tokens": 0,
+      "model_completion_tokens": 0,
+      "local_model_tokens": 0,
+      "input_tokens_not_sent_to_model": 1999998,
+      "model_calls": 0,
+      "repair_passes": 0,
+      "mechanical_fast_path": true,
+      "total_local_elapsed_ms": 22.425,
+      "usd_cost": null,
+      "usd_cost_status": "not_priced_local_runtime"
+    }
+  },
+  "assistant_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"src/wrench_harness/worker.py\",\"max_bytes\":65536}"
+}
