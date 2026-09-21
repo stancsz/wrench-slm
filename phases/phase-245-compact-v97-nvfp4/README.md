@@ -8,7 +8,7 @@ gate over the compact NVFP4 W4A16 package.
 Published package:
 
 - Repository: `stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`
-- Revision: `585af6a3ba2e415718e58e7e06a004734229c31b`
+- Revision: `926c94d0d348b20aaa3c571da9cae8bef01586f3`
 - Public HF dry-run: about 3.4 GiB, 2 Safetensors shards
 
 Local validation on the development host:

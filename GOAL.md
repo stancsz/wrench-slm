@@ -2617,7 +2617,7 @@ quality, 5060 Ti verification, or MiniMax parity. Evidence:
 2026-09-21 compact v97 publication: the BF16 compatibility package was about
 7.9 GiB, so the current public copy-and-try artifact is the NVFP4 W4A16
 package at `stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`.
-The pinned Hub revision is `585af6a3ba2e415718e58e7e06a004734229c31b`, with a
+The pinned Hub revision is `926c94d0d348b20aaa3c571da9cae8bef01586f3`, with a
 public dry-run of about 3.4 GiB and two Safetensors shards. Local structural
 validation, mechanical smoke, and direct model-local 4M intake passed. This
 is still an experimental preview and does not prove MiniMax parity, dense
