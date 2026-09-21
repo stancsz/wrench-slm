@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.worker-liveness-receipt.v1",
+  "job_id": "wrench-5060ti-hf-package-20260921-02",
+  "claim_nonce": "e900f2aca132492faaea59144ae0ba84",
+  "queue_state": "running",
+  "status": "MOCK_LIVENESS_ONLY",
+  "manifest_sha256": "1615bf2ba97e94bcdb56a6822cd93d53c0e62a7945a0c2729bae12ffa81da91b",
+  "worker_identity": "local-mock-executor",
+  "hardware_identity": null,
+  "claimed_at_unix": 1790012441.892143,
+  "actual_execution": false,
+  "independent_5060_claim": false,
+  "resource_reserve": {
+    "required_host_ram_free_fraction": 0.1,
+    "required_host_vram_free_fraction": 0.1,
+    "measured": false,
+    "status": "NOT_MEASURED_IN_MOCK"
+  }
+}

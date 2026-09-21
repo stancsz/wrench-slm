@@ -1,0 +1,48 @@
+{
+  "schema": "wrench.worker-mock-orchestration-receipt.v1",
+  "job_id": "wrench-5060ti-hf-package-20260921-02",
+  "claim_nonce": "e900f2aca132492faaea59144ae0ba84",
+  "queue_state": "failed",
+  "status": "BLOCKED_MOCK_ONLY",
+  "manifest_sha256": "1615bf2ba97e94bcdb56a6822cd93d53c0e62a7945a0c2729bae12ffa81da91b",
+  "state_transitions": [
+    {
+      "from": null,
+      "to": "pending",
+      "atomic": true
+    },
+    {
+      "from": "pending",
+      "to": "running",
+      "atomic": true
+    },
+    {
+      "from": "running",
+      "to": "failed",
+      "atomic": true
+    }
+  ],
+  "attempted_command": "tools/run_5060ti_hf_preflight.ps1",
+  "command_started": false,
+  "exit_code": null,
+  "stdout": "",
+  "stderr": "",
+  "worker_identity": "local-mock-executor",
+  "gpu_identity": null,
+  "latency_ms": null,
+  "peak_memory": null,
+  "resource_reserve": {
+    "required_host_ram_free_fraction": 0.1,
+    "required_host_vram_free_fraction": 0.1,
+    "measured": false,
+    "status": "NOT_MEASURED_IN_MOCK"
+  },
+  "actual_execution": false,
+  "independent_5060_claim": false,
+  "claims_not_authorized": [
+    "RTX 5060 Ti execution",
+    "GPU identity",
+    "latency or memory performance",
+    "package validation on the worker"
+  ]
+}

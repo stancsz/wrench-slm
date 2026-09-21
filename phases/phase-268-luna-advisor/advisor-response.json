@@ -1,0 +1,12 @@
+{
+  "model": "codex-sol-advisor",
+  "usage": {
+    "completion_tokens": 1047,
+    "prompt_tokens": 545,
+    "total_tokens": 1592
+  },
+  "decision": "Prioritize worker-plane liveness and receipt protocol over more local semantic testing.",
+  "smallest_safe_experiment": "Run a local dry-run of the exact pending manifest through pending -> running -> terminal receipt using a mock executor.",
+  "stop_condition": "Allow at most one final bounded remote liveness challenge with a unique nonce and exact command output; stop after timeout, unrelated acknowledgement, missing output, or authentication failure.",
+  "advice_is_not_verification": true
+}

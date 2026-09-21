@@ -1,0 +1,22 @@
+Decision/blocker: The Wrench product path is strong locally, but the independent RTX 5060 Ti verification lane has remained unconsumed and the remote Codex worker thread is idle, so choose the highest-leverage next experiment without weakening the acceptance contract.
+
+Observed facts:
+- Current v103 NVFP4 package is below 4.25B parameters and accepts direct model-local 4M Ollama-shaped input through deterministic first-layer compaction.
+- Current local evidence includes OpenCode, DeepSeek Harness, and isolated Claude Code 2.1.251 tool-call plus settlement, all with zero Wrench model calls on mechanical paths.
+- Historical 220-case replay passes the mechanical gates. A separate 44-row sealed diagnostic also passes. The scorer now emits deterministic paired 95% bootstrap intervals. Source regression is 177 passed, 18 warnings.
+- The latest RTX 5060 Ti job manifest is in Google Drive jobs/pending. Drive jobs/running is empty and no new completed 5060 receipt exists.
+- The existing remote Codex thread is idle. Recent delegated prompts returned unrelated AGENT.md acknowledgements and no command output. SSH to candidate 10.0.0.207 was reachable on port 22 but the available worker key was rejected for tested accounts.
+- No remote command, GPU identity, independent latency, or memory result has been observed.
+
+Constraints and rejected paths:
+- Do not claim 5060 Ti completion from a queued manifest or downloaded package.
+- Do not spend provider credits for diagnostics. Keep 10% host RAM and VRAM free.
+- Do not weaken the 4M direct model-local, real-harness, MiniMax-worker, or family-disjoint acceptance gates.
+- Do not use an advisor response as implementation or verification evidence.
+
+Questions:
+1. What is the single highest-leverage local experiment to advance the end goal while the 5060 worker remains unavailable?
+2. Should the next effort prioritize packaging the now-proven Claude Code loopback route, a fresh family-disjoint semantic set, or a liveness/receipt mechanism for the 5060 worker?
+3. What stop condition should prevent wasting more time on the idle remote thread?
+
+Give a prioritized diagnosis, one smallest safe experiment, and explicit stop conditions. Do not provide edits or external side effects.

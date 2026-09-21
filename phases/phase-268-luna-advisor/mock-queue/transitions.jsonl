@@ -1,0 +1,3 @@
+{"from": null, "to": "pending", "atomic": true}
+{"from": "pending", "to": "running", "atomic": true}
+{"from": "running", "to": "failed", "atomic": true}

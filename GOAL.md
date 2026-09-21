@@ -2785,3 +2785,14 @@ This supersedes the earlier unisolated `NOT_VERIFIED` diagnostic for the
 current local Claude Code smoke path. It does not prove learned MiniMax parity,
 dense-native 4M decoder quality, production readiness, or 5060 Ti performance.
 Evidence: `phases/phase-267-claude-local-isolated`, commit `1a9fd36`.
+
+2026-09-21 worker-plane orchestration dry-run: after repeated observation of
+the pending 5060 Ti manifest with no running consumer, Sol advisor review
+recommended testing the queue protocol locally before more semantic tuning.
+The exact pending manifest was copied into an isolated mock queue and passed
+through atomic `pending -> running -> failed` transitions. The mock emitted a
+unique-nonce liveness receipt and a `BLOCKED_MOCK_ONLY` terminal receipt with
+GPU, latency, memory, and resource measurements explicitly unavailable. It
+never downloaded artifacts, ran the preflight, or claimed RTX 5060 Ti
+evidence. The full source regression is now `178 passed, 18 warnings`.
+Evidence: `phases/phase-268-luna-advisor`.
