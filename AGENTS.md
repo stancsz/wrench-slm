@@ -47,3 +47,18 @@ Every training, inference, benchmark, packaging, and delegated worker job must p
 - Check available memory and VRAM before starting work and during long-running work. If either reserve would be breached, reduce concurrency, batch size, context size, cache size, or model footprint before continuing.
 - Prefer releasing framework caches and lowering workload intensity. Do not terminate unrelated applications, Docker services, or WSL distributions without explicit user authorization.
 - A job that cannot maintain both 10% reserves is resource-unsafe and must be paused or marked failed, not treated as a valid benchmark result.
+
+## Complete Delegated Worker Payload
+
+Every message or job sent to a remote worker must be self-contained. It must
+repeat the unique nonce and job ID, the full objective and verification scope,
+the repository and expected commit, the artifact or package identity and
+hashes, exact allowed commands and output paths, timeout and retry limits, the
+10% RAM and VRAM reserve, explicit no-spend and no-credential boundaries, and
+the complete final response schema. The worker must not need conversation
+history or an implicit plan.
+
+An empty turn, missing nonce, missing required fields, or execution on the
+wrong host is unverified. Start a fresh authenticated worker session instead
+of appending more context to the failed thread. Never promote such a result to
+independent hardware, benchmark, parity, or release evidence.
