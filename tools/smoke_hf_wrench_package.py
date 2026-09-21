@@ -17,7 +17,7 @@ def run_smoke(model_dir: Path) -> dict:
 
     worker = WrenchWorker.from_pretrained(model_dir, allowed_root=model_dir, load_model=False)
     result = worker.propose(
-        [{"role": "user", "content": "Read README.md with a 64 byte limit."}],
+        [{"role": "user", "content": "Read generation_config.json with a 512 byte limit."}],
         use_mechanical_route=True,
     )
     status = result.get("status") if isinstance(result, dict) else None
