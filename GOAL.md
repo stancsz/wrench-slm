@@ -3289,3 +3289,10 @@ production enablement. Evidence:
 `phases/phase-330-current-head-package-binding.md`,
 `phases/phase-330-current-head-package-binding.json`, and the referenced
 phase 330 receipts.
+
+2026-09-21 current-head regression after receipt updates: `pytest -q` passed
+`196` tests with `0` failures and `18` Windows asyncio deprecation warnings in
+`18.32 s`. This keeps the deterministic prefill, dense-native gate contract,
+package validation, replay, and client integration code regression-clean. It
+does not convert the diagnostic receipts into production approval. Evidence:
+`phases/phase-331-current-head-regression.json`.

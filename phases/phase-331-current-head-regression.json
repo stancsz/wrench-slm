@@ -1,0 +1,14 @@
+{
+  "phase": "phase-331-current-head-regression",
+  "status": "PASS",
+  "source_commit": "08b22ac",
+  "command": "pytest -q",
+  "tests_passed": 196,
+  "tests_failed": 0,
+  "warnings": 18,
+  "elapsed_seconds": 18.32,
+  "warning_class": "Windows asyncio deprecation warnings",
+  "quality_claim": false,
+  "production_enablement": false,
+  "scope": "repository regression suite after current-head receipt and package-binding evidence"
+}
