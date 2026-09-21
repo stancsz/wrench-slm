@@ -50,5 +50,13 @@
   "retry_limit": 1,
   "state": "pending",
   "created_at": "2026-09-21T16:45:00-06:00",
-  "queue_contract": "jobs/pending -> jobs/running -> jobs/completed or jobs/failed"
+  "queue_contract": "jobs/pending -> jobs/running -> jobs/completed or jobs/failed",
+  "queue_receipt": {
+    "status": "UPLOADED_PENDING",
+    "drive_file_id": "1V0AcZ-EQ_lRDB-aaJYVwRNMxMVkpNFAW",
+    "drive_url": "https://drive.google.com/file/d/1V0AcZ-EQ_lRDB-aaJYVwRNMxMVkpNFAW/view?usp=drivesdk",
+    "pending_folder_id": "16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv",
+    "verified_at": "2026-09-21T16:51:00Z",
+    "worker_consumed": false
+  }
 }
