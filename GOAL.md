@@ -3054,3 +3054,12 @@ Teacher weighted final success ranged from `0.8847288~0.8934198` and teacher
 prohibited accepts ranged from `2~4`. This strengthens stability evidence but
 does not close the family-disjoint final gate or independent 5060Ti/native
 decoder requirements. Evidence: `phases/phase-295-current-220-repetition-stability`.
+
+2026-09-21 fresh 5060Ti dispatch after bundling the teacher input: a new
+same-directory remote thread received the complete payload at source commit
+`77fdf44`, including the current cases hash and teacher receipt, but completed
+after `40.762 s` with no assistant message, command output, preflight, or
+external receipt. This removes the missing-teacher-input explanation but does
+not produce any 5060Ti execution evidence. The remote control plane remains
+the blocker; no result from this empty turn is promoted. Evidence:
+`phases/phase-297-5060ti-fresh-thread-empty`.

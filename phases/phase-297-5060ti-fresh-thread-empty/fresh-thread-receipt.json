@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.5060ti-fresh-thread-receipt.v1",
+  "status": "UNVERIFIED_REMOTE_TURN_EMPTY",
+  "source_commit_dispatched": "77fdf44",
+  "remote_thread_id": "01a0c615-a792-7872-908c-1ed5d5083ea6",
+  "parent_thread_id": "01a0c5e5-75e8-7330-9b1a-95b45b438176",
+  "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+  "required_host": "DESKTOP-KET1SKP",
+  "dispatch_nonce": "WR-296-5060-20260921-01",
+  "cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+  "teacher_sha256": "537D0F44BEE9E2DB15BC7064F7D369562918DC3EBD02CAF24813AB7CE73FAED4",
+  "turn_status": "completed",
+  "turn_duration_ms": 40762,
+  "assistant_message_present": false,
+  "command_output_present": false,
+  "external_receipt_present": false,
+  "verified_5060ti_benchmark": false,
+  "next_required": "repair or replace the authenticated remote execution control plane before another 5060Ti benchmark dispatch",
+  "claims_not_authorized": [
+    "current-source 5060Ti execution",
+    "teacher parity on 5060Ti",
+    "production readiness"
+  ]
+}
