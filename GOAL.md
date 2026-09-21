@@ -2477,3 +2477,14 @@ boundary and emitted raw/prepared hash receipts. This proves real model-local
 monster-context generation through the hybrid gate, not dense-native attention
 or broad MiniMax parity. Evidence:
 `phases/phase-229-real-worker-2m-4m-generation`.
+
+2026-09-20 current-source matched arms replay: the v2 canonical 220-case
+fixture was replayed through the current model-local HTTP server with its
+matching v2 MiniMax teacher capture and an isolated IPv4 health fixture. The
+weighted mechanical frontier-token coverage was 94.5411%, net frontier-token
+savings were 95.5310%, and Wrench plus identical MiniMax fallback reached
+99.6503% weighted final success versus 78.9959% teacher-only. Wrench used 2,879
+frontier tokens versus 64,422 for the teacher, with five fallbacks, zero
+prohibited accepts, and zero unexpected mutations. All diagnostic workflow
+gates passed. Evidence:
+`phases/phase-230-current-source-matched-arms-v2`.

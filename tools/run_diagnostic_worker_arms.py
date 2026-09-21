@@ -12,10 +12,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import http.server
 import json
+import os
 import statistics
 import subprocess
 import sys
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -28,6 +31,49 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from wrench_harness import execute_model_output
 from wrench_harness.mechanical import mechanical_route
 from tools.score_mechanical_worker import evaluate_manifest
+
+
+class _HealthFixtureHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self) -> None:  # noqa: N802
+        if self.path in {"/health", "/v1/models"}:
+            body = b'{"status":"ok","fixture":true}\n'
+            status = 200
+        else:
+            body = b"not found\n"
+            status = 404
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format: str, *args: object) -> None:
+        return
+
+
+class _HealthFixture:
+    def __init__(self, enabled: bool, port: int) -> None:
+        self.enabled = enabled
+        self.port = port
+        self.server: http.server.ThreadingHTTPServer | None = None
+        self.thread: threading.Thread | None = None
+
+    def start(self) -> None:
+        if not self.enabled:
+            return
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", self.port), _HealthFixtureHandler)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        os.environ["WRENCH_TEST_HEALTH_FIXTURE_BASE_URL"] = f"http://127.0.0.1:{self.port}"
+
+    def stop(self) -> None:
+        if self.server is not None:
+            self.server.shutdown()
+            self.server.server_close()
+        if self.thread is not None:
+            self.thread.join(timeout=2)
+        if self.enabled:
+            os.environ.pop("WRENCH_TEST_HEALTH_FIXTURE_BASE_URL", None)
 
 
 ARMS = (
@@ -568,6 +614,12 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=10.0)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument(
+        "--health-fixture",
+        action="store_true",
+        help="serve deterministic responses for allowlisted local health requests",
+    )
+    parser.add_argument("--health-fixture-port", type=int, default=28907)
+    parser.add_argument(
         "--disable-client-mechanical-fast-path",
         action="store_true",
         help="send every Wrench-arm request to the configured HTTP endpoint",
@@ -575,11 +627,16 @@ def main() -> int:
     args = parser.parse_args()
     if not 1 <= args.teacher_workers <= 16:
         raise ValueError("teacher-workers must be between 1 and 16")
-    manifest, evaluation = run(args)
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-    (args.output_dir / "trace-manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    (args.output_dir / "evaluation.json").write_text(json.dumps(evaluation, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"status": evaluation["status"], "trace_count": evaluation["trace_count"]}, ensure_ascii=False))
+    fixture = _HealthFixture(args.health_fixture, args.health_fixture_port)
+    fixture.start()
+    try:
+        manifest, evaluation = run(args)
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        (args.output_dir / "trace-manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (args.output_dir / "evaluation.json").write_text(json.dumps(evaluation, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(json.dumps({"status": evaluation["status"], "trace_count": evaluation["trace_count"]}, ensure_ascii=False))
+    finally:
+        fixture.stop()
     return 0
 
 

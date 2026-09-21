@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.current-source-matched-arms-v2.v1",
+  "status": "PASS_MECHANICAL_WORKER",
+  "trace_count": 220,
+  "cases_sha256": "77ce67c7b6bb492ffc63ba26c75c322d38d73425f51e672a640705b97c78ac77",
+  "trace_set_sha256": "3efb654569f86fdb58cf7338bcbb56e77702f26c49f0f82e27ed4ac1d367d60b",
+  "teacher_capture": "phases/phase-185-v2-teacher-capture/teacher-220-v2-max1024.json",
+  "wrench_endpoint": "http://127.0.0.1:28903/v1/chat/completions",
+  "client_mechanical_fast_path": false,
+  "metrics": {
+    "weighted_frontier_token_mass_coverage": 0.9454113722069192,
+    "net_frontier_token_savings": 0.9553102977243799,
+    "teacher_weighted_final_success_rate": 0.7899588085963453,
+    "wrench_weighted_final_success_rate": 0.9965032764299852,
+    "teacher_frontier_tokens": 64422,
+    "wrench_frontier_tokens": 2879,
+    "wrench_fallback_count": 5,
+    "wrench_median_latency_ms": 184.409,
+    "wrench_p95_latency_ms": 2004.182
+  },
+  "gates": {
+    "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": true,
+    "net_frontier_token_savings_at_least_95_percent": true,
+    "teacher_final_success_noninferiority": true,
+    "zero_prohibited_accepts": true,
+    "zero_unexpected_mutations": true
+  },
+  "quality_claim": false,
+  "production_enablement": false
+}
