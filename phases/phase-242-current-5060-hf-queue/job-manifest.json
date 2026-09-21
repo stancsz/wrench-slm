@@ -1,0 +1,54 @@
+{
+  "schema": "wrench.worker-job.v1",
+  "job_id": "wrench-5060ti-hf-package-20260921-01",
+  "workload": "huggingface-package-preflight",
+  "workload_version": "source-522af8f-hf-db49ccc",
+  "source_repository": "https://github.com/stancsz/wrench-slm.git",
+  "source_commit": "522af8f722c36f85ab3ecdecd6d1f4080f0cd966",
+  "artifact_source": "huggingface",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+  "huggingface_revision": "db49ccc21b372ff91ace35bcbb69ccc1d5ee52d9",
+  "purpose": "Independently verify the public pinned Hugging Face package and bounded mechanical route on RTX 5060 Ti.",
+  "inputs": [
+    "AGENTS.md",
+    "AGENTS.local.md",
+    "tools/run_5060ti_hf_preflight.ps1",
+    "tools/validate_wrench_package.py",
+    "tools/smoke_hf_wrench_package.py",
+    "tools/compose_hf_cross_host_receipt.py",
+    "tools/verify_hf_cross_host_receipt.py"
+  ],
+  "expected_outputs": [
+    "package-validation.json",
+    "package-smoke.json",
+    "resource-snapshot.json",
+    "hf-cross-host-receipt.json",
+    "verified-hf-cross-host-receipt.json",
+    "worker.log"
+  ],
+  "execution": {
+    "script": "tools/run_5060ti_hf_preflight.ps1",
+    "download_source": "huggingface_hub",
+    "revision_must_be_pinned": true,
+    "model_artifact_read_only": true
+  },
+  "resource_requirements": {
+    "worker": "RTX 5060 Ti",
+    "minimum_host_ram_free_fraction": 0.1,
+    "minimum_host_vram_free_fraction": 0.1,
+    "provider_spending": false,
+    "real_workflow_traces": false,
+    "learned_routing": "DISABLE"
+  },
+  "claims_not_authorized": [
+    "minimax_parity",
+    "dense_native_4m_quality",
+    "retrieval_quality",
+    "production_readiness"
+  ],
+  "timeout_seconds": 1800,
+  "retry_limit": 1,
+  "state": "pending",
+  "created_at": "2026-09-21T00:00:00-06:00",
+  "queue_contract": "jobs/pending -> jobs/running -> jobs/completed or jobs/failed"
+}
