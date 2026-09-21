@@ -1,0 +1,332 @@
+{
+  "schema": "wrench.real-harness-metadata-inventory.v1",
+  "status": "DRAFT_INVENTORY_FOR_HUMAN_PORTFOLIO_REVIEW",
+  "quality_claim": false,
+  "training_use": false,
+  "final_evaluation_use": false,
+  "sources": {
+    "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-238-real-harness-integration\\wrench-observations.jsonl": {
+      "rows": 2041,
+      "protocols": {
+        "openai-chat-completions": 124,
+        "anthropic-messages": 1917
+      },
+      "statuses": {
+        "accepted": 2041
+      },
+      "backends": {
+        "embedded-mechanical": 2038,
+        "embedded-mechanical-settlement": 3
+      },
+      "fallback_reasons": {},
+      "route_sources": {
+        "latest_intent": 2038
+      },
+      "top_tool_names": [
+        [
+          "Read",
+          1917
+        ],
+        [
+          "WebSearch",
+          1916
+        ],
+        [
+          "NotebookEdit",
+          1916
+        ],
+        [
+          "ExitWorktree",
+          1916
+        ],
+        [
+          "TaskList",
+          1916
+        ],
+        [
+          "WebFetch",
+          1916
+        ],
+        [
+          "CronDelete",
+          1916
+        ],
+        [
+          "TaskGet",
+          1916
+        ],
+        [
+          "EnterWorktree",
+          1916
+        ],
+        [
+          "Grep",
+          1916
+        ],
+        [
+          "TaskUpdate",
+          1916
+        ],
+        [
+          "Agent",
+          1916
+        ],
+        [
+          "CronList",
+          1916
+        ],
+        [
+          "Skill",
+          1916
+        ],
+        [
+          "TaskStop",
+          1916
+        ],
+        [
+          "ScheduleWakeup",
+          1916
+        ],
+        [
+          "SendMessage",
+          1916
+        ],
+        [
+          "TaskOutput",
+          1916
+        ],
+        [
+          "TaskCreate",
+          1916
+        ],
+        [
+          "Workflow",
+          1916
+        ],
+        [
+          "Edit",
+          1916
+        ],
+        [
+          "CronCreate",
+          1916
+        ],
+        [
+          "Glob",
+          1916
+        ],
+        [
+          "Bash",
+          1916
+        ],
+        [
+          "ReportFindings",
+          1916
+        ],
+        [
+          "Write",
+          1916
+        ],
+        [
+          "ListAgents",
+          1916
+        ],
+        [
+          "task",
+          121
+        ],
+        [
+          "glob",
+          121
+        ],
+        [
+          "read",
+          121
+        ]
+      ],
+      "read_surface_rows": 2038,
+      "mutation_surface_rows": 121,
+      "mechanical_fast_path_rows": 2041,
+      "model_calls": 0,
+      "raw_input_tokens": {
+        "sum": 53477822,
+        "max": 52522,
+        "nonzero_rows": 2041
+      },
+      "unique_payload_hashes": 2038
+    },
+    "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-238-real-harness-integration\\dsh-observations.jsonl": {
+      "rows": 13,
+      "protocols": {
+        "openai-chat-completions": 13
+      },
+      "statuses": {
+        "abstain": 5,
+        "accepted": 8
+      },
+      "backends": {
+        "embedded-mechanical": 10,
+        "embedded-title-mechanical": 2,
+        "embedded-mechanical-settlement": 1
+      },
+      "fallback_reasons": {
+        "missing_search_root": 5
+      },
+      "route_sources": {
+        "latest_intent": 9,
+        "pre_assistant_intent_bundle": 1
+      },
+      "top_tool_names": [
+        [
+          "job_kill",
+          7
+        ],
+        [
+          "skill",
+          7
+        ],
+        [
+          "subagent_fork",
+          7
+        ],
+        [
+          "grep",
+          7
+        ],
+        [
+          "job_list",
+          7
+        ],
+        [
+          "todo_write",
+          7
+        ],
+        [
+          "update_goal",
+          7
+        ],
+        [
+          "read_image",
+          7
+        ],
+        [
+          "web_search",
+          7
+        ],
+        [
+          "write",
+          7
+        ],
+        [
+          "exit_plan_mode",
+          7
+        ],
+        [
+          "job_output",
+          7
+        ],
+        [
+          "workflow",
+          7
+        ],
+        [
+          "get_goal",
+          7
+        ],
+        [
+          "interrupt_agent",
+          7
+        ],
+        [
+          "edit",
+          7
+        ],
+        [
+          "create_goal",
+          7
+        ],
+        [
+          "pwsh",
+          7
+        ],
+        [
+          "list_agents",
+          7
+        ],
+        [
+          "str_replace_editor",
+          7
+        ],
+        [
+          "glob",
+          7
+        ],
+        [
+          "subagent",
+          7
+        ],
+        [
+          "read",
+          7
+        ],
+        [
+          "send_message",
+          7
+        ],
+        [
+          "ralph",
+          7
+        ]
+      ],
+      "read_surface_rows": 7,
+      "mutation_surface_rows": 7,
+      "mechanical_fast_path_rows": 13,
+      "model_calls": 0,
+      "raw_input_tokens": {
+        "sum": 33889,
+        "max": 4785,
+        "nonzero_rows": 13
+      },
+      "unique_payload_hashes": 6
+    }
+  },
+  "combined": {
+    "rows": 2054,
+    "raw_input_tokens": 53511711,
+    "model_calls": 0,
+    "mechanical_fast_path_rows": 2054,
+    "read_surface_rows": 2045,
+    "mutation_surface_rows": 128
+  },
+  "inventory_sha256": "f252ce3fe8a0b49a148dba3cfb0579d4daa0bae762b205f88b41ae18bd792370",
+  "classification_policy": {
+    "read_surface": [
+      "Grep",
+      "Read",
+      "glob",
+      "grep",
+      "literal_search",
+      "read",
+      "search"
+    ],
+    "mutation_surface": [
+      "bash",
+      "delete",
+      "edit",
+      "patch",
+      "pwsh",
+      "rm",
+      "shell",
+      "str_replace_editor",
+      "write"
+    ],
+    "note": "tool names describe client context; they do not prove that Wrench accepted or executed a mutation"
+  },
+  "required_review": [
+    "redact or exclude user-sensitive traces before any human approval",
+    "assign stable task-family labels and workload weights",
+    "separate calibration/development/final families without leakage",
+    "define independent outcome oracles and prohibited-accept policy",
+    "freeze the approved manifest before candidate tuning"
+  ]
+}
