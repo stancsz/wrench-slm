@@ -77,6 +77,22 @@ one prohibited accept, ten transport/runtime abstentions, 4.570 s median, and
 10.683 s p95. This is a model-only diagnostic failure, not evidence against
 the embedded toolbelt result. Evidence: `phases/phase-275-head-only-model-only-diagnostic`.
 
+The current v103 portable package was then replayed again against the complete
+v2 suite using the matching v2 teacher stream. This is the current 220-row
+package checkpoint, separate from the stale 5060TI package-only export. It
+reported 120 eligible rows, 100% weighted mechanical frontier-token coverage,
+100% net frontier-token savings, 100% Wrench weighted final success, 100%
+verifier success, zero prohibited accepts, zero unexpected mutations, zero
+Wrench model calls, 211.745 ms p50, and 332.823 ms p95. The evidence is
+`phases/phase-276-current-v103-v2-replay/README.md`. The exact package also
+passed structural validation with a declared 4,000,000-token position limit
+and two Safetensors shards.
+
+This remains a diagnostic result. The v2 suite is still draft pending human
+approval, the teacher capture itself contains two prohibited accepts, and the
+run does not establish learned MiniMax parity, native dense 4M decoder quality,
+or independent RTX 5060 Ti performance.
+
 ## North Star
 
 Wrench is successful when it behaves like a specialized local MiniMax worker

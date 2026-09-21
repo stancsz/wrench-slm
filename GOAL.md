@@ -2884,3 +2884,15 @@ accept, ten transport/runtime abstentions, 37 model calls, 4.570 s median, and
 requirements. The evidence confirms that current mechanical-worker utility is
 coming from the embedded toolbelt plus verifier, not this LoRA alone. Evidence:
 `phases/phase-275-head-only-model-only-diagnostic`.
+
+2026-09-21 current v103 package rerun: the exact portable package was replayed
+against the complete matching v2 teacher stream and all 220 cases completed.
+The Wrench arm recorded 100% weighted mechanical frontier-token coverage, 100%
+net frontier-token savings, 100% weighted final success, 100% verifier
+success, zero prohibited accepts, zero unexpected mutations, zero Wrench model
+calls, 211.745 ms p50 latency, and 332.823 ms p95 latency. Structural package
+validation also passed with two Safetensors shards and a declared 4,000,000
+token position limit. This remains diagnostic only because the suite is draft,
+the teacher capture contains two prohibited accepts, and native dense 4M
+decoder quality and independent 5060 Ti performance remain unverified.
+Evidence: `phases/phase-276-current-v103-v2-replay`.
