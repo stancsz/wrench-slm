@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.current-head-package-binding.v1",
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "source_commit": "04090c1",
+  "package_dir": "D:\\models\\_wrench-release-candidate-04090c1",
+  "materialization_status": "MATERIALIZED_PACKAGE_RUNTIME_EMBEDDED",
+  "structural_validation_status": "PASS_STRUCTURAL_PACKAGE",
+  "bundled_native_verifier": true,
+  "bundled_windows_tree_cleanup_fix": true,
+  "publication_authorized": false,
+  "claims_not_authorized": [
+    "dense-native 4M quality",
+    "MiniMax parity",
+    "independent RTX 5060 Ti verification",
+    "production readiness"
+  ]
+}

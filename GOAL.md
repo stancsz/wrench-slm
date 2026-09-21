@@ -3196,3 +3196,11 @@ load and generation in `23,871.1 ms`, configured 4M KV capacity, preserved
 `42.7503%` RAM free and `50.9170%` VRAM free while ready, and returned to
 `42.7338%` RAM free and `93.5411%` VRAM free after cleanup. No candidate
 workers remained. Evidence: `phases/phase-321-current-head-freetoken-native-cleanup`.
+
+2026-09-21 current-head package binding: after commit `04090c1`, a fresh
+portable candidate at `D:\models\_wrench-release-candidate-04090c1` was
+materialized and passed structural validation. The package contains the
+resource-safe native verifier and its Windows process-tree cleanup fix. This
+is the package bound for the next direct 4M and independent-worker probes, not
+a publication or production approval. Evidence:
+`phases/phase-322-current-head-package-binding`.
