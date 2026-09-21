@@ -2693,3 +2693,14 @@ are true. This is still a historical fixture result, not family-disjoint
 approval, independent 5060 Ti evidence, native dense decoder quality, or
 production enablement. Evidence:
 `phases/phase-253-v102-220-replay`.
+
+2026-09-21 v102 package-local 4M handoff: the bundled model-local server
+accepted a direct Ollama-shaped `/api/chat` request containing `3,996,267`
+estimated raw tokens in `35,163,527` bytes. Its deterministic MapReduce gate
+staged `1,955` effective model-prefill tokens, recorded `31.663 ms` gate time
+and `84.072 ms` server staging, and returned in `238.189 ms`. The receipt binds
+the raw payload hash and records the selected reference card and cache state.
+The upstream was a local protocol stub, so this proves direct package intake
+and bounded handoff, not dense-native decoder quality, retrieval quality, or
+production enablement. Evidence:
+`phases/phase-254-v102-package-4m-handoff`.

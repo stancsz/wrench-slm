@@ -1,0 +1,85 @@
+{
+  "schema": "wrench.native-handoff-prefill-probe.v1",
+  "status": "PASS_NATIVE_HANDOFF_STAGED_4M",
+  "mode": "staged_single_pass",
+  "surface": "api-chat",
+  "runtime_import": "bundled_package_runtime",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v102-ollama-cli",
+  "requested_payload_tokens": 4000000,
+  "admission_estimate_safety_margin_tokens": 4096,
+  "raw_payload_bytes": 35163527,
+  "raw_token_estimate": 3995842,
+  "staged_token_estimate": 1955,
+  "elapsed_ms": 238.189,
+  "server_staging_elapsed_ms": 84.072,
+  "model_calls": 1,
+  "backend": "native-upstream-verified",
+  "dynamic_prefill": {
+    "schema": "wrench.dynamic-prefill-receipt.v1",
+    "mode": "staged_single_pass",
+    "pipeline": "map_reduce_dynamic_native",
+    "raw_token_count": 3996267,
+    "model_prefill_token_count": 1955,
+    "compression_ratio": 0.000489,
+    "hot_token_budget": 48000,
+    "model_prefill_budget": 64000,
+    "reference_index_budget": 16000,
+    "current_intent_source_index": 1,
+    "hot_message_count": 0,
+    "reference_card_count": 1,
+    "evidence_window_count": 1,
+    "map_stage": {
+      "indexed_reference_count": 1,
+      "raw_token_count": 3996267,
+      "index_type": "content_addressed_mechanical_prefill"
+    },
+    "reduce_stage": {
+      "hot_message_count": 0,
+      "selected_reference_card_count": 1,
+      "reference_index_token_count": 116,
+      "evidence_window_count": 1
+    },
+    "deduplicated_reference_count": 0,
+    "lookup_table_ids": [
+      "ref-00000000"
+    ],
+    "lookup_table": {},
+    "raw_payload_sha256": "e0504b9d859621f9bad62045a0c8def6a79656eaac843f9849a8518461e13b84",
+    "native_input_claim": false,
+    "context_gate": {
+      "schema": "wrench.first-layer-context-gate.v1",
+      "stage": "first_model_side_pruner_cherrypicker",
+      "strategy": "deterministic_mapreduce_dynamic_native",
+      "raw_context_limit_tokens": 4000000,
+      "raw_input_tokens": 3996267,
+      "effective_working_context_tokens": 1955,
+      "working_context_budget_tokens": 64000,
+      "selected_hot_spans": 0,
+      "selected_reference_cards": 1,
+      "omitted_reference_spans": 0,
+      "raw_payload_hash_bound": true
+    },
+    "context_gate_latency_ms": 31.663,
+    "source_payload_sha256": "5d0f880962f83fdaa7dc9aec6915b02f3b515413f273cdebe743ecbd2a24ce8a",
+    "prepared_payload_sha256": "e0504b9d859621f9bad62045a0c8def6a79656eaac843f9849a8518461e13b84",
+    "payload_hash_mode": "ordered_original_plus_content_addressed_prepared",
+    "split_current_message": true,
+    "adaptive_selection": null,
+    "suffix_chars": 16000,
+    "server_staging_elapsed_ms": 84.072,
+    "cache": {
+      "entries": 2,
+      "cache_bytes": 35163388,
+      "max_bytes": 268435456,
+      "cache_hits": 0,
+      "cache_misses": 2
+    },
+    "native_backend_prompt_tokens": 1955,
+    "native_backend_usage_available": true
+  },
+  "native_attention_claim": false,
+  "notes": [
+    "The upstream is a local protocol stub, not a model-quality evaluation.",
+    "This proves raw package intake, mode selection, and native handoff accounting, not dense native 4M attention."
+  ]
+}
