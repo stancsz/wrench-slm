@@ -13,7 +13,7 @@
   },
   "opencode": {
     "status": "PASSED",
-    "cli_mode": "--pure",
+    "cli_mode": "normal direct CLI",
     "model": "wrench-v103",
     "work": "read README.md through the native OpenCode read tool",
     "structured_tool_call": true,
@@ -24,7 +24,12 @@
     "model_calls": 0,
     "mechanical_fast_path": true,
     "mutation_observed": false,
-    "trace": "opencode-v103-pure.trace.jsonl"
+    "direct_endpoint": "http://127.0.0.1:28932/v1/chat/completions",
+    "trace": "opencode-v103-direct.trace.jsonl",
+    "supplemental_runs": [
+      "opencode-v103-pure.trace.jsonl",
+      "opencode-v103-normal-proxy.trace.jsonl"
+    ]
   },
   "deepseek_harness": {
     "status": "PASSED",

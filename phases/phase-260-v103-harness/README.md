@@ -9,10 +9,10 @@ and metadata-only trace logging enabled.
 
 ## OpenCode
 
-The real OpenCode CLI was pointed at the package's OpenAI-compatible
-`/v1/chat/completions` endpoint with an isolated v103 config. OpenCode ran in
-`--pure` mode so its optional external plugins did not add unrelated tool
-instructions to the request. The observed sequence was:
+The real OpenCode CLI was pointed directly at the package's OpenAI-compatible
+`/v1/chat/completions` endpoint with an isolated v103 config. The normal CLI
+profile was used, without `--pure` and without a proxy. The observed sequence
+was:
 
 1. OpenCode requested the native `read` tool for `README.md`.
 2. Wrench returned a structured tool call.
@@ -20,8 +20,10 @@ instructions to the request. The observed sequence was:
 4. Wrench returned a deterministic tool settlement.
 5. OpenCode printed the final response.
 
-The current v103 trace records `mechanical_fast_path=true`,
-`embedded-mechanical-settlement`, zero model calls, and no file mutation.
+The direct current v103 trace records `mechanical_fast_path=true`,
+`embedded-mechanical-settlement`, zero model calls, and no file mutation. A
+separate `--pure` run and a transparent proxy diagnostic also passed, but they
+are supplemental evidence rather than the primary direct integration result.
 
 ## DeepSeek Harness
 
@@ -51,8 +53,11 @@ authorization.
 Evidence:
 
 - `receipt.json`
+- `opencode-v103-direct.trace.jsonl`
 - `opencode-v103-pure.trace.jsonl`
 - `dsh-v103.trace.txt`
 - `wrench-v103-observations-r2.jsonl`
+- `wrench-v103-normal-direct-observations.jsonl`
+- `wrench-v103-normal-opencode-observations.jsonl`
 - `opencode-v103.json`
 - `dsh-v103.patch.yml`
