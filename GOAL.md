@@ -3237,3 +3237,16 @@ This is the package identity for the next independent RTX 5060 Ti run, with
 4M model-local intake, deterministic reduction, all three client templates,
 and the native ModelOpt verifier bundled. Evidence:
 `phases/phase-326-current-head-package-binding`.
+
+2026-09-21 current-head 220-case replay: the `85ff83c` portable package was
+replayed against all 220 rows using the complete current 220-case MiniMax
+teacher capture. Wrench completed `220/220` rows with weighted final success
+`1.0`, weighted verifier success `1.0`, full weighted mechanical frontier-token
+coverage, `100%` net frontier-token savings, zero frontier tokens, `24,141`
+local tokens, p50/p95 latency `187.685/306.466 ms`, zero prohibited accepts,
+and zero unexpected mutations. This confirms the current package's historical
+mechanical-worker workflow behavior, not learned MiniMax parity, dense-native
+4M attention quality, independent RTX 5060 Ti verification, or production
+enablement. Evidence:
+`phases/phase-327-current-head-220-replay-r2` and
+`phases/phase-327-current-head-220-replay.json`.

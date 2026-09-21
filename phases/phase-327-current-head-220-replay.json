@@ -1,0 +1,32 @@
+{
+  "phase": "phase-327-current-head-220-replay-r2",
+  "status": "PASS_MECHANICAL_WORKER",
+  "source_commit": "85ff83c",
+  "package_dir": "D:\\models\\_wrench-release-candidate-85ff83c",
+  "cases_path": "evals/wrench-expanded-v2/cases.jsonl",
+  "cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+  "teacher_capture": "phases/phase-296-remote-current-220-replay-input/teacher-current-220.json",
+  "trace_count": 220,
+  "mechanical_trace_count": 120,
+  "wrench_weighted_final_success_rate": 1.0,
+  "wrench_weighted_verifier_success_rate": 1.0,
+  "weighted_frontier_token_mass_coverage": 1.0,
+  "net_frontier_token_savings": 1.0,
+  "wrench_frontier_tokens": 0.0,
+  "wrench_local_tokens": 24141.0,
+  "wrench_median_latency_ms": 187.685,
+  "wrench_p95_latency_ms": 306.466,
+  "prohibited_accepts": 0,
+  "unexpected_mutations": 0,
+  "paired_final_success_difference_95_ci": [
+    0.06363636363636363,
+    0.1409090909090909
+  ],
+  "quality_claim": false,
+  "production_enablement": false,
+  "evidence": [
+    "phases/phase-327-current-head-220-replay-r2/evaluation.json",
+    "phases/phase-327-current-head-220-replay-r2/trace-manifest.json",
+    "phases/phase-327-current-head-220-replay-r2/README.md"
+  ]
+}
