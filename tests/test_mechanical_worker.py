@@ -69,6 +69,31 @@ def test_mechanical_worker_uses_weighted_frontier_mass_not_case_count():
     assert receipt["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is True
 
 
+def test_mechanical_worker_reports_deterministic_paired_success_confidence_intervals():
+    traces = []
+    for index in range(4):
+        traces.append(
+            {
+                "id": f"ci-{index}",
+                "family": "read_file",
+                "model_input_tokens": 100,
+                "workload_weight": index + 1,
+                "arms": {
+                    "minimax_teacher_only": _arm(frontier_tokens=10, success=index != 0),
+                    "rules_plus_minimax_fallback": _arm(frontier_tokens=10),
+                    "wrench_plus_identical_minimax_fallback": _arm(frontier_tokens=0, success=True),
+                    "wrench_only_diagnostic": _arm(frontier_tokens=0),
+                },
+            }
+        )
+    first = evaluate_manifest(_manifest(traces))["uncertainty"]
+    second = evaluate_manifest(_manifest(traces))["uncertainty"]
+    assert first == second
+    assert first["paired_final_success_difference"] > 0
+    assert first["paired_final_success_difference_95_ci"]["confidence"] == 0.95
+    assert first["paired_final_success_difference_95_ci"]["method"] == "paired_trace_bootstrap"
+
+
 def test_mechanical_worker_scopes_coverage_to_eligible_traces_but_keeps_safety_global():
     eligible = {
         "id": "eligible",

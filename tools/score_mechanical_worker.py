@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import random
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +103,51 @@ def _arm_metrics(traces: list[dict[str, Any]], arm: str) -> dict[str, Any]:
     }
 
 
+def _bootstrap_ci(values: list[float], *, seed: int, resamples: int = 4000) -> dict[str, Any]:
+    """Return a deterministic percentile bootstrap interval for trace-level values."""
+
+    if not values:
+        return {"lower": None, "upper": None, "confidence": 0.95, "method": "paired_trace_bootstrap"}
+    rng = random.Random(seed)
+    sample_means: list[float] = []
+    count = len(values)
+    for _ in range(resamples):
+        sample = [values[rng.randrange(count)] for _ in range(count)]
+        sample_means.append(sum(sample) / count)
+    return {
+        "lower": _percentile(sample_means, 0.025),
+        "upper": _percentile(sample_means, 0.975),
+        "confidence": 0.95,
+        "method": "paired_trace_bootstrap",
+        "resamples": resamples,
+        "seed": seed,
+    }
+
+
+def _paired_success_uncertainty(traces: list[dict[str, Any]]) -> dict[str, Any]:
+    """Estimate paired teacher/Wrench success uncertainty without provider calls."""
+
+    teacher_values = [float(trace["arms"]["minimax_teacher_only"]["final_success"]) for trace in traces]
+    wrench_values = [
+        float(trace["arms"]["wrench_plus_identical_minimax_fallback"]["final_success"])
+        for trace in traces
+    ]
+    weights = [float(trace["workload_weight"]) for trace in traces]
+    paired_differences = [wrench - teacher for wrench, teacher in zip(wrench_values, teacher_values)]
+    point_teacher = _weighted_mean(list(zip(teacher_values, weights)))
+    point_wrench = _weighted_mean(list(zip(wrench_values, weights)))
+    point_difference = point_wrench - point_teacher
+    return {
+        "teacher_final_success_rate": point_teacher,
+        "wrench_final_success_rate": point_wrench,
+        "paired_final_success_difference": point_difference,
+        "teacher_final_success_rate_95_ci": _bootstrap_ci(teacher_values, seed=0x574F524B),
+        "wrench_final_success_rate_95_ci": _bootstrap_ci(wrench_values, seed=0x5752454E),
+        "paired_final_success_difference_95_ci": _bootstrap_ci(paired_differences, seed=0x50414952),
+        "weighting": "workload_weighted_point_estimate_trace_bootstrap_uncertainty",
+    }
+
+
 def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float = 0.02) -> dict[str, Any]:
     if manifest.get("schema") != "wrench.mechanical-worker-traces.v1":
         raise ValueError("mechanical worker trace schema mismatch")
@@ -177,6 +223,7 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
             "wrench_frontier_tokens": wrench_frontier,
             "teacher_frontier_tokens": teacher_frontier,
         },
+        "uncertainty": _paired_success_uncertainty(traces),
         "quality_claim": False,
         "production_enablement": False,
     }

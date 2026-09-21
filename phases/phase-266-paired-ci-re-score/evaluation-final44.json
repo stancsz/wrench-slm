@@ -1,0 +1,107 @@
+{
+  "schema": "wrench.mechanical-worker-evaluation.v1",
+  "status": "PASS_MECHANICAL_WORKER",
+  "trace_count": 44,
+  "mechanical_scope": "eligible_category",
+  "mechanical_trace_count": 24,
+  "native_model_context_window_tokens": 2000000,
+  "noninferiority_margin": 0.02,
+  "arms": {
+    "minimax_teacher_only": {
+      "traces": 44,
+      "weighted_final_success_rate": 0.783130493576741,
+      "weighted_verifier_success_rate": 0.9515889114266396,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 29579.0,
+      "total_local_tokens": 0.0,
+      "median_latency_ms": 1732.047,
+      "p95_latency_ms": 9098.129,
+      "fallback_count": 0
+    },
+    "rules_plus_minimax_fallback": {
+      "traces": 44,
+      "weighted_final_success_rate": 0.8697430696416497,
+      "weighted_verifier_success_rate": 0.9999661933739012,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 16628.0,
+      "total_local_tokens": 0.0,
+      "median_latency_ms": 0.575,
+      "p95_latency_ms": 36.858,
+      "fallback_count": 20
+    },
+    "wrench_plus_identical_minimax_fallback": {
+      "traces": 44,
+      "weighted_final_success_rate": 1.0,
+      "weighted_verifier_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 0.0,
+      "total_local_tokens": 4805.0,
+      "median_latency_ms": 195.803,
+      "p95_latency_ms": 301.136,
+      "fallback_count": 0
+    },
+    "wrench_only_diagnostic": {
+      "traces": 44,
+      "weighted_final_success_rate": 1.0,
+      "weighted_verifier_success_rate": 1.0,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0,
+      "total_frontier_tokens": 0.0,
+      "total_local_tokens": 4805.0,
+      "median_latency_ms": 195.803,
+      "p95_latency_ms": 301.136,
+      "fallback_count": 0
+    }
+  },
+  "gates": {
+    "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": true,
+    "net_frontier_token_savings_at_least_95_percent": true,
+    "teacher_final_success_noninferiority": true,
+    "zero_prohibited_accepts": true,
+    "zero_unexpected_mutations": true
+  },
+  "metrics": {
+    "weighted_frontier_token_mass_coverage": 1.0,
+    "net_frontier_token_savings": 1.0,
+    "teacher_weighted_final_success_rate": 0.783130493576741,
+    "wrench_weighted_final_success_rate": 1.0,
+    "wrench_frontier_tokens": 0.0,
+    "teacher_frontier_tokens": 12951.0
+  },
+  "uncertainty": {
+    "teacher_final_success_rate": 0.783130493576741,
+    "wrench_final_success_rate": 1.0,
+    "paired_final_success_difference": 0.21686950642325897,
+    "teacher_final_success_rate_95_ci": {
+      "lower": 0.6136363636363636,
+      "upper": 0.8636363636363636,
+      "confidence": 0.95,
+      "method": "paired_trace_bootstrap",
+      "resamples": 4000,
+      "seed": 1464816203
+    },
+    "wrench_final_success_rate_95_ci": {
+      "lower": 1.0,
+      "upper": 1.0,
+      "confidence": 0.95,
+      "method": "paired_trace_bootstrap",
+      "resamples": 4000,
+      "seed": 1465009486
+    },
+    "paired_final_success_difference_95_ci": {
+      "lower": 0.13636363636363635,
+      "upper": 0.38636363636363635,
+      "confidence": 0.95,
+      "method": "paired_trace_bootstrap",
+      "resamples": 4000,
+      "seed": 1346455890
+    },
+    "weighting": "workload_weighted_point_estimate_trace_bootstrap_uncertainty"
+  },
+  "quality_claim": false,
+  "production_enablement": false,
+  "input_sha256": "4562b8d14d549fdc59d8b8431856f91cc9a125695636647128a25e031cd589d1"
+}
