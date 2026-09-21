@@ -2527,3 +2527,14 @@ tokenizer limit is 262,144, while the model-local hybrid contract declares
 4,000,000 logical raw input tokens and 64,000 effective working tokens. This
 passes the standard HF hybrid artifact gate and explicitly does not claim
 native dense 4M attention. Evidence: `phases/phase-234-standard-hf-load`.
+
+2026-09-20 portable hybrid package v93: the pinned candidate was materialized
+as a copy-pasteable model directory with hard-linked Safetensors weights,
+bundled verifier/toolbelt, model-local MapReduce prefill, tokenizer hook, and
+server entrypoint. Structural validation passed with 3,881,244,016 parameters,
+a 4,000,000 logical raw-input limit, 64,000 effective working context, and
+the embedded `first_model_side_pruner_cherrypicker` stage. A fresh package
+local 4M mechanical route completed in 28.935 ms with zero model calls. This
+strengthens the portable hybrid product path, not dense-native attention
+quality or learned MiniMax parity. Evidence:
+`phases/phase-235-portable-hybrid-package`.
