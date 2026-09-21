@@ -1,0 +1,55 @@
+{
+  "schema": "wrench.current-portable-client-integration.v1",
+  "status": "PASS_CURRENT_PACKAGE_CLIENT_SMOKE",
+  "source_commit": "1f73fd06872c881793d7087b1efdcce5c70b7d12",
+  "package": {
+    "artifact": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+    "materialized": "D:\\models\\_wrench-current-client-20260921",
+    "package_receipt_sha256": "D0A3060F3CDF20744F2644DD88AF1283F225292D5A3BC0C4DA07CA6BDDE29FFD",
+    "package_manifest_sha256": "7CC9EF77F89A200B1A003BE1EE842341AEB8E29C918D6FE046263E214B2BBDFE"
+  },
+  "port_mismatch_regression": {
+    "initial_port": 28971,
+    "initial_result": "FAILED_TEST_SETUP_CLIENT_WAITED_ON_PACKAGE_DEFAULT_28900",
+    "cause": "smoke script did not rewrite temporary OpenCode and DeepSeek Harness endpoint copies",
+    "fix": "rewrite temporary endpoint copies to the requested smoke port",
+    "fix_source_sha256": "AB5075AB85362D08ECB98B33FB4A719D9F99D7E3155C445036E6EDE3CB48FB33"
+  },
+  "opencode_and_deepseek_harness": {
+    "port": 28972,
+    "status": "PASSED",
+    "opencode_exit_code": 0,
+    "deepseek_harness_exit_code": 0,
+    "structured_read_observed": true,
+    "trace_rows": 3,
+    "model_calls": 0,
+    "protocols": ["openai-chat-completions"],
+    "backends": ["embedded-mechanical", "embedded-mechanical-settlement"],
+    "read_tool_observed": true,
+    "mutation_claim": false,
+    "receipt_sha256": "B0111E27F9552333980B205992D6E24E0ADE82874B8DFC311BE1AFC4E05719FC",
+    "trace_sha256": "45C45D9D813E2238FF5319F769FCB3BD87B72C777393AC5B7CF73C7C538B7084",
+    "raw_receipt_dir": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\portable-clients-current-28972"
+  },
+  "claude_code": {
+    "port": 28973,
+    "proxy_port": 28974,
+    "status": "PASSED",
+    "request": "Read README.md and report its first heading.",
+    "protocol": "anthropic-messages",
+    "backends": ["embedded-mechanical", "embedded-mechanical-settlement"],
+    "model_calls": 0,
+    "read_tool_observed": true,
+    "mutation_claim": false,
+    "trace_sha256": "BB9E381D323DA0159E86466BFF60CDBC102DD5BB371E0C6EAB35BF404AB1640A",
+    "raw_trace": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\claude-current.trace.jsonl",
+    "known_warning": "Claude Code emitted an unrecognized_model diagnostic for MiniMax-M2.7; the bound local trace still shows Wrench accepted the request and no first-party fallback occurred."
+  },
+  "claims_not_authorized": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "sustained concurrency or GPU OOM recovery",
+    "production readiness"
+  ]
+}

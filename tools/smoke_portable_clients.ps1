@@ -31,7 +31,24 @@ if (-not $OutputDir) {
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $workspace = Join-Path $OutputDir "client-workspace"
 New-Item -ItemType Directory -Force -Path $workspace | Out-Null
-Copy-Item -LiteralPath $opencodeTemplate -Destination (Join-Path $workspace "opencode.json")
+$opencodeConfigPath = Join-Path $workspace "opencode.json"
+Copy-Item -LiteralPath $opencodeTemplate -Destination $opencodeConfigPath
+# The portable package intentionally defaults to 28900, but this smoke test
+# accepts an alternate port so concurrent runs do not collide. Rewrite only
+# the temporary client copies, never the downloaded package.
+$opencodeConfig = Get-Content -LiteralPath $opencodeConfigPath -Raw
+$opencodeConfig = $opencodeConfig.Replace(
+    "http://127.0.0.1:28900/v1",
+    ("http://127.0.0.1:{0}/v1" -f $Port)
+)
+Set-Content -LiteralPath $opencodeConfigPath -Value $opencodeConfig -Encoding utf8
+$dshPatchForSmoke = Join-Path $workspace "dsh-wrench.smoke.patch.yml"
+$dshPatchText = Get-Content -LiteralPath $dshPatch -Raw
+$dshPatchText = $dshPatchText.Replace(
+    "http://127.0.0.1:28900/v1",
+    ("http://127.0.0.1:{0}/v1" -f $Port)
+)
+Set-Content -LiteralPath $dshPatchForSmoke -Value $dshPatchText -Encoding utf8
 Copy-Item -LiteralPath (Join-Path $root "README.md") -Destination (Join-Path $workspace "README.md")
 $trace = Join-Path $OutputDir "wrench-client.trace.jsonl"
 $serverOut = Join-Path $OutputDir "server.stdout.log"
@@ -82,7 +99,7 @@ try {
         $opencodeExit = $LASTEXITCODE
 
         $env:WRENCH_LOCAL_API_KEY = "wrench-local"
-        $dshOutput = (& $dsh --profile headless --patch $dshPatch `
+        $dshOutput = (& $dsh --profile headless --patch $dshPatchForSmoke `
             "Read README.md and report its first heading." 2>&1 | Out-String)
         $dshExit = $LASTEXITCODE
     } finally {

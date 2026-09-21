@@ -2999,3 +2999,18 @@ dynamic prefill staging. This is local in-memory/process evidence only. It
 does not close sustained concurrency, GPU OOM recovery, independent RTX 5060
 Ti execution, family-disjoint approval, or production enablement. Evidence:
 `phases/phase-291-operational-shadow`.
+
+2026-09-21 current portable client integration: the current v103 NVFP4
+artifact was materialized with hard-linked weights and bundled OpenCode,
+DeepSeek Harness, and Claude Code entrypoints. The first alternate-port smoke
+run exposed a test setup bug because the temporary OpenCode and DeepSeek
+Harness copies retained the package default port `28900`; the package was not
+modified. After fixing the smoke script to rewrite only temporary endpoint
+copies, OpenCode and DeepSeek Harness both passed on port `28972` with three
+trace rows, zero model calls, embedded mechanical and settlement backends,
+read-tool evidence, and no mutation claim. Claude Code also passed a local
+read-only request on port `28973` through the Anthropic Messages route with
+zero model calls and the same bounded backends. This closes current-package
+client wiring for local read-only smoke paths, but not MiniMax parity, learned
+decoder quality, independent RTX 5060 Ti execution, sustained concurrency, or
+production enablement. Evidence: `phases/phase-292-current-portable-client-integration`.
