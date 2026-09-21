@@ -238,7 +238,7 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
-        for path in ("/api/tags", "/api/show"):
+        for path in ("/api/version", "/api/tags", "/api/show"):
             if path == "/api/show":
                 request = urllib.request.Request(
                     f"http://127.0.0.1:{server.server_port}{path}",
@@ -253,7 +253,10 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
                 )
             with response_context as response:
                 body = json.loads(response.read().decode("utf-8"))
-            if path == "/api/tags":
+            if path == "/api/version":
+                assert body["version"] == "0.32.13"
+                assert body["wrench_api"] == "ollama-compatible"
+            elif path == "/api/tags":
                 assert body["models"][0]["name"] == "wrench-test"
             else:
                 assert body["details"]["context_length"] == 4_000_000

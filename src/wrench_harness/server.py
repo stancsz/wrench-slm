@@ -889,6 +889,12 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 },
             )
             return
+        if route == "/api/version":
+            # Ollama clients probe this endpoint before /api/tags and /api/chat.
+            # Keep the response compatible without claiming native Ollama
+            # decoder support or exposing an upstream model version.
+            self._send_json(200, {"version": "0.32.13", "wrench_api": "ollama-compatible"})
+            return
         if route == "/api/tags":
             self._send_json(
                 200,
