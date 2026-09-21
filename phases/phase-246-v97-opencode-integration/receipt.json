@@ -1,0 +1,41 @@
+{
+  "schema": "wrench.real-harness-integration.v2",
+  "status": "LOCAL_COMPACT_V97_OPENCODE_SMOKE_PASSED",
+  "host": "RTX 5070 Ti development host",
+  "source_commit": "06b9b8e",
+  "package": {
+    "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate",
+    "format": "Hugging Face Safetensors NVFP4 W4A16",
+    "verified_parameters": 3881244016,
+    "raw_context_limit_tokens": 4000000,
+    "effective_working_context_tokens": 64000
+  },
+  "client": {
+    "name": "OpenCode",
+    "protocol": "openai-chat-completions",
+    "endpoint": "http://127.0.0.1:28918/v1/chat/completions",
+    "model": "wrench-v97",
+    "work": "read README.md through the native OpenCode read tool"
+  },
+  "observed": {
+    "structured_tool_call": true,
+    "tool_name": "read",
+    "tool_executed_by_client": true,
+    "tool_result_settlement": true,
+    "final_text_response": true,
+    "model_calls": 0,
+    "mechanical_fast_path": true,
+    "mutation_observed": false,
+    "settlement_route": "embedded-mechanical-settlement",
+    "settlement_elapsed_ms": 0.39,
+    "raw_input_tokens_estimate_at_settlement": 8278,
+    "effective_working_context_tokens_at_settlement": 18
+  },
+  "trace": "compact-v97-trace.jsonl",
+  "claims_not_authorized": [
+    "independent_rtx_5060_ti_verification",
+    "learned_minimax_parity",
+    "dense_native_4m_decoder_quality",
+    "production_readiness"
+  ]
+}

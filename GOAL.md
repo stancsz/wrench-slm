@@ -2632,3 +2632,13 @@ to the new names. The current 5060 Ti queue manifest was updated to the new
 compact repo and pinned revision, but the worker job remains `pending`; no
 independent 5060 Ti result is claimed yet. The source regression after the
 publication-default rename is `176 passed, 18 warnings`.
+
+2026-09-21 compact v97 OpenCode integration: the current NVFP4 package served
+the real OpenCode CLI through its OpenAI-compatible endpoint. OpenCode issued
+a native `read` tool call for `README.md`, executed it, returned the tool
+result, and received a final settlement response. The package trace records
+`mechanical_fast_path=true`, `embedded-mechanical-settlement`, 18 effective
+working tokens at settlement, and zero model calls. This is current-v97 local
+integration evidence on the RTX 5070 Ti, not 5060 Ti evidence, learned
+MiniMax parity, dense-native decoder quality, or production authorization.
+Evidence: `phases/phase-246-v97-opencode-integration`.
