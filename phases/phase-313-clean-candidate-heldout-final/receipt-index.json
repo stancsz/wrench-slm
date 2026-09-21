@@ -1,0 +1,58 @@
+{
+  "schema": "wrench.clean-candidate-heldout-final.v1",
+  "status": "DIAGNOSTIC_HELDOUT_FINAL_COMPLETE",
+  "candidate": {
+    "package_dir": "D:\\models\\_wrench-release-candidate-20260921",
+    "source_commit": "e83a454f85be6881e989c9453291ef35d0b97429",
+    "package_manifest_sha256": "d037dbccbeba4e7258466751952c409beac5104df1b556398f141b0c0b8894de"
+  },
+  "cases": {
+    "path": "evals/wrench-expanded-v2/final.jsonl",
+    "count": 44,
+    "eligible_count": 24,
+    "sha256": "3e24ba47b78a99b1ef81bb8ea269e4377ca45097186812ce71aa99bb2c2f222b"
+  },
+  "teacher_capture": {
+    "path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-final-44-clean-candidate.json",
+    "sha256": "B315B8205555E950D52973F0609F1FEC5B7D227E6AD482E0EA1C36D2E24520CD",
+    "requests": 44,
+    "transport_failures": 0,
+    "invalid_responses": 0,
+    "input_sha256_matches_cases": true,
+    "identity_status": "endpoint_model_id_recorded_owner_label_not_independently_verified"
+  },
+  "evaluation": {
+    "path": "evaluation.json",
+    "sha256": "20B11512BA056314915FBF6ACCAFEE7C4AB50D06BD7CF62B2FDE2CAFCC5E03A7",
+    "trace_manifest_path": "trace-manifest.json",
+    "trace_manifest_sha256": "F6C674C524B106159A6ECFD2E3537BB6A5D939EBD81F938FAE2644A171E3578C",
+    "trace_set_sha256": "3fe5ea72fe22cf1f83c2f7a984e360fbcbfb22752964554fe283bafc3bb1f259",
+    "trace_count": 44,
+    "wrench_weighted_final_success": 1.0,
+    "teacher_weighted_final_success": 0.9488987956617206,
+    "wrench_weighted_frontier_token_coverage": 1.0,
+    "net_frontier_token_savings": 1.0,
+    "wrench_frontier_tokens": 0,
+    "wrench_local_tokens": 4805,
+    "wrench_p50_ms": 183.104,
+    "wrench_p95_ms": 297.706,
+    "prohibited_accepts": 0,
+    "unexpected_mutations": 0,
+    "paired_final_success_difference_ci95": [0.0, 0.11363636363636363]
+  },
+  "controls": {
+    "health_fixture": true,
+    "client_mechanical_fast_path": false,
+    "used_for_training_or_tuning": false,
+    "quality_claim": false,
+    "production_enablement": false,
+    "suite_authorization": "pending_human_approval"
+  },
+  "claims_not_authorized": [
+    "final family-disjoint production approval",
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}

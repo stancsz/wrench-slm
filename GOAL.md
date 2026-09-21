@@ -3096,3 +3096,16 @@ output, or receipt. This was a new fork, not an append to the old failed
 thread, so the failure is classified as an unverified remote control-plane
 execution rather than missing task context. No 5060 Ti metric is promoted.
 Evidence: `phases/phase-312-5060ti-fresh-fork-no-receipt`.
+
+2026-09-21 clean candidate held-out final diagnostic: the current
+`evals/wrench-expanded-v2/final.jsonl` hash was freshly captured against the
+local MiniMax-compatible endpoint with `44/44` teacher responses, zero
+transport failures, and zero invalid responses. The clean candidate then ran
+all 44 rows with the client mechanical fast path bypassed and the isolated
+health fixture enabled. Wrench plus identical fallback reached weighted final
+success `1.0`, weighted verifier success `1.0`, weighted frontier coverage
+`1.0`, net savings `1.0`, zero frontier tokens, `4,805` local tokens, p50/p95
+`183.104/297.706 ms`, zero prohibited accepts, and zero unexpected mutations.
+The suite is still `DRAFT_PENDING_HUMAN_APPROVAL`, so this is held-out
+diagnostic evidence, not final family-disjoint approval. Evidence:
+`phases/phase-313-clean-candidate-heldout-final`.
