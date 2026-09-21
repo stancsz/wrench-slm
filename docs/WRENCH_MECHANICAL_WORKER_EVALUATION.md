@@ -116,6 +116,16 @@ latency. This shows a native decoder/protocol quality gap independent of 4M
 context pressure. The learned/native lane remains fail-closed and is not a
 quality pass. Evidence: `phases/phase-279-current-v103-real-generation-gap`.
 
+Luna advisor review and a 64K reference control narrowed the failure further.
+The BF16 Transformers reference checkpoint also failed the same compacted 64K
+proposal prompt after two model calls, including one bounded repair, with
+`model_output_invalid_json` and 28,443.508 ms elapsed. The installed FreeToken
+runtime additionally rejects JSON-schema response formats because it has no
+constrained decoding. The result is recorded in
+`phases/phase-280-luna-decoder-diagnosis`; native learned generation remains
+diagnostic-only until schema-focused training or a genuinely constrained
+decoder is demonstrated.
+
 The connected 5060TI host also produced a partial independent receipt for its
 older Experimental Preview package: a direct model-local 4M probe passed in
 570.417 ms with 31,997,963 raw characters, and its six-case 2M/4M retrieval

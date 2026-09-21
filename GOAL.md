@@ -2915,6 +2915,15 @@ class, proving that this is not only 4M context pressure. The native learned
 lane therefore remains fail-closed and is not a MiniMax-quality pass. Evidence:
 `phases/phase-279-current-v103-real-generation-gap`.
 
+2026-09-21 Luna decoder diagnosis: Sol review recommended a 64K
+current-versus-reference control before another LoRA attempt. The BF16
+Transformers reference also failed exact proposal validity after two calls and
+28.443 seconds, while FreeToken explicitly lacks JSON-schema constrained
+decoding. This shows that the malformed native proposal is not solely a 4M or
+NVFP4 issue. The learned decoder remains diagnostic-only; the next model lane
+requires schema-focused SFT or a real constrained backend. Evidence:
+`phases/phase-280-luna-decoder-diagnosis`.
+
 2026-09-21 5060 Ti partial direct-context evidence: the connected
 `DESKTOP-KET1SKP` host executed a real package-local 4M probe with 31,997,963
 raw characters in 570.417 ms and passed the six-case 2M/4M retrieval probe
