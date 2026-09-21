@@ -1,0 +1,81 @@
+2026-09-21T15:57:38.159Z [DEBUG] MDM settings load completed in 12ms
+2026-09-21T15:57:38.182Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Program Files\ClaudeCode\managed-settings.json
+2026-09-21T15:57:38.183Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.json
+2026-09-21T15:57:38.184Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.local.json
+2026-09-21T15:57:38.184Z [DEBUG] CA certs: Config fallback - globalEnv keys: , settingsEnv keys: ANTHROPIC_BASE_URL,ANTHROPIC_AUTH_TOKEN,ANTHROPIC_API_KEY,ANTHROPIC_MODEL,ANTHROPIC_DEFAULT_SONNET_MODEL,ANTHROPIC_DEFAULT_OPUS_MODEL,ANTHROPIC_DEFAULT_HAIKU_MODEL,CLAUDE_CODE_AUTO_COMPACT_WINDOW,API_TIMEOUT_MS,CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+2026-09-21T15:57:38.189Z [DEBUG] [init] configureGlobalMTLS starting
+2026-09-21T15:57:38.189Z [DEBUG] [init] configureGlobalMTLS complete
+2026-09-21T15:57:38.189Z [DEBUG] [init] configureGlobalAgents starting
+2026-09-21T15:57:38.190Z [DEBUG] CA certs: stores=bundled,system, extraCertsPath=undefined
+2026-09-21T15:57:38.190Z [DEBUG] CA certs: Loaded 121 bundled root certificates
+2026-09-21T15:57:38.244Z [DEBUG] CA certs: Dropped 10 expired certificate(s) from system store
+2026-09-21T15:57:38.244Z [DEBUG] CA certs: Loaded 106 system CA certificates
+2026-09-21T15:57:38.245Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T15:57:38.245Z [DEBUG] [init] configureGlobalAgents complete
+2026-09-21T15:57:38.246Z [DEBUG] Using bash path: "C:\Program Files\Git\bin\bash.exe"
+2026-09-21T15:57:38.247Z [DEBUG] Git remote URL: null
+2026-09-21T15:57:38.247Z [DEBUG] No git remote URL found
+2026-09-21T15:57:38.248Z [DEBUG] Error log sink initialized
+2026-09-21T15:57:38.253Z [DEBUG] [Claude in Chrome] Disabled: OAuth token has no scope accepted by /api/oauth/validate (needs user:profile, user:office, or user:ccr_inference; env-var and setup-token sessions default to user:inference only)
+2026-09-21T15:57:38.504Z [DEBUG] [ToolSearch:optimistic] disabled: ANTHROPIC_BASE_URL=http://127.0.0.1:4000 is not a first-party Anthropic host. Set ENABLE_TOOL_SEARCH=true (or auto / auto:N) if your proxy forwards tool_reference blocks.
+2026-09-21T15:57:38.505Z [DEBUG] [STARTUP] Loading MCP configs...
+2026-09-21T15:57:38.525Z [DEBUG] [STARTUP] Running setup()...
+2026-09-21T15:57:38.531Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Program Files\ClaudeCode\managed-settings.json
+2026-09-21T15:57:38.533Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.json
+2026-09-21T15:57:38.533Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.local.json
+2026-09-21T15:57:38.534Z [DEBUG] Error log sink initialized
+2026-09-21T15:57:38.546Z [DEBUG] Loaded 4 installed plugins from C:\Users\stanc\.claude\plugins\installed_plugins.json
+2026-09-21T15:57:38.547Z [DEBUG] Skipping orphaned enabledPlugins entry ralph-wiggum@claude-plugins-official: not in marketplace catalog
+2026-09-21T15:57:38.548Z [DEBUG] Loading skills from: managed=C:\Program Files\ClaudeCode\.claude\skills, user=C:\Users\stanc\.claude\skills, project=[]
+2026-09-21T15:57:38.548Z [DEBUG] [reduced mode] Skipping skill dir discovery
+2026-09-21T15:57:38.548Z [DEBUG] [STARTUP] setup() completed in 23ms
+2026-09-21T15:57:38.549Z [DEBUG] Cleared mTLS configuration cache
+2026-09-21T15:57:38.549Z [DEBUG] Cleared proxy agent cache
+2026-09-21T15:57:38.549Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T15:57:38.551Z [DEBUG] [STARTUP] Loading commands and agents...
+2026-09-21T15:57:38.593Z [DEBUG] getSkills returning: 0 skill dir commands, 0 plugin skills, 42 bundled skills, 0 builtin plugin skills
+2026-09-21T15:57:38.598Z [DEBUG] Found 1 plugins (1 enabled, 0 disabled)
+2026-09-21T15:57:38.599Z [DEBUG] Plugin loading errors: Plugin "ralph-loop" not cached at C:\Users\stanc\.claude\plugins\cache\claude-plugins-official\ralph-loop\1.0.0 — run /plugin to refresh
+2026-09-21T15:57:38.599Z [DEBUG] Total plugin workflows loaded: 0
+2026-09-21T15:57:38.611Z [DEBUG] [STARTUP] Commands and agents loaded in 60ms
+2026-09-21T15:57:38.613Z [DEBUG] Skipping startup prefetches, last ran 1790006259s ago
+2026-09-21T15:57:38.613Z [DEBUG] [STARTUP] MCP configs resolved in 1ms (awaited at +108ms)
+2026-09-21T15:57:38.615Z [DEBUG] Cleared mTLS configuration cache
+2026-09-21T15:57:38.615Z [DEBUG] Cleared proxy agent cache
+2026-09-21T15:57:38.615Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T15:57:38.616Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:38.617Z [DEBUG] [MCP] --mcp-config servers running fully async (nonblocking)
+2026-09-21T15:57:38.617Z [DEBUG] [MCP] claude.ai connectors running fully async (nonblocking)
+2026-09-21T15:57:38.618Z [DEBUG] [auto-mode] verifyAutoModeGateAccess: enabledState=enabled disabledBySettings=false model=wrench-v97 modelSupported=true disableFastModeBreakerFires=false carouselAvailable=true canEnterAuto=true
+2026-09-21T15:57:38.623Z [DEBUG] [Perfetto] initializePerfettoTracing called, env value: undefined
+2026-09-21T15:57:38.624Z [DEBUG] [3P telemetry] isTelemetryEnabled=false (CLAUDE_CODE_ENABLE_TELEMETRY=undefined)
+2026-09-21T15:57:38.642Z [DEBUG] [print] turns run on legacy per-turn ask()
+2026-09-21T15:57:38.646Z [DEBUG] [ScheduledTasks] scheduler start() — enabled=false, hasTasks=false
+2026-09-21T15:57:38.667Z [DEBUG] [win32-proc-times] bun:ffi loaded, using procStartFt
+2026-09-21T15:57:38.669Z [WARN] [3P telemetry] Event dropped (no event logger initialized): plugin_loaded
+2026-09-21T15:57:38.671Z [DEBUG] Git remote URL: https://github.com/stancsz/wrench-slm.git
+2026-09-21T15:57:38.671Z [DEBUG] Parsed repository: github.com/stancsz/wrench-slm from URL: https://github.com/stancsz/wrench-slm.git
+2026-09-21T15:57:38.672Z [DEBUG] [sessionRegistry] sweep permitted (domain win32:desktop-ao7chmg)
+2026-09-21T15:57:38.717Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:38.717Z [DEBUG] [session-notices] advertise=false mode=bypassPermissions flag=false(disabled) pollChannel=false remote=false remoteEnv=false nonInteractive=true
+2026-09-21T15:57:38.721Z [DEBUG] autocompact: tokens=[REDACTED] level=ok effectiveWindow=180000
+2026-09-21T15:57:38.729Z [DEBUG] attribution header x-anthropic-billing-header: cc_version=2.1.251.113; cc_entrypoint=sdk-cli;
+2026-09-21T15:57:38.729Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:38.730Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:38.740Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:38.741Z [DEBUG] [API:timing] dispatching to firstParty model=wrench-v97
+2026-09-21T15:57:38.742Z [DEBUG] [API REQUEST] /v1/messages source=sdk
+2026-09-21T15:57:40.202Z [DEBUG] Stream started - received first chunk
+2026-09-21T15:57:40.202Z [DEBUG] [API:timing] first byte after 1462ms
+2026-09-21T15:57:40.773Z [INFO] [Stall] tool_dispatch_start tool=Read toolUseId=call_yFNSXko2clkL9akxNVhzzqz3 permissionDecisionMs=6
+2026-09-21T15:57:40.781Z [INFO] [Stall] tool_dispatch_end tool=Read toolUseId=call_yFNSXko2clkL9akxNVhzzqz3 outcome=ok durationMs=8
+2026-09-21T15:57:40.792Z [DEBUG] autocompact: tokens=[REDACTED] level=ok effectiveWindow=180000
+2026-09-21T15:57:40.794Z [DEBUG] attribution header x-anthropic-billing-header: cc_version=2.1.251.113; cc_entrypoint=sdk-cli;
+2026-09-21T15:57:40.795Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:40.795Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:40.796Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
+2026-09-21T15:57:40.796Z [DEBUG] [API:timing] dispatching to firstParty model=wrench-v97
+2026-09-21T15:57:40.797Z [DEBUG] [API REQUEST] /v1/messages source=sdk
+2026-09-21T15:57:43.297Z [DEBUG] Stream started - received first chunk
+2026-09-21T15:57:43.297Z [DEBUG] [API:timing] first byte after 2501ms
+2026-09-21T15:57:43.489Z [DEBUG] Fast mode unavailable: Fast mode is not available in the Agent SDK
