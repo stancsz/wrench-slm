@@ -106,18 +106,18 @@ result = worker.propose([
 On the historical 220-case diagnostic replay, with client-side mechanical
 shortcut disabled:
 
-- weighted mechanical frontier-token coverage: `94.5411%`;
-- net frontier-token savings: `95.5310%`;
+- weighted mechanical frontier-token coverage: `99.2986%`;
+- net frontier-token savings: `100%`;
 - Wrench plus identical MiniMax fallback final success: `99.6503%`;
-- median / p95 latency: `183.314 ms` / `337.174 ms`;
+- median / p95 latency: `185.095 ms` / `299.445 ms`;
 - prohibited accepts: `0`;
 - unexpected mutations: `0`.
 
-The direct model-local context matrix passed three repetitions each at 64K,
-128K, 256K, 2M, and 4M. At 4M, the measured raw estimate was `3,999,995`
-tokens and complete HTTP p50/p95 was `158.906` / `159.251 ms`. The 2M/4M
-reference-lookup probe recovered exact proposals in `18/18` cases, with 4M
-retrieval p50/p95 of `32.560` / `40.772 ms` and zero model calls.
+The current v102 package-local 4M handoff accepted `3,996,267` raw estimated
+tokens, staged `1,955` effective model-prefill tokens, and completed in
+`238.189 ms`, including `31.663 ms` context-gate time. The upstream in this
+handoff was a local protocol stub, so this is direct raw intake and bounded
+MapReduce handoff evidence, not native dense decoder quality.
 
 These are hybrid model-local diagnostics, not dense native attention quality,
 stock Ollama native generation quality, family-disjoint approval, or
@@ -127,7 +127,7 @@ architecture adapters and are not claimed as verified.
 
 ## Development status
 
-The full source regression is `168 passed`. Final release still requires the
+The full source regression is `176 passed`. Final release still requires the
 human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
 Ti verification, and operational shadow evidence. Wrench has no direct
 mutation authority. It proposes bounded actions or abstains, and the
