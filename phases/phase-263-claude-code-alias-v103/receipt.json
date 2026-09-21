@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.claude-code-routing-diagnostic.v2",
+  "status": "NOT_VERIFIED",
+  "host": "RTX 5070 Ti development host",
+  "claude_code_version": "2.1.251",
+  "package": {
+    "model": "wrench-v103",
+    "local_base_url": "http://127.0.0.1:28939",
+    "wrench_trace_rows": 0
+  },
+  "invocation": {
+    "bare": true,
+    "client_model_alias": "sonnet",
+    "resolved_client_model": "claude-sonnet-5",
+    "fake_api_key": true,
+    "oauth_cleared": true,
+    "nonessential_traffic_disabled": true,
+    "prompt": "Read README.md and summarize it."
+  },
+  "observed": {
+    "api_key_source": "ANTHROPIC_API_KEY",
+    "provider": "firstParty",
+    "local_wrench_request_observed": false,
+    "reported_cost_usd": 0.016196,
+    "status": "NOT_VERIFIED"
+  },
+  "trace": "claude-alias-v103.trace.jsonl",
+  "claims_not_authorized": [
+    "Claude Code local endpoint routing",
+    "Claude Code Wrench tool execution",
+    "zero provider spend for this diagnostic",
+    "production readiness"
+  ]
+}
