@@ -21,6 +21,12 @@ promote a checkpoint for release.
   matches and 16/44 exact targets. This improved over the earlier 100-step
   result of 26/44 outcome matches and 10/44 exact targets, but remains far
   below the production target.
+- The uncalibrated base candidate reached 20/44 outcome matches, 0/44 exact
+  targets, with 21.063 second median generation latency. LoRA is therefore a
+  real quality improvement, not just a formatting change.
+- Increasing the attention LoRA from rank 8 to rank 16 at the same 1,024-step
+  budget regressed to 25/44 outcome matches and 12/44 exact targets. Rank 16
+  is not promoted.
 - The independent verifier remained in the loop. No result in this phase is
   a final quality, safety, MiniMax-parity, or release claim.
 
@@ -40,4 +46,3 @@ in long path copying, patch diff copying, and exact boundary abstention. Keep
 this candidate diagnostic-only and prioritize a structured mechanical toolbelt
 or a training/data design that explicitly improves those fields before any
 release selection.
-

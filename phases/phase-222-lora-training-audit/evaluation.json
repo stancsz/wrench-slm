@@ -29,6 +29,30 @@
       "median_latency_ms": 3650.691,
       "p95_latency_ms": 8339.023,
       "runtime": "Triton fused delta-rule, causal-conv1d reference fallback"
+    },
+    {
+      "steps": 1024,
+      "lora_rank": 16,
+      "lora_alpha": 32.0,
+      "final_loss": 0.05622522905468941,
+      "development_cases": 44,
+      "outcome_matches": 25,
+      "exact_target_matches": 12,
+      "verified_accepted": 24,
+      "median_latency_ms": 3523.046,
+      "p95_latency_ms": 5515.174,
+      "runtime": "Triton fused delta-rule, causal-conv1d reference fallback"
+    },
+    {
+      "steps": 0,
+      "model": "uncalibrated base candidate",
+      "development_cases": 44,
+      "outcome_matches": 20,
+      "exact_target_matches": 0,
+      "verified_accepted": 0,
+      "median_latency_ms": 21062.711,
+      "p95_latency_ms": 21304.837,
+      "runtime": "Triton fused delta-rule, causal-conv1d reference fallback"
     }
   ],
   "sanity": {
