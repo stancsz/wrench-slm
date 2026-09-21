@@ -1,0 +1,83 @@
+{
+  "schema": "wrench.monster-context-shadow-receipt.v1",
+  "status": "PASS_MODEL_LOCAL_2M_4M_WITH_CONCURRENT_WORK",
+  "scope": "local portable package mechanical route; no dense native attention or production claim",
+  "package_dir": "D:\\models\\_wrench-current-client-20260921",
+  "monster_rows": [
+    {
+      "target_tokens": 2000000,
+      "admission_safety_margin_tokens": 4096,
+      "request_bytes": 17563462,
+      "payload_sha256": "ff3fc426eee09f75be0c407b16a05657780397505b2d44e8435c580978de08e3",
+      "http_status": 200,
+      "elapsed_ms": 284.642,
+      "status": "abstain",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "raw_input_tokens_estimate": 1996181,
+      "raw_input_chars": 17563323,
+      "context_gate": {
+        "raw_context_limit_tokens": 4000000,
+        "effective_working_context_tokens": 19,
+        "working_context_budget_tokens": 64000,
+        "raw_payload_hash_bound": true,
+        "gate_latency_ms": 14.275
+      }
+    },
+    {
+      "target_tokens": 4000000,
+      "admission_safety_margin_tokens": 4096,
+      "request_bytes": 35163462,
+      "payload_sha256": "34860dd461451b08c4ccdcf0abf4153e725b8e3f13713141c914501c05f56c42",
+      "http_status": 200,
+      "elapsed_ms": 134.244,
+      "status": "abstain",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "raw_input_tokens_estimate": 3996531,
+      "raw_input_chars": 35163323,
+      "context_gate": {
+        "raw_context_limit_tokens": 4000000,
+        "effective_working_context_tokens": 19,
+        "working_context_budget_tokens": 64000,
+        "raw_payload_hash_bound": true,
+        "gate_latency_ms": 26.636
+      }
+    }
+  ],
+  "ordinary_probe": {
+    "count": 3,
+    "accepted": 3,
+    "errors": 0,
+    "max_elapsed_ms": 115.429,
+    "p95_elapsed_ms": 82.59
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 24490635264,
+    "ram_available_ratio": 0.4767,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 24254844928,
+    "ram_available_ratio": 0.4722,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "all_monster_points_pass": true,
+    "ordinary_probe_recovered_while_monster_active": true,
+    "zero_model_calls": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "all_checks_pass": true
+}
