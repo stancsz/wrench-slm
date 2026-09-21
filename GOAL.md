@@ -2631,7 +2631,7 @@ deployment and safety-critical use. Hugging Face redirects the old repo IDs
 to the new names. The current 5060 Ti queue manifest was updated to the new
 compact repo and pinned revision, but the worker job remains `pending`; no
 independent 5060 Ti result is claimed yet. The source regression after the
-publication-default rename is `176 passed, 18 warnings`.
+publication-default rename is now `182 passed, 18 warnings`.
 
 2026-09-21 compact v97 OpenCode integration: the current NVFP4 package served
 the real OpenCode CLI through its OpenAI-compatible endpoint. OpenCode issued
@@ -2826,3 +2826,12 @@ proposal compacted 400 estimated raw tokens to 206 effective tokens with a
 2.488 ms gate. This is portable local integration evidence, not learned
 MiniMax parity, dense-native 4M quality, 5060 Ti evidence, or production
 readiness. Evidence: `phases/phase-270-portable-claude-launcher`.
+
+2026-09-21 portable client end-to-end smoke: the freshly materialized package
+was tested with the bundled OpenCode config and DeepSeek Harness overlay. Both
+clients exited with code 0 after a real read-only task. The package trace
+contained three OpenAI-compatible rows, a structured `read` tool, proposal and
+settlement backends, zero model calls, and no mutation claim. This is package
+integration evidence on the RTX 5070 Ti host, not independent 5060 Ti,
+MiniMax-parity, dense-native-quality, or production evidence. Evidence:
+`phases/phase-271-portable-client-e2e`.

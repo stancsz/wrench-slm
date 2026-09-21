@@ -370,7 +370,22 @@ trace set is approved and independently reproduced.
 With `run_wrench.ps1` running from the downloaded directory, perform one
 read-only task through each client and retain the client log plus Wrench trace:
 
+The repository also provides a repeatable local smoke runner. It starts a
+mechanical-only package server, creates an isolated client workspace, runs both
+OpenCode and DeepSeek Harness, and writes a JSON receipt plus client logs:
+
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\smoke_portable_clients.ps1 `
+  -PackageDir C:\path\to\Wrench `
+  -AllowedRoot C:\path\to\repo `
+  -OutputDir phases\local-portable-client-smoke
+```
+
+The manual commands below are useful when a client-specific diagnostic is
+needed:
+
+```powershell
+# Start .\run_wrench.ps1 separately when using the manual commands.
 # OpenCode: copy opencode.wrench.json to opencode.json in the test project
 opencode run --pure -m wrench/wrench-local "Read README.md and report its first heading."
 

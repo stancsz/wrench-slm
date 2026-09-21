@@ -149,6 +149,18 @@ def test_portable_client_configs_declare_model_local_four_million_context():
     assert "wrench-local" in dsh
 
 
+def test_portable_client_smoke_runner_has_fail_closed_receipt_contract():
+    runner = Path("tools/smoke_portable_clients.ps1").read_text(encoding="utf-8")
+    assert "wrench.portable-client-smoke.v1" in runner
+    assert "wrench_server.py" in runner
+    assert "--mechanical-only" in runner
+    assert "opencode" in runner
+    assert "deepseek_harness" in runner
+    assert "model_calls" in runner
+    assert "claims_not_authorized" in runner
+    assert "Stop-Process -Id $serverProcess.Id" in runner
+
+
 def test_materializer_keeps_toolbelt_distinct_from_verifier():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert 'src" / "wrench_harness" / "toolbelt.py", runtime_dir / "toolbelt.py"' in script

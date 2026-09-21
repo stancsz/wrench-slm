@@ -94,6 +94,6 @@ receipts are under `phases/phase-230-current-source-matched-arms-v2`,
 `phases/phase-236-portable-package-http-4m`, and
 `phases/phase-238-real-harness-integration`.
 
-The full source regression is `176 passed, 18 warnings`. Final release still
+The full source regression is `182 passed, 18 warnings`. Final release still
 requires the human-approved family-disjoint MiniMax-worker trace set,
 independent RTX 5060 Ti verification, and operational shadow evidence.

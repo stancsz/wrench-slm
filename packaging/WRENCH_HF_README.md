@@ -177,7 +177,7 @@ architecture adapters and are not claimed as verified.
 
 ## Development status
 
-The full source regression is `176 passed`. Final release still requires the
+The full source regression is `182 passed`. Final release still requires the
 human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
 Ti verification, and operational shadow evidence. Wrench has no direct
 mutation authority. It proposes bounded actions or abstains, and the
