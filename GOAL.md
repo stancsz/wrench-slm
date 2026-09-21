@@ -2509,3 +2509,12 @@ but the learned output remained malformed and failed strict verification. This
 closes a stronger model-local HTTP intake and real-generation integration
 milestone while keeping learned quality, retry efficiency, and MiniMax parity
 open. Evidence: `phases/phase-232-real-worker-http-4m`.
+
+2026-09-20 corrected real model-local HTTP 4M probe: the same direct endpoint
+was rerun with a 128-token output cap instead of 32. It again accepted
+3,996,369 raw-token-equivalent input, returned HTTP 200 through the real
+Transformers backend, and reduced it to 2,033 staged tokens in 191.537 ms.
+Two model calls including a retry took 27,378.546 ms, and the output was still
+malformed and failed strict verification. This rules out output-cap truncation
+as the primary explanation for the learned fallback gap. Evidence:
+`phases/phase-233-real-worker-http-4m-128`.
