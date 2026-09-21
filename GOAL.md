@@ -2398,3 +2398,12 @@ structural validation, reported `context_length=4000000` and `parameter_size=3.8
 and accepted a 3,998,332-token direct `/api/chat` request in 74.265 ms with
 zero model calls. Evidence:
 `phases/phase-221-v92-enforced-manifest`.
+
+2026-09-20 LoRA training pipeline audit: direct token-ID label construction
+passed all 132 calibration rows, and the isolated Transformers path produced a
+real 2/2 exact two-row sanity result. The best development-only rank-8,
+1,024-step attention/router LoRA reached 30/44 outcome matches and 16/44 exact
+targets, improving over the uncalibrated base at 20/44 and the earlier
+100-step LoRA at 26/44. A rank-16, 1,024-step run regressed to 25/44, so it
+was not promoted. These are diagnostic generation results, not final-suite or
+release evidence. Evidence: `phases/phase-222-lora-training-audit`.
