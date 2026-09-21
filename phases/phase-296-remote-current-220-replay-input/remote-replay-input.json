@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.remote-current-220-replay-input.v1",
+  "status": "READY_FOR_FRESH_5060TI_REPLAY",
+  "cases_path": "evals/wrench-expanded-v2/cases.jsonl",
+  "cases_count": 220,
+  "cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+  "teacher_path": "phases/phase-296-remote-current-220-replay-input/teacher-current-220.json",
+  "teacher_sha256": "537D0F44BEE9E2DB15BC7064F7D369562918DC3EBD02CAF24813AB7CE73FAED4",
+  "teacher_requests": 220,
+  "teacher_transport_failures": 0,
+  "teacher_invalid_responses": 0,
+  "required_remote_host": "DESKTOP-KET1SKP",
+  "required_gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "required_source": "fresh temporary export of origin/main after this phase is pushed",
+  "required_resource_reserve": "leave at least 10% system RAM and VRAM free",
+  "required_command": "py -3 tools/run_package_220_replay.py --package-dir <current-v103-package> --cases evals/wrench-expanded-v2/cases.jsonl --teacher-traces phases/phase-296-remote-current-220-replay-input/teacher-current-220.json --root . --output-dir <external-output> --health-fixture --health-fixture-port <free-port> --port <free-port>",
+  "claims_not_authorized": [
+    "teacher identity beyond endpoint model id",
+    "production readiness",
+    "native learned decoder parity",
+    "completion from a package-only or wrong-host run"
+  ]
+}
