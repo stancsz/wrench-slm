@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.operational-shadow-receipt.v1",
+  "date": "2026-09-21",
+  "source_commit": "4378d646f7cad580391bd48a35dbcca8b4e04d67",
+  "host": "RTX 5070 Ti",
+  "command": "pytest -q tests/test_harness.py tests/test_wrench_server.py",
+  "status": "PASS_BOUNDED_OPERATIONAL_SHADOW",
+  "passed": 31,
+  "failed": 0,
+  "elapsed_seconds": 10.77,
+  "coverage": [
+    "cancellation before and after attempt",
+    "attempt ceiling and circuit opening",
+    "operator bypass and reset",
+    "hash-bound router state persistence",
+    "native upstream timeout mapped to HTTP 504",
+    "native response verification and settlement",
+    "OpenAI-compatible and Anthropic-compatible local routes",
+    "Ollama-compatible routes and 4M context boundary",
+    "bounded dynamic prefill staging"
+  ],
+  "limitations": [
+    "in-memory and local-process shadow only",
+    "does not prove sustained concurrency or GPU OOM recovery",
+    "does not prove independent RTX 5060 Ti execution",
+    "does not authorize production routing"
+  ]
+}

@@ -2988,3 +2988,14 @@ parity, family-disjoint approval, production enablement, or independent RTX
 5060 Ti evidence. A clean new task ran locally on the RTX 5070 Ti, and the
 single handoff repair attempt failed with `No matching saved project was found
 on 5060TI`. Evidence: `phases/phase-290-worker-plane`.
+
+2026-09-21 bounded operational shadow: at source commit `4378d64`, the focused
+router and server shadow suite passed `31` tests in `10.77 s` with zero
+failures. It covers cancellation before and after attempts, attempt ceilings,
+circuit opening, operator bypass and reset, hash-bound router state
+persistence, native timeout mapping, response verification, local OpenAI and
+Anthropic routes, Ollama-compatible routes, the 4M boundary, and bounded
+dynamic prefill staging. This is local in-memory/process evidence only. It
+does not close sustained concurrency, GPU OOM recovery, independent RTX 5060
+Ti execution, family-disjoint approval, or production enablement. Evidence:
+`phases/phase-291-operational-shadow`.
