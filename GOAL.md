@@ -2722,3 +2722,8 @@ and server staging measured `98.032 ms`. The upstream remains a local protocol
 stub, so this is package intake and handoff accounting evidence on the RTX
 5070 Ti, not dense-native decoder quality, MiniMax parity, or 5060 Ti evidence.
 Evidence: `phases/phase-257-v103-package-4m-handoff`.
+
+The pending 5060 Ti manifest was refreshed to source commit `6d25fc8` and the
+same pinned Hub revision. It remains a local pending manifest until its exact
+file is visibly present in the Drive `jobs/pending` folder; no remote result is
+claimed from this update.
