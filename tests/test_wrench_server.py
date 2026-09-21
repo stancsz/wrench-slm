@@ -38,6 +38,8 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         assert body["choices"][0]["message"]["content"].startswith('{"schema":"wrench.proposal.v1"')
         assert body["wrench"]["backend"] == "embedded-mechanical"
         assert body["wrench"]["model_calls"] == 0
+        assert body["wrench"]["context_gate"]["stage"] == "mechanical_fast_pruner_cherrypicker"
+        assert body["wrench"]["context_gate"]["raw_payload_hash_bound"] is True
         assert body["usage"]["prompt_tokens"] > 0
         accounting = body["wrench"]["cost_accounting"]
         assert accounting["schema"] == "wrench.cost-accounting-receipt.v1"
@@ -112,6 +114,7 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
             assert content.startswith('{"schema":"wrench.proposal.v1"')
             assert body["wrench"]["mechanical_fast_path"] is True
             assert body["wrench"]["model_calls"] == 0
+            assert body["wrench"]["context_gate"]["effective_working_context_tokens"] > 0
     finally:
         server.shutdown()
         server.server_close()

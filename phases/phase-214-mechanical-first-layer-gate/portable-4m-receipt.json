@@ -1,0 +1,51 @@
+{
+  "schema": "wrench.mechanical-first-layer-gate-receipt.v1",
+  "date": "2026-09-20",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v88-mechanical-gate",
+  "raw_input_tokens": 3998332,
+  "raw_input_chars": 7998072,
+  "round_trip_ms": [
+    69.658,
+    37.463,
+    29.749
+  ],
+  "status": "accepted",
+  "backend": "embedded-mechanical",
+  "mechanical_fast_path": true,
+  "model_calls": 0,
+  "proposal": {
+    "schema": "wrench.proposal.v1",
+    "action": "read_file",
+    "path": "wrench-package.json",
+    "max_bytes": 4096
+  },
+  "context_gate": {
+    "schema": "wrench.first-layer-context-gate.v1",
+    "stage": "mechanical_fast_pruner_cherrypicker",
+    "strategy": "latest_intent_plus_exact_lookup",
+    "raw_context_limit_tokens": 4000000,
+    "raw_input_tokens": 3998332,
+    "effective_working_context_tokens": 7,
+    "working_context_budget_tokens": 64000,
+    "selected_hot_spans": 1,
+    "selected_reference_spans": 0,
+    "omitted_reference_spans": 1,
+    "route_source": "latest_intent",
+    "raw_payload_sha256": "47e66d3937a2f89c7ca25534d3051e9d18fe1afd2dc6df6e4e215e8b76da6d91",
+    "raw_payload_hash_bound": true,
+    "native_input_claim": false,
+    "gate_latency_ms": [
+      7.813,
+      6.361,
+      6.673
+    ],
+    "reference_scan_tokens": 7
+  },
+  "verification": {
+    "package_validation": "PASS_STRUCTURAL_PACKAGE",
+    "package_validation_receipt": "phases/phase-214-mechanical-first-layer-gate/package-validation-v88.json",
+    "full_tests": "168 passed",
+    "dense_native_quality_claim": false,
+    "production_enablement": false
+  }
+}

@@ -2344,3 +2344,14 @@ the read proposal passed schema, authority, evidence, consistency, blind
 critic, and final-gate verification. This is the strongest direct model-local
 hybrid evidence so far, but it is not dense native attention quality. Evidence:
 `phases/phase-213-direct-model-local-4m`.
+
+2026-09-20 mechanical first-layer gate: the actual no-model mechanical fast
+path now emits the same hash-bound first-layer receipt family. It keeps the
+newest intent as the hot span, scans historical payload only for exact bounded
+lookup or patch evidence, and exposes the gate from the model-local OpenAI and
+Ollama-compatible responses. A fresh v88 package accepted a 3,998,332-token
+raw request in three measured round trips of 69.658 ms, 37.463 ms, and
+29.749 ms, returned the bounded read proposal with zero model calls, and
+recorded 6.361 ms to 7.813 ms `mechanical_fast_pruner_cherrypicker` gates.
+This is hybrid raw intake evidence, not dense-native attention quality.
+Evidence: `phases/phase-214-mechanical-first-layer-gate`.

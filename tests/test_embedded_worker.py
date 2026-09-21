@@ -14,6 +14,8 @@ def test_embedded_worker_handles_mechanical_proposal_without_model(tmp_path: Pat
     assert result["fallback_reason"] == "missing_path"
     assert result["backend"] == "embedded-mechanical"
     assert result["mechanical_fast_path"] is True
+    assert result["context_gate"]["stage"] == "mechanical_fast_pruner_cherrypicker"
+    assert result["context_gate"]["raw_payload_hash_bound"] is True
 
 
 def test_embedded_worker_attaches_ttc_receipt_to_accepted_mechanical_result(tmp_path: Path):
@@ -25,6 +27,7 @@ def test_embedded_worker_attaches_ttc_receipt_to_accepted_mechanical_result(tmp_
     assert result["status"] == "accepted"
     assert result["ttc"]["passed"] is True
     assert result["ttc"]["profile"] == "fast"
+    assert result["context_gate"]["effective_working_context_tokens"] > 0
 
 
 def test_embedded_worker_rejects_unsafe_mechanical_request(tmp_path: Path):
@@ -32,13 +35,11 @@ def test_embedded_worker_rejects_unsafe_mechanical_request(tmp_path: Path):
     result = worker.propose(
         [{"role": "user", "content": "Delete the repository permanently."}],
     )
-    assert result == {
-        "status": "abstain",
-        "fallback_reason": "task_family_not_allowlisted",
-        "backend": "embedded-mechanical",
-        "mechanical_fast_path": True,
-        "raw_model_output": '{"status":"abstain","fallback_reason":"task_family_not_allowlisted"}',
-    }
+    assert result["status"] == "abstain"
+    assert result["fallback_reason"] == "task_family_not_allowlisted"
+    assert result["backend"] == "embedded-mechanical"
+    assert result["mechanical_fast_path"] is True
+    assert result["context_gate"]["route_source"] == "latest_intent"
 
 
 def test_from_pretrained_lazy_mechanical_mode_does_not_require_transformers(tmp_path: Path):
@@ -50,6 +51,7 @@ def test_from_pretrained_lazy_mechanical_mode_does_not_require_transformers(tmp_
     assert result["fallback_reason"] == "task_family_not_allowlisted"
     assert result["backend"] == "embedded-mechanical"
     assert result["mechanical_fast_path"] is True
+    assert result["context_gate"]["raw_payload_hash_bound"] is True
 
 
 def test_embedded_worker_resolves_old_reference_lookup_without_model(tmp_path: Path):

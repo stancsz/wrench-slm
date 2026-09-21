@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -179,6 +180,49 @@ def _dynamic_prefill_messages(
     return staged, receipt
 
 
+def _mechanical_context_gate_receipt(
+    messages: list[dict[str, str]],
+    *,
+    active_prompt: str,
+    reference_payload: str,
+    route_source: str,
+    started: float,
+) -> dict[str, Any]:
+    """Record the first-layer reduction used by the no-model fast path.
+
+    The mechanical lane keeps the newest intent as its hot span and scans
+    historical content only for exact bounded lookup or patch evidence. The
+    same hash-bound receipt family is used by the model prefill gate.
+    """
+
+    content_values = [
+        message.get("content", "")
+        for message in messages
+        if isinstance(message, dict) and isinstance(message.get("content"), str)
+    ]
+    raw_input_tokens = sum(_estimated_tokens(value) for value in content_values)
+    effective_tokens = _estimated_tokens(active_prompt)
+    selected_reference_spans = 1 if route_source in {"reference_patch", "reference_lookup"} else 0
+    return {
+        "schema": "wrench.first-layer-context-gate.v1",
+        "stage": "mechanical_fast_pruner_cherrypicker",
+        "strategy": "latest_intent_plus_exact_lookup",
+        "raw_context_limit_tokens": 4_000_000,
+        "raw_input_tokens": raw_input_tokens,
+        "effective_working_context_tokens": effective_tokens,
+        "working_context_budget_tokens": 64_000,
+        "selected_hot_spans": 1 if active_prompt else 0,
+        "selected_reference_spans": selected_reference_spans,
+        "omitted_reference_spans": max(0, len(content_values) - 1 - selected_reference_spans),
+        "route_source": route_source,
+        "raw_payload_sha256": ordered_payload_sha256(messages),
+        "raw_payload_hash_bound": True,
+        "native_input_claim": False,
+        "gate_latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        "reference_scan_tokens": _estimated_tokens(reference_payload),
+    }
+
+
 @dataclass
 class WrenchWorker:
     """A bounded proposal worker backed by a local model directory."""
@@ -255,6 +299,7 @@ class WrenchWorker:
             suffix_chars=max(1, verifier_suffix_chars),
         )
         if use_mechanical_route:
+            gate_started = time.perf_counter()
             # The latest user message owns the action. The complete user
             # payload remains available as reference evidence for multi-turn
             # conversations, including payloads whose old lookup lives in an
@@ -268,10 +313,17 @@ class WrenchWorker:
             # for exact historical evidence.
             route_prompt = verifier_prompt
             mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root)
+            route_source = "latest_intent"
             if mechanical is None or mechanical.get("fallback_reason") == "patch_content_missing":
-                mechanical = reference_patch_route(reference_payload) or mechanical
+                reference_patch = reference_patch_route(reference_payload)
+                if reference_patch is not None:
+                    mechanical = reference_patch
+                    route_source = "reference_patch"
             if mechanical is None:
-                mechanical = reference_lookup_route(reference_payload)
+                reference_lookup = reference_lookup_route(reference_payload)
+                if reference_lookup is not None:
+                    mechanical = reference_lookup
+                    route_source = "reference_lookup"
             if mechanical is not None:
                 serialized = json.dumps(mechanical, ensure_ascii=False, separators=(",", ":"))
                 if mechanical.get("status") == "abstain":
@@ -294,6 +346,13 @@ class WrenchWorker:
                         "backend": "embedded-mechanical",
                         "mechanical_fast_path": True,
                         "raw_model_output": serialized,
+                        "context_gate": _mechanical_context_gate_receipt(
+                            messages,
+                            active_prompt=route_prompt,
+                            reference_payload=reference_payload,
+                            route_source=route_source,
+                            started=gate_started,
+                        ),
                     }
                 )
                 return result
