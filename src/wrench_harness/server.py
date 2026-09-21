@@ -936,6 +936,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             return
         self._send_json(404, {"error": {"message": "not_found", "type": "invalid_request_error"}})
 
+    def do_HEAD(self) -> None:  # noqa: N802
+        # The official Ollama client performs a HEAD / heartbeat before model
+        # discovery. Keep this bodyless and deterministic so the compatible
+        # API can be used by the CLI, not only by curl or SDK callers.
+        route = self.path.split("?", 1)[0]
+        if route in {"/", "/health", "/api/version"}:
+            self.send_response(200)
+        else:
+            self.send_response(404)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_POST(self) -> None:  # noqa: N802
         server = self._server()
         route = self.path.split("?", 1)[0]

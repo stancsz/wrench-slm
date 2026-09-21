@@ -238,6 +238,13 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
+        heartbeat = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/",
+            method="HEAD",
+        )
+        with urllib.request.urlopen(heartbeat, timeout=5) as response:
+            assert response.status == 200
+
         for path in ("/api/version", "/api/tags", "/api/show"):
             if path == "/api/show":
                 request = urllib.request.Request(
