@@ -2328,3 +2328,10 @@ frontier-token savings, 99.6767% Wrench-plus-fallback weighted final success,
 183.378 ms median, 335.241 ms p95, 2,487 Wrench frontier tokens, zero
 prohibited accepts, and zero unexpected mutations. Evidence:
 `phases/phase-212-first-layer-context-gate/replay-220/evaluation.json`.
+
+The v86 portable directory then passed a no-repository-`PYTHONPATH` one-command
+smoke. Its own launcher reported a 4,000,000-token input context and 3.88B
+parameters; an Ollama-shaped request with `options.num_ctx=4000000` returned a
+verified embedded proposal in 1.003 ms with zero model calls. This confirms the
+copy-paste model-local surface, while native stock-Ollama generation remains a
+separate failed boundary. Evidence: `phases/phase-212-first-layer-context-gate`.

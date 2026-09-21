@@ -42,3 +42,17 @@ the isolated health fixture and the client mechanical bypass disabled:
 Receipt: `phases/phase-212-first-layer-context-gate/replay-220/evaluation.json`.
 This remains diagnostic workflow evidence, not family-disjoint approval or
 production enablement.
+
+The v86 directory also passed a direct copy-paste smoke from its own
+`run_wrench.ps1`, with no repository `PYTHONPATH`:
+
+- `/api/show`: `context_length=4,000,000`, `parameter_size=3.88B`;
+- `/api/chat` accepted `options.num_ctx=4,000,000`;
+- an embedded `read_file` proposal returned in `1.003 ms`;
+- `model_calls=0`;
+- schema, authority, evidence, consistency, blind-critic, and final-gate
+  checks all passed.
+
+This proves the portable model-local surface and the sub-4.25B manifest
+boundary. It is still hybrid intake evidence, not stock Ollama native
+generation quality.
