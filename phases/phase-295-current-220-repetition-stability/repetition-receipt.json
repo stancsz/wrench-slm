@@ -1,0 +1,71 @@
+{
+  "schema": "wrench.current-220-repetition-stability.v1",
+  "status": "DIAGNOSTIC_THREE_COMPLETE_REPETITIONS",
+  "source_commit": "043a7a7",
+  "cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+  "complete_repetitions": [
+    {
+      "label": "capture_1",
+      "teacher_sha256": "537D0F44BEE9E2DB15BC7064F7D369562918DC3EBD02CAF24813AB7CE73FAED4",
+      "teacher_requests": 220,
+      "teacher_transport_failures": 0,
+      "teacher_invalid_responses": 0,
+      "teacher_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-current-220.json",
+      "replay_evaluation_sha256": "681467ACAA7754C55C8E1807D06E7C29C7E5D376DA670B605429A75CFC6450D2",
+      "replay_trace_sha256": "7548A8217EC024CE437AA51D9E70E98AFA214A118A4DE1B0C641DAE4919B676A",
+      "replay_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\replay-current-teacher-220"
+    },
+    {
+      "label": "capture_2",
+      "teacher_sha256": "216D015B7CDE60B3E5158E973E06CDCC302C41F209D4D8BD4D27AFDFCB75F669",
+      "teacher_requests": 220,
+      "teacher_transport_failures": 0,
+      "teacher_invalid_responses": 0,
+      "teacher_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-current-220-r2.json",
+      "replay_evaluation_sha256": "0C0E5EBBB220F454945A6D5C3348451CD08F4B43F01E3696AC8DF164597C2347",
+      "replay_trace_sha256": "D4613886BCF808F4B7CF0C8CD2F0525985652D864C8163A34750A95493075765",
+      "replay_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\replay-current-teacher-220-r2"
+    },
+    {
+      "label": "capture_4",
+      "teacher_sha256": "72370AF42B5D9676078CFD8A0A934E2EBA5FF2B2C5B047F8EC37AA706F570845",
+      "teacher_requests": 220,
+      "teacher_transport_failures": 0,
+      "teacher_invalid_responses": 0,
+      "teacher_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-current-220-r4.json",
+      "replay_evaluation_sha256": "05E7780F2A7875C77865F831EFD1959E0E076F798EFC0D09AF8222981C25BB48",
+      "replay_trace_sha256": "657C69EE5870C447049D24BFAAA443215FDCA4C5DFE95A65D7BF68570321DDF7",
+      "replay_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\replay-current-teacher-220-r4"
+    }
+  ],
+  "excluded_failed_attempt": {
+    "label": "capture_3",
+    "teacher_sha256": "BB39D69D09416163EC28471FDF3983CDEC15C8F9B1B20DF426F5EB2A706EFD9C",
+    "requests": 220,
+    "transport_failures": 3,
+    "failed_ids": [
+      "eval59_git_read_status_03_02",
+      "eval59_git_read_status_05_02",
+      "eval59_git_read_status_06_00"
+    ],
+    "reason": "incomplete_teacher_repetition_excluded_from_complete_gate_sample"
+  },
+  "stability": {
+    "wrench_replays": 3,
+    "wrench_trace_ids_per_replay": 220,
+    "wrench_raw_proposal_differing_ids": 0,
+    "wrench_weighted_final_success_each": [1.0, 1.0, 1.0],
+    "wrench_prohibited_accepts_each": [0, 0, 0],
+    "wrench_p50_ms": [193.818, 199.715, 192.391],
+    "wrench_p95_ms": [315.719, 315.146, 302.501],
+    "teacher_weighted_final_success_each": [0.8934198331788693, 0.8847288315570063, 0.8847620692862743],
+    "teacher_prohibited_accepts_each": [2, 3, 4]
+  },
+  "claims_not_authorized": [
+    "final Gate C completion",
+    "family-disjoint production benchmark",
+    "independent RTX 5060 Ti verification",
+    "native learned-decoder quality or MiniMax semantic parity",
+    "production enablement"
+  ]
+}

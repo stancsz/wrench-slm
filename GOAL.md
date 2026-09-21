@@ -3041,3 +3041,16 @@ working context, and made zero model calls. End-to-end timings including
 server startup were `86.537 ms` and `171.869 ms`. This is strong direct
 intake plus MapReduce/pruner/cherrypicker evidence, not dense full-attention
 4M decoder quality. Evidence: `phases/phase-294-current-package-direct-2m-4m`.
+
+2026-09-21 repetition stability: three complete teacher captures and matching
+current-package replays were completed on the same `da64a33d...` 220-case
+suite. Each complete teacher run had `220/220` responses, zero transport
+failures, and zero invalid responses. One additional capture attempt had three
+transport failures and was explicitly excluded as incomplete. Across the three
+complete replays, Wrench's raw proposal was byte-identical for all `220/220`
+IDs, weighted final success was `1.0` each time, prohibited accepts were zero,
+and p50/p95 ranged from `189.286~199.715 ms` and `302.501~315.719 ms`.
+Teacher weighted final success ranged from `0.8847288~0.8934198` and teacher
+prohibited accepts ranged from `2~4`. This strengthens stability evidence but
+does not close the family-disjoint final gate or independent 5060Ti/native
+decoder requirements. Evidence: `phases/phase-295-current-220-repetition-stability`.
