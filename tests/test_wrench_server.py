@@ -53,6 +53,102 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         thread.join(timeout=5)
 
 
+def test_model_local_server_streams_embedded_read_as_openai_sse(tmp_path: Path):
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+            "stream": True,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = response.read().decode("utf-8")
+        events = [line[6:] for line in body.splitlines() if line.startswith("data: ")]
+        assert events[-1] == "[DONE]"
+        chunks = [json.loads(item) for item in events[:-1]]
+        assert chunks[0]["choices"][0]["delta"]["role"] == "assistant"
+        content = "".join(
+            chunk["choices"][0]["delta"].get("content", "")
+            for chunk in chunks
+        )
+        assert content.startswith('{"schema":"wrench.proposal.v1"')
+        assert chunks[-1]["choices"][0]["finish_reason"] == "stop"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_model_local_server_streams_anthropic_read_tool_use(tmp_path: Path):
+    (tmp_path / "README.md").write_text("# Wrench SLM\n", encoding="utf-8")
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "max_tokens": 64,
+            "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+            "tools": [
+                {
+                    "name": "Read",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": {"file_path": {"type": "string"}, "max_bytes": {"type": "integer"}},
+                        "required": ["file_path"],
+                    },
+                }
+            ],
+            "stream": True,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/messages",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = response.read().decode("utf-8")
+        assert "event: message_start" in body
+        assert "event: content_block_start" in body
+        assert '"type": "tool_use"' in body
+        assert '"name": "Read"' in body
+        data_events = [
+            json.loads(line[6:])
+            for line in body.splitlines()
+            if line.startswith("data: ")
+        ]
+        input_delta = next(
+            event["delta"]["partial_json"]
+            for event in data_events
+            if event.get("type") == "content_block_delta"
+        )
+        assert json.loads(input_delta) == {"file_path": "README.md", "max_bytes": 4096}
+        assert "event: message_stop" in body
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def test_model_local_server_bridges_one_read_tool_and_settles_result(tmp_path: Path):
     (tmp_path / "README.md").write_text("# Wrench SLM\n", encoding="utf-8")
     server = WrenchHTTPServer(
