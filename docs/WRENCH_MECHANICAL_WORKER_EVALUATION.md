@@ -256,3 +256,16 @@ The final receipt must bind:
 
 Until these receipts exist, the status is `INCONCLUSIVE`, regardless of model
 size, expert count, or offline case score.
+
+## Latest native decoder control
+
+The current NVFP4 package was tested through its native OpenAI-compatible
+endpoint with a canonical schema few-shot example and a 65,536-token payload.
+The mechanical route was bypassed. The endpoint returned HTTP 200, but the
+single native generation produced malformed `{"n}}` after 27,481.938 ms.
+This control does not establish native decoder quality and is recorded as a
+fail-closed diagnostic gap. The embedded deterministic toolbelt remains the
+production-value lane until a schema-focused model candidate or genuine
+constrained-decoding runtime passes exact held-out proposal validation.
+
+Evidence: `phases/phase-281-native-schema-fewshot-control`.

@@ -2932,3 +2932,13 @@ worker's reported `origin/main=aaf0c79` is behind the current `2d52a19`, and
 no current 220-case receipt or nonce-bound final summary was produced. This is
 partial independent context evidence, not current-source benchmark or teacher
 parity evidence. Evidence: `phases/phase-278-5060ti-direct-4m-partial`.
+
+2026-09-21 native schema few-shot control: a canonical `read_file` proposal
+example was sent directly to the current package's native endpoint with a
+65,536-token payload, bypassing the mechanical route. The endpoint returned
+HTTP 200 after 27,481.938 ms but generated `{"n}}`, which is not valid JSON.
+Few-shot schema guidance therefore did not repair the learned decoder. The
+native learned lane remains diagnostic-only and fail-closed. Future model work
+must use schema-focused SFT with exact held-out validation or a serving backend
+with real constrained decoding. Evidence:
+`phases/phase-281-native-schema-fewshot-control`.
