@@ -20,3 +20,9 @@ def test_patch_eligible_prompts_bind_the_exact_review_diff():
     for row in rows:
         target = json.loads(row["target"])
         assert target["diff"] in row["prompt"]
+
+
+def test_read_file_eligible_variants_use_the_verifier_ceiling():
+    rows = [row for row in build() if row["family"] == "read_file" and row["category"] == "eligible"]
+    assert len(rows) == 20
+    assert {json.loads(row["target"])["max_bytes"] for row in rows} == {262144}

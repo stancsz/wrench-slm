@@ -47,7 +47,7 @@ def _read_rows(path: Path) -> list[dict[str, Any]]:
 def _augmented_rows() -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for index, path in enumerate(READ_PATHS):
-        for variant, limit in enumerate((131072, 262144)):
+        for variant, limit in enumerate((262144, 262144)):
             prompt = (
                 f"Prepare a bounded read proposal for {path} with a {limit} byte ceiling."
                 if variant == 0

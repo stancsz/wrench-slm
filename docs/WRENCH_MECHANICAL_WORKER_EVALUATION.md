@@ -1,7 +1,44 @@
 # Wrench Mechanical Worker Evaluation
 
-Status: new evaluation contract, awaiting teacher-trace capture and human
-approval
+Status: evaluation contract active; the current 220-case suite remains a draft
+pending human approval
+
+## Current evidence snapshot
+
+The first same-input teacher capture for the regenerated v2 suite completed on
+2026-09-21. The suite hash is
+`da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72`.
+The capture contains 220 results, 219 complete streaming responses, and one
+transport failure on `eval59_health_read_05_00`. Its receipt is kept outside the
+repository at `D:\models\wrench-teacher-traces-v2-stream.json` and is bound by
+SHA-256 `8acaf849b5ec325f744f9c3aed6b7c60974c8f9857e2d2f92781aedad05c006d`.
+
+The current v103 portable package replayed all 220 rows against that same
+teacher input set. It produced `PASS_MECHANICAL_WORKER` with 120 eligible
+mechanical rows, zero prohibited accepts, zero unexpected mutations, weighted
+mechanical frontier-token coverage of `1.0`, net frontier-token savings of
+`1.0`, and Wrench-plus-identical-fallback weighted final success of `1.0`.
+The Wrench arm measured 215.515 ms median and 340.085 ms p95 end-to-end
+latency, with 24,141 local tokens and zero frontier fallback tokens. The
+replay evaluation receipt is external at
+`D:\models\_wrench-current-v103-v2-replay-r3\evaluation.json`, SHA-256
+`6824672dbdef6c236934ff53b5620f17b16e8e46261278b7e658e5f3f0241419`.
+
+These numbers are diagnostic evidence, not a release claim. The suite manifest
+is `DRAFT_PENDING_HUMAN_APPROVAL`, the teacher capture has one transport
+failure, and the result does not prove learned MiniMax parity or direct native
+4M serving.
+
+The independent 5060TI worker is the remote host `DESKTOP-KET1SKP` with an
+NVIDIA GeForce RTX 5060 Ti. Its completed HF package preflight reported
+`PASS_5060TI_HF_PACKAGE_PREFLIGHT`, `PASS_HF_PACKAGE_RECEIPT`, and exit code
+zero. Free RAM was 50.18% before and after, and free VRAM was 93.92% before and
+after. The worker verified the pinned Hugging Face revision
+`966a1720d84b330d90b6ad38f22e883e749448f3`; its two shards were reported as
+2,385,916,912 bytes and 1,017,118,848 bytes. This is an independent package
+integrity and load preflight, not a quality or production-value result, and
+its latency and memory numbers must not be merged with the local RTX 5070 Ti
+measurements.
 
 ## North Star
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import http.server
+import json
 import os
 import sys
 import threading
@@ -38,6 +39,19 @@ class _HealthFixtureHandler(http.server.BaseHTTPRequestHandler):
         return
 
 
+def _validate_suite_manifest(cases_path: Path, *, allow_historical_suite: bool = False) -> None:
+    suite_manifest_path = cases_path.resolve().parent / "manifest.json"
+    if not suite_manifest_path.is_file():
+        return
+    suite_manifest = json.loads(suite_manifest_path.read_text(encoding="utf-8"))
+    suite_status = str(suite_manifest.get("status", ""))
+    if suite_status.startswith("HISTORICAL") and not allow_historical_suite:
+        raise ValueError(
+            f"refusing historical or superseded evaluation suite {suite_manifest_path}; "
+            "use the current reviewed draft or pass --allow-historical-suite explicitly"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--package-dir", type=Path, required=True)
@@ -53,7 +67,14 @@ def main() -> int:
         action="store_true",
         help="allow a sealed diagnostic slice such as final.jsonl instead of the 220-case fixture",
     )
+    parser.add_argument(
+        "--allow-historical-suite",
+        action="store_true",
+        help="explicitly allow a suite manifest marked historical or superseded",
+    )
     args = parser.parse_args()
+
+    _validate_suite_manifest(args.cases, allow_historical_suite=args.allow_historical_suite)
 
     package_dir = args.package_dir.resolve()
     if not package_dir.is_dir():

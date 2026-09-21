@@ -36,6 +36,39 @@ ACTION_KEYS: dict[str, tuple[str, ...]] = {
 }
 
 
+def _parse_streaming_response(response: Any) -> tuple[str, str | None, str | None, dict[str, Any] | None]:
+    """Aggregate an OpenAI chat-completions SSE response into one message."""
+
+    content_parts: list[str] = []
+    response_model: str | None = None
+    finish_reason: str | None = None
+    usage: dict[str, Any] | None = None
+    for raw_line in response:
+        line = raw_line.decode("utf-8", "replace") if isinstance(raw_line, bytes) else str(raw_line)
+        if not line.startswith("data:"):
+            continue
+        data = line[5:].strip()
+        if not data or data == "[DONE]":
+            continue
+        chunk = json.loads(data)
+        if not isinstance(chunk, dict):
+            continue
+        if isinstance(chunk.get("model"), str):
+            response_model = chunk["model"]
+        if isinstance(chunk.get("usage"), dict):
+            usage = chunk["usage"]
+        choices = chunk.get("choices")
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+            continue
+        choice = choices[0]
+        if isinstance(choice.get("finish_reason"), str):
+            finish_reason = choice["finish_reason"]
+        delta = choice.get("delta")
+        if isinstance(delta, dict) and isinstance(delta.get("content"), str):
+            content_parts.append(delta["content"])
+    return "".join(content_parts), response_model, finish_reason, usage
+
+
 def _parse_json_object(content: str) -> dict[str, Any] | None:
     """Extract the first schema-bearing JSON object from a model response.
 
@@ -101,6 +134,8 @@ def _request(
             "messages": messages,
             "temperature": 0,
             "max_tokens": max_tokens,
+            "stream": True,
+            "stream_options": {"include_usage": True},
             "chat_template_kwargs": {"enable_thinking": False},
         },
         ensure_ascii=False,
@@ -111,14 +146,11 @@ def _request(
     request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            payload = json.loads(response.read().decode("utf-8"))
+            content, response_model, finish_reason, usage = _parse_streaming_response(response)
     except (urllib.error.URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         return with_latency({"id": row["id"], "transport_failure": True, "error": type(exc).__name__})
-    choices = payload.get("choices") if isinstance(payload, dict) else None
-    message = choices[0].get("message") if isinstance(choices, list) and choices and isinstance(choices[0], dict) else None
-    content = message.get("content") if isinstance(message, dict) else None
     if not isinstance(content, str):
-        return with_latency({"id": row["id"], "transport_failure": False, "response_invalid": True, "payload": payload})
+        return with_latency({"id": row["id"], "transport_failure": False, "response_invalid": True})
     return with_latency({
         "id": row["id"],
         "family": row.get("family"),
@@ -129,10 +161,10 @@ def _request(
         "expected_fallback_reason": row.get("expected_fallback_reason"),
         "raw_model_output": content,
         "normalized_proposal": _normalize(content),
-        "response_model": payload.get("model"),
-        "finish_reason": choices[0].get("finish_reason") if isinstance(choices[0], dict) else None,
-        "usage": payload.get("usage"),
-        "provider": payload.get("provider"),
+        "response_model": response_model,
+        "finish_reason": finish_reason,
+        "usage": usage,
+        "provider": None,
         "transport_failure": False,
         "response_invalid": False,
     })

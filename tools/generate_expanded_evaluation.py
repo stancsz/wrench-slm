@@ -132,7 +132,10 @@ def _build_family(family: str) -> list[dict[str, Any]]:
             path = read_paths[group]
             # Accepted cases must cover the whole named file. The verifier
             # rejects a proposal when the file is larger than max_bytes.
-            limits = (131072, 262144)
+            # Keep both accepted variants at the verifier ceiling so a
+            # growing repository contract does not silently turn an eligible
+            # case into a size-limit abstention.
+            limits = (262144, 262144)
             prompts = (
                 f"Prepare a bounded read proposal for {path} with a {limits[0]} byte ceiling.",
                 f"Inspect {path} read-only and cap the response at {limits[1]} bytes.",
