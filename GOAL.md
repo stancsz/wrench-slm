@@ -3030,3 +3030,14 @@ This materially strengthens the mechanical-worker evidence, but remains a
 diagnostic historical/calibration fixture rather than the approved
 family-disjoint production gate. Evidence:
 `phases/phase-293-current-220-teacher-aligned-replay`.
+
+2026-09-21 direct model-local context intake: the current materialized package
+accepted a 2M request with `1,999,998` observed prompt tokens and a 4M request
+with `3,999,995` observed prompt tokens, both HTTP 200, without an API gateway
+or external summarizer. The warm package-server portions completed in
+`21.957 ms` and `51.020 ms`, respectively. Both requests bound the raw payload
+hash, used the embedded mechanical first-layer gate, compacted to the bounded
+working context, and made zero model calls. End-to-end timings including
+server startup were `86.537 ms` and `171.869 ms`. This is strong direct
+intake plus MapReduce/pruner/cherrypicker evidence, not dense full-attention
+4M decoder quality. Evidence: `phases/phase-294-current-package-direct-2m-4m`.

@@ -1,0 +1,44 @@
+{
+  "schema": "wrench.current-package-direct-context.v1",
+  "status": "PASS_DIRECT_MODEL_LOCAL_2M_4M_INTAKE",
+  "source_commit": "cd5fa99",
+  "package_dir": "D:\\models\\_wrench-current-client-20260921",
+  "probes": {
+    "2m": {
+      "requested_payload_tokens": 2000000,
+      "observed_prompt_tokens": 1999998,
+      "raw_payload_chars": 15998987,
+      "http_status": 200,
+      "end_to_end_ms": 86.537,
+      "server_elapsed_ms": 21.957,
+      "gate_latency_ms": 12.745,
+      "working_context_tokens": 9,
+      "raw_payload_hash_bound": true,
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "receipt_sha256": "509E829258CB1F71F09D89F0FB9E647A6347860F2A697B94CCC4B4CF9A464803",
+      "raw_receipt": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\direct-2m-current.json"
+    },
+    "4m": {
+      "requested_payload_tokens": 4000000,
+      "observed_prompt_tokens": 3999995,
+      "raw_payload_chars": 31997963,
+      "http_status": 200,
+      "end_to_end_ms": 171.869,
+      "server_elapsed_ms": 51.020,
+      "gate_latency_ms": 25.409,
+      "working_context_tokens": 9,
+      "raw_payload_hash_bound": true,
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "receipt_sha256": "32AB7B9B79C25FCD54CE225D831DB1F0EC2F0FBBA79EB54B2A295CA65EF70CB7",
+      "raw_receipt": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\direct-4m-current-r2.json"
+    }
+  },
+  "claims_not_authorized": [
+    "dense native 4M attention quality",
+    "learned decoder MiniMax parity",
+    "independent RTX 5060 Ti performance",
+    "production enablement"
+  ]
+}
