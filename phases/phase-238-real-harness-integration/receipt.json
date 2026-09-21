@@ -1,0 +1,44 @@
+{
+  "schema": "wrench.real-harness-integration.v1",
+  "status": "LOCAL_SMOKE_PASSED",
+  "host": "RTX 5070 Ti development host",
+  "source_tests": {
+    "passed": 171,
+    "warnings": 14
+  },
+  "clients": {
+    "opencode": {
+      "protocol": "openai-chat-completions",
+      "work": "native read tool execution plus settlement",
+      "model_calls": 0,
+      "mechanical_proposal": true,
+      "settlement": true
+    },
+    "claude_code": {
+      "protocol": "anthropic-messages",
+      "work": "native Read tool execution plus tool_result settlement",
+      "model_calls": 0,
+      "mechanical_proposal": true,
+      "settlement": true
+    },
+    "deepseek_harness": {
+      "protocol": "openai-chat-completions",
+      "work": "isolated headless read task through local filesystem tool",
+      "model_calls": 0,
+      "mechanical_proposal": true,
+      "settlement": true,
+      "isolated_profile": true
+    }
+  },
+  "portable_package": {
+    "path": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-hybrid-v94-harness",
+    "parameters": 3881244016,
+    "package_round_trip": "passed"
+  },
+  "not_proven": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense native 4M attention quality",
+    "production release authorization"
+  ]
+}

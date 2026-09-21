@@ -53,6 +53,181 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         thread.join(timeout=5)
 
 
+def test_model_local_server_bridges_one_read_tool_and_settles_result(tmp_path: Path):
+    (tmp_path / "README.md").write_text("# Wrench SLM\n", encoding="utf-8")
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    tool = {
+        "type": "function",
+        "function": {
+            "name": "read",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filePath": {"type": "string"},
+                    "limit": {"type": "integer"},
+                },
+                "required": ["filePath"],
+            },
+        },
+    }
+
+    def post(payload: dict[str, object]) -> dict[str, object]:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    try:
+        first = post(
+            {
+                "model": "wrench-test",
+                "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+                "tools": [tool],
+                "stream": False,
+            }
+        )
+        first_choice = first["choices"][0]
+        first_message = first_choice["message"]
+        assert first_choice["finish_reason"] == "tool_calls"
+        assert first_message["tool_calls"][0]["function"]["name"] == "read"
+        arguments = json.loads(first_message["tool_calls"][0]["function"]["arguments"])
+        assert arguments == {"filePath": "README.md", "limit": 1}
+        assert first["wrench"]["model_calls"] == 0
+
+        second = post(
+            {
+                "model": "wrench-test",
+                "messages": [
+                    {"role": "user", "content": "Read README.md with a 4096 byte limit."},
+                    {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": first_message["tool_calls"],
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": first_message["tool_calls"][0]["id"],
+                        "content": "# Wrench SLM\n",
+                    },
+                ],
+                "tools": [tool],
+                "stream": False,
+            }
+        )
+        second_choice = second["choices"][0]
+        second_message = second_choice["message"]
+        assert second_choice["finish_reason"] == "stop"
+        assert "# Wrench SLM" in second_message["content"]
+        assert "tool_calls" not in second_message
+        assert second["wrench"]["backend"] == "embedded-mechanical-settlement"
+        assert second["wrench"]["model_calls"] == 0
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_model_local_server_supports_anthropic_messages_tool_use_and_settlement(tmp_path: Path):
+    (tmp_path / "README.md").write_text("# Wrench SLM\n", encoding="utf-8")
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    tool = {
+        "name": "Read",
+        "description": "Read a file",
+        "input_schema": {
+            "type": "object",
+            "properties": {"file_path": {"type": "string"}, "max_bytes": {"type": "integer"}},
+            "required": ["file_path"],
+        },
+    }
+
+    def post(payload: dict[str, object]) -> dict[str, object]:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/messages",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    try:
+        first = post(
+            {
+                "model": "wrench-test",
+                "max_tokens": 64,
+                "system": "Use read-only tools.",
+                "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+                "tools": [tool],
+                "stream": False,
+            }
+        )
+        assert first["type"] == "message"
+        assert first["stop_reason"] == "tool_use"
+        tool_use = first["content"][0]
+        assert tool_use["type"] == "tool_use"
+        assert tool_use["name"] == "Read"
+        assert tool_use["input"] == {"file_path": "README.md", "max_bytes": 4096}
+
+        second = post(
+            {
+                "model": "wrench-test",
+                "max_tokens": 64,
+                "messages": [
+                    {"role": "user", "content": "Read README.md with a 4096 byte limit."},
+                    {
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "tool_use",
+                                "id": tool_use["id"],
+                                "name": "Read",
+                                "input": tool_use["input"],
+                            }
+                        ],
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": tool_use["id"],
+                                "content": "# Wrench SLM\n",
+                            }
+                        ],
+                    },
+                ],
+                "tools": [tool],
+                "stream": False,
+            }
+        )
+        assert second["stop_reason"] == "end_turn"
+        assert "# Wrench SLM" in second["content"][0]["text"]
+        assert second["wrench"]["backend"] == "embedded-mechanical-settlement"
+        assert second["wrench"]["model_calls"] == 0
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
     server = WrenchHTTPServer(
         ("127.0.0.1", 0),

@@ -1,0 +1,26 @@
+- id: llm-deepseek
+  config:
+    apiKeyEnv: WRENCH_LOCAL_API_KEY
+    baseURL: http://127.0.0.1:28914/v1
+    models:
+      - id: wrench-integration
+        name: Wrench isolated DSH smoke
+        contextWindow: 4000000
+        maxTokens: 256
+    defaultModel:
+      id: wrench-integration
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: wrench-integration
+- id: pwsh-sandbox
+  disabled: true
+- id: fs-sandbox
+  disabled: true
+- id: permission
+  disabled: true
+- insert:
+    - id: fs-local
+      name: '@deepseek-ai/dsh-fs-local'
+    - id: pwsh-local
+      name: '@deepseek-ai/dsh-pwsh-local'

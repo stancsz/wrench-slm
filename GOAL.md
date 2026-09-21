@@ -2551,3 +2551,19 @@ does not exceed the hard input limit because of the active-intent suffix.
 This is direct hybrid package intake evidence, not dense-native attention
 quality or learned MiniMax parity. Evidence:
 `phases/phase-236-portable-package-http-4m`.
+
+2026-09-20 real harness integration: the model-local Wrench endpoint was
+connected to real OpenCode, Claude Code, and DeepSeek Harness clients. OpenCode
+performed a native read tool call through the OpenAI-compatible endpoint;
+Claude Code performed a native Anthropic `Read` tool call through
+`/v1/messages`; and an isolated DeepSeek Harness headless profile performed a
+real read through its local filesystem tool. Each path completed one bounded
+proposal and one tool-result settlement with zero model calls. The server now
+handles streaming tool-call events, Anthropic message streaming, tool-result
+settlement, and DeepSeek's pre-assistant wrapper messages. The package runtime
+was rematerialized as `Wrench-Qwen3.6-8expert-BF16-hybrid-v94-harness` and its
+package-local OpenAI tool round trip passed. This is real local workflow
+integration evidence on the RTX 5070 Ti development host, not independent
+5060 Ti verification, learned MiniMax parity, dense-native 4M quality, or
+production release authorization. Evidence:
+`phases/phase-238-real-harness-integration`.

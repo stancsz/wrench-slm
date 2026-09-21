@@ -1,0 +1,16 @@
+# Ephemeral local smoke overlay. It keeps the user's DSH profile untouched.
+- id: llm-deepseek
+  config:
+    apiKeyEnv: WRENCH_LOCAL_API_KEY
+    baseURL: http://127.0.0.1:28914/v1
+    models:
+      - id: wrench-integration
+        name: Wrench local integration smoke
+        contextWindow: 4000000
+        maxTokens: 256
+    defaultModel:
+      id: wrench-integration
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: wrench-integration

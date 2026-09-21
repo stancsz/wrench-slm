@@ -46,7 +46,17 @@ bounded 32K to 64K active working context before expensive attention runs. A
 gateway-only reducer or a metadata-only context setting does not satisfy this
 target.
 
-## Current v88 evidence
+## Real harness integration
+
+The model-local endpoint now has verified local smoke paths for OpenCode,
+Claude Code, and DeepSeek Harness. OpenCode uses OpenAI-compatible tool calls,
+Claude Code uses Anthropic `tool_use` and `tool_result`, and DeepSeek Harness
+uses an isolated headless profile. Each path performed a real read-only file
+operation, returned one bounded Wrench proposal, and settled without a model
+call or repeated tool loop. See
+`phases/phase-238-real-harness-integration/receipt.json`.
+
+## Current v94 evidence
 
 The current portable runtime is below the 4.25B parameter ceiling at
 `3,881,244,016` verified parameters.
@@ -76,10 +86,10 @@ architecture adapters and are not claimed as verified.
 ## Development status
 
 The repository contract and evidence live in [GOAL.md](GOAL.md). The latest
-receipts are under `phases/phase-215-v88-220-replay-v2`,
-`phases/phase-216-v88-context-matrix`, and
-`phases/phase-217-v88-retrieval-quality`.
+receipts are under `phases/phase-230-current-source-matched-arms-v2`,
+`phases/phase-236-portable-package-http-4m`, and
+`phases/phase-238-real-harness-integration`.
 
-The full source regression is `168 passed`. Final release still requires the
-human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
-Ti verification, and operational shadow evidence.
+The full source regression is `171 passed, 14 warnings`. Final release still
+requires the human-approved family-disjoint MiniMax-worker trace set,
+independent RTX 5060 Ti verification, and operational shadow evidence.

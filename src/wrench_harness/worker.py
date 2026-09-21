@@ -326,6 +326,36 @@ class WrenchWorker:
             route_prompt = verifier_prompt
             mechanical = mechanical_route(route_prompt, allowed_root=self.allowed_root)
             route_source = "latest_intent"
+            # Some native harnesses serialize one logical turn as several
+            # consecutive user messages before the first assistant message.
+            # If the newest wrapper message produces only an abstention, keep
+            # the fail-closed default but look backward for an unambiguous
+            # read/search intent from that same pre-assistant bundle. Normal
+            # multi-turn conversations contain an assistant/tool boundary and
+            # therefore retain strict newest-intent ownership.
+            has_assistant_boundary = any(
+                isinstance(item, dict) and item.get("role") in {"assistant", "tool"}
+                for item in messages
+            )
+            if len(users) > 1 and not has_assistant_boundary:
+                for bundle_prompt in users:
+                    earlier_route_prompt = active_intent_suffix(
+                        bundle_prompt,
+                        suffix_chars=max(1, route_suffix_chars),
+                    )
+                    earlier_mechanical = mechanical_route(
+                        earlier_route_prompt,
+                        allowed_root=self.allowed_root,
+                    )
+                    if (
+                        earlier_mechanical is not None
+                        and earlier_mechanical.get("status") != "abstain"
+                    ):
+                        mechanical = earlier_mechanical
+                        route_prompt = earlier_route_prompt
+                        verifier_prompt = earlier_route_prompt
+                        route_source = "pre_assistant_intent_bundle"
+                        break
             if mechanical is None or mechanical.get("fallback_reason") == "patch_content_missing":
                 reference_patch = reference_patch_route(reference_payload)
                 if reference_patch is not None:

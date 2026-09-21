@@ -1,0 +1,11 @@
+{
+  "name": "wrench-dsh-headless-smoke",
+  "private": true,
+  "dependencies": {},
+  "dsh": {
+    "profile": {
+      "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless"],
+      "patchReload": "startup"
+    }
+  }
+}
