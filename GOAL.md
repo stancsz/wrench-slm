@@ -2942,3 +2942,14 @@ native learned lane remains diagnostic-only and fail-closed. Future model work
 must use schema-focused SFT with exact held-out validation or a serving backend
 with real constrained decoding. Evidence:
 `phases/phase-281-native-schema-fewshot-control`.
+
+2026-09-21 schema SFT and guided decoder comparison: the existing v11
+head/router adapter reached 24/44 development outcomes, 9/24 exact eligible
+accepts, and 4 prohibited accepts. A new 280-row safety-calibrated rank-8
+attention-plus-router/head adapter reached 23/44, 4/24 exact eligible accepts,
+and zero prohibited accepts. Optional LM Format Enforcer guidance reached
+24/44 with the v11 adapter but retained 4 prohibited accepts and raised p50
+latency to 7.566 seconds and p95 to 31.505 seconds. Neither learned variant
+meets the 90% or zero-safety-violation gates. The guided path stays diagnostic
+only; the embedded deterministic toolbelt remains the production lane.
+Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.

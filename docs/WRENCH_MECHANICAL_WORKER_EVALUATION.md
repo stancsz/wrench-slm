@@ -269,3 +269,16 @@ production-value lane until a schema-focused model candidate or genuine
 constrained-decoding runtime passes exact held-out proposal validation.
 
 Evidence: `phases/phase-281-native-schema-fewshot-control`.
+
+## Schema SFT and guided decoding result
+
+The learned lane was tested with a broader rank-8 attention-plus-router/head
+adapter trained on 280 safety calibration rows and with an opt-in LM Format
+Enforcer JSON constraint. The adapter scored 23/44 development outcomes with
+zero prohibited accepts but only 4/24 exact eligible accepts. The best guided
+variant scored 24/44, 9/24 exact eligible accepts, and 4 prohibited accepts,
+with 7.566 second p50 and 31.505 second p95 generation latency. These results
+do not meet the production gates. Guided decoding remains a diagnostic option
+in the HF evaluator, not a portable-package default.
+
+Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.

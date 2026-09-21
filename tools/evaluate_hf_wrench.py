@@ -30,6 +30,64 @@ except ModuleNotFoundError:
     from calibrate_qwen_router import LoRALinear, _attach_attention_lora  # type: ignore  # noqa: E402
 
 
+def _guided_json_prefix_fn(tokenizer: Any) -> Any:
+    """Build an optional development-only JSON schema decoder."""
+
+    try:
+        import transformers
+        import transformers.tokenization_utils as tokenization_utils
+
+        # lm-format-enforcer 0.11.x imports this symbol from the pre-5.x
+        # module location, while Transformers 5.16 exports it at package root.
+        if not hasattr(tokenization_utils, "PreTrainedTokenizerBase"):
+            tokenization_utils.PreTrainedTokenizerBase = transformers.PreTrainedTokenizerBase
+        from lmformatenforcer import JsonSchemaParser
+        from lmformatenforcer.integrations.transformers import (
+            build_transformers_prefix_allowed_tokens_fn,
+        )
+    except ImportError as exc:
+        raise RuntimeError(
+            "--guided-json-schema requires lm-format-enforcer in the evaluation environment"
+        ) from exc
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "schema": {"type": "string", "enum": ["wrench.proposal.v1"]},
+            "action": {
+                "type": "string",
+                "enum": [
+                    "read_file",
+                    "read_lines",
+                    "literal_search",
+                    "git_read_status",
+                    "health_read",
+                    "patch_draft",
+                ],
+            },
+            "path": {"type": "string", "maxLength": 512},
+            "max_bytes": {"type": "integer", "minimum": 1, "maximum": 1048576},
+            "start": {"type": "integer", "minimum": 1},
+            "end": {"type": "integer", "minimum": 1},
+            "root": {"type": "string", "maxLength": 256},
+            "literal": {"type": "string", "maxLength": 512},
+            "max_matches": {"type": "integer", "minimum": 1, "maximum": 1000},
+            "repo_root": {"type": "string", "maxLength": 256},
+            "url": {"type": "string", "maxLength": 2048},
+            "timeout_seconds": {"type": "number", "minimum": 0.1, "maximum": 30},
+            "files": {"type": "array", "maxItems": 16, "items": {"type": "string", "maxLength": 512}},
+            "review_only": {"type": "boolean"},
+            "diff": {"type": "string", "maxLength": 20000},
+        },
+        "required": ["schema", "action"],
+        "additionalProperties": False,
+    }
+    return build_transformers_prefix_allowed_tokens_fn(
+        tokenizer,
+        JsonSchemaParser(schema),
+    )
+
+
 def _load_adapter(model: Any, adapter_path: Path) -> dict[str, Any]:
     bundle = torch.load(adapter_path, map_location="cpu", weights_only=False)
     if not isinstance(bundle, dict) or bundle.get("schema") != "wrench.qwen-router-adapter.v1":
@@ -97,6 +155,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         adapter_receipt = _load_adapter(model, args.adapter)
     model.eval()
     device = next(model.parameters()).device
+    guided_json_prefix_fn = _guided_json_prefix_fn(tokenizer) if args.guided_json_schema else None
     results: list[dict[str, Any]] = []
     for row in rows:
         messages = _messages(row)
@@ -121,6 +180,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
                 use_cache=True,
                 eos_token_id=tokenizer.eos_token_id,
                 pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+                **({"prefix_allowed_tokens_fn": guided_json_prefix_fn} if guided_json_prefix_fn else {}),
             )
         elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
         generated = output[0, batch["input_ids"].shape[-1] :]
@@ -169,6 +229,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         "p95_latency_ms": _percentile([item["latency_ms"] for item in results], 95),
         "device": str(device),
         "adapter": adapter_receipt,
+        "guided_json_schema": args.guided_json_schema,
         "quality_claim": False,
         "results": results,
     }
@@ -199,6 +260,11 @@ def main() -> int:
     )
     parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument("--adapter", type=Path, default=None)
+    parser.add_argument(
+        "--guided-json-schema",
+        action="store_true",
+        help="development-only LM Format Enforcer constraint for JSON syntax",
+    )
     args = parser.parse_args()
     receipt = evaluate(args)
     print(json.dumps({key: receipt[key] for key in (
