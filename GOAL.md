@@ -3158,3 +3158,16 @@ removed its old private `_model_mapping` attribute. Full tensor loading was
 not claimed because the isolated runtime has no PyTorch. After the fix, the
 full local regression remained `194 passed`, `0 failed`, `18 warnings`.
 Evidence: `phases/phase-318-current-head-standard-hf`.
+
+2026-09-21 standard HF full-weight load boundary: a CPU-only isolated runtime
+with Transformers `5.17.0` attempted to load all `693/693` weight files from
+the current candidate. Config and tokenizer resolution passed, but the
+standard loader skipped the package's `modelopt` quantization type and then
+reported multiple NVFP4 packed tensor shape mismatches. The structured receipt
+is `FAIL_STANDARD_HF_WEIGHT_LOAD`, with `full_weight_load_verified: false` and
+no generation claim. The run took `113528.289 ms` and retained the required
+host-memory reserve, so this is a backend compatibility gap rather than an
+OOM. The portable release gate must not claim ordinary
+`AutoModel.from_pretrained()` compatibility until a compatible ModelOpt/NVFP4
+runtime is embedded or the weights are exported to a standard Transformers
+representation. Evidence: `phases/phase-319-current-head-standard-hf-load`.

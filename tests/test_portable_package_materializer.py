@@ -79,8 +79,18 @@ def test_standard_hf_load_verifier_is_metadata_only():
     assert "PASS_STANDARD_HF_CONFIG_TOKENIZER" in script
     assert "--load-weights" in script
     assert "full_weight_load_verified" in script
+    assert "FAIL_STANDARD_HF_WEIGHT_LOAD" in script
+    assert "weight_load_attempted" in script
+    assert "weight_load_failure_class" in script
     assert "full_weight_generation_verified" in script
     assert "native_long_context_quality_verified" in script
+
+
+def test_standard_hf_load_verifier_records_backend_failures():
+    script = Path("tools/verify_standard_hf_load.py").read_text(encoding="utf-8")
+    assert "standard_weight_load_status" in script
+    assert "modelopt_nvfp4_shape_mismatch_or_unsupported_quantization" in script
+    assert "return 0 if not args.load_weights" in script
 
 
 def test_materializer_embeds_worker_runtime():

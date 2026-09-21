@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Verify the standard Hugging Face config and tokenizer path for Wrench.
+"""Verify the standard Hugging Face config, tokenizer, and optional weights.
 
-This is intentionally a metadata and tokenizer check. It does not load the
-4B tensors or claim generation quality. Full model generation and long-context
-serving remain backend-specific gates.
+The default check is metadata and tokenizer only. ``--load-weights`` is an
+explicit stronger probe. It must emit a structured failure receipt when a
+backend cannot restore the packed artifact, rather than turning an exception
+trace into an ambiguous result.
 """
 
 from __future__ import annotations
@@ -19,6 +20,19 @@ from typing import Any
 MIN_TRANSFORMERS = (5, 17, 0)
 MIN_HYBRID_WORKING_CONTEXT = 64_000
 LOGICAL_RAW_CONTEXT_LIMIT = 4_000_000
+
+
+def _classify_weight_load_failure(error: BaseException) -> str:
+    text = str(error).lower()
+    if (
+        "mismatched sizes" in text
+        or "ignore_mismatched_sizes" in text
+        or "shape" in text
+    ):
+        return "modelopt_nvfp4_shape_mismatch_or_unsupported_quantization"
+    if "quant" in text or "modelopt" in text or "nvfp4" in text:
+        return "modelopt_nvfp4_backend_support_gap"
+    return "standard_transformers_weight_load_error"
 
 
 def _sha256(path: Path) -> str:
@@ -111,6 +125,7 @@ def verify(
         "native_tokenizer_context_supported": native_context_supported,
         "hybrid_raw_intake_contract": True,
         "native_context_required_by_probe": require_native_context,
+        "weight_load_attempted": False,
         "full_weight_load_verified": False,
         "full_weight_generation_verified": False,
         "native_long_context_quality_verified": False,
@@ -120,14 +135,28 @@ def verify(
     if load_weights:
         import torch
 
+        receipt["weight_load_attempted"] = True
         started = time.perf_counter()
-        model = transformers.AutoModelForImageTextToText.from_pretrained(
-            model_dir,
-            dtype=torch.bfloat16,
-            low_cpu_mem_usage=False,
-            local_files_only=True,
-            trust_remote_code=True,
-        )
+        try:
+            model = transformers.AutoModelForImageTextToText.from_pretrained(
+                model_dir,
+                dtype=torch.bfloat16,
+                low_cpu_mem_usage=False,
+                local_files_only=True,
+                trust_remote_code=True,
+            )
+        except Exception as error:
+            receipt.update(
+                {
+                    "status": "FAIL_STANDARD_HF_WEIGHT_LOAD",
+                    "standard_weight_load_status": "FAIL_STANDARD_HF_WEIGHT_LOAD",
+                    "weight_load_failure_class": _classify_weight_load_failure(error),
+                    "weight_load_error_type": type(error).__name__,
+                    "weight_load_error": str(error).splitlines()[0][:500],
+                    "weight_load_elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+                }
+            )
+            return receipt
         receipt.update(
             {
                 "full_weight_load_verified": True,
@@ -163,7 +192,7 @@ def main() -> int:
         "transformers_version": receipt["transformers_version"],
         "full_weight_load_verified": receipt["full_weight_load_verified"],
     }))
-    return 0
+    return 0 if not args.load_weights or receipt["full_weight_load_verified"] else 1
 
 
 if __name__ == "__main__":
