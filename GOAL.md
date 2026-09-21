@@ -3138,3 +3138,13 @@ no message, command marker, tool output, or JSON receipt. Per the advisor stop
 condition, no further remote prompt is sent and no 5060 metric is promoted.
 Local release work remains active. Evidence:
 `phases/phase-316-luna-5060-control-plane`.
+
+2026-09-21 current-head 2M/4M retrieval probe: the candidate bound to source
+commit `a8a75c3` passed six package-local retrieval cases with needles at 1%,
+50%, and 99% offsets in both 2M and 4M raw payloads. All six proposals were
+accepted, raw payload hashes were bound, and model calls were zero. Every case
+compacted to `19` effective working tokens. The 4M first-layer gate measured
+`25.12~40.66 ms`. This is hybrid retrieval evidence, not dense-native
+attention or learned MiniMax quality. Evidence:
+`phases/phase-317-current-head-retrieval-2m-4m.json` and
+`phases/phase-317-current-head-retrieval-2m-4m.md`.
