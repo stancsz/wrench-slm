@@ -147,23 +147,30 @@ def _post_chat(endpoint: str, prompt: str, timeout: float) -> tuple[int | None, 
 
 
 def _terminate_process(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
-        return
-    process.terminate()
-    try:
-        process.wait(timeout=15)
-        return
-    except subprocess.TimeoutExpired:
-        pass
     if os.name == "nt":
+        # FreeToken starts CUDA workers. Kill the exact process tree before
+        # waiting on the parent, otherwise the parent can exit first and leave
+        # orphan workers holding several GiB of RAM and VRAM.
         subprocess.run(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
             capture_output=True,
             text=True,
             check=False,
         )
-    else:
-        process.kill()
+        try:
+            process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=15)
+        return
+    if process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=15)
+            return
+        except subprocess.TimeoutExpired:
+            pass
+    process.kill()
     process.wait(timeout=15)
 
 

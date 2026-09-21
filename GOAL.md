@@ -3186,3 +3186,13 @@ NVFP4 artifact. Evidence: `phases/phase-320-current-head-freetoken-native`,
 `phases/phase-320-current-head-freetoken-native.json`,
 `phases/phase-320-current-head-package-validation.json`, and
 `phases/phase-320-current-head-weight-equivalence.json`.
+
+2026-09-21 resource-safe native rerun: phase 320 exposed orphan FreeToken
+CUDA workers after the parent exited. The exact two worker PIDs were cleaned
+up, returning GPU usage from about `7.7 GiB` to less than `1 GiB`. The verifier
+was fixed to terminate the exact Windows process tree before waiting. A fresh
+run against the rematerialized current candidate then passed native ModelOpt
+load and generation in `23,871.1 ms`, configured 4M KV capacity, preserved
+`42.7503%` RAM free and `50.9170%` VRAM free while ready, and returned to
+`42.7338%` RAM free and `93.5411%` VRAM free after cleanup. No candidate
+workers remained. Evidence: `phases/phase-321-current-head-freetoken-native-cleanup`.

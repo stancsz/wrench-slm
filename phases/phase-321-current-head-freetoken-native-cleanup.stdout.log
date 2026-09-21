@@ -1,0 +1,36 @@
+[1m[2026-09-21|17:37:44][0m [32mINFO    [0m Parsed arguments:
+ServerArgs(model_path='D:\\models\\_wrench-release-candidate-0be4751', tp_info=DistributedInfo(rank=0, size=1), dtype=torch.bfloat16, max_running_req=1, attention_backend='auto', moe_strategy='offload', quant_backend=None, ple_backend='disk', expert_load='serial', moe_cache_size=0, moe_cache_rate=None, moe_cache_auto=True, kv_reserve_tokens=8192, moe_cache_policy='lru', moe_prefill_overlap=True, moe_prefill_hit_d2d=False, moe_collect_stats=False, moe_cpu_threads=0, moe_cpu_layers=None, moe_hybrid_max_fetch=-1, cuda_graph_bs=None, cuda_graph_max_bs=None, page_size=1, memory_ratio=0.9, linear_state_cache_ratio=2.0, swa_full_tokens_ratio=0.2, swa_num_pages_override=None, distributed_timeout=60.0, use_dummy_weight=False, use_pynccl=True, max_seq_len_override=4000000, num_page_override=None, num_token_override=4000000, mm=MultimodalConfig(disabled_encoders=frozenset({'audio', 'vision'}), embed_cache_device='cpu', encoder_weights='host', image_min_tokens=None, image_max_tokens=None, processor_kwargs={}), max_extend_tokens=32768, cache_type='radix', offline_mode=False, decode_log_interval=40, special_token_ckpt=False, _unique_suffix='.pid=36724', _ipc_base_port=61443, server_host='127.0.0.1', server_port=28983, num_tokenizer=0, silent_output=False, shell_mode=False, served_model_name='wrench-4b-qwen3.6-8e', tool_call_parser='qwen', reasoning_parser=None, sampling_defaults='model', max_output_tokens=None, enable_cache_report=False, allowed_media_domains='', allowed_local_media_path='', cors_origins='tauri://localhost,http://tauri.localhost,http://localhost:1420', gpu=(), gpu_assigned=None)
+[1m[2026-09-21|17:37:44|FrontendAPI][0m [32mINFO    [0m Default sampling config (source=model): temperature=1.0, top_k=20, top_p=0.95
+INFO:     127.0.0.1:61463 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:61946 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:61948 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:57728 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:57729 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:51101 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:51102 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:56507 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+[1m[2026-09-21|17:37:52|core|rank=0][0m [32mINFO    [0m Enabled expandable_segments (override via PYTORCH_ALLOC_CONF)
+INFO:     127.0.0.1:56535 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+[1m[2026-09-21|17:37:52|core|rank=0][0m [32mINFO    [0m Auto-selected attention backend: triton
+[1m[2026-09-21|17:37:52|core|rank=0][0m [32mINFO    [0m Resolved config: moe_strategy='offload', attention_backend='triton', cache_type='hybrid_radix', page_size=1
+[1m[2026-09-21|17:37:52|core|rank=0][0m [32mINFO    [0m Free memory before loading model: 14.67 GiB
+INFO:     127.0.0.1:60465 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:60467 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+[1m[2026-09-21|17:37:54|core|rank=0][0m [32mINFO    [0m MoE experts: nvfp4 via triton
+[1m[2026-09-21|17:37:54|core|rank=0][0m [32mINFO    [0m expert banks: slow path (serial build)
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m --moe-cache-auto resolved moe_cache_size=320 num_pages=885354496 (prefill_overlap=True)
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Multimodal disabled: --text-model-only
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Allocating 4000000 tokens for KV cache, K + V = 1.59 GiB
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Free memory after initialization: 8.29 GiB
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Start capturing CUDA graphs with sizes: [1]
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Free GPU memory before capturing CUDA graphs: 8.26 GiB
+INFO:     127.0.0.1:54646 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+[1m[2026-09-21|17:37:55|core|rank=0][0m [32mINFO    [0m Free GPU memory after capturing CUDA graphs: 8.24 GiB
+[1m[2026-09-21|17:37:56|core|rank=0][0m [32mINFO    [0m Prefill warmup complete for lengths [80, 128] in 0.429 s
+INFO:     127.0.0.1:54647 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:57923 - "POST /v1/chat/completions HTTP/1.1" 503 Service Unavailable
+[1m[2026-09-21|17:37:57|core|rank=0][0m [32mINFO    [0m Scheduler is idle, waiting for new reqs...
+[1m[2026-09-21|17:37:57|FrontendAPI][0m [32mINFO    [0m API server is ready to serve on 127.0.0.1:28983
+[1m[2026-09-21|17:37:58|core|rank=0][0m [32mINFO    [0m Prefill batch, #new-seq: 1, #new-token: 14, #cached-token: 0, token usage: 0.00, #swa-token: 15/81983, swa usage: 0.00, #mamba-slot: 0/8, mamba usage: 0.00, #running-req: 0, #queue-req: 0, input throughput (token/s): 13.34
+INFO:     127.0.0.1:57941 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[1m[2026-09-21|17:37:58|core|rank=0][0m [32mINFO    [0m Scheduler is idle, waiting for new reqs...
