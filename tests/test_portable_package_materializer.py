@@ -11,6 +11,7 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     materialize(source, target, Path.cwd())
     readme = (target / "README.md").read_text(encoding="utf-8")
     assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M" in readme
+    assert "Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M" in readme
     assert "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-NVFP4-native4M" not in readme
     assert (
         './Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False'

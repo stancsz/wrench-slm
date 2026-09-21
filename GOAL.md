@@ -2589,3 +2589,13 @@ context. Invalid bounds or raw input above 4M fail closed. A local gate-only
 tokens in 137.329 ms with a hash-bound receipt. This is model-package gate
 evidence, not native decoder quality, 5060 Ti verification, or MiniMax parity.
 Evidence: `phases/phase-240-dense-native-first-layer`.
+
+2026-09-20 portable package v96 correction: the generated copy-paste README
+now points `Set-Location` at the actual requested Hub directory instead of
+the historical NVFP4 directory name. The v96 package passed structural
+validation and its own `/api/chat` 4M model-local handoff accepted 3,995,842
+raw estimated tokens, reduced them to 1,955 staged tokens, and completed in
+252.351 ms with 106.276 ms server staging. The upstream was a local protocol
+stub, so this remains package intake and reduction evidence, not native decoder
+quality or 5060 Ti verification. Evidence:
+`phases/phase-240-dense-native-first-layer/portable-v96-native-handoff-4m.json`.
