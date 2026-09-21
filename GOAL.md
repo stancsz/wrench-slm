@@ -2407,3 +2407,10 @@ targets, improving over the uncalibrated base at 20/44 and the earlier
 100-step LoRA at 26/44. A rank-16, 1,024-step run regressed to 25/44, so it
 was not promoted. These are diagnostic generation results, not final-suite or
 release evidence. Evidence: `phases/phase-222-lora-training-audit`.
+
+2026-09-20 current-source mechanical replay: the checked-out deterministic
+route covered all 220 rows with 220/220 outcome matches and 220/220 fast-path
+requests in 8.195 ms, with zero prohibited accepts. This confirms the current
+high-throughput mechanical lane, but not learned-model quality, MiniMax parity,
+full workflow savings, or dense-native attention. Evidence:
+`phases/phase-223-current-source-mechanical-220`.

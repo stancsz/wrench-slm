@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.current-source-mechanical-220.v1",
+  "status": "PASS_DIAGNOSTIC_DETERMINISTIC_ROUTE",
+  "cases": "evals/wrench-expanded-v2/cases.jsonl",
+  "request_count": 220,
+  "mechanical_fast_path_requests": 220,
+  "outcome_matches": 220,
+  "prohibited_accepts": 0,
+  "elapsed_ms": 8.195,
+  "sealed_final_used": false,
+  "quality_claim": false,
+  "native_attention_claim": false
+}
