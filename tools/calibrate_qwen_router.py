@@ -103,18 +103,22 @@ def _example(tokenizer: Any, row: dict[str, Any]) -> tuple[list[int], list[int]]
         if isinstance(row.get("system"), str) and row["system"].strip():
             messages.append({"role": "system", "content": row["system"]})
         messages.append({"role": "user", "content": row["prompt"]})
-    prompt_text = tokenizer.apply_chat_template(
+    prompt_ids = tokenizer.apply_chat_template(
         messages,
-        tokenize=False,
+        tokenize=True,
         add_generation_prompt=True,
         enable_thinking=False,
     )
-    target_text = row["target"] + (tokenizer.eos_token or "")
-    prompt_ids = tokenizer(prompt_text, add_special_tokens=False).input_ids
-    full_ids = tokenizer(prompt_text + target_text, add_special_tokens=False).input_ids
-    if len(full_ids) <= len(prompt_ids):
+    if not isinstance(prompt_ids, list):
+        prompt_ids = prompt_ids["input_ids"]
+    if prompt_ids and isinstance(prompt_ids[0], list):
+        prompt_ids = prompt_ids[0]
+    target_ids = tokenizer(row["target"], add_special_tokens=False).input_ids
+    if tokenizer.eos_token_id is not None:
+        target_ids = target_ids + [tokenizer.eos_token_id]
+    if not target_ids:
         raise ValueError(f"target tokenization was empty for {row.get('id')}")
-    return full_ids, [-100] * len(prompt_ids) + full_ids[len(prompt_ids) :]
+    return prompt_ids + target_ids, [-100] * len(prompt_ids) + target_ids
 
 
 def _pad(batch: list[tuple[list[int], list[int]]], pad_id: int, device: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -165,6 +169,10 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         trainable.extend(attention_trainable)
     optimizer = torch.optim.AdamW(trainable, lr=args.learning_rate, weight_decay=0.0)
     rows = _read_cases(args.calibration)
+    if args.max_rows is not None:
+        if args.max_rows < 1:
+            raise ValueError("--max-rows must be positive")
+        rows = rows[: args.max_rows]
     encoded = [_example(tokenizer, row) for row in rows]
     order = list(range(len(rows)))
     history: list[float] = []
@@ -197,6 +205,8 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
         "source_model": str(args.model.resolve()),
         "calibration_path": str(args.calibration.resolve()),
         "calibration_sha256": hashlib.sha256(args.calibration.read_bytes()).hexdigest(),
+        "calibration_rows_used": len(rows),
+        "max_rows": args.max_rows,
         "steps": args.steps,
         "learning_rate": args.learning_rate,
         "lora_rank": args.rank,
@@ -222,6 +232,12 @@ def main() -> int:
     parser.add_argument("--calibration", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--steps", type=int, default=100)
+    parser.add_argument(
+        "--max-rows",
+        type=int,
+        default=None,
+        help="development-only prefix limit for overfit and pipeline sanity checks",
+    )
     parser.add_argument("--learning-rate", type=float, default=5e-4)
     parser.add_argument("--rank", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=16.0)

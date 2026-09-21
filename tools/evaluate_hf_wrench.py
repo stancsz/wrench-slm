@@ -43,6 +43,10 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         for line in args.cases.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+    if args.max_cases is not None:
+        if args.max_cases < 1:
+            raise ValueError("--max-cases must be positive")
+        rows = rows[: args.max_cases]
     if not rows:
         raise ValueError("cases file is empty")
     tokenizer = AutoTokenizer.from_pretrained(args.model, local_files_only=True)
@@ -117,6 +121,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         "model": str(args.model.resolve()),
         "cases": str(args.cases.resolve()),
         "case_count": len(results),
+        "max_cases": args.max_cases,
         "verified_accepted": accepted,
         "exact_target_matches": exact,
         "outcome_matches": matched,
@@ -145,6 +150,12 @@ def main() -> int:
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--allowed-root", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--max-cases",
+        type=int,
+        default=None,
+        help="development-only prefix limit for overfit and pipeline sanity checks",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=256)
     args = parser.parse_args()
     receipt = evaluate(args)

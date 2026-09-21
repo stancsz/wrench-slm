@@ -1,0 +1,44 @@
+{
+  "schema": "wrench.phase-222-lora-training-audit.v1",
+  "status": "DEVELOPMENT_DIAGNOSTIC_ONLY",
+  "source_model": "D:/models/Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
+  "calibration": {
+    "path": "evals/wrench-expanded-v2/calibration.jsonl",
+    "rows": 132,
+    "sha256": "43359855fe098e91f53828ac63661c6577fbf8b019924557a69571fd815644d5"
+  },
+  "runs": [
+    {
+      "steps": 512,
+      "final_loss": 0.08687441051006317,
+      "development_cases": 44,
+      "outcome_matches": 25,
+      "exact_target_matches": 10,
+      "verified_accepted": 13,
+      "median_latency_ms": 3537.109,
+      "p95_latency_ms": 6767.374,
+      "runtime": "Triton fused delta-rule, causal-conv1d reference fallback"
+    },
+    {
+      "steps": 1024,
+      "final_loss": 0.04683644324541092,
+      "development_cases": 44,
+      "outcome_matches": 30,
+      "exact_target_matches": 16,
+      "verified_accepted": 18,
+      "median_latency_ms": 3650.691,
+      "p95_latency_ms": 8339.023,
+      "runtime": "Triton fused delta-rule, causal-conv1d reference fallback"
+    }
+  ],
+  "sanity": {
+    "rows": 8,
+    "steps": 32,
+    "outcome_matches": 7,
+    "exact_target_matches": 6,
+    "status": "PASS_PIPELINE_SANITY"
+  },
+  "quality_claim": false,
+  "sealed_final_used": false,
+  "release_decision": "NO_PROMOTION"
+}
