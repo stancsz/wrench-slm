@@ -1,0 +1,61 @@
+{
+  "schema": "wrench.v88-direct-context-matrix.v1",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v88-mechanical-gate",
+  "repetitions_per_point": 3,
+  "raw_estimate_never_exceeds_requested_target": true,
+  "points": [
+    {
+      "requested_tokens": 64000,
+      "observed_raw_tokens": 63994,
+      "http_p50_ms": 25.545,
+      "http_p95_ms": 26.104,
+      "gate_p50_ms": 2.02,
+      "gate_p95_ms": 2.114,
+      "staged_tokens": 9,
+      "all_passed": true
+    },
+    {
+      "requested_tokens": 128000,
+      "observed_raw_tokens": 127993,
+      "http_p50_ms": 27.116,
+      "http_p95_ms": 28.313,
+      "gate_p50_ms": 2.22,
+      "gate_p95_ms": 2.776,
+      "staged_tokens": 9,
+      "all_passed": true
+    },
+    {
+      "requested_tokens": 256000,
+      "observed_raw_tokens": 255993,
+      "http_p50_ms": 30.321,
+      "http_p95_ms": 30.683,
+      "gate_p50_ms": 2.977,
+      "gate_p95_ms": 3.0,
+      "staged_tokens": 9,
+      "all_passed": true
+    },
+    {
+      "requested_tokens": 2000000,
+      "observed_raw_tokens": 1999998,
+      "http_p50_ms": 103.465,
+      "http_p95_ms": 106.465,
+      "gate_p50_ms": 12.354,
+      "gate_p95_ms": 12.488,
+      "staged_tokens": 9,
+      "all_passed": true
+    },
+    {
+      "requested_tokens": 4000000,
+      "observed_raw_tokens": 3999995,
+      "http_p50_ms": 158.906,
+      "http_p95_ms": 159.251,
+      "gate_p50_ms": 23.952,
+      "gate_p95_ms": 24.157,
+      "staged_tokens": 9,
+      "all_passed": true
+    }
+  ],
+  "model_calls": 0,
+  "backend": "embedded-mechanical",
+  "dense_native_quality_claim": false
+}

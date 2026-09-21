@@ -20,6 +20,7 @@ def probe(package_dir: Path, output: Path, target_tokens: int) -> dict[str, obje
     sys.path.insert(0, str(package_dir.resolve()))
     from wrench_runtime.server import WrenchHTTPServer
     from wrench_runtime.worker import WrenchWorker
+    from wrench_runtime.prefill import _estimate_token_count
 
     allowed_root = Path.cwd().resolve()
     worker = WrenchWorker.from_pretrained(package_dir, allowed_root=allowed_root, load_model=False)
@@ -32,13 +33,20 @@ def probe(package_dir: Path, output: Path, target_tokens: int) -> dict[str, obje
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     # _estimated_tokens adds its final +1 once per message, not once per
-    # repeated unit. Keep the repeated-unit divisor aligned with the server.
+    # repeated unit. Reserve the current-intent suffix before selecting the
+    # repeated reference units so a nominal 4M probe never exceeds the
+    # package's declared logical context limit.
     unit_tokens = max(1, UNIT.count(" ") + UNIT.count("\n"))
-    repetitions = max(1, (target_tokens + unit_tokens - 1) // unit_tokens)
-    payload_text = UNIT * repetitions
-    payload_text += (
-        "\nCURRENT INTENT: Read src/wrench_harness/worker.py with a 65536 byte limit."
-    )
+    current_intent = "\nCURRENT INTENT: Read src/wrench_harness/worker.py with a 65536 byte limit."
+    suffix_tokens = current_intent.count(" ") + current_intent.count("\n")
+    repetitions = max(1, (target_tokens - suffix_tokens - 1) // unit_tokens)
+    payload_text = UNIT * repetitions + current_intent
+    estimated_tokens = _estimate_token_count(payload_text)
+    while estimated_tokens > target_tokens and repetitions > 1:
+        decrement = max(1, (estimated_tokens - target_tokens + unit_tokens - 1) // unit_tokens)
+        repetitions = max(1, repetitions - decrement)
+        payload_text = UNIT * repetitions + current_intent
+        estimated_tokens = _estimate_token_count(payload_text)
     request_body = json.dumps(
         {
             "model": "wrench-package",

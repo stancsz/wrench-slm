@@ -2355,3 +2355,14 @@ raw request in three measured round trips of 69.658 ms, 37.463 ms, and
 recorded 6.361 ms to 7.813 ms `mechanical_fast_pruner_cherrypicker` gates.
 This is hybrid raw intake evidence, not dense-native attention quality.
 Evidence: `phases/phase-214-mechanical-first-layer-gate`.
+
+2026-09-20 v88 direct context matrix: the current portable package accepted
+all 15 fresh package-local probes at 64K, 128K, 256K, 2M, and 4M raw input,
+with three repetitions per point and no external gateway. Observed raw token
+estimates stayed at or below the requested limits. Complete HTTP p50/p95 was
+25.545/26.104 ms at 64K, 27.116/28.313 ms at 128K, 30.321/30.683 ms at
+256K, 103.465/106.465 ms at 2M, and 158.906/159.251 ms at 4M. The first-layer
+gate p50 stayed at 23.952 ms at 4M, with nine staged working tokens in this
+simple mechanical prompt and zero model calls. This closes the current
+model-local intake matrix, while dense-native quality and family-disjoint
+approval remain open. Evidence: `phases/phase-216-v88-context-matrix`.
