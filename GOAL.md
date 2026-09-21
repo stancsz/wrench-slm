@@ -3128,3 +3128,13 @@ materializer, Ollama-shaped server, and workflow scoring code remain
 regression-clean. It does not close independent 5060 Ti verification,
 family-disjoint approval, learned MiniMax parity, or production enablement.
 Evidence: `phases/phase-314-current-source-regression`.
+
+2026-09-21 Luna control-plane decision and final bounded preflight: Sol
+advisor recommended exactly one minimal authenticated 5060 Ti preflight after
+the repeated empty remote turns, with a 10-minute bound and required nonce,
+commit, GPU, timestamp, exit status, and RAM/VRAM fields. The new fork used
+nonce `WR-316-5060-PREFLIGHT-20260921-01` and completed after `12.580 s` with
+no message, command marker, tool output, or JSON receipt. Per the advisor stop
+condition, no further remote prompt is sent and no 5060 metric is promoted.
+Local release work remains active. Evidence:
+`phases/phase-316-luna-5060-control-plane`.

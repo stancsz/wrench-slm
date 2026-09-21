@@ -1,0 +1,12 @@
+Decision blocker: determine the smallest credible next experiment for independent RTX 5060 Ti verification after repeated remote Codex sessions complete without any observable worker receipt.
+
+Observed facts:
+- Current source is pushed at commit a8a75c323a7c42e4758f318f05e625565c6b9acf; a clean candidate is hash-bound and passes 4M hybrid intake, package validation, Ollama-shaped smoke, OpenCode, DeepSeek Harness, Claude Code, and 194 local tests.
+- The candidate has 3,881,244,016 parameters, declared raw input 4,000,000, and effective working context 64,000.
+- The latest fresh same-directory remote fork used nonce WR-312-5060-CLEAN-20260921-01 and a complete self-contained payload, stayed active for 44.442 seconds, then returned no assistant message, command marker, tool output, GPU snapshot, or receipt.
+- Earlier 5060 attempts had the same empty-turn behavior; the only prior 5060 metrics used stale source aaf0c79 and are not promoted.
+- A local held-out final diagnostic passes 44/44 Wrench outcomes with zero prohibited accepts, but the suite remains DRAFT_PENDING_HUMAN_APPROVAL.
+
+Constraints and rejected paths: do not repeat opaque remote threads, do not claim 5060 evidence from stale receipts, do not upload private data or spend provider money, and keep 10 percent RAM and VRAM free. Local work can continue, but the cross-host acceptance gate needs an observable receipt.
+
+Question: should the next experiment be one bounded queue or authenticated transport repair with a minimal health/preflight receipt, or should independent 5060 verification be formally stopped as an external blocker while the release candidate advances locally? Give one recommended experiment, exact stop condition, and what evidence would be sufficient.

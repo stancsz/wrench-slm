@@ -1,0 +1,31 @@
+{
+  "schema": "wrench.5060ti-preflight.v1",
+  "status": "UNVERIFIED",
+  "nonce": "WR-316-5060-PREFLIGHT-20260921-01",
+  "thread": {
+    "thread_id": "01a0c63c-49a8-7620-9f5a-d8a4f9607969",
+    "fork_source_thread_id": "01a0c633-32c2-7a90-b54e-96316c225810",
+    "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+    "turn_duration_ms": 12580,
+    "completed_without_observable_receipt": true,
+    "assistant_message_observed": false,
+    "command_marker_observed": false,
+    "tool_output_observed": false
+  },
+  "expected": {
+    "host_name": "DESKTOP-KET1SKP",
+    "gpu": "NVIDIA RTX 5060 Ti",
+    "source_commit": "a8a75c323a7c42e4758f318f05e625565c6b9acf",
+    "ram_vram_reserve_fraction": 0.10
+  },
+  "checks": {
+    "nonce_echo": false,
+    "host_identity": false,
+    "gpu_identity": false,
+    "source_commit": false,
+    "ram_reserve": false,
+    "vram_reserve": false,
+    "authenticated_worker_receipt": false
+  },
+  "decision": "STOP_REMOTE_ATTEMPTS_EXTERNAL_BLOCKER"
+}

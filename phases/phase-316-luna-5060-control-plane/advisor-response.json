@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.luna-advisor-consultation.v1",
+  "model": "codex-sol-advisor",
+  "packet_chars": 1752,
+  "advice_words": 115,
+  "usage": {
+    "completion_tokens": 261,
+    "prompt_tokens": 503,
+    "total_tokens": 764
+  },
+  "decision_changed": true,
+  "verdict": "Run one bounded authenticated transport or queue repair requesting only a minimal RTX 5060 Ti preflight receipt. If it fails, mark independent verification externally blocked while local release work continues.",
+  "required_receipt": [
+    "nonce",
+    "current commit",
+    "host or session ID",
+    "GPU model",
+    "timestamp",
+    "command exit status",
+    "RAM and VRAM headroom"
+  ],
+  "stop_condition": "10 minute bound, missing field, wrong commit or GPU, resource headroom below 10 percent, cost prompt, or private-data requirement"
+}
