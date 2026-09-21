@@ -2806,3 +2806,23 @@ classified unavailable. No further prompts will be sent until a fresh
 authenticated worker session or operator-confirmed dispatch exists. This is
 not a 5060 Ti failure or performance result. Evidence:
 `phases/phase-268-luna-advisor/remote-liveness-receipt.json`.
+
+2026-09-21 5060 Ti device connection alignment: the user supplied a Codex
+remote-control screenshot showing the intended `5060TI` device as connected,
+signed in, and identified as host `DESKTOP-KET1SKP` on Windows x86_64. A fresh
+nonce-bound read-only challenge sent immediately afterward to the existing
+remote thread still completed with an empty item list and no terminal output.
+The device connection is therefore real control-plane evidence, while
+authenticated terminal execution and independent 5060 Ti benchmark evidence
+remain unverified. Evidence:
+`phases/phase-269-5060ti-connected-control-plane`.
+
+2026-09-21 portable Claude Code launcher: the materializer now embeds a
+`run_claude_code.ps1` entrypoint and a local fail-closed proxy blocker. A fresh
+materialized package launched the Wrench Anthropic endpoint and completed a
+real Claude Code read-only `Read README.md` operation with exit code 0. The
+trace contained proposal and settlement rows, both with `model_calls=0`; the
+proposal compacted 400 estimated raw tokens to 206 effective tokens with a
+2.488 ms gate. This is portable local integration evidence, not learned
+MiniMax parity, dense-native 4M quality, 5060 Ti evidence, or production
+readiness. Evidence: `phases/phase-270-portable-claude-launcher`.

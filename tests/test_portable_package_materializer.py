@@ -58,6 +58,8 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
     assert "refusing to overwrite existing target" in script
     assert "copy_cross_volume" in script
     assert "serve_freetoken.ps1" in script
+    assert "run_claude_code.ps1" in script
+    assert "wrench_loopback_blocker.py" in script
     assert "wrench_toolbelt.py" in script
     assert "runtime_dir / \"toolbelt.py\"" in script
     assert 'tokenizer_config["model_max_length"] = 4_000_000' in script
@@ -107,6 +109,31 @@ def test_materializer_embeds_worker_runtime():
     assert '"fast_history_profile": "opt_in_reference_only"' in script
     assert "OllamaApi" in script
     assert "native smoke response missing completion text" in script
+
+
+def test_materializer_includes_isolated_claude_launcher():
+    launcher = Path("packaging/run_claude_code.ps1").read_text(encoding="utf-8")
+    blocker = Path("packaging/wrench_loopback_blocker.py").read_text(encoding="utf-8")
+    assert 'CLAUDE_CODE_USE_GATEWAY = "1"' in launcher
+    assert 'CLAUDE_GATEWAY_ALLOW_LOOPBACK = "1"' in launcher
+    assert 'CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT = "1"' in launcher
+    assert 'ANTHROPIC_BASE_URL = "http://127.0.0.1:$Port"' in launcher
+    assert 'ANTHROPIC_AUTH_TOKEN = "wrench-local-only"' in launcher
+    assert '$env:NO_PROXY = "127.0.0.1,localhost"' in launcher
+    assert 'wrench_loopback_blocker.py' in launcher
+    assert 'Start-Process -FilePath $python.Source' in launcher
+    assert '"--allowed-tools"' in launcher
+    assert '$claudeArguments += ($AllowedTools -join ",")' in launcher
+    assert 'if ($Prompt) { $claudeArguments += $Prompt }' in launcher
+    assert 'The external traffic blocker exited' in launcher
+    assert 'serve_forever' in blocker
+    assert '403 Forbidden' in blocker
+
+
+def test_materializer_receipt_lists_claude_files():
+    script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
+    assert '"wrench_loopback_blocker.py"' in script
+    assert '"run_claude_code.ps1"' in script
 
 
 def test_materializer_keeps_toolbelt_distinct_from_verifier():

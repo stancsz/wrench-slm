@@ -1,0 +1,32 @@
+{
+  "schema": "wrench.5060ti-control-plane-liveness.v1",
+  "status": "CONNECTED_CONTROL_PLANE_TERMINAL_NOT_VERIFIED",
+  "capture": {
+    "source": "user_supplied_screenshot",
+    "path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\codex-clipboard-e90b9744-e45f-4511-8b22-c553105f68e0.png",
+    "device_label": "5060TI",
+    "device_status": "Connected",
+    "device_auth": "Signed in device",
+    "host": "DESKTOP-KET1SKP",
+    "os_arch": "Windows / x86_64",
+    "remote_control_version": "0.154.0-alpha.6.2",
+    "last_seen_display": "41m"
+  },
+  "remote_thread": {
+    "thread_id": "01a0b7cf-c778-7453-aca6-41b51d82b8f2",
+    "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+    "reported_cwd": "C:\\Users\\stanc\\github\\wrench-slm",
+    "challenge_nonce": "WR-269-LIVE-20260921-01",
+    "turn_status": "completed",
+    "turn_duration_ms": 3643,
+    "returned_item_count": 0,
+    "nonce_echoed": false,
+    "stdout_returned": false,
+    "stderr_returned": false,
+    "tool_call_returned": false,
+    "gpu_snapshot_returned": false,
+    "memory_snapshot_returned": false
+  },
+  "independent_5060_claim": false,
+  "remote_command_executed": false
+}

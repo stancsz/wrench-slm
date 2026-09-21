@@ -106,6 +106,7 @@ def materialize(
         shutil.copy2(repo_root / "wrench_worker.py", target / "wrench_worker.py")
         shutil.copy2(repo_root / "wrench_server.py", target / "wrench_server.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
+        shutil.copy2(repo_root / "packaging" / "wrench_loopback_blocker.py", target / "wrench_loopback_blocker.py")
         (runtime_dir / "__init__.py").write_text(
             "\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n"
             "from .worker import WrenchWorker\n\n"
@@ -179,6 +180,7 @@ def materialize(
             encoding="utf-8",
         )
         shutil.copy2(repo_root / "packaging" / "run_wrench.ps1", target / "run_wrench.ps1")
+        shutil.copy2(repo_root / "packaging" / "run_claude_code.ps1", target / "run_claude_code.ps1")
         (target / "serve_freetoken.ps1").write_text(
             """param(\n    [string]$FreeTokenExecutable = \"ft\",\n    [int]$Port = 28900,\n    [int]$MoeCacheSize = 16\n)\n\n$env:PYTHONPATH = \"$PSScriptRoot\\wrench_runtime;$env:PYTHONPATH\"\n$env:WRENCH_LONG_CONTEXT_OVERLAY = \"1\"\n$env:WRENCH_GLOBAL_FULL_LAYERS = \"none\"\n$env:WRENCH_SWA_WINDOW = \"8192\"\n$env:WRENCH_SWA_POOL_TOKENS = \"8192\"\n$env:WRENCH_ROPE_MAX_POSITION = \"4000000\"\n$env:WRENCH_NATIVE_DIRECT_INPUT = \"1\"\n& $FreeTokenExecutable serve `\n    --model $PSScriptRoot `\n    --host 127.0.0.1 `\n    --port $Port `\n    --served-model-name wrench-4b-qwen3.6-8e `\n    --moe-strategy offload `\n    --moe-cache-size $MoeCacheSize `\n    --max-running-requests 1 `\n    --max-seq-len-override 4000000 `\n    --max-prefill-length 32768 `\n    --memory-ratio 0.9 `\n    --text-model-only `\n    --cache-type radix `\n    --tool-call-parser qwen `\n    --reasoning-parser off\n""",
             encoding="utf-8",
@@ -501,7 +503,9 @@ def materialize(
                 "wrench_runtime/worker.py",
                 "wrench_worker.py",
                 "wrench_server.py",
+                "wrench_loopback_blocker.py",
                 "run_wrench.ps1",
+                "run_claude_code.ps1",
                 "wrench_runtime/sitecustomize.py",
                 "wrench_runtime/server.py",
                 "wrench-runtime.json",

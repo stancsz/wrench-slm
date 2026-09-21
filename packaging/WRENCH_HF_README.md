@@ -42,6 +42,29 @@ verifier, deterministic toolbelt, context policy, and a model-local server.
 It accepts Ollama-shaped `/api/chat` and `/api/generate` requests, including
 `options.num_ctx=4000000`, without an external gateway.
 
+## Connect Claude Code locally
+
+The package also includes a local Claude Code launcher. It starts the Wrench
+Anthropic-compatible `/v1/messages` endpoint, uses a fresh Claude config by
+default, and points external proxy variables at a local fail-closed blocker.
+The Wrench loopback endpoint is excluded from that blocker, so the run either
+uses this package or fails instead of silently reaching a first-party provider:
+
+```powershell
+.\run_claude_code.ps1 -Print -Prompt "Read README.md and report its first heading."
+```
+
+The default launcher allows only `Read`, `Glob`, and `Grep`. Pass explicit
+Claude Code arguments when a different local permission policy is required:
+
+```powershell
+.\run_claude_code.ps1 -Print -AllowedTools Read,Edit -Prompt "Inspect the project and propose a bounded change."
+```
+
+This is a local integration path, not a claim of Claude model ownership,
+MiniMax parity, or production readiness. Wrench remains bounded by its own
+verifier and has no direct mutation authority.
+
 ## What the 4M claim means
 
 The production-value path is hybrid and model-local:
