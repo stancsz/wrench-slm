@@ -1,0 +1,16 @@
+# Ephemeral v103 smoke overlay. It keeps the existing DSH profile untouched.
+- id: llm-deepseek
+  config:
+    apiKeyEnv: WRENCH_LOCAL_API_KEY
+    baseURL: http://127.0.0.1:28932/v1
+    models:
+      - id: wrench-v103
+        name: Wrench compact v103
+        contextWindow: 4000000
+        maxTokens: 256
+    defaultModel:
+      id: wrench-v103
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: wrench-v103

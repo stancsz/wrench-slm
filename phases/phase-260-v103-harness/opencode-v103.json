@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "wrench": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Wrench v103 local",
+      "options": {
+        "baseURL": "http://127.0.0.1:28932/v1",
+        "apiKey": "wrench-local"
+      },
+      "models": {
+        "wrench-v103": {
+          "name": "Wrench v103",
+          "limit": {
+            "context": 4000000,
+            "output": 256
+          }
+        }
+      }
+    }
+  },
+  "model": "wrench/wrench-v103"
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "wrench.real-harness-integration.v3",
+  "status": "LOCAL_V103_OPENCODE_DSH_SMOKE_PASSED",
+  "host": "RTX 5070 Ti development host",
+  "source_commit_at_start": "a923b41",
+  "package": {
+    "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+    "format": "Hugging Face Safetensors NVFP4 W4A16",
+    "verified_parameters": 3881244016,
+    "raw_context_limit_tokens": 4000000,
+    "effective_working_context_tokens": 64000,
+    "endpoint": "http://127.0.0.1:28932/v1/chat/completions"
+  },
+  "opencode": {
+    "status": "PASSED",
+    "cli_mode": "--pure",
+    "model": "wrench-v103",
+    "work": "read README.md through the native OpenCode read tool",
+    "structured_tool_call": true,
+    "tool_name": "read",
+    "tool_executed_by_client": true,
+    "tool_result_settlement": true,
+    "final_text_response": true,
+    "model_calls": 0,
+    "mechanical_fast_path": true,
+    "mutation_observed": false,
+    "trace": "opencode-v103-pure.trace.jsonl"
+  },
+  "deepseek_harness": {
+    "status": "PASSED",
+    "profile": "headless",
+    "model": "wrench-v103",
+    "work": "read README.md through the local filesystem tool",
+    "session_title_preflight": true,
+    "structured_tool_call": true,
+    "tool_name": "read",
+    "tool_executed_by_client": true,
+    "tool_result_settlement": true,
+    "final_text_response": true,
+    "model_calls": 0,
+    "mechanical_fast_path": true,
+    "mutation_observed": false,
+    "first_request_raw_tokens_estimate": 4889,
+    "first_request_gate_latency_ms": 7.919,
+    "settlement_elapsed_ms": 0.208,
+    "settlement_effective_working_context_tokens": 5,
+    "trace": "dsh-v103.trace.txt"
+  },
+  "trace": "wrench-v103-observations-r2.jsonl",
+  "claims_not_authorized": [
+    "independent_rtx_5060_ti_verification",
+    "learned_minimax_parity",
+    "dense_native_4m_decoder_quality",
+    "claude_code_routing",
+    "production_readiness"
+  ]
+}
