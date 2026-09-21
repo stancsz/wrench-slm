@@ -1,0 +1,26 @@
+{
+  "schema": "wrench.real-worker-http-long-context-probe.v1",
+  "status": "REAL_WORKER_HTTP_4M_GAP",
+  "endpoint": "http://127.0.0.1:28911/v1/chat/completions",
+  "model": "wrench-real-http",
+  "payload_target_tokens": 4000000,
+  "admission_estimate_safety_margin_tokens": 4096,
+  "request_bytes": 35163910,
+  "raw_payload_sha256": "3b7d6e496c16ea67c1663929ca6610bade6a44ad7a510f24d0bd73ba7b093c21",
+  "http_status": 200,
+  "elapsed_ms": 10375.007,
+  "model_calls": 2,
+  "raw_token_count": 3996369,
+  "model_prefill_token_count": 2053,
+  "context_gate_latency_ms": 181.309,
+  "working_context_budget_tokens": null,
+  "backend": "transformers",
+  "assistant_content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"patch_draft\",\"files\\\":[\\n-old\\n+new\\n\"],\"symbols\":[],\"errors\":[],\"urls",
+  "error": null,
+  "native_attention_claim": false,
+  "quality_claim": false,
+  "notes": [
+    "The request was sent directly to the package-local OpenAI-compatible endpoint.",
+    "This proves model-local raw intake, reduction, and real generation, not dense-native attention quality."
+  ]
+}

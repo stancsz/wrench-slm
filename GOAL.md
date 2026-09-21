@@ -2499,3 +2499,13 @@ targets, so it was not promoted. It reinforces the current architecture
 decision: deterministic mechanical routing owns the routine path, and learned
 generation remains fallback-only until a better data or training design is
 verified. Evidence: `phases/phase-231-lora-2048-development`.
+
+2026-09-20 real model-local HTTP 4M probe: the current source endpoint received
+3,996,369 raw-token-equivalent input directly, with a 35,163,910-byte request,
+HTTP 200, real Transformers backend, and no external gateway. Its integrated
+first-layer gate reduced the payload to 2,053 staged tokens in 181.309 ms. The
+worker made two model calls including a retry and completed in 10,375.007 ms,
+but the learned output remained malformed and failed strict verification. This
+closes a stronger model-local HTTP intake and real-generation integration
+milestone while keeping learned quality, retry efficiency, and MiniMax parity
+open. Evidence: `phases/phase-232-real-worker-http-4m`.
