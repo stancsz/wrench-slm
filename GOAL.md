@@ -2741,3 +2741,34 @@ reachable and exposes TCP port 22, but the existing local worker key was
 rejected for the tested accounts. No remote command was executed and no GPU
 or performance claim was made. Evidence:
 `phases/phase-259-5060-connectivity`.
+
+2026-09-21 Claude Code gateway boundary: the current v103 package accepted a
+direct Anthropic `/v1/messages` request with HTTP 200, a bounded `read_file`
+proposal, the embedded mechanical backend, and zero model calls. The installed
+Claude Code 2.1.251 binary with its gateway-specific environment logged
+`dispatching to gateway`, but added zero rows to the Wrench trace, so local
+Claude Code provider routing remains `NOT_VERIFIED`. No further provider
+routing attempts are authorized. Evidence:
+`phases/phase-264-claude-code-gateway-v103`.
+
+2026-09-21 v103 sealed final-slice diagnostic: all 44 rows in
+`evals/wrench-expanded-v2/final.jsonl` were replayed against the current
+package. Wrench plus identical MiniMax fallback had weighted final success
+`1.0`, verifier success `1.0`, weighted frontier coverage `1.0`, net savings
+`1.0`, zero frontier fallback tokens, median/p95 latency `195.803/301.136 ms`,
+zero prohibited accepts, and zero unexpected mutations. This remains
+diagnostic only because the suite is `DRAFT_PENDING_HUMAN_APPROVAL`.
+Evidence: `phases/phase-265-v103-final44-diagnostic`.
+
+2026-09-21 paired uncertainty scoring: the mechanical-worker scorer now emits
+deterministic paired trace-bootstrap 95% confidence intervals for teacher and
+Wrench final success. Re-scoring the existing 220-case manifest produced a
+paired success difference of `0.2065445` with CI `[0.1681818, 0.2818182]`;
+the 44-case sealed slice produced `0.2168695` with CI
+`[0.1363636, 0.3863636]`. The source regression is now `177 passed, 18
+warnings`. Evidence: `phases/phase-266-paired-ci-re-score`, commit
+`7235321`.
+
+2026-09-21 current 5060 Ti queue recheck: the latest pinned package preflight
+manifest remains in Drive `jobs/pending`; `jobs/running` remains empty and no
+new completed 5060 Ti receipt exists. No independent 5060 Ti result is claimed.
