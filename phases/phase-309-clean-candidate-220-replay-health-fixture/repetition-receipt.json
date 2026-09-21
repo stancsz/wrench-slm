@@ -1,0 +1,67 @@
+{
+  "schema": "wrench.clean-candidate-220-repetition.v1",
+  "status": "DIAGNOSTIC_THREE_COMPLETE_REPETITIONS",
+  "candidate": {
+    "package_dir": "D:\\models\\_wrench-release-candidate-20260921",
+    "source_commit": "e83a454f85be6881e989c9453291ef35d0b97429",
+    "cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72"
+  },
+  "controls": {
+    "health_fixture": true,
+    "teacher_capture_reused": true,
+    "suite_authorization": "pending_human_approval",
+    "quality_claim": false,
+    "production_enablement": false
+  },
+  "repetitions": [
+    {
+      "phase": "phase-309-clean-candidate-220-replay-health-fixture",
+      "evaluation_sha256": "52FFEE96CCBF5415DFC57980238B8511D115C8F2DD354317CABF30B2757D3AFB",
+      "trace_manifest_sha256": "BCE91BAA6FEC416041B727D510E303D785D46C8A7DB266C0C2982CE6A5292F3E",
+      "trace_count": 220,
+      "teacher_weighted_final_success": 0.8934198331788693,
+      "wrench_weighted_final_success": 1.0,
+      "wrench_p50_ms": 185.822,
+      "wrench_p95_ms": 315.441,
+      "wrench_frontier_tokens": 0,
+      "wrench_local_tokens": 24141,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0
+    },
+    {
+      "phase": "phase-310-clean-candidate-220-replay-health-fixture-r2",
+      "evaluation_sha256": "DB6B9FAD67E76DA149BE92013EDBA81AC47AF35535EC7ECD161C931175513729",
+      "trace_manifest_sha256": "434AC6A3C976F37FDEA57F5AA536F44A93D94207DE51DA329427484A35872C3D",
+      "trace_count": 220,
+      "teacher_weighted_final_success": 0.8934198331788693,
+      "wrench_weighted_final_success": 1.0,
+      "wrench_p50_ms": 190.907,
+      "wrench_p95_ms": 474.983,
+      "wrench_frontier_tokens": 0,
+      "wrench_local_tokens": 24141,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0
+    },
+    {
+      "phase": "phase-311-clean-candidate-220-replay-health-fixture-r3",
+      "evaluation_sha256": "58A1A26C08F0B68E38FD23C6762995664CCCC6B8A05A92F5C9041E6ABBF89000",
+      "trace_manifest_sha256": "A2EDD933C2D0864FC2C76E02C702A381D146ABD81E4D040D68B8F0084E76FDBD",
+      "trace_count": 220,
+      "teacher_weighted_final_success": 0.8934198331788693,
+      "wrench_weighted_final_success": 1.0,
+      "wrench_p50_ms": 184.271,
+      "wrench_p95_ms": 307.005,
+      "wrench_frontier_tokens": 0,
+      "wrench_local_tokens": 24141,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0
+    }
+  ],
+  "claims_not_authorized": [
+    "approved family-disjoint production benchmark",
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}

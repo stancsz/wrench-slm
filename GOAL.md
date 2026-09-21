@@ -3072,3 +3072,18 @@ restore an authenticated observable channel and run the exact current replay
 at `77fdf44`; if it still produces no timestamped command output and receipt,
 remote work stops and 5060Ti remains an external blocker while local release
 gates advance. Evidence: `phases/phase-298-remote-control-plane-advisor`.
+
+2026-09-21 clean release candidate 220 repetition replay: the freshly
+materialized candidate from clean source commit
+`e83a454f85be6881e989c9453291ef35d0b97429` was replayed three times over the
+current 220-case teacher-aligned diagnostic fixture with an explicit
+allowlisted health fixture. All three runs completed 220/220 rows. Wrench
+weighted final success was `1.0` in every run, with zero prohibited accepts
+and zero unexpected mutations. Wrench p50/p95 latency was
+`185.822/315.441 ms`, `190.907/474.983 ms`, and `184.271/307.005 ms`.
+Wrench used zero frontier tokens and `24,141` local tokens per run. The suite
+remains `DRAFT_PENDING_HUMAN_APPROVAL`, so these are clean-candidate
+regression receipts, not the final family-disjoint production gate. Evidence:
+`phases/phase-309-clean-candidate-220-replay-health-fixture`,
+`phases/phase-310-clean-candidate-220-replay-health-fixture-r2`, and
+`phases/phase-311-clean-candidate-220-replay-health-fixture-r3`.
