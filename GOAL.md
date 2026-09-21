@@ -2414,3 +2414,14 @@ requests in 8.195 ms, with zero prohibited accepts. This confirms the current
 high-throughput mechanical lane, but not learned-model quality, MiniMax parity,
 full workflow savings, or dense-native attention. Evidence:
 `phases/phase-223-current-source-mechanical-220`.
+
+2026-09-20 current-source workflow replay: the local model endpoint, client,
+verifier, multi-pass verifier, and IPv4 health fixture completed all 220 rows.
+The mechanical fast path handled 220/220 requests with zero model calls, 219/220
+outcome matches, 119/120 eligible exact accepts, zero prohibited accepts, and
+zero transport or runtime abstentions. Median and p95 client latency were
+0.531 ms and 49.443 ms. The one mismatch is a fixture-size conflict where the
+current `GOAL.md` exceeds the requested 131072-byte read ceiling, so the
+verifier correctly fails closed. This remains diagnostic workflow evidence,
+not MiniMax parity, weighted savings, or dense-native attention evidence.
+Evidence: `phases/phase-224-current-source-workflow-220`.

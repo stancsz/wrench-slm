@@ -1,0 +1,35 @@
+{
+  "schema": "wrench.current-source-workflow-220.v1",
+  "status": "DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY",
+  "endpoint": "http://127.0.0.1:28901/v1/chat/completions",
+  "model": "wrench-current",
+  "cases_path": "evals/wrench-expanded-v2/cases.jsonl",
+  "cases_sha256": "77ce67c7b6bb492ffc63ba26c75c322d38d73425f51e672a640705b97c78ac77",
+  "request_count": 220,
+  "mechanical_fast_path_requests": 220,
+  "model_calls": 0,
+  "outcome_matches": 219,
+  "exact_proposal_matches": 119,
+  "eligible_case_count": 120,
+  "eligible_exact_accepts": 119,
+  "prohibited_accepts": 0,
+  "transport_or_runtime_abstentions": 0,
+  "median_latency_ms": 0.531,
+  "p95_latency_ms": 49.443,
+  "mean_latency_ms": 7.213,
+  "mismatch": {
+    "id": "eval59_read_file_01_00",
+    "expected": "accepted",
+    "observed": "abstain:file_size_limit",
+    "reason": "The current GOAL.md is larger than the requested 131072-byte read ceiling, so the verifier correctly fails closed."
+  },
+  "claims_not_proven": [
+    "MiniMax teacher parity",
+    "weighted frontier-token coverage",
+    "native dense attention quality",
+    "production readiness"
+  ],
+  "regression": {
+    "pytest": "169 passed, 14 warnings"
+  }
+}

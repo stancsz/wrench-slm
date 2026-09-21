@@ -12,8 +12,8 @@ import argparse
 import hashlib
 import http.server
 import json
+import os
 import statistics
-import socket
 import threading
 import sys
 import time
@@ -47,27 +47,17 @@ class _HealthFixtureHandler(http.server.BaseHTTPRequestHandler):
         return
 
 
-class _DualStackHTTPServer(http.server.ThreadingHTTPServer):
-    address_family = socket.AF_INET6
-
-    def server_bind(self) -> None:
-        try:
-            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
-        except OSError:
-            pass
-        super().server_bind()
-
-
 class _HealthFixture:
-    def __init__(self, enabled: bool) -> None:
+    def __init__(self, enabled: bool, port: int) -> None:
         self.enabled = enabled
-        self.server: _DualStackHTTPServer | None = None
+        self.port = port
+        self.server: http.server.ThreadingHTTPServer | None = None
         self.thread: threading.Thread | None = None
 
     def start(self) -> None:
         if not self.enabled:
             return
-        self.server = _DualStackHTTPServer(("::", 4000), _HealthFixtureHandler)
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", self.port), _HealthFixtureHandler)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 
@@ -159,8 +149,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(f"expected the canonical 220-case fixture, got {len(rows)} rows")
     results: list[dict[str, Any]] = []
     latencies: list[float] = []
-    health_fixture = _HealthFixture(args.health_fixture)
+    health_fixture = _HealthFixture(args.health_fixture, args.health_fixture_port)
     health_fixture.start()
+    if args.health_fixture:
+        os.environ["WRENCH_TEST_HEALTH_FIXTURE_BASE_URL"] = f"http://127.0.0.1:{args.health_fixture_port}"
     try:
         readiness = _wait_for_ready(args.endpoint, args.model, args.startup_timeout)
         for row in rows:
@@ -216,6 +208,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
     finally:
         health_fixture.stop()
+        if args.health_fixture:
+            os.environ.pop("WRENCH_TEST_HEALTH_FIXTURE_BASE_URL", None)
     accounting_rows = [
         item["cost_accounting"]
         for item in results
@@ -316,6 +310,12 @@ def main() -> int:
         "--health-fixture",
         action="store_true",
         help="serve deterministic responses on the allowlisted local health endpoints",
+    )
+    parser.add_argument(
+        "--health-fixture-port",
+        type=int,
+        default=28907,
+        help="loopback port for the deterministic health fixture",
     )
     args = parser.parse_args()
     if not 1 <= args.max_tokens <= 512:
