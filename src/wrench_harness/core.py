@@ -12,7 +12,10 @@ import difflib
 import http.client
 import json
 import os
+import queue
+import shutil
 import subprocess
+import threading
 import urllib.parse
 import time
 from pathlib import Path
@@ -151,6 +154,168 @@ def _read_lines(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     return _accept("read_lines", {"path": str(path), "start": start, "end": end, "lines": lines[start - 1 : end]})
 
 
+def _literal_search_with_rg(
+    search_root: Path,
+    literal: str,
+    limit: int,
+    root: Path,
+) -> dict[str, Any] | None:
+    """Use ripgrep for bounded literal lookup when it is available.
+
+    A repository can contain hundreds of megabytes of historical evidence and
+    generated artifacts. The old Python walker had to open every eligible
+    file before it could return, which made an otherwise mechanical lookup
+    hit the worker's hard deadline. Ripgrep gives us the same literal,
+    read-only semantics with a streaming global cap and an external timeout.
+    ``None`` means the optional accelerator was unavailable or failed, so the
+    portable Python fallback below remains the source-compatible behavior.
+    """
+
+    executable = shutil.which("rg")
+    if executable is None:
+        return None
+    command = [
+        executable,
+        "--json",
+        "--fixed-strings",
+        "--no-heading",
+        "--no-messages",
+        "--no-ignore",
+        "--sort",
+        "path",
+        "--max-count",
+        str(limit),
+        "--max-filesize",
+        f"{MAX_SEARCH_FILE_BYTES // (1024 * 1024)}M",
+        "--glob",
+        "!.git/**",
+        "--glob",
+        "!**/.git/**",
+        "--glob",
+        "!**/*.bin",
+        "--glob",
+        "!**/*.gguf",
+        "--glob",
+        "!**/*.onnx",
+        "--glob",
+        "!**/*.npz",
+        "--glob",
+        "!**/*.npy",
+        "--glob",
+        "!**/*.pt",
+        "--glob",
+        "!**/*.pth",
+        "--glob",
+        "!**/*.safetensors",
+        literal,
+        str(search_root),
+    ]
+    try:
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError:
+        return None
+
+    output_queue: queue.Queue[str | None] = queue.Queue()
+
+    def _collect_output() -> None:
+        assert process.stdout is not None
+        try:
+            for output_line in process.stdout:
+                output_queue.put(output_line)
+        finally:
+            output_queue.put(None)
+
+    reader = threading.Thread(target=_collect_output, daemon=True)
+    reader.start()
+
+    matches: list[dict[str, Any]] = []
+    deadline = time.monotonic() + 5
+    completed_early = False
+    timed_out = False
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            timed_out = True
+            break
+        try:
+            raw_line = output_queue.get(timeout=remaining)
+        except queue.Empty:
+            timed_out = True
+            break
+        if raw_line is None:
+            break
+        try:
+            event = json.loads(raw_line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") != "match":
+            continue
+        data = event.get("data")
+        if not isinstance(data, dict):
+            continue
+        path_data = data.get("path")
+        lines_data = data.get("lines")
+        line_number = data.get("line_number")
+        path_text = path_data.get("text") if isinstance(path_data, dict) else None
+        line_text = lines_data.get("text") if isinstance(lines_data, dict) else None
+        if not isinstance(path_text, str) or not isinstance(line_text, str):
+            continue
+        if not isinstance(line_number, int) or isinstance(line_number, bool):
+            continue
+        match_path = Path(path_text)
+        if not match_path.is_absolute():
+            match_path = root / match_path
+        match_path = match_path.resolve()
+        if not _inside(match_path, root) or any(part.startswith(".") for part in match_path.relative_to(root).parts):
+            continue
+        matches.append(
+            {
+                "path": str(match_path),
+                "line": line_number,
+                "text": line_text.rstrip("\r\n"),
+            }
+        )
+        if len(matches) >= limit:
+            completed_early = True
+            break
+    if process.poll() is None:
+        process.kill()
+    try:
+        process.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+        return None
+    if timed_out:
+        return None
+    if not completed_early and process.returncode not in {0, 1}:
+        return None
+    if len(matches) >= limit:
+        return _accept(
+            "literal_search",
+            {
+                "root": str(search_root),
+                "literal": literal,
+                "matches": matches[:limit],
+                "truncated": True,
+            },
+        )
+    return _accept(
+        "literal_search",
+        {
+            "root": str(search_root),
+            "literal": literal,
+            "matches": matches,
+            "truncated": False,
+        },
+    )
+
+
 def _literal_search(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     search_root = _bounded_path(proposal.get("root"), root)
     literal = proposal.get("literal")
@@ -165,6 +330,9 @@ def _literal_search(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
         return _abstain("invalid_match_limit")
     if not search_root.exists():
         return _abstain("missing_search_root")
+    accelerated = _literal_search_with_rg(search_root, literal, limit, root)
+    if accelerated is not None:
+        return accelerated
     if search_root.is_file():
         paths = [search_root]
     else:

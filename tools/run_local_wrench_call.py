@@ -25,7 +25,12 @@ def main() -> int:
         capture_trace=True,
         mechanical_fast_path=bool(request.get("mechanical_fast_path", True)),
     )
-    sys.stdout.write(json.dumps(result, ensure_ascii=False))
+    # Windows worker subprocesses may inherit a cp1252 stdout. The model
+    # package is allowed to read UTF-8 repository content, so writing the JSON
+    # envelope through the text stream can crash on box-drawing or non-Latin
+    # characters. Keep the child protocol byte-stable and UTF-8 everywhere.
+    payload = json.dumps(result, ensure_ascii=False).encode("utf-8")
+    sys.stdout.buffer.write(payload)
     return 0
 
 

@@ -2676,3 +2676,20 @@ model-local Ollama-compatible API and CLI transport, not stock Ollama native
 Safetensors loading or native dense attention quality. vLLM is not installed
 on this host. Evidence:
 `phases/phase-248-current-v97-ollama-cli`.
+
+2026-09-21 current v102 package full 220-case mechanical replay: the first
+v100 replay exposed literal-search hard timeouts caused by scanning the large
+historical `phases` tree, reducing coverage to 83.259% and net savings to
+86.076%. The package runtime now uses a bounded fixed-string ripgrep path for
+literal lookup. The independent Windows worker subprocess protocol also now
+writes and reads UTF-8 explicitly, fixing repeatable cp1252 crashes on
+box-drawing and non-Latin repository content. The rematerialized v102 package
+then passed all 220 cases with Wrench-plus-identical-MiniMax fallback final
+success `0.9965032764`, verifier success `1.0`, weighted frontier-token
+coverage `0.9929861390`, net frontier-token savings `1.0`, zero frontier
+fallback tokens, zero prohibited accepts, zero unexpected mutations, median
+latency `185.095 ms`, and p95 `299.445 ms`. All five mechanical-worker gates
+are true. This is still a historical fixture result, not family-disjoint
+approval, independent 5060 Ti evidence, native dense decoder quality, or
+production enablement. Evidence:
+`phases/phase-253-v102-220-replay`.

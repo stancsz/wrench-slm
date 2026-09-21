@@ -359,6 +359,7 @@ def _local_result(
             [sys.executable, str(REPO_ROOT / "tools" / "run_local_wrench_call.py")],
             input=json.dumps(request, ensure_ascii=False),
             text=True,
+            encoding="utf-8",
             capture_output=True,
             cwd=str(REPO_ROOT),
             timeout=max(0.25, timeout + 0.25),
