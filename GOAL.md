@@ -2445,3 +2445,13 @@ only that bounded prompt to the local native protocol stub. Server staging was
 payload hashes were present, with one verified backend call. The stub does not
 prove dense-native attention or generation quality. Evidence:
 `phases/phase-226-current-source-4m-native-handoff`.
+
+2026-09-20 real worker generation smoke: the fused development-only rank-8
+LoRA candidate was loaded through `WrenchWorker.from_pretrained` with the
+mechanical shortcut disabled. Canonical development case
+`eval59_read_file_06_00` produced an accepted, exact proposal in one model
+call on `cuda:0`. The standalone evaluator measured 4,493.678 ms for this
+generation. The worker now defaults to CUDA when available while retaining an
+explicit device override and Accelerate device-map compatibility. This is
+device-placement and real-generation evidence, not broad quality or release
+evidence. Evidence: `phases/phase-227-real-worker-cuda-generation`.

@@ -262,6 +262,18 @@ class WrenchWorker:
                 local_files_only=True,
                 **model_kwargs,
             )
+            # The portable worker must use the same device placement as the
+            # verified standalone evaluator. Without this, load_model=True
+            # silently leaves an 8 GB BF16 checkpoint on CPU and turns the
+            # ambiguous-request path into a non-production fallback. A
+            # caller can pin WRENCH_MODEL_DEVICE=cpu or an explicit CUDA
+            # device. Respect a pre-existing device map because Accelerate
+            # owns placement in that mode.
+            if not getattr(model, "hf_device_map", None) and "device_map" not in model_kwargs:
+                requested_device = os.environ.get("WRENCH_MODEL_DEVICE", "auto").strip()
+                if requested_device.casefold() == "auto":
+                    requested_device = "cuda" if torch.cuda.is_available() else "cpu"
+                model.to(requested_device)
             model.eval()
         root = Path(allowed_root).expanduser().resolve()
         if not root.is_dir():
@@ -430,6 +442,7 @@ class WrenchWorker:
                 "mechanical_fast_path": False,
                 "raw_model_output": content,
                 "model_calls": model_calls,
+                "model_device": str(next(self.model.parameters()).device),
             }
         )
         if prefill_receipt is not None:

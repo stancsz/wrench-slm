@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.real-worker-cuda-generation.v1",
+  "status": "PASS_DEVELOPMENT_GENERATION_SMOKE",
+  "model": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-calibrated-v4-attn-lora-1024-fused-20260920",
+  "case_id": "eval59_read_file_06_00",
+  "split": "development",
+  "mechanical_shortcut": false,
+  "verified_status": "accepted",
+  "exact_target_match": true,
+  "outcome_match": true,
+  "model_calls": 1,
+  "backend": "transformers",
+  "model_device": "cuda:0",
+  "standalone_generation_latency_ms": 4493.678,
+  "quality_claim": false,
+  "not_proven": [
+    "family-disjoint quality",
+    "MiniMax teacher parity",
+    "4M real generation quality",
+    "production readiness"
+  ]
+}

@@ -187,6 +187,7 @@ def test_model_worker_stages_monster_payload_before_generation(tmp_path: Path):
     )
     assert result["status"] == "accepted"
     assert result["backend"] == "transformers"
+    assert result["model_device"] == "cpu"
     assert result["dynamic_prefill"]["mode"] == "staged_single_pass"
     assert result["dynamic_prefill"]["raw_token_count"] > 64_000
     assert result["dynamic_prefill"]["model_prefill_token_count"] <= 64_000
