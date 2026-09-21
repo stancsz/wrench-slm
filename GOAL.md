@@ -3230,3 +3230,10 @@ the Wrench backend was embedded mechanical plus settlement, model calls were
 `0`, and Claude's first gate completed in `2.547 ms`. Evidence:
 `phases/phase-325-current-head-client-smoke` and
 `phases/phase-325-current-head-client-integration.json`.
+
+2026-09-21 HEAD-bound package: pushed HEAD `85ff83c` was rematerialized as
+`D:\models\_wrench-release-candidate-85ff83c` and passed structural validation.
+This is the package identity for the next independent RTX 5060 Ti run, with
+4M model-local intake, deterministic reduction, all three client templates,
+and the native ModelOpt verifier bundled. Evidence:
+`phases/phase-326-current-head-package-binding`.
