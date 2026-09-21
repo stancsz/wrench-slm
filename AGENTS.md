@@ -37,3 +37,13 @@ When preparing training data, calibrations, or model weights:
 3. **Evidence Over Assumptions**:
    - Never equate prompt tweaks, synthetic fixture passes, or parameter count with production utility.
    - Record verifiable receipts (hash-bound checkpoints, latency distributions, exact failure logs) under `phases/` before claiming progress.
+
+## Host Resource Safety
+
+Every training, inference, benchmark, packaging, and delegated worker job must preserve normal host operation:
+
+- Keep at least 10% of total host system memory free at all times.
+- Keep at least 10% of total host VRAM free at all times.
+- Check available memory and VRAM before starting work and during long-running work. If either reserve would be breached, reduce concurrency, batch size, context size, cache size, or model footprint before continuing.
+- Prefer releasing framework caches and lowering workload intensity. Do not terminate unrelated applications, Docker services, or WSL distributions without explicit user authorization.
+- A job that cannot maintain both 10% reserves is resource-unsafe and must be paused or marked failed, not treated as a valid benchmark result.
