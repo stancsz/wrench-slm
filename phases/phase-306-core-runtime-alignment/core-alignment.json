@@ -1,0 +1,75 @@
+{
+  "schema": "wrench.release-core-alignment.v1",
+  "status": "PASS_CORE_RUNTIME_ALIGNED_WITH_HEAD",
+  "source_root": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm",
+  "source_head": "775483c2a2248e0bd61ea7b87300f0a9fe86e25a",
+  "package_dir": "D:\\models\\_wrench-current-client-20260921",
+  "pairs": [
+    {
+      "source": "src/wrench_harness/server.py",
+      "package": "wrench_runtime/server.py",
+      "match": true,
+      "source_sha256": "7420c3b814331b0980bd626e6759c4a7e964894a419585ef0d747bb6a45564b3",
+      "package_sha256": "7420c3b814331b0980bd626e6759c4a7e964894a419585ef0d747bb6a45564b3"
+    },
+    {
+      "source": "src/wrench_harness/worker.py",
+      "package": "wrench_runtime/worker.py",
+      "match": true,
+      "source_sha256": "5a6b8f5832915ddc117f8ace194a6701417b07486df7d23cf43b8953f871c55c",
+      "package_sha256": "5a6b8f5832915ddc117f8ace194a6701417b07486df7d23cf43b8953f871c55c"
+    },
+    {
+      "source": "src/wrench_harness/prefill.py",
+      "package": "wrench_runtime/prefill.py",
+      "match": true,
+      "source_sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428",
+      "package_sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428"
+    },
+    {
+      "source": "src/wrench_harness/mechanical.py",
+      "package": "wrench_runtime/mechanical.py",
+      "match": true,
+      "source_sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8",
+      "package_sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8"
+    },
+    {
+      "source": "src/wrench_harness/core.py",
+      "package": "wrench_runtime/core.py",
+      "match": true,
+      "source_sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7",
+      "package_sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7"
+    },
+    {
+      "source": "src/wrench_harness/toolbelt.py",
+      "package": "wrench_runtime/toolbelt.py",
+      "match": true,
+      "source_sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb",
+      "package_sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb"
+    },
+    {
+      "source": "wrench_server.py",
+      "package": "wrench_server.py",
+      "match": true,
+      "source_sha256": "b21ef3dd2d8a7a66a6956e071ad6d14516af676c5bfff6b80a056bf291bc21fc",
+      "package_sha256": "b21ef3dd2d8a7a66a6956e071ad6d14516af676c5bfff6b80a056bf291bc21fc"
+    },
+    {
+      "source": "wrench_worker.py",
+      "package": "wrench_worker.py",
+      "match": true,
+      "source_sha256": "27f77e545710f734e22ec3641f8df6136e5baf0e93ce0335a822b2784f39332d",
+      "package_sha256": "27f77e545710f734e22ec3641f8df6136e5baf0e93ce0335a822b2784f39332d"
+    }
+  ],
+  "core_manifest_sha256": "bf3d918ee104d46d2519ac2fbbcd086e0772ac344ad148489748823c850e3224",
+  "tracked_core_status": "",
+  "publication_policy": "unrelated README and phase dirt remains a clean-snapshot concern; no upload performed",
+  "claims_not_authorized": [
+    "HF upload",
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "production readiness"
+  ],
+  "all_pairs_match": true
+}
