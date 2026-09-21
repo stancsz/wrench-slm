@@ -1,5 +1,7 @@
 {
   "schema": "wrench.dense-native-first-layer-receipt.v1",
+  "source_commit": "d41f851530fcba40e486caa346263ac9185c638b",
+  "portable_package": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-hybrid-v95-dense-native-gate",
   "source": "runtime/freetoken_wrench_long_context/sitecustomize.py",
   "mode": "gate_only_current_host",
   "raw_input_tokens": 3990568,
