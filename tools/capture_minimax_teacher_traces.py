@@ -25,6 +25,11 @@ try:
 except ModuleNotFoundError:
     from tools.generate_wrench_calibration import SYSTEM_EXPLICIT
 
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+
 
 ACTION_KEYS: dict[str, tuple[str, ...]] = {
     "read_file": ("path", "max_bytes"),
@@ -201,7 +206,8 @@ def capture(args: argparse.Namespace) -> dict[str, Any]:
             "auth_configured": bool(api_key),
         },
         "input_path": str(args.cases.resolve()),
-        "input_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
+        "input_sha256": canonical_jsonl_sha256(args.cases),
+        "input_bytes_sha256": raw_sha256(args.cases),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "request_count": len(results),
         "transport_failures": sum(bool(item.get("transport_failure")) for item in results),

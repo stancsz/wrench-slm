@@ -22,6 +22,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from wrench_harness.mechanical import mechanical_route
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
 
 
 def _read_cases(path: Path) -> dict[str, dict[str, Any]]:
@@ -148,7 +152,8 @@ def score(cases_path: Path, trace_path: Path, *, allowed_root: Path | None = Non
         "schema": "wrench.deterministic-route-frontier-score.v1",
         "status": "DIAGNOSTIC_WEIGHTED_ROUTE_ONLY",
         "cases_path": str(cases_path.resolve()),
-        "cases_sha256": hashlib.sha256(cases_path.read_bytes()).hexdigest(),
+        "cases_sha256": canonical_jsonl_sha256(cases_path),
+        "cases_bytes_sha256": raw_sha256(cases_path),
         "trace_manifest_path": str(trace_path.resolve()),
         "trace_manifest_sha256": hashlib.sha256(trace_bytes).hexdigest(),
         "allowed_root": str(allowed_root.resolve()) if allowed_root is not None else None,

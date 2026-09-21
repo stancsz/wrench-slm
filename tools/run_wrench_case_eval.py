@@ -9,7 +9,6 @@ matched MiniMax workflow evaluation.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import http.server
 import json
 import os
@@ -25,6 +24,10 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from wrench_harness import execute_local_qwen
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
 
 
 class _HealthFixtureHandler(http.server.BaseHTTPRequestHandler):
@@ -222,7 +225,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "endpoint": args.endpoint,
         "model": args.model,
         "cases_path": str(args.cases.resolve()),
-        "cases_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
+        "cases_sha256": canonical_jsonl_sha256(args.cases),
+        "cases_bytes_sha256": raw_sha256(args.cases),
         "request_count": len(results),
         "canonical_case_count": len(rows) == 220,
         "mechanical_fast_path_enabled": not args.disable_mechanical_fast_path,

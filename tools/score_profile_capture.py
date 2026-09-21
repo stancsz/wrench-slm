@@ -13,6 +13,10 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from wrench_harness import execute_model_output
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
 
 
 TRANSPORT_FAILURES = {
@@ -66,7 +70,8 @@ def score(cases_path: Path, capture_path: Path, root: Path) -> dict[str, object]
         "schema": "wrench.profile-capture-score.v1",
         "status": "DIAGNOSTIC_PROFILE_CAPTURE_SCORED",
         "cases_path": str(cases_path.resolve()),
-        "cases_sha256": hashlib.sha256(cases_path.read_bytes()).hexdigest(),
+        "cases_sha256": canonical_jsonl_sha256(cases_path),
+        "cases_bytes_sha256": raw_sha256(cases_path),
         "capture_path": str(capture_path.resolve()),
         "capture_sha256": hashlib.sha256(capture_path.read_bytes()).hexdigest(),
         "request_count": len(requests),

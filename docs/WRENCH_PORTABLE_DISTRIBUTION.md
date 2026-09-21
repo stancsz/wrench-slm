@@ -365,6 +365,17 @@ at least 95% net frontier-token savings, no material final-success regression,
 and zero prohibited accepts. The 220-case result remains diagnostic until the
 trace set is approved and independently reproduced.
 
+For an independent 5060TI verification, use a temporary `git archive
+origin/main` export and never overwrite a dirty worker checkout. First verify
+the canonical case hash against `evals/wrench-expanded-v2/manifest.json`.
+Then require a matching teacher capture before running the three-arm parity
+score. If no matching teacher capture exists, run the package-only 220-case
+diagnostic and report it as diagnostic only. The receipt must include exact
+case count, eligible exact accepts, outcome matches, prohibited accepts,
+transport/runtime abstentions, model calls, p50/p95 latency, RAM and VRAM
+reserve snapshots, and the raw-byte audit hash. Do not combine its numbers
+with the RTX 5070 Ti results.
+
 ### Task 5: real client work
 
 With `run_wrench.ps1` running from the downloaded directory, perform one

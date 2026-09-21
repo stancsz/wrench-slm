@@ -8,7 +8,6 @@ coverage without silently promoting the final split to release evidence.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -18,6 +17,11 @@ try:
     from .generate_wrench_calibration import SYSTEM_EXPLICIT, row
 except ImportError:
     from generate_wrench_calibration import SYSTEM_EXPLICIT, row
+
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256
 
 
 FAMILIES = (
@@ -358,7 +362,7 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
     payload = "".join(json.dumps(row, separators=(",", ":"), ensure_ascii=False) + "\n" for row in rows)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(payload.encode("utf-8"))
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return canonical_jsonl_sha256(path)
 
 
 def main() -> int:

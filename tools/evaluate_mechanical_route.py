@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 import time
@@ -16,6 +15,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from wrench_harness.mechanical import mechanical_route
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
 
 
 def _exact(result: dict[str, Any], target: str) -> bool:
@@ -76,12 +79,12 @@ def replay(cases: Path, root: Path) -> dict[str, Any]:
             "outcome_matches": sum(row["outcome_match"] for row in family_rows),
             "prohibited_accepts": sum(row["prohibited_accept"] for row in family_rows),
         }
-    raw = cases.read_bytes()
     return {
         "schema": "wrench.mechanical-route-replay.v1",
         "status": "DIAGNOSTIC_DETERMINISTIC_ROUTE_ONLY",
         "cases_path": str(cases.resolve()),
-        "cases_sha256": hashlib.sha256(raw).hexdigest(),
+        "cases_sha256": canonical_jsonl_sha256(cases),
+        "cases_bytes_sha256": raw_sha256(cases),
         "request_count": len(results),
         "mechanical_fast_path_requests": sum(row["mechanical_fast_path"] for row in results),
         "mechanical_fast_path_rate": sum(row["mechanical_fast_path"] for row in results) / len(results) if results else 0.0,

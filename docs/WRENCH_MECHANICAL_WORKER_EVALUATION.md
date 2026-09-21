@@ -40,6 +40,27 @@ integrity and load preflight, not a quality or production-value result, and
 its latency and memory numbers must not be merged with the local RTX 5070 Ti
 measurements.
 
+The next independent worker receipt used a temporary export of `origin/main`
+so the dirty worker checkout was not overwritten. It verified that the v2
+suite exists and found no matching teacher receipt on the worker, so it did
+not claim teacher parity. The package-only diagnostic still ran all 220 rows:
+200 outcome matches, 100 exact proposal matches, 120 eligible rows, 100 exact
+eligible accepts, zero prohibited accepts, zero transport/runtime abstentions,
+zero model calls, 2.077 ms median latency, and 107.235 ms p95 latency. The
+receipt status is `DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`, and its quality
+claim is false. The worker snapshot recorded 15,037 MiB free of 16,311 MiB
+VRAM and about 49.2% free system RAM, so the host reserve was preserved.
+
+That run exposed a cross-host provenance defect: the archived Windows copy had
+CRLF bytes and therefore reported raw hash
+`0a3c3ddaae05f72f27fb556649c3e43174a32382ff8fbc949567bffe57cb8d69`, while
+the LF checkout and suite manifest reported `da64a33d...0a72`. The case
+content was unchanged. Evaluation receipts now use a canonical JSONL SHA-256
+with CRLF and CR normalized to LF, and also retain `cases_bytes_sha256` or
+`input_bytes_sha256` for raw-byte audit. `.gitattributes` keeps JSON and JSONL
+files at LF in future checkouts. A post-fix 5060TI rerun is still required
+before treating this cross-host receipt as a final independent verification.
+
 ## North Star
 
 Wrench is successful when it behaves like a specialized local MiniMax worker

@@ -31,6 +31,10 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from wrench_harness import execute_model_output
 from wrench_harness.mechanical import mechanical_route
 from tools.score_mechanical_worker import evaluate_manifest
+try:
+    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+except ModuleNotFoundError:
+    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
 
 
 class _HealthFixtureHandler(http.server.BaseHTTPRequestHandler):
@@ -287,7 +291,7 @@ def _load_teacher_capture(path: Path, cases: list[dict[str, Any]], root: str) ->
     # bytes represented by the case rows rather than trusting only case ids.
     source_path = Path(payload.get("input_path", ""))
     if source_path.is_file():
-        expected_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+        expected_hash = canonical_jsonl_sha256(source_path)
     if payload.get("input_sha256") != expected_hash:
         raise ValueError("teacher capture input hash does not match requested cases")
     captured = {item.get("id"): item for item in payload.get("results", []) if isinstance(item, dict)}
@@ -583,7 +587,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         "wrench": {"endpoint": args.wrench_endpoint, "model": args.wrench_model},
         "client_mechanical_fast_path": not args.disable_client_mechanical_fast_path,
         "input_path": str(args.cases.resolve()),
-        "input_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
+        "input_sha256": canonical_jsonl_sha256(args.cases),
+        "input_bytes_sha256": raw_sha256(args.cases),
         "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "trace_set_sha256": hashlib.sha256(trace_bytes).hexdigest(),
         "traces": traces,

@@ -2846,3 +2846,16 @@ receipt time. OpenCode is not installed on that worker, so no remote OpenCode
 claim is made. The worker checkout was dirty at `bcf80d9` while `origin/main`
 was `08daf09`, so this is independent package evidence rather than a
 current-source claim. Evidence: `phases/phase-273-5060ti-current-package-workflow`.
+
+2026-09-21 5060 Ti v2 provenance checkpoint: the worker created a temporary
+`origin/main` export without overwriting its dirty checkout. No matching
+teacher receipt was present, so it correctly withheld parity. Its package-only
+diagnostic ran all 220 rows and reported 200 outcome matches, 100 exact
+proposal matches, 100 exact accepts across 120 eligible rows, zero prohibited
+accepts, zero transport/runtime abstentions, zero model calls, 2.077 ms median
+latency, and 107.235 ms p95 latency. RAM and VRAM reserves remained above the
+10% host-safety requirement. The run exposed CRLF/LF byte-hash drift between
+the archived worker copy and the suite manifest. Evaluation provenance now
+normalizes JSONL line endings for the canonical hash and records raw-byte hashes
+separately. This is still diagnostic only. Evidence:
+`phases/phase-274-5060ti-provenance-and-v2-diagnostic`.
