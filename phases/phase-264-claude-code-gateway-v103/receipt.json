@@ -1,0 +1,40 @@
+{
+  "schema": "wrench.claude-code-gateway-boundary.v1",
+  "status": "DIRECT_ANTHROPIC_PASS_CLAUDE_CODE_LOCAL_ROUTE_NOT_VERIFIED",
+  "source_commit": "bac7a7e",
+  "host": "RTX 5070 Ti development host",
+  "claude_code_version": "2.1.251",
+  "package": {
+    "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+    "model": "wrench-v103",
+    "local_base_url": "http://127.0.0.1:28941"
+  },
+  "direct_anthropic_protocol": {
+    "request_path": "/v1/messages",
+    "http_status": 200,
+    "proposal_action": "read_file",
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "model_calls": 0,
+    "trace": "claude-gateway-v103.trace-r1.jsonl"
+  },
+  "claude_code_gateway_attempt": {
+    "gateway_env": true,
+    "loopback_allowed": true,
+    "simple_mode": true,
+    "local_base_url_configured": true,
+    "debug_observed": "dispatching to gateway",
+    "api_requests_observed": 2,
+    "wrench_trace_rows_added": 0,
+    "status": "NOT_VERIFIED",
+    "debug_log": "claude-debug-r2.log"
+  },
+  "claims_not_authorized": [
+    "Claude Code local provider routing",
+    "zero provider spend for all historical diagnostics",
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}
