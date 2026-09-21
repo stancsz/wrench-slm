@@ -2835,3 +2835,14 @@ settlement backends, zero model calls, and no mutation claim. This is package
 integration evidence on the RTX 5070 Ti host, not independent 5060 Ti,
 MiniMax-parity, dense-native-quality, or production evidence. Evidence:
 `phases/phase-271-portable-client-e2e`.
+
+2026-09-21 5060 Ti direct package workflow: the connected `DESKTOP-KET1SKP`
+worker accepted a direct nominal 4,000,000-token model-local HTTP request with
+31,997,963 raw characters and completed in 439.327 ms. The installed DeepSeek
+Harness client completed an isolated read-only smoke against the same package.
+The separate 220-case replay reached `QUALITY_GATE_OPEN` for all 220 traces and
+was still undergoing hash, safety-counter, and resource-reserve validation at
+receipt time. OpenCode is not installed on that worker, so no remote OpenCode
+claim is made. The worker checkout was dirty at `bcf80d9` while `origin/main`
+was `08daf09`, so this is independent package evidence rather than a
+current-source claim. Evidence: `phases/phase-273-5060ti-current-package-workflow`.
