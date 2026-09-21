@@ -2335,3 +2335,12 @@ parameters; an Ollama-shaped request with `options.num_ctx=4000000` returned a
 verified embedded proposal in 1.003 ms with zero model calls. This confirms the
 copy-paste model-local surface, while native stock-Ollama generation remains a
 separate failed boundary. Evidence: `phases/phase-212-first-layer-context-gate`.
+
+2026-09-20 direct model-local 4M intake: the v86 package's own launcher
+accepted a single Ollama-shaped `/api/chat` request containing 3,998,332 raw
+estimated tokens without an external gateway. The complete local HTTP round
+trip was 72.288 ms, worker elapsed was 1.446 ms, model calls were zero, and
+the read proposal passed schema, authority, evidence, consistency, blind
+critic, and final-gate verification. This is the strongest direct model-local
+hybrid evidence so far, but it is not dense native attention quality. Evidence:
+`phases/phase-213-direct-model-local-4m`.

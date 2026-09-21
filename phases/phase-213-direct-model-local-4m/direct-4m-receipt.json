@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.direct-model-local-4m-receipt.v1",
+  "status": "PASS_DIRECT_MODEL_LOCAL_4M_MECHANICAL",
+  "package": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v86-first-layer-gate",
+  "surface": "/api/chat",
+  "declared_context_tokens": 4000000,
+  "raw_input_tokens_estimate": 3998332,
+  "raw_input_chars": 7998072,
+  "request_body_bytes": 7998214,
+  "complete_round_trip_ms": 72.288,
+  "worker_elapsed_ms": 1.446,
+  "model_calls": 0,
+  "mechanical_fast_path": true,
+  "proposal": {
+    "schema": "wrench.proposal.v1",
+    "action": "read_file",
+    "path": "wrench-package.json",
+    "max_bytes": 4096
+  },
+  "verifier": {
+    "schema": true,
+    "authority": true,
+    "evidence": true,
+    "consistency": true,
+    "blind_critic": true,
+    "final_gate": true
+  },
+  "quality_claim": false,
+  "native_dense_attention_claim": false
+}
