@@ -3110,6 +3110,16 @@ The suite is still `DRAFT_PENDING_HUMAN_APPROVAL`, so this is held-out
 diagnostic evidence, not final family-disjoint approval. Evidence:
 `phases/phase-313-clean-candidate-heldout-final`.
 
+2026-09-21 current-head candidate rematerialization: the portable package was
+rebuilt from a clean detached worktree at source commit
+`a8a75c323a7c42e4758f318f05e625565c6b9acf`. All eight core runtime pairs
+matched the current source, structural validation and HF smoke passed, the
+package-local Ollama-shaped 4M route passed, and OpenCode, DeepSeek Harness,
+and Claude Code completed read-only client smokes with zero model calls. The
+candidate contains `3,881,244,016` parameters, declares `4,000,000` raw input
+tokens and a `64,000` default effective working context. Evidence:
+`phases/phase-315-current-head-release-candidate`.
+
 2026-09-21 current-source regression: after the clean-candidate held-out
 diagnostic and receipt updates, the complete local pytest suite passed `194`
 tests with `0` failures and `18` Python asyncio deprecation warnings in

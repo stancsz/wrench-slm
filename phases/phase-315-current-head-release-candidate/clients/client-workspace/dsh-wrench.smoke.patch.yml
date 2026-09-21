@@ -1,0 +1,18 @@
+# Apply with: dsh --profile headless --patch .\dsh-wrench.patch.yml
+# This overlay points DeepSeek Harness at the package-local endpoint.
+- id: llm-deepseek
+  config:
+    apiKeyEnv: WRENCH_LOCAL_API_KEY
+    baseURL: http://127.0.0.1:29020/v1
+    models:
+      - id: wrench-local
+        name: Wrench local Experimental Preview
+        contextWindow: 4000000
+        maxTokens: 256
+    defaultModel:
+      id: wrench-local
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: wrench-local
+

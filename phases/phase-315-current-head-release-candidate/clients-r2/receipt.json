@@ -1,0 +1,39 @@
+{
+  "schema": "wrench.portable-client-smoke.v1",
+  "status": "PASSED",
+  "package_dir": "D:\\models\\_wrench-release-candidate-a8a75c3",
+  "allowed_root": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-315-current-head-release-candidate\\clients-r2\\client-workspace",
+  "port": 29021,
+  "clients": {
+    "opencode": {
+      "exit_code": 0,
+      "structured_read_observed": true,
+      "output_file": "opencode.stdout.txt"
+    },
+    "deepseek_harness": {
+      "exit_code": 0,
+      "structured_read_observed": true,
+      "output_file": "dsh.stdout.txt"
+    }
+  },
+  "trace": {
+    "rows": 3,
+    "model_calls": 0.0,
+    "protocols": [
+      "openai-chat-completions"
+    ],
+    "backends": [
+      "embedded-mechanical",
+      "embedded-mechanical-settlement"
+    ],
+    "read_tool_observed": true,
+    "mutation_claim": false,
+    "path": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-315-current-head-release-candidate\\clients-r2\\wrench-client.trace.jsonl"
+  },
+  "claims_not_authorized": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}
