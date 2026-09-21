@@ -1,0 +1,48 @@
+{
+  "schema": "wrench.claude-code-local-isolated.v1",
+  "status": "LOCAL_CLAUDE_CODE_SMOKE_PASSED",
+  "source_commit": "d028203",
+  "host": "RTX 5070 Ti development host",
+  "claude_code_version": "2.1.251",
+  "package": {
+    "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+    "model": "MiniMax-M2.7",
+    "endpoint": "http://127.0.0.1:28944/v1/messages"
+  },
+  "isolation": {
+    "fresh_config_directory": true,
+    "claude_code_simple": true,
+    "use_gateway": true,
+    "loopback_allowed": true,
+    "local_auth_token": true,
+    "external_proxy_blocker": "http://127.0.0.1:28945",
+    "no_proxy": "127.0.0.1,localhost",
+    "first_party_credentials_cleared": true
+  },
+  "claude_code": {
+    "exit_code": 0,
+    "read_tool_executed": true,
+    "tool_name": "Read",
+    "tool_result_settlement": true,
+    "gateway_dispatches": 2,
+    "first_party_provider_observed": false
+  },
+  "wrench_trace": {
+    "rows": 2,
+    "proposal_backend": "embedded-mechanical",
+    "settlement_backend": "embedded-mechanical-settlement",
+    "mechanical_fast_path": true,
+    "model_calls": 0,
+    "raw_input_tokens_estimate": 249,
+    "effective_working_context_tokens": 61,
+    "gate_latency_ms": 1.683,
+    "settlement_elapsed_ms": 0.01,
+    "raw_payload_hash_bound": true
+  },
+  "claims_not_authorized": [
+    "learned MiniMax parity",
+    "independent RTX 5060 Ti verification",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}

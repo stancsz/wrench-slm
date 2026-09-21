@@ -1,0 +1,122 @@
+2026-09-21T17:35:43.006Z [DEBUG] MDM settings load completed in 11ms
+2026-09-21T17:35:43.011Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\settings.json
+2026-09-21T17:35:43.012Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Program Files\ClaudeCode\managed-settings.json
+2026-09-21T17:35:43.012Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.json
+2026-09-21T17:35:43.013Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.local.json
+2026-09-21T17:35:43.013Z [DEBUG] CA certs: Config fallback - globalEnv keys: , settingsEnv keys: none
+2026-09-21T17:35:43.015Z [DEBUG] [init] configureGlobalMTLS starting
+2026-09-21T17:35:43.015Z [DEBUG] [init] configureGlobalMTLS complete
+2026-09-21T17:35:43.015Z [DEBUG] [init] configureGlobalAgents starting
+2026-09-21T17:35:43.015Z [DEBUG] CA certs: stores=bundled,system, extraCertsPath=undefined
+2026-09-21T17:35:43.015Z [DEBUG] CA certs: Loaded 121 bundled root certificates
+2026-09-21T17:35:43.029Z [DEBUG] CA certs: Dropped 10 expired certificate(s) from system store
+2026-09-21T17:35:43.030Z [DEBUG] CA certs: Loaded 106 system CA certificates
+2026-09-21T17:35:43.030Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T17:35:43.031Z [DEBUG] [init] configureGlobalAgents complete
+2026-09-21T17:35:43.032Z [DEBUG] Using bash path: "C:\Program Files\Git\bin\bash.exe"
+2026-09-21T17:35:43.033Z [DEBUG] Git remote URL: null
+2026-09-21T17:35:43.033Z [DEBUG] No git remote URL found
+2026-09-21T17:35:43.034Z [DEBUG] Error log sink initialized
+2026-09-21T17:35:43.038Z [ERROR] Failed to save config with lock: Error: ENOENT: no such file or directory, lstat 'C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json'
+2026-09-21T17:35:43.040Z [DEBUG] Setting permissions for new file: 600
+2026-09-21T17:35:43.040Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.66eedb931695
+2026-09-21T17:35:43.044Z [DEBUG] Temp file written successfully, size: 84 bytes
+2026-09-21T17:35:43.044Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.66eedb931695 to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.045Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.052Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.052Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.7e39f3304f7e
+2026-09-21T17:35:43.053Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.056Z [DEBUG] Temp file written successfully, size: 167 bytes
+2026-09-21T17:35:43.056Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.7e39f3304f7e to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.057Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.062Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.062Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.99f068167980
+2026-09-21T17:35:43.062Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.065Z [DEBUG] Temp file written successfully, size: 203 bytes
+2026-09-21T17:35:43.065Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.99f068167980 to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.066Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.072Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.072Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.a1a0af2ab3f4
+2026-09-21T17:35:43.072Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.075Z [DEBUG] Temp file written successfully, size: 242 bytes
+2026-09-21T17:35:43.075Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.a1a0af2ab3f4 to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.076Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.083Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.083Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.b3796bac6507
+2026-09-21T17:35:43.083Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.087Z [DEBUG] Temp file written successfully, size: 269 bytes
+2026-09-21T17:35:43.087Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.b3796bac6507 to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.087Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.092Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.092Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.64097453252d
+2026-09-21T17:35:43.093Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.096Z [DEBUG] Temp file written successfully, size: 317 bytes
+2026-09-21T17:35:43.096Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.64097453252d to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.096Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.101Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.101Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.b796a14ec80d
+2026-09-21T17:35:43.104Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.107Z [DEBUG] Temp file written successfully, size: 343 bytes
+2026-09-21T17:35:43.107Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.b796a14ec80d to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.108Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.112Z [DEBUG] [Claude in Chrome] Disabled: OAuth token has no scope accepted by /api/oauth/validate (needs user:profile, user:office, or user:ccr_inference; env-var and setup-token sessions default to user:inference only)
+2026-09-21T17:35:43.244Z [DEBUG] [ToolSearch:optimistic] mode=tst, ENABLE_TOOL_SEARCH=undefined, result=true
+2026-09-21T17:35:43.244Z [DEBUG] [STARTUP] Loading MCP configs...
+2026-09-21T17:35:43.245Z [DEBUG] [STARTUP] Running setup()...
+2026-09-21T17:35:43.258Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Program Files\ClaudeCode\managed-settings.json
+2026-09-21T17:35:43.259Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\settings.json
+2026-09-21T17:35:43.259Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.json
+2026-09-21T17:35:43.259Z [DEBUG] Broken symlink or missing file encountered for settings.json at path: C:\Users\stanc\github\portfolio\wrench-slm\.claude\settings.local.json
+2026-09-21T17:35:43.260Z [DEBUG] Error log sink initialized
+2026-09-21T17:35:43.261Z [DEBUG] installed_plugins.json doesn't exist, returning empty V2 object
+2026-09-21T17:35:43.261Z [DEBUG] Found 0 plugins (0 enabled, 0 disabled)
+2026-09-21T17:35:43.261Z [DEBUG] Total plugin workflows loaded: 0
+2026-09-21T17:35:43.261Z [DEBUG] Loading skills from: managed=C:\Program Files\ClaudeCode\.claude\skills, user=C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\skills, project=[]
+2026-09-21T17:35:43.261Z [DEBUG] [reduced mode] Skipping skill dir discovery
+2026-09-21T17:35:43.262Z [DEBUG] [STARTUP] setup() completed in 17ms
+2026-09-21T17:35:43.262Z [DEBUG] Cleared mTLS configuration cache
+2026-09-21T17:35:43.262Z [DEBUG] Cleared proxy agent cache
+2026-09-21T17:35:43.262Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T17:35:43.263Z [DEBUG] [STARTUP] Loading commands and agents...
+2026-09-21T17:35:43.285Z [DEBUG] getSkills returning: 0 skill dir commands, 0 plugin skills, 42 bundled skills, 0 builtin plugin skills
+2026-09-21T17:35:43.291Z [DEBUG] [STARTUP] Commands and agents loaded in 28ms
+2026-09-21T17:35:43.295Z [DEBUG] Skipping startup prefetches, last ran 1790012143s ago
+2026-09-21T17:35:43.295Z [DEBUG] [STARTUP] MCP configs resolved in 1ms (awaited at +51ms)
+2026-09-21T17:35:43.297Z [DEBUG] Cleared mTLS configuration cache
+2026-09-21T17:35:43.297Z [DEBUG] Cleared proxy agent cache
+2026-09-21T17:35:43.297Z [DEBUG] mTLS: Creating HTTPS agent with custom certificates
+2026-09-21T17:35:43.299Z [DEBUG] [MCP] --mcp-config servers running fully async (nonblocking)
+2026-09-21T17:35:43.299Z [DEBUG] [MCP] claude.ai connectors running fully async (nonblocking)
+2026-09-21T17:35:43.300Z [DEBUG] [auto-mode] verifyAutoModeGateAccess: enabledState=enabled disabledBySettings=false model=MiniMax-M2.7 modelSupported=true disableFastModeBreakerFires=false carouselAvailable=true canEnterAuto=true
+2026-09-21T17:35:43.306Z [DEBUG] [Perfetto] initializePerfettoTracing called, env value: undefined
+2026-09-21T17:35:43.306Z [DEBUG] [3P telemetry] isTelemetryEnabled=false (CLAUDE_CODE_ENABLE_TELEMETRY=undefined)
+2026-09-21T17:35:43.321Z [DEBUG] [print] turns run on legacy per-turn ask()
+2026-09-21T17:35:43.325Z [DEBUG] [ScheduledTasks] scheduler start() — enabled=false, hasTasks=false
+2026-09-21T17:35:43.341Z [DEBUG] [win32-proc-times] bun:ffi loaded, using procStartFt
+2026-09-21T17:35:43.343Z [DEBUG] Git remote URL: https://github.com/stancsz/wrench-slm.git
+2026-09-21T17:35:43.343Z [DEBUG] Parsed repository: github.com/stancsz/wrench-slm from URL: https://github.com/stancsz/wrench-slm.git
+2026-09-21T17:35:43.347Z [DEBUG] [sessionRegistry] sweep permitted (domain win32:desktop-ao7chmg)
+2026-09-21T17:35:43.351Z [WARN] [3P telemetry] Event dropped (no event logger initialized): user_prompt
+2026-09-21T17:35:43.358Z [DEBUG] [session-notices] advertise=false mode=default flag=false(disabled) pollChannel=false remote=false remoteEnv=false nonInteractive=true
+2026-09-21T17:35:43.361Z [DEBUG] autocompact: tokens=[REDACTED] level=ok effectiveWindow=180000
+2026-09-21T17:35:43.364Z [DEBUG] Tool search disabled: ToolSearchTool is not available (may have been disallowed via disallowedTools).
+2026-09-21T17:35:43.367Z [DEBUG] attribution header x-anthropic-billing-header: cc_version=2.1.251.ee4; cc_entrypoint=sdk-cli;
+2026-09-21T17:35:43.371Z [DEBUG] [API:timing] dispatching to gateway model=MiniMax-M2.7
+2026-09-21T17:35:43.372Z [DEBUG] [API REQUEST] /v1/messages source=sdk
+2026-09-21T17:35:43.376Z [DEBUG] Preserving file permissions: 100666
+2026-09-21T17:35:43.376Z [DEBUG] Writing to temp file: C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.3196f77402d2
+2026-09-21T17:35:43.377Z [DEBUG] Applied original permissions to temp file
+2026-09-21T17:35:43.379Z [DEBUG] Stream started - received first chunk
+2026-09-21T17:35:43.379Z [DEBUG] [API:timing] first byte after 8ms
+2026-09-21T17:35:43.392Z [INFO] [Stall] tool_dispatch_start tool=Read toolUseId=wrench-call-59bd1a013df941f1bc148deec84bad63 permissionDecisionMs=9
+2026-09-21T17:35:43.405Z [DEBUG] Temp file written successfully, size: 423 bytes
+2026-09-21T17:35:43.405Z [DEBUG] Renaming C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json.tmp.29516.3196f77402d2 to C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json
+2026-09-21T17:35:43.406Z [DEBUG] File C:\Users\stanc\AppData\Local\Temp\wrench-claude-isolated-3d312777-2551-4457-8d7a-402e7e42f797\.claude.json written atomically
+2026-09-21T17:35:43.406Z [INFO] [Stall] tool_dispatch_end tool=Read toolUseId=wrench-call-59bd1a013df941f1bc148deec84bad63 outcome=ok durationMs=15
+2026-09-21T17:35:43.409Z [DEBUG] autocompact: tokens=[REDACTED] level=ok effectiveWindow=180000
+2026-09-21T17:35:43.410Z [DEBUG] Tool search disabled: ToolSearchTool is not available (may have been disallowed via disallowedTools).
+2026-09-21T17:35:43.410Z [DEBUG] attribution header x-anthropic-billing-header: cc_version=2.1.251.ee4; cc_entrypoint=sdk-cli;
+2026-09-21T17:35:43.411Z [DEBUG] [API:timing] dispatching to gateway model=MiniMax-M2.7
+2026-09-21T17:35:43.412Z [DEBUG] [API REQUEST] /v1/messages source=sdk
+2026-09-21T17:35:43.414Z [DEBUG] Stream started - received first chunk
+2026-09-21T17:35:43.414Z [DEBUG] [API:timing] first byte after 3ms
