@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.worker-job.v1",
+  "job_id": "wrench-5060ti-current-source-20260920-01",
+  "workload": "cross-host-artifact-preflight",
+  "workload_version": "source-1674ce0-artifact-e0ebd6f",
+  "source_repository": "https://github.com/stancsz/wrench-slm.git",
+  "source_commit": "1674ce0088e4956e17087eab7cf36bb672ab3a5a",
+  "artifact_repository": "https://github.com/stancsz/wrench-slm-artifacts.git",
+  "artifact_commit": "e0ebd6f3762e30a118ade6bc47e01fc65d8e3eea",
+  "artifact_path": "models/Wrench-Qwen3.6-8expert-BF16",
+  "purpose": "Independently verify the current source runtime and pinned BF16 candidate artifact on RTX 5060 Ti before any quality or performance claim.",
+  "inputs": [
+    "GOAL.md",
+    "AGENTS.local.md",
+    "docs/MODEL_ARTIFACT_TRANSFER.md",
+    "artifact-manifest.json",
+    "tools/run_5060ti_preflight.ps1",
+    "tools/smoke_pruned_qwen.py",
+    "tools/compose_cross_host_receipt.py",
+    "tools/verify_cross_host_receipt.py"
+  ],
+  "expected_outputs": [
+    "source-sync-receipt.json",
+    "artifact-hash-receipt.json",
+    "runtime-preflight-receipt.json",
+    "cross-host-receipt.json",
+    "verified-cross-host-receipt.json",
+    "worker.log"
+  ],
+  "resource_requirements": {
+    "worker": "RTX 5060 Ti",
+    "model_artifact_read_only": true,
+    "provider_spending": false,
+    "real_workflow_traces": false,
+    "learned_routing": "DISABLE"
+  },
+  "timeout_seconds": 1800,
+  "retry_limit": 1,
+  "state": "pending",
+  "created_at": "2026-09-20T21:55:00-06:00",
+  "queue_contract": "jobs/pending -> jobs/running -> jobs/completed or jobs/failed"
+}
