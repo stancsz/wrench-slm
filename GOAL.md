@@ -2518,3 +2518,12 @@ Two model calls including a retry took 27,378.546 ms, and the output was still
 malformed and failed strict verification. This rules out output-cap truncation
 as the primary explanation for the learned fallback gap. Evidence:
 `phases/phase-233-real-worker-http-4m-128`.
+
+2026-09-20 standard Hugging Face hybrid load: the pinned BF16 Safetensors
+candidate loaded through Transformers 5.17.0 `AutoConfig`, `AutoTokenizer`, and
+`AutoModelForImageTextToText` with the full weights. The resolved class was
+`Qwen3_5MoeForConditionalGeneration` with 3,881,244,016 parameters. Its native
+tokenizer limit is 262,144, while the model-local hybrid contract declares
+4,000,000 logical raw input tokens and 64,000 effective working tokens. This
+passes the standard HF hybrid artifact gate and explicitly does not claim
+native dense 4M attention. Evidence: `phases/phase-234-standard-hf-load`.

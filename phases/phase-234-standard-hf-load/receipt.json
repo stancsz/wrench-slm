@@ -1,0 +1,29 @@
+{
+  "schema": "wrench.standard-hf-load-receipt.v1",
+  "status": "PASS_STANDARD_HF_CONFIG_TOKENIZER_HYBRID",
+  "model_dir": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-native2M-candidate",
+  "transformers_version": "5.17.0",
+  "config_class": "Qwen3_5MoeConfig",
+  "config_model_type": "qwen3_5_moe",
+  "mapped_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "tokenizer_class": "Qwen2Tokenizer",
+  "tokenizer_model_max_length": 262144,
+  "declared_logical_raw_input_context_tokens": 4000000,
+  "declared_effective_working_context_tokens": 64000,
+  "native_tokenizer_context_supported": false,
+  "hybrid_raw_intake_contract": true,
+  "native_context_required_by_probe": false,
+  "full_weight_load_verified": true,
+  "full_weight_generation_verified": false,
+  "native_long_context_quality_verified": false,
+  "file_hashes": {
+    "config.json": "440a85ef4465d6feaed1cae318278c065131597be60b9140fd03732c2b27d9a2",
+    "tokenizer_config.json": "5186f0defcd7f232382c7f0aebcd2252d073bb921ab240e407b7ae8745d2b29b"
+  },
+  "missing_optional_files": [
+    "tokenization_wrench.py"
+  ],
+  "loaded_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "loaded_parameter_count": 3881244016,
+  "weight_load_elapsed_ms": 10170.521
+}

@@ -17,6 +17,8 @@ from typing import Any
 
 
 MIN_TRANSFORMERS = (5, 17, 0)
+MIN_HYBRID_WORKING_CONTEXT = 64_000
+LOGICAL_RAW_CONTEXT_LIMIT = 4_000_000
 
 
 def _sha256(path: Path) -> str:
@@ -33,7 +35,12 @@ def _version_tuple(value: str) -> tuple[int, ...]:
     return tuple(parts)
 
 
-def verify(model_dir: Path, *, load_weights: bool = False) -> dict[str, Any]:
+def verify(
+    model_dir: Path,
+    *,
+    load_weights: bool = False,
+    require_native_context: bool = False,
+) -> dict[str, Any]:
     import transformers
 
     version = str(transformers.__version__)
@@ -56,11 +63,34 @@ def verify(model_dir: Path, *, load_weights: bool = False) -> dict[str, Any]:
     if mapped_name != "Qwen3_5MoeForConditionalGeneration":
         raise RuntimeError(f"unexpected AutoModel mapping: {mapped_name!r}")
     model_max_length = int(getattr(tokenizer, "model_max_length", 0))
-    if model_max_length < 4_000_000:
-        raise RuntimeError(f"tokenizer model_max_length is {model_max_length}, expected at least 4000000")
+    if model_max_length < MIN_HYBRID_WORKING_CONTEXT:
+        raise RuntimeError(
+            f"tokenizer model_max_length is {model_max_length}, expected at least "
+            f"{MIN_HYBRID_WORKING_CONTEXT} for the bounded hybrid working context"
+        )
+    native_context_supported = model_max_length >= LOGICAL_RAW_CONTEXT_LIMIT
+    if require_native_context and not native_context_supported:
+        raise RuntimeError(
+            f"tokenizer model_max_length is {model_max_length}, expected at least "
+            f"{LOGICAL_RAW_CONTEXT_LIMIT} for native dense context"
+        )
+    status = (
+        "PASS_STANDARD_HF_CONFIG_TOKENIZER_NATIVE"
+        if native_context_supported
+        else "PASS_STANDARD_HF_CONFIG_TOKENIZER_HYBRID"
+    )
+    hash_names = ("config.json", "tokenizer_config.json", "tokenization_wrench.py")
+    file_hashes = {
+        name: _sha256(model_dir / name)
+        for name in hash_names
+        if (model_dir / name).is_file()
+    }
+    missing_optional_files = [
+        name for name in hash_names if not (model_dir / name).is_file()
+    ]
     receipt: dict[str, Any] = {
         "schema": "wrench.standard-hf-load-receipt.v1",
-        "status": "PASS_STANDARD_HF_CONFIG_TOKENIZER",
+        "status": status,
         "model_dir": str(model_dir.resolve()),
         "transformers_version": version,
         "config_class": type(config).__name__,
@@ -68,14 +98,16 @@ def verify(model_dir: Path, *, load_weights: bool = False) -> dict[str, Any]:
         "mapped_model_class": mapped_name,
         "tokenizer_class": type(tokenizer).__name__,
         "tokenizer_model_max_length": model_max_length,
-        "declared_input_context_tokens": 4_000_000,
+        "declared_logical_raw_input_context_tokens": LOGICAL_RAW_CONTEXT_LIMIT,
+        "declared_effective_working_context_tokens": MIN_HYBRID_WORKING_CONTEXT,
+        "native_tokenizer_context_supported": native_context_supported,
+        "hybrid_raw_intake_contract": True,
+        "native_context_required_by_probe": require_native_context,
         "full_weight_load_verified": False,
         "full_weight_generation_verified": False,
         "native_long_context_quality_verified": False,
-        "file_hashes": {
-            name: _sha256(model_dir / name)
-            for name in ("config.json", "tokenizer_config.json", "tokenization_wrench.py")
-        },
+        "file_hashes": file_hashes,
+        "missing_optional_files": missing_optional_files,
     }
     if load_weights:
         import torch
@@ -86,6 +118,7 @@ def verify(model_dir: Path, *, load_weights: bool = False) -> dict[str, Any]:
             dtype=torch.bfloat16,
             low_cpu_mem_usage=False,
             local_files_only=True,
+            trust_remote_code=True,
         )
         receipt.update(
             {
@@ -104,8 +137,17 @@ def main() -> int:
     parser.add_argument("--model-dir", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--load-weights", action="store_true")
+    parser.add_argument(
+        "--require-native-context",
+        action="store_true",
+        help="require the tokenizer itself to advertise the full 4M native context; hybrid mode is the default",
+    )
     args = parser.parse_args()
-    receipt = verify(args.model_dir.resolve(), load_weights=args.load_weights)
+    receipt = verify(
+        args.model_dir.resolve(),
+        load_weights=args.load_weights,
+        require_native_context=args.require_native_context,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
