@@ -2713,3 +2713,12 @@ plus README verification are recorded in
 `phases/phase-256-hf-experimental-preview/publication-receipt.json`.
 This changes publication labeling only. It does not promote the model to
 production and does not replace the missing independent 5060 Ti receipt.
+
+2026-09-21 v103 package regression after model-card refresh: a direct
+Ollama-shaped `/api/chat` payload estimated at `3,996,267` raw tokens was
+accepted by the current NVFP4 package, reduced to `1,955` staged tokens, and
+completed in `238.769 ms`. The first-layer context gate measured `50.175 ms`
+and server staging measured `98.032 ms`. The upstream remains a local protocol
+stub, so this is package intake and handoff accounting evidence on the RTX
+5070 Ti, not dense-native decoder quality, MiniMax parity, or 5060 Ti evidence.
+Evidence: `phases/phase-257-v103-package-4m-handoff`.
