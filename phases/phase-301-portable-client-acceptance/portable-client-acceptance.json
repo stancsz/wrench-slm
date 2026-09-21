@@ -1,0 +1,57 @@
+{
+  "schema": "wrench.portable-client-acceptance.v1",
+  "status": "PASS_LOCAL_PORTABLE_CLIENT_ACCEPTANCE",
+  "package_dir": "D:\\models\\_wrench-current-client-20260921",
+  "server_entrypoint": "package-local wrench_server.py",
+  "server_mode": "mechanical-only",
+  "allowed_root": "phase-301 client-workspace",
+  "clients": {
+    "opencode": {
+      "protocol": "openai-chat-completions",
+      "exit_code": 0,
+      "read_only_work_observed": true,
+      "structured_read_observed": true,
+      "trace_rows": 3,
+      "model_calls": 0,
+      "mutation_claim": false
+    },
+    "deepseek_harness": {
+      "protocol": "openai-chat-completions",
+      "exit_code": 0,
+      "read_only_work_observed": true,
+      "structured_read_observed": true,
+      "trace_rows": 3,
+      "model_calls": 0,
+      "mutation_claim": false
+    },
+    "claude_code": {
+      "protocol": "anthropic-messages",
+      "exit_code": 0,
+      "read_only_work_observed": true,
+      "structured_read_observed": true,
+      "trace_rows": 2,
+      "model_calls": 0,
+      "mutation_claim": false,
+      "observed_tool": "Read"
+    }
+  },
+  "checks": {
+    "download_directory_entrypoint_used": true,
+    "all_clients_exited_zero": true,
+    "all_clients_observed_read_only_work": true,
+    "all_clients_zero_model_calls": true,
+    "no_mutation_claim": true,
+    "external_provider_not_required": true
+  },
+  "claims_not_authorized": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ],
+  "source_receipts": [
+    "receipt.json",
+    "wrench-client.trace.jsonl",
+    "claude.trace.jsonl"
+  ]
+}

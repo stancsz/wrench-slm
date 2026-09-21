@@ -29,6 +29,7 @@ if (-not $OutputDir) {
     $OutputDir = Join-Path ([IO.Path]::GetTempPath()) ("wrench-client-smoke-" + [Guid]::NewGuid().ToString("N"))
 }
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+$OutputDir = (Resolve-Path -LiteralPath $OutputDir -ErrorAction Stop).Path
 $workspace = Join-Path $OutputDir "client-workspace"
 New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 $opencodeConfigPath = Join-Path $workspace "opencode.json"
