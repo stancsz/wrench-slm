@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.embedded-worker-prefill-probe.v1",
+  "status": "PASS_EMBEDDED_MONSTER_PREFILL",
+  "source_commit": "1c76b56",
+  "host_scope": "interactive_rtx_5070_ti",
+  "quality_claim": false,
+  "native_attention_claim": false,
+  "requested_payload_tokens": 4000000,
+  "raw_payload_chars": 35199496,
+  "raw_token_count": 3999547,
+  "elapsed_ms": 163.656,
+  "context_gate_latency_ms": 81.818,
+  "model_calls": 0,
+  "pipeline": "map_reduce_dynamic_native",
+  "model_prefill_budget": 64000,
+  "model_prefill_token_count": 1966,
+  "compression_ratio": 0.000492,
+  "evidence_window_count": 2,
+  "target_reference_preserved": true,
+  "raw_payload_sha256": "6c1a5b15de339939e3901ba6c4c40ff919042c212458663926ea5a9db104ab08",
+  "source_payload_sha256": "8926ad2937c857c51e635ba6600bc1b6fbfac22d43f72a8130e5a4bb81a59e46",
+  "prepared_payload_sha256": "6c1a5b15de339939e3901ba6c4c40ff919042c212458663926ea5a9db104ab08",
+  "notes": [
+    "Deterministic first-layer prefill only; no model generation was called.",
+    "The raw payload is hash-bound and the latest intent is retained.",
+    "This does not prove dense native 4M attention quality or MiniMax parity."
+  ]
+}
