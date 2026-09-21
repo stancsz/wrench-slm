@@ -2599,3 +2599,17 @@ raw estimated tokens, reduced them to 1,955 staged tokens, and completed in
 stub, so this remains package intake and reduction evidence, not native decoder
 quality or 5060 Ti verification. Evidence:
 `phases/phase-240-dense-native-first-layer/portable-v96-native-handoff-4m.json`.
+
+2026-09-20 portable package v97 dense-native launcher safety: `-NativeDirectInput`
+now enables the integrated first-layer pruner and cherrypicker automatically.
+`-DenseNativeGate` remains an explicit equivalent, while
+`-BypassDenseNativeGate` is restricted to capacity probes and is rejected when
+combined with a dense-native mode switch. The v97 package passed structural
+validation with nine Safetensors shards. Its model-local `/api/chat` 4M handoff
+accepted `3,995,842` raw estimated tokens, reduced them to `1,955` staged
+tokens, and completed in `243.24 ms`, including `87.807 ms` server staging.
+The receipt records the `first_model_side_pruner_cherrypicker` stage and binds
+the raw payload hash. The upstream was a local protocol stub, so this is
+package intake and reduction evidence, not dense decoder quality, retrieval
+quality, 5060 Ti verification, or MiniMax parity. Evidence:
+`phases/phase-240-dense-native-first-layer/portable-v97-native-handoff-4m.json`.

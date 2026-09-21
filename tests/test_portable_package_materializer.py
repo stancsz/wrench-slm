@@ -22,6 +22,8 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert '[string]$FreeTokenExecutable = "ft.cmd"' in launcher
     assert "[switch]$FastHistory" in launcher
     assert "[switch]$DenseNativeGate" in launcher
+    assert "[switch]$BypassDenseNativeGate" in launcher
+    assert "BypassDenseNativeGate cannot be combined" in launcher
     assert '$env:WRENCH_DENSE_NATIVE_GATE = "1"' in launcher
     assert '$env:WRENCH_DENSE_NATIVE_GATE = "0"' in launcher
     assert '$env:WRENCH_HISTORY_SKIP_LAYERS_BEFORE = "auto"' in launcher
@@ -100,6 +102,8 @@ def test_materializer_embeds_worker_runtime():
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in script
     assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in script
     assert "first_layer_required_when_enabled" in script
+    assert "native_direct_input_enables_gate" in script
+    assert "capacity_probe_bypass_switch" in script
     assert '"fast_history_profile": "opt_in_reference_only"' in script
     assert "OllamaApi" in script
     assert "native smoke response missing completion text" in script

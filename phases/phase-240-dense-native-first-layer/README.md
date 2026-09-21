@@ -8,11 +8,16 @@ the expensive native decoder layers. The gate is bounded to 32K through 64K
 working tokens and fails closed on invalid bounds or raw input above 4M token
 equivalents.
 
-The launcher exposes this explicitly as:
+The launcher exposes this as a model-local mode. `-NativeDirectInput` enables
+the first-layer gate automatically, while `-DenseNativeGate` is accepted as an
+explicit equivalent:
 
 ```powershell
 .\serve_freetoken.ps1 -OllamaApi -NativeDirectInput -DenseNativeGate
 ```
+
+`-BypassDenseNativeGate` is reserved for capacity probes. It cannot be
+combined with either dense-native mode switch.
 
 ## Local gate-only receipt
 
@@ -37,3 +42,12 @@ handoff then passed with `3,995,842` raw estimated tokens, `1,955` staged
 tokens, `106.276 ms` server staging, and `252.351 ms`
 complete local round trip. The upstream was a local protocol stub, so this is
 package intake and reduction evidence, not native decoder quality.
+
+The v97 package carries the same fix plus the safer launcher default. Structural
+validation passed with nine Safetensors shards. Its package-local `/api/chat`
+4M handoff passed with `3,995,842` raw estimated tokens, `1,955` staged tokens,
+`87.807 ms` server staging, and `243.24 ms` complete local round trip. The
+receipt records `first_model_side_pruner_cherrypicker`, a `34.186 ms` gate
+latency, and the raw payload hash binding. This is stronger package handoff
+evidence, but the upstream remains a local protocol stub, so it still does not
+prove dense decoder quality, retrieval quality, or 5060 Ti performance.

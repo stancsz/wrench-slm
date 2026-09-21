@@ -51,8 +51,9 @@ The first-layer receipt records selected and omitted spans, raw payload hash,
 effective working context, route source, and gate latency. Dense native 2M/4M
 attention is optional research. It is not the Wrench product claim.
 
-When the optional dense-native lane is enabled, use the bundled launcher with
-`-DenseNativeGate`. The raw request still arrives at the model-local native
+When the optional dense-native lane is enabled, `-NativeDirectInput` enables
+the first-layer gate automatically. `-DenseNativeGate` can also be supplied
+explicitly. The raw request still arrives at the model-local native
 endpoint, but the package's first model-side stage compacts it to 32K to 64K
 before expensive attention:
 
@@ -61,8 +62,9 @@ before expensive attention:
 ```
 
 The gate is fail-closed and records the raw payload hash, selected working
-context, and gate stage. Omitting `-DenseNativeGate` is reserved for separate
-reducer-bypassed native capacity probes, not the dense-native product path.
+context, and gate stage. `-BypassDenseNativeGate` is reserved for separate
+reducer-bypassed native capacity probes and cannot be combined with a
+dense-native mode switch.
 
 ## Run the model-local endpoint
 
