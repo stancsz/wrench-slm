@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.current-source-4m-native-handoff.v1",
+  "status": "PASS_NATIVE_HANDOFF_STAGED_4M",
+  "runtime_import": "source_runtime",
+  "surface": "api-chat",
+  "requested_payload_tokens": 4000000,
+  "admission_estimate_safety_margin_tokens": 4096,
+  "raw_payload_estimate": 3995842,
+  "server_raw_token_count": 3996267,
+  "staged_token_estimate": 1955,
+  "working_context_budget_tokens": 64000,
+  "server_staging_elapsed_ms": 104.608,
+  "complete_round_trip_elapsed_ms": 201.307,
+  "model_calls": 1,
+  "backend": "native-upstream-verified",
+  "native_backend_prompt_tokens": 1955,
+  "context_gate_latency_ms": 51.651,
+  "compression_ratio": 0.000489,
+  "raw_payload_sha256": "e0504b9d859621f9bad62045a0c8def6a79656eaac843f9849a8518461e13b84",
+  "prepared_payload_sha256": "e0504b9d859621f9bad62045a0c8def6a79656eaac843f9849a8518461e13b84",
+  "native_attention_claim": false,
+  "quality_boundary": "local protocol stub, not model-generation quality"
+}

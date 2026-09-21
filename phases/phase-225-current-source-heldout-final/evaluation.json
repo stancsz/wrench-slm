@@ -1,0 +1,33 @@
+{
+  "schema": "wrench.current-source-heldout-final.v1",
+  "status": "DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY",
+  "endpoint": "http://127.0.0.1:28902/v1/chat/completions",
+  "model": "wrench-current-final",
+  "cases_path": "evals/wrench-expanded-v2/final.jsonl",
+  "cases_sha256": "52ed79afbef978ad8cf8a5d520ae7b9f7a608cb4a2e0b4c007f806ac1d41a331",
+  "request_count": 44,
+  "canonical_case_count": false,
+  "mechanical_fast_path_requests": 44,
+  "model_calls": 0,
+  "outcome_matches": 44,
+  "exact_proposal_matches": 24,
+  "eligible_case_count": 24,
+  "eligible_exact_accepts": 24,
+  "prohibited_accepts": 0,
+  "transport_or_runtime_abstentions": 0,
+  "median_latency_ms": 0.528,
+  "p95_latency_ms": 45.774,
+  "mean_latency_ms": 7.511,
+  "health_fixture": {
+    "enabled": true,
+    "port": 28907,
+    "transport": "127.0.0.1"
+  },
+  "claims_not_proven": [
+    "MiniMax teacher parity",
+    "weighted workflow coverage",
+    "independent 5060 Ti verification",
+    "dense-native attention quality",
+    "production readiness"
+  ]
+}

@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+_ADMISSION_ESTIMATE_SAFETY_MARGIN = 4_096
 
 
 def _build_payload(target_tokens: int) -> str:
@@ -118,7 +119,13 @@ def main() -> int:
         server_thread = threading.Thread(target=server.serve_forever, daemon=True)
         server_thread.start()
         try:
-            content = _build_payload(args.payload_tokens)
+            # The runtime uses a bounded sample for multi-million-token
+            # admission estimates. Keep a small margin so a request labeled
+            # as the 4M probe does not accidentally cross the hard 4M limit
+            # because of sample-density rounding.
+            content = _build_payload(
+                max(1, args.payload_tokens - _ADMISSION_ESTIMATE_SAFETY_MARGIN)
+            )
             if args.surface == "api-generate":
                 payload = {
                     "model": "wrench-test",
@@ -196,6 +203,7 @@ def main() -> int:
         "runtime_import": runtime_import,
         "package_dir": str(args.package_dir.resolve()) if args.package_dir is not None else None,
         "requested_payload_tokens": args.payload_tokens,
+        "admission_estimate_safety_margin_tokens": _ADMISSION_ESTIMATE_SAFETY_MARGIN,
         "raw_payload_bytes": len(body),
         "raw_token_estimate": _token_estimate(content),
         "staged_token_estimate": staged_tokens,

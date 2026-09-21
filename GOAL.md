@@ -2425,3 +2425,23 @@ current `GOAL.md` exceeds the requested 131072-byte read ceiling, so the
 verifier correctly fails closed. This remains diagnostic workflow evidence,
 not MiniMax parity, weighted savings, or dense-native attention evidence.
 Evidence: `phases/phase-224-current-source-workflow-220`.
+
+2026-09-20 current-source held-out final diagnostic: the sealed v2
+`final.jsonl` split completed 44/44 outcome matches and 24/24 eligible exact
+accepts through the model-local endpoint, with 44/44 mechanical fast-path
+requests, zero model calls, zero prohibited accepts, and zero transport or
+runtime abstentions. Median and p95 client latency were 0.528 ms and
+45.774 ms. The health fixture was isolated on a dedicated IPv4 loopback port,
+so this receipt does not depend on a host service. This remains a 44-row
+diagnostic, not the full weighted MiniMax comparison or production approval.
+Evidence: `phases/phase-225-current-source-heldout-final`.
+
+2026-09-20 current-source 4M native handoff: the source runtime accepted a
+nominal 4,000,000-token `/api/chat` probe at its own model-local endpoint. The
+package received about 3,996,267 raw estimated tokens, compacted them in its
+first-layer gate to 1,955 staged tokens under the 64K working budget, and sent
+only that bounded prompt to the local native protocol stub. Server staging was
+104.608 ms and complete local round trip was 201.307 ms. Raw and prepared
+payload hashes were present, with one verified backend call. The stub does not
+prove dense-native attention or generation quality. Evidence:
+`phases/phase-226-current-source-4m-native-handoff`.
