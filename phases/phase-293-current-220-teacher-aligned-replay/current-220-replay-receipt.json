@@ -1,0 +1,63 @@
+{
+  "schema": "wrench.current-220-teacher-aligned-replay.v1",
+  "status": "DIAGNOSTIC_CURRENT_220_REPLAY_COMPLETE",
+  "source_commit": "83d2574",
+  "cases": {
+    "path": "evals/wrench-expanded-v2/cases.jsonl",
+    "count": 220,
+    "canonical_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+    "raw_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+    "eligible_count": 120
+  },
+  "teacher_capture": {
+    "endpoint": "http://127.0.0.1:4000/v1/chat/completions",
+    "model": "minimax",
+    "identity_status": "endpoint_model_id_recorded_owner_label_not_independently_verified",
+    "requests": 220,
+    "transport_failures": 0,
+    "invalid_responses": 0,
+    "sha256": "537D0F44BEE9E2DB15BC7064F7D369562918DC3EBD02CAF24813AB7CE73FAED4",
+    "raw_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-current-220.json"
+  },
+  "package_replay": {
+    "package_dir": "D:\\models\\_wrench-current-client-20260921",
+    "evaluation_sha256": "681467ACAA7754C55C8E1807D06E7C29C7E5D376DA670B605429A75CFC6450D2",
+    "trace_manifest_sha256": "7548A8217EC024CE437AA51D9E70E98AFA214A118A4DE1B0C641DAE4919B676A",
+    "raw_path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\replay-current-teacher-220",
+    "arms": {
+      "teacher_only": {
+        "weighted_final_success": 0.8934198331788693,
+        "weighted_verifier_success": 0.9999865683469664,
+        "prohibited_accepts": 2,
+        "frontier_tokens": 74450.0,
+        "median_latency_ms": 3458.722,
+        "p95_latency_ms": 8180.346
+      },
+      "wrench_plus_fallback": {
+        "weighted_final_success": 1.0,
+        "weighted_verifier_success": 1.0,
+        "prohibited_accepts": 0,
+        "frontier_tokens": 0.0,
+        "local_tokens": 24141.0,
+        "median_latency_ms": 193.818,
+        "p95_latency_ms": 315.719,
+        "fallback_count": 0
+      },
+      "wrench_only_diagnostic": {
+        "weighted_final_success": 1.0,
+        "weighted_verifier_success": 1.0,
+        "prohibited_accepts": 0,
+        "unexpected_mutations": 0,
+        "frontier_tokens": 0.0,
+        "local_tokens": 24141.0
+      }
+    }
+  },
+  "claims_not_authorized": [
+    "approved family-disjoint production benchmark",
+    "independently verified RTX 5060 Ti execution",
+    "learned native-decoder or MiniMax semantic parity",
+    "sustained concurrency or GPU OOM recovery",
+    "production enablement"
+  ]
+}

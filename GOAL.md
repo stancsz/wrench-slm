@@ -3014,3 +3014,19 @@ zero model calls and the same bounded backends. This closes current-package
 client wiring for local read-only smoke paths, but not MiniMax parity, learned
 decoder quality, independent RTX 5060 Ti execution, sustained concurrency, or
 production enablement. Evidence: `phases/phase-292-current-portable-client-integration`.
+
+2026-09-21 current 220 teacher-aligned replay: the current 220-case fixture
+was recaptured against the local MiniMax-compatible endpoint because it had
+drifted from the older teacher capture. The new capture matched the current
+`da64a33d...` canonical and raw hash, with `220/220` responses, zero transport
+failures, and zero invalid responses. The v103 materialized package completed
+the four diagnostic arms. Wrench's deterministic lane reached weighted final
+success `1.0`, weighted verifier success `1.0`, zero prohibited accepts, zero
+unexpected mutations, zero frontier teacher tokens, `24141` local tokens,
+`193.818 ms` median, and `315.719 ms` p95. The teacher-only arm reached
+weighted final success `0.8934198331788693`, had two prohibited accepts, used
+`37544` weighted frontier tokens, `3458.722 ms` median, and `8180.346 ms` p95.
+This materially strengthens the mechanical-worker evidence, but remains a
+diagnostic historical/calibration fixture rather than the approved
+family-disjoint production gate. Evidence:
+`phases/phase-293-current-220-teacher-aligned-replay`.
