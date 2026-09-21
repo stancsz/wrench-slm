@@ -90,6 +90,8 @@ def test_materializer_embeds_worker_runtime():
     assert "WRENCH_EMBEDDED_MECHANICAL_ROUTE" in script
     assert "WRENCH_ALLOWED_ROOT" in script
     assert "dynamic_staged_prefill" in script
+    assert '"raw_input_limit_enforced": True' in script
+    assert '"over_limit_behavior": "HTTP_400_fail_closed"' in script
     assert "FastHistoryKeepTokens" in script
     assert "WRENCH_HISTORY_SKIP_LAYERS_BEFORE" in script
     assert "WRENCH_HISTORY_SKIP_KEEP_TOKENS" in script

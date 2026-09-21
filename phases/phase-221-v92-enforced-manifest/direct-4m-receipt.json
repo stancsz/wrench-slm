@@ -1,0 +1,16 @@
+{
+  "schema": "wrench.v92-enforced-manifest-direct-4m.v1",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v92-enforced-manifest",
+  "package_validation": "PASS_STRUCTURAL_PACKAGE",
+  "context_length": 4000000,
+  "parameter_size": "3.88B",
+  "raw_input_tokens": 3998332,
+  "round_trip_ms": 74.265,
+  "status": "accepted",
+  "model_calls": 0,
+  "context_gate_stage": "mechanical_fast_pruner_cherrypicker",
+  "raw_payload_hash_bound": true,
+  "raw_input_limit_enforced": true,
+  "over_limit_behavior": "HTTP_400_fail_closed",
+  "dense_native_quality_claim": false
+}

@@ -2391,3 +2391,10 @@ invalid or over-limit `options.num_ctx` values and raw input estimates above
 `options.num_ctx=4000001` with HTTP 400. This makes the 4M endpoint limit
 enforceable rather than metadata-only. Evidence:
 `phases/phase-220-v91-hard-4m-limit`.
+
+2026-09-20 v92 enforced package manifest: the materializer now copies the
+hard 4M admission contract into both package manifests. The v92 package passed
+structural validation, reported `context_length=4000000` and `parameter_size=3.88B`,
+and accepted a 3,998,332-token direct `/api/chat` request in 74.265 ms with
+zero model calls. Evidence:
+`phases/phase-221-v92-enforced-manifest`.
