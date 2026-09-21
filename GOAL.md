@@ -2375,3 +2375,11 @@ hash-bound receipt with zero model calls. Retrieval p50/p95 was 17.870/20.956
 ms at 2M and 32.560/40.772 ms at 4M. This verifies hybrid reference lookup,
 not dense-native attention or MiniMax parity. Evidence:
 `phases/phase-217-v88-retrieval-quality`.
+
+2026-09-20 v90 portable package refresh: the HF-facing README and materialized
+package now state the current hybrid 4M product boundary and v88 evidence,
+instead of stale pre-v88 metrics. The v90 package passed structural validation
+and its own package-local `/api/chat` accepted 3,998,332 raw estimated tokens
+in 87.064 ms, returned the bounded proposal with zero model calls, and emitted
+the `mechanical_fast_pruner_cherrypicker` hash-bound receipt. Evidence:
+`phases/phase-219-v90-current-package`.

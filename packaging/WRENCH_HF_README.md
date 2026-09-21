@@ -12,317 +12,88 @@ tags:
 
 # Wrench-4B-Qwen3.6-8E
 
-This Hub repository contains the NVFP4 native-4M experimental candidate,
-distributed as one copy-pasteable portable package. Its candidate identity is
-`Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M`.
+Wrench is a bounded developer-tool execution SLM for fast, repetitive,
+verifiable mechanical work. It proposes structured actions or abstains. An
+independent verifier and the stronger-model fallback retain final authority.
+Wrench never executes arbitrary shell commands, uses credentials, or writes
+autonomously.
 
-Wrench is a pruned, task-specific developer-tool SLM derived from Qwen3.6-35B-A3B.
-It contains 3,881,244,016 parameters and stays below the 4.25B parameter ceiling.
-
-This is a public experimental artifact. It is downloadable and reproducible, but
-it is not a claim that the final 4M retrieval-quality, MiniMax-parity, or
-production-throughput gates have passed. The package still requires the complete
-matched 220-case release evaluation.
+This experimental candidate is derived from Qwen3.6-35B-A3B, uses NVFP4 W4A16
+weights, and contains `3,881,244,016` verified parameters, below the 4.25B
+parameter ceiling. It is not a general coding agent.
 
 ## Copy the package
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
-```
-
-On Windows, start the downloaded package with one command:
-
-```powershell
-cd .\Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M `
+  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M
 .\run_wrench.ps1
 ```
 
-This starts the bounded mechanical endpoint at
-`http://127.0.0.1:28900`. Add `-LoadModel` only when the local model backend
-is configured and ambiguous requests should load the checkpoint.
+The package is a Hugging Face Safetensors directory with tokenizer, bundled
+verifier, deterministic toolbelt, context policy, and a model-local server.
+It accepts Ollama-shaped `/api/chat` and `/api/generate` requests, including
+`options.num_ctx=4000000`, without an external gateway.
 
-The canonical distribution format is Hugging Face Safetensors. The package embeds
-the tokenizer hook, deterministic mechanical lookup runtime, read-only verifier,
-long-context overlay, hash-bound package metadata, and the FreeToken launcher. It
-is intended to feel like one model directory, not a separately installed harness.
+## What the 4M claim means
 
-The bundled FreeToken launcher enables the package-local mechanical route for
-high-confidence read-only proposals. Those requests return a standard chat
-completion with `model_calls=0`; ambiguous requests continue through the model.
-Every proposal remains subject to an independent verifier before execution.
-Simple reads without an explicit byte limit use the verifier's bounded 256 KiB
-cap. Requests asking for the entire or complete file remain fallback-required
-so a large file is never silently truncated.
+The production-value path is hybrid and model-local:
 
-For `patch_draft`, the verifier requires a real review-only unified diff with
-actual added or removed content. Header-only or empty diffs are rejected as
-`invalid_patch_diff`; a schema-valid empty patch is never reported as useful
-work.
+1. receive the complete raw payload directly at the package endpoint;
+2. use deterministic MapReduce, bounded search, AST/dependency extraction,
+   and exact lookup windows to identify useful evidence;
+3. keep recent intent hot and old material reference-only;
+4. compact model work to a bounded effective context, normally 64K;
+5. run the bounded proposal, verifier, and identical stronger-model fallback.
 
-When a request contains one explicit quoted text operation, such as
-`Replace "old" with "new" in README.md`, `Append "line" to README.md`, or
-`Insert "line" after "anchor" in README.md`, the embedded route reads that one
-file, constructs a review-only unified diff, and leaves the working tree
-untouched. It supports replace, append, prepend, insert-after, and remove
-when the text match is unique. Ambiguous or under-specified patch requests
-return `patch_content_missing` without spending a model call.
+The first-layer receipt records selected and omitted spans, raw payload hash,
+effective working context, route source, and gate latency. Dense native 2M/4M
+attention is optional research. It is not the Wrench product claim.
 
-The embedded worker API is available directly from the downloaded directory:
-
-```python
-from wrench_worker import WrenchWorker
-
-worker = WrenchWorker.from_pretrained(
-    "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False
-)
-result = worker.propose([
-    {"role": "user", "content": "Read README.md with a 65536 byte limit."}
-])
-```
-
-## Run it as a local model endpoint
-
-The package also contains its own small OpenAI-compatible server. It accepts
-the complete raw request at the model endpoint, then applies the bundled
-mechanical route or bounded working-context reducer inside the package:
+## Run the model-local endpoint
 
 ```powershell
 python .\wrench_server.py --model-dir . --allowed-root . --mechanical-only
 ```
 
-The endpoint is `http://127.0.0.1:28900/v1/chat/completions`. A client can send
-the full conversation, including a multi-million-token raw payload, directly to
-this model-local process. The response includes the raw input estimate,
-effective route, model-call count, and dynamic-prefill receipt. Remove
-`--mechanical-only` when the local backend is ready to load the model weights.
+The endpoint is `http://127.0.0.1:28900/v1/chat/completions`. The same process
+also exposes `/api/tags`, `/api/show`, `/api/chat`, and `/api/generate` for
+clients that expect an Ollama-shaped surface. It receives the full raw
+conversation directly and emits hash-bound context-gate receipts.
 
-The same process exposes a small Ollama-compatible local surface for clients
-that expect Ollama-shaped requests:
+The `--mechanical-only` mode is the verified fast path. Remove it only when a
+compatible local native backend is available for ambiguous requests. Native
+generation is separately verified and must not be inferred from the API shape.
 
-```powershell
-curl http://127.0.0.1:28900/api/tags
-curl http://127.0.0.1:28900/api/show -d '{"name":"wrench-4b"}'
-curl http://127.0.0.1:28900/api/chat -d '{"model":"wrench-4b","messages":[{"role":"user","content":"Read README.md with a 4096 byte limit."}],"stream":false,"options":{"num_ctx":4000000}}'
-```
+## Current evidence
 
-This is an Ollama API compatibility layer inside the downloaded package. It
-does not claim that stock Ollama can load the Wrench hybrid checkpoint or that
-a generic GGUF conversion preserves the package-local toolbelt.
+On the historical 220-case diagnostic replay, with client-side mechanical
+shortcut disabled:
 
-The bundled FreeToken launcher pins the 4M KV capacity explicitly and uses an
-automatic expert cache. This avoids allocating an oversized sparse address
-mapping on GPUs with limited memory. It improves the native serving profile,
-but it does not by itself prove fast dense generation at 4M.
+- weighted mechanical frontier-token coverage: `94.5411%`;
+- net frontier-token savings: `95.5310%`;
+- Wrench plus identical MiniMax fallback final success: `99.6503%`;
+- median / p95 latency: `183.314 ms` / `337.174 ms`;
+- prohibited accepts: `0`;
+- unexpected mutations: `0`.
 
-The launcher uses FreeToken's `--num-tokenizer 0` shared-tokenizer mode. This
-avoids an extra Torch tokenizer process and lowers Windows startup memory
-pressure when the native model is loading CUDA libraries.
-It also uses `--expert-load serial` to avoid a parallel whole-shard host-memory
-buffer while loading the MoE experts.
-The launcher constrains BLAS thread pools to one thread and enables lazy CUDA
-module loading for lower-memory Windows startup.
-Failed native smoke startup also cleans the complete FreeToken process tree to
-avoid leaking Torch workers into subsequent launches.
+The direct model-local context matrix passed three repetitions each at 64K,
+128K, 256K, 2M, and 4M. At 4M, the measured raw estimate was `3,999,995`
+tokens and complete HTTP p50/p95 was `158.906` / `159.251 ms`. The 2M/4M
+reference-lookup probe recovered exact proposals in `18/18` cases, with 4M
+retrieval p50/p95 of `32.560` / `40.772 ms` and zero model calls.
 
-To expose the native FreeToken backend through the same package-local
-Ollama-shaped endpoint, use:
+These are hybrid model-local diagnostics, not dense native attention quality,
+stock Ollama native generation quality, family-disjoint approval, or
+production enablement. The current stock Ollama native generation boundary is
+explicitly recorded as failed on the validation host. GGUF and vLLM require
+architecture adapters and are not claimed as verified.
 
-```powershell
-.\serve_freetoken.ps1 -OllamaApi -AllowedRoot C:\path\to\your\repo
-```
+## Development status
 
-This keeps FreeToken on a private loopback port and starts the bundled Wrench
-server on the public port. Mechanical requests are handled inside the package;
-other native responses pass through the bundled verifier before they are
-returned. It is still a package adapter around the experimental FreeToken
-backend, not a claim that stock Ollama loads the Wrench architecture.
-
-On a GPU with competing workloads, override the automatic expert-cache planner
-instead of changing the model package:
-
-```powershell
-.\serve_freetoken.ps1 -OllamaApi -MoeCacheSize 16 -KvReserveTokens 1024
-```
-
-`MoeCacheSize` must be at least 16 for this 8-expert package. The default
-remains automatic sizing.
-
-The package bridge bounds a native upstream request to 9 seconds by default,
-so one slow or malformed native generation cannot stall the whole mechanical
-worker. Override `-UpstreamTimeoutSeconds` only when the caller uses a longer
-matching timeout.
-
-Accepted proposals include a `wrench.test-time-compute-receipt.v1` in the
-response metadata. The receipt records bounded local schema, authority,
-evidence, consistency, and blind-critic checks. A failed TTC gate becomes a
-fail-closed abstention before the response leaves the package.
-
-When `-OllamaApi` is enabled, the launcher performs a real native completion
-smoke test before starting the public package server. A `/v1/models` response
-alone is not sufficient readiness. Startup diagnostics are saved in
-`native-startup.log` and `native-startup-error.log`, and a failed native
-backend prevents a misleading healthy API from starting.
-
-For an experimental faster native profile that treats old history as
-reference-only, use:
-
-```powershell
-.\serve_freetoken.ps1 -FastHistory -FastHistoryKeepTokens 64000
-```
-
-When the native endpoint is serving a user's repository, point the embedded
-mechanical route at that repository explicitly:
-
-```powershell
-.\serve_freetoken.ps1 -AllowedRoot C:\path\to\your\repo
-```
-
-The root is read-only proposal scope. Wrench never applies a patch; the
-external verifier remains responsible for approval and execution.
-
-This keeps the complete raw request and model-side prompt accounting for the
-actual request length, then skips attention and MLP work before the recent-token
-boundary. It therefore scales between 2M and 4M requests. It is opt-in
-because retrieval quality and MiniMax parity for this policy are not yet
-verified. The default launcher does not enable it.
-
-This endpoint is part of the downloaded package, not a separately installed
-Wrench harness. It still does not claim dense native attention quality over
-every 4M token. It provides the practical model-local path while that native
-quality and throughput work continues.
-
-The current boundary-repaired runtime has also passed a direct native
-3,995,331-token provider probe: HTTP 200, `truncated=false`, and
-`native_context_pass=true` at a configured 4,000,000-token limit. The measured
-single-request prefill was 173,384.564 ms on the development RTX 5070 Ti with
-the default 64K recent tail. This is a capacity and serving-path result, not a
-claim of general retrieval quality or MiniMax parity.
-
-With `load_model=True`, ambiguous requests use the standard Transformers model
-and still pass through the same fail-closed verifier. High-confidence
-mechanical requests use the embedded route without a model call.
-
-For a large multi-turn payload, the package worker applies the bundled
-deterministic MapReduce prefill before model generation. The map stage creates
-content-addressed reference cards. The reduce stage selects the newest intent,
-hot context, matching old cards, and bounded evidence windows around exact
-paths or symbols. The default model working budget is 64K estimated tokens.
-The returned `dynamic_prefill` receipt records the pipeline, original and
-prepared payload hashes, selected cards, and evidence-window count. This is a
-bounded working-context optimization, not a claim that dense attention was
-performed over every 4M token. If an application sends the whole conversation
-as one large user message, the package splits the old prefix from the newest
-suffix internally before building the same reference index.
-
-When an old reference card contains the exact unified diff requested by the
-newest review-only intent, the embedded route can recover that diff directly.
-It requires matching paths, a valid hunk, a bounded diff, and an existing file;
-otherwise it abstains with `patch_content_missing` and preserves the fallback.
-This is reference retrieval, not patch synthesis, and it never applies a file
-change.
-
-In `-OllamaApi` mode this reducer is embedded in the downloaded package server.
-The server accepts the original request, runs the embedded MapReduce reducer,
-and sends only the staged messages to the internal native backend while keeping
-the original payload hash and latest intent for verification. The current 4M
-handoff probe reduced about 4M estimated tokens to 1,845 staged tokens and
-measured 114.563 ms for server-side staging on the development host. The
-complete protocol-stub round trip was about 2.6 seconds because it also
-transfers a 35 MB request body. This proves the practical staged handoff, not
-dense native 4M attention.
-
-For the standard Hugging Face config and tokenizer path, use Transformers 5.17.0
-or newer:
-
-```powershell
-python -m pip install -U "transformers>=5.17.0" huggingface_hub
-```
-
-## Run the experimental native endpoint
-
-The bundled launcher requires a compatible FreeToken build and a CUDA GPU:
-
-```powershell
-.\serve_freetoken.ps1
-```
-
-On Windows, the launcher defaults to the installed `ft.cmd` wrapper. Pass
-`-FreeTokenExecutable` when using a different compatible FreeToken command.
-
-The package declares a 4M input endpoint and uses an 8K recent SWA window in the
-experimental native profile. The bundled launcher pins a 4M KV capacity and
-uses FreeToken's automatic expert cache with an 8K reserve. The default
-`-OllamaApi` path mechanically reduces noisy payloads to a 64K effective
-working context. Use `-NativeDirectInput` to send the complete raw request to
-the native backend. Native direct input and fast staged input are recorded
-separately in receipts.
-
-On a machine with limited free GPU memory, use the bounded CPU expert profile:
-
-```powershell
-.\serve_freetoken.ps1 -OllamaApi -NativeDirectInput -MoeStrategy cpu -MoeCpuThreads 4
-```
-
-The launcher also accepts `-MoeStrategy hybrid`, `-MoeCpuLayers`, and
-`-MoeHybridMaxFetch` for controlled expert placement. These options do not
-change the model weights. They may reduce GPU pressure, but still require
-enough host RAM, pagefile, and GPU headroom for the rest of the native model.
-The launcher fails closed if its native smoke request cannot complete and
-cleans the native child process tree. Native generation on the current busy
-development host is not claimed as verified by this package revision.
-
-The embedded reducer has also passed a 4M mechanical stress diagnostic: 3,999,951
-estimated raw tokens reduced to a 92-token model prefill, with 1.0 target-reference
-recall, 1.0 current-intent preservation, and 1.0 hash-bound reference rate. The
-measured cold ingest was 98.713 ms and hot selection was 44.441 ms on the local
-development machine. This is deterministic toolbelt evidence, not an LLM
-long-context quality or MiniMax-parity claim.
-
-The embedded native endpoint also passes deterministic history lookup canaries:
-an approximately 2M-token request completed in 112.471 ms and an approximately
-4M-token request completed in 460.155 ms, both recovering
-`src/wrench_harness/worker.py` from old reference material with zero model calls.
-These canaries validate the bounded lookup route only. They do not establish
-general native attention retrieval quality or MiniMax parity.
-
-## Backend status
-
-- Hugging Face Safetensors: public experimental package. Transformers 5.17.0+
-  recognizes the bundled Qwen3.5 MoE architecture and Wrench tokenizer metadata.
-- FreeToken: locally verified experimental backend.
-- The bundled FreeToken path has produced a schema-valid read-only proposal on a
-  small smoke request when given the explicit Wrench output contract.
-- vLLM: requires a registered Wrench architecture adapter.
-- Ollama: Ollama 0.34.2 MLX imported the v84 Safetensors package, loaded 3,993
-  tensors, and reported a 4M context. Native generation quality failed on the
-  validation host, returning empty or malformed repeated-token text, so the
-  stock Ollama path is not release-ready for the current NVFP4 artifact.
-- llama.cpp and GGUF: not verified for Wrench hybrid attention and lookup
-  semantics. Do not assume a generic GGUF conversion preserves these features.
-
-The package also includes an experimental Ollama `Modelfile`. Ollama 0.34.2+
-can attempt local Safetensors import with `ollama create --experimental`, but
-the current v84 generation-quality receipt is a failure on the validation host.
-Windows users still need the matching MLX CUDA runner and cuDNN runtime. The
-portable package does not patch or install third-party runtime binaries.
-
-GGUF is not a file-extension conversion. A valid GGUF release needs a tested
-llama.cpp or Ollama architecture adapter, tokenizer mapping, hybrid KV policy,
-and bundled lookup semantics. Until that adapter is verified, Hugging Face
-Safetensors is the canonical copy-paste format.
-
-## Known limits
-
-The base checkpoint config is 2M position-capable. The 4M probe uses a runtime RoPE
-extension and is not long-context training. Native 4M retrieval quality, throughput
-under production concurrency, and the full MiniMax matched-workflow acceptance suite
-remain open measurements. The current native fast-history profile is still
-experimental and opt-in.
-
-The standard Transformers path has verified architecture/configuration,
-tokenization, and full weight loading. Generation quality through plain
-Transformers is not yet a pass and is intentionally not claimed here. Use the
-bundled FreeToken profile for the current experimental generation path.
-
-Wrench has no direct mutation authority. It proposes bounded developer-tool actions
-or abstains; a surrounding verifier must enforce execution policy.
+The full source regression is `168 passed`. Final release still requires the
+human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
+Ti verification, and operational shadow evidence. Wrench has no direct
+mutation authority. It proposes bounded actions or abstains, and the
+surrounding verifier must enforce execution policy.

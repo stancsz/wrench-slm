@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.v90-current-package-direct-4m.v1",
+  "package_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-portable-v90-current-readme",
+  "raw_input_tokens": 3998332,
+  "round_trip_ms": 87.064,
+  "status": "accepted",
+  "backend": "embedded-mechanical",
+  "mechanical_fast_path": true,
+  "model_calls": 0,
+  "context_gate": {
+    "stage": "mechanical_fast_pruner_cherrypicker",
+    "raw_payload_hash_bound": true,
+    "native_input_claim": false
+  },
+  "proposal": {
+    "schema": "wrench.proposal.v1",
+    "action": "read_file",
+    "path": "wrench-package.json",
+    "max_bytes": 4096
+  },
+  "dense_native_quality_claim": false,
+  "production_enablement": false
+}
