@@ -1,0 +1,29 @@
+{
+  "schema": "wrench.remote-worker-liveness-boundary.v1",
+  "status": "NO_EXECUTION_EVIDENCE",
+  "challenge_nonce": "WR-268-LIVE-20260921-01",
+  "thread_id": "01a0b7cf-c778-7453-aca6-41b51d82b8f2",
+  "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+  "remote_cwd_reported": "C:\\Users\\stanc\\github\\wrench-slm",
+  "challenge": [
+    "echo nonce",
+    "git status --short",
+    "git rev-parse HEAD",
+    "nvidia-smi GPU identity and memory",
+    "Win32_OperatingSystem RAM snapshot"
+  ],
+  "observed": {
+    "turn_status": "completed",
+    "turn_duration_ms": 4359,
+    "thread_status_after": "idle",
+    "items": [],
+    "stdout": null,
+    "stderr": null,
+    "tool_calls": 0,
+    "nonce_echoed": false,
+    "gpu_identity": null,
+    "resource_snapshot": null
+  },
+  "independent_5060_claim": false,
+  "decision": "stop_remote_thread_prompts_until_a_fresh_authenticated_worker_session_or_operator_confirmed_dispatch_exists"
+}

@@ -2796,3 +2796,13 @@ GPU, latency, memory, and resource measurements explicitly unavailable. It
 never downloaded artifacts, ran the preflight, or claimed RTX 5060 Ti
 evidence. The full source regression is now `178 passed, 18 warnings`.
 Evidence: `phases/phase-268-luna-advisor`.
+
+2026-09-21 final bounded 5060 Ti liveness challenge: a nonce-bound,
+read-only challenge was sent to the existing remote thread using its actual
+reported checkout path. The turn completed in 4.359 seconds but returned an
+empty item list, with no nonce echo, stdout, stderr, tool call, GPU identity, or
+RAM/VRAM snapshot. Per the worker stop condition, this remote thread is now
+classified unavailable. No further prompts will be sent until a fresh
+authenticated worker session or operator-confirmed dispatch exists. This is
+not a 5060 Ti failure or performance result. Evidence:
+`phases/phase-268-luna-advisor/remote-liveness-receipt.json`.

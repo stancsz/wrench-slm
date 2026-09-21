@@ -38,3 +38,10 @@ nonce and exact command output, then stopping remote attempts if the worker
 times out, returns an unrelated acknowledgement, omits the nonce/output, or
 fails authentication. This phase does not authorize that external action.
 
+That final challenge was sent with nonce `WR-268-LIVE-20260921-01` and the
+correct remote checkout path. The remote thread completed in 4.359 seconds but
+returned an empty turn with no command output, tool call, nonce echo, GPU
+identity, or resource snapshot. The thread is now treated as unavailable and
+will not receive further prompts in this goal.
+
+Evidence: `remote-liveness-receipt.json`.
