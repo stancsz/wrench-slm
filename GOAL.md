@@ -2654,6 +2654,9 @@ settlement latency, and zero model calls. This is current-v97 local evidence
 on the RTX 5070 Ti, not current Claude Code routing, independent 5060 Ti
 evidence, learned MiniMax parity, dense-native decoder quality, or production
 authorization. The installed Claude CLI continued to use its first-party
-provider during bounded endpoint-injection diagnostics, so Claude current-v97
-remains `NOT_VERIFIED` and no further provider-spend attempts were made.
+provider during three bounded endpoint-injection diagnostics. The final
+isolated attempt logged `dispatching to firstParty model=wrench-v97`, returned
+first-party usage costing `$0.02156`, and left the Wrench trace empty. Claude
+current-v97 remains `NOT_VERIFIED`, and no further provider-spend attempts
+will be made.
 Evidence: `phases/phase-247-v97-claude-dsh`.

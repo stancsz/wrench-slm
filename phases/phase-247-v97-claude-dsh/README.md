@@ -22,11 +22,17 @@ limit. No repository file was edited.
 
 ## Claude Code boundary
 
-Two isolated attempts were deliberately not promoted. The CLI returned
-first-party `claude-sonnet-5` usage and a nonzero provider cost, while the
-v97 Wrench trace stayed empty. This means the local endpoint injection was not
-effective for this installed CLI configuration. No further Claude attempts
-were made. The older v94 Claude receipt remains historical evidence only.
+Three bounded isolated attempts were deliberately not promoted. The first two
+returned first-party `claude-sonnet-5` usage and a nonzero provider cost. A
+final `--bare` attempt with a fake local API key and the local endpoint still
+logged `dispatching to firstParty model=wrench-v97`; it returned first-party
+usage with `total_cost_usd=0.02156`, while the v97 Wrench trace stayed absent.
+This proves the local endpoint injection was not effective for this installed
+CLI configuration. No further Claude attempts will be made in this phase. The
+older v94 Claude receipt remains historical evidence only.
+
+The diagnostic log is retained at `claude-debug-v97.log` and contains no
+provider credential values.
 
 This phase is not independent RTX 5060 Ti evidence, learned MiniMax parity,
 dense-native decoder quality, or production authorization.

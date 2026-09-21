@@ -38,6 +38,15 @@
   "claude_code_v97": {
     "status": "NOT_VERIFIED",
     "reason": "installed CLI used first-party provider and emitted no Wrench trace",
+    "attempts": 3,
+    "latest_diagnostic": {
+      "mode": "bare_local_endpoint_fake_key",
+      "observed_dispatch": "firstParty",
+      "model": "wrench-v97",
+      "provider_cost_usd": 0.02156,
+      "wrench_trace_rows": 0,
+      "debug_log": "claude-debug-v97.log"
+    },
     "further_attempts": "stopped_to_avoid_provider_spend"
   },
   "claims_not_authorized": [
