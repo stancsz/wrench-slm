@@ -3250,3 +3250,42 @@ mechanical-worker workflow behavior, not learned MiniMax parity, dense-native
 enablement. Evidence:
 `phases/phase-327-current-head-220-replay-r2` and
 `phases/phase-327-current-head-220-replay.json`.
+
+2026-09-21 current-head held-out final slice rerun: the same `85ff83c`
+portable package was replayed against all 44 rows in the sealed
+`evals/wrench-expanded-v2/final.jsonl` diagnostic slice. Wrench completed
+`44/44` rows, including `24` eligible mechanical rows, with weighted final
+success `1.0`, weighted verifier success `1.0`, full weighted frontier-token
+coverage, `100%` net frontier-token savings, zero frontier tokens, `4,805`
+local tokens, p50/p95 latency `200.154/316.626 ms`, zero prohibited accepts,
+and zero unexpected mutations. This is current-head regression evidence only;
+the suite remains pending human approval. Evidence:
+`phases/phase-328-current-head-heldout-final-rerun` and
+`phases/phase-328-current-head-heldout-final.json`.
+
+2026-09-21 current-head model-local route and client integration: the exact
+`85ff83c` package accepted a complete `4,000,000`-token raw payload at its own
+endpoint, bound the payload hash, reduced the exact lookup to `19` effective
+working tokens, completed the first-layer gate in `28.232 ms`, and made zero
+model calls. OpenCode, DeepSeek Harness, and Claude Code all exited `0` and
+observed structured read results; the Claude first gate was `2.534 ms`. This
+proves current package wiring and hybrid raw intake, not dense-native 4M
+attention quality, learned MiniMax parity, independent 5060 Ti verification,
+or production enablement. Evidence:
+`phases/phase-329-current-head-package-4m-route.json`,
+`phases/phase-329-current-head-client-smoke`, and
+`phases/phase-329-current-head-client-integration.json`.
+
+2026-09-21 exact current-head package binding: the portable package was
+rematerialized from HEAD `bbc680f617884d5e658172a61461335e2368180a` as
+`D:\models\_wrench-release-candidate-bbc680f` and passed structural
+validation. The exact package then passed the model-local 4M route with
+`4,000,000` requested tokens in `27.693 ms`, plus OpenCode, DeepSeek Harness,
+and Claude Code read-only client smokes with exit `0`, structured reads, zero
+model calls, and no mutation claim. This closes the current package identity
+gap, but not standard Transformers full-weight compatibility, learned MiniMax
+parity, dense-native 4M quality, independent 5060 Ti verification, or
+production enablement. Evidence:
+`phases/phase-330-current-head-package-binding.md`,
+`phases/phase-330-current-head-package-binding.json`, and the referenced
+phase 330 receipts.

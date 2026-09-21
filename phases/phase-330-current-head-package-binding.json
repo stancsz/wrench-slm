@@ -1,0 +1,33 @@
+{
+  "phase": "phase-330-current-head-package-binding",
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "source_commit": "bbc680f617884d5e658172a61461335e2368180a",
+  "package_dir": "D:\\models\\_wrench-release-candidate-bbc680f",
+  "verified_parameters": 3881244016,
+  "hard_parameter_ceiling": 4250000000,
+  "package_validation": "phases/phase-330-current-head-package-binding-validation.json",
+  "four_million_route": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "requested_payload_tokens": 4000000,
+    "elapsed_ms": 27.693,
+    "model_calls": 0,
+    "receipt": "phases/phase-330-current-head-package-4m-route.json"
+  },
+  "clients": {
+    "opencode": {"exit_code": 0, "structured_read_observed": true},
+    "deepseek_harness": {"exit_code": 0, "structured_read_observed": true},
+    "claude_code": {"exit_code": 0, "structured_read_observed": true}
+  },
+  "model_calls": 0,
+  "mutation_claim": false,
+  "quality_claim": false,
+  "production_enablement": false,
+  "evidence": [
+    "phases/phase-330-current-head-package-binding.md",
+    "phases/phase-330-current-head-package-binding-validation.json",
+    "phases/phase-330-current-head-package-4m-route.json",
+    "phases/phase-330-current-head-client-smoke/receipt.json",
+    "phases/phase-330-current-head-client-smoke/wrench-client.trace.jsonl",
+    "phases/phase-330-current-head-client-smoke/claude.trace.jsonl"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "phase": "phase-328-current-head-heldout-final-rerun",
+  "status": "PASS_MECHANICAL_WORKER",
+  "source_commit": "85ff83c",
+  "package_dir": "D:\\models\\_wrench-release-candidate-85ff83c",
+  "cases_path": "evals/wrench-expanded-v2/final.jsonl",
+  "cases_sha256": "3e24ba47b78a99b1ef81bb8ea269e4377ca45097186812ce71aa99bb2c2f222b",
+  "teacher_capture": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-current-goal-20260921\\teacher-final-44-clean-candidate.json",
+  "trace_count": 44,
+  "mechanical_trace_count": 24,
+  "wrench_weighted_final_success_rate": 1.0,
+  "wrench_weighted_verifier_success_rate": 1.0,
+  "weighted_frontier_token_mass_coverage": 1.0,
+  "net_frontier_token_savings": 1.0,
+  "wrench_frontier_tokens": 0.0,
+  "wrench_local_tokens": 4805.0,
+  "wrench_median_latency_ms": 200.154,
+  "wrench_p95_latency_ms": 316.626,
+  "prohibited_accepts": 0,
+  "unexpected_mutations": 0,
+  "paired_final_success_difference_95_ci": [0.0, 0.11363636363636363],
+  "quality_claim": false,
+  "production_enablement": false,
+  "evidence": [
+    "phases/phase-328-current-head-heldout-final-rerun/evaluation.json",
+    "phases/phase-328-current-head-heldout-final-rerun/trace-manifest.json",
+    "phases/phase-328-current-head-heldout-final-rerun/README.md"
+  ]
+}
