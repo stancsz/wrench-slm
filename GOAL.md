@@ -2567,3 +2567,14 @@ integration evidence on the RTX 5070 Ti development host, not independent
 5060 Ti verification, learned MiniMax parity, dense-native 4M quality, or
 production release authorization. Evidence:
 `phases/phase-238-real-harness-integration`.
+
+2026-09-20 current-source 5060 Ti verification: the current source commit
+`1674ce0088e4956e17087eab7cf36bb672ab3a5a` was bound to a new independent
+preflight manifest and committed under
+`phases/phase-239-current-5060-preflight`. The existing Drive job remains a
+stale `31f85be` manifest in `pending`, so no 5060 Ti result is claimed yet. On
+the current host, a deterministic 4,484,713-token-equivalent stress receipt
+reduced the raw sequence to 58,539 model-prefill tokens: cold index ingestion
+was 137.134 ms and selection was 40.744 ms. This proves the bounded gate shape
+and exposes cold versus hot work, but it is not independent 5060 Ti evidence,
+dense-native attention quality, or MiniMax parity.
