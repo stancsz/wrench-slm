@@ -49,11 +49,16 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         rows = rows[: args.max_cases]
     if not rows:
         raise ValueError("cases file is empty")
-    tokenizer = AutoTokenizer.from_pretrained(args.model, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
     model = AutoModelForImageTextToText.from_pretrained(
         args.model,
         dtype=torch.bfloat16,
         local_files_only=True,
+        trust_remote_code=True,
     ).to("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     device = next(model.parameters()).device

@@ -72,11 +72,17 @@ def calibrate(args: argparse.Namespace) -> dict[str, Any]:
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
     model = AutoModelForImageTextToText.from_pretrained(
         args.model,
         dtype=torch.bfloat16,
         low_cpu_mem_usage=False,
+        trust_remote_code=True,
+        local_files_only=True,
     ).to(device)
     model.requires_grad_(False)
     rows = _read_cases(args.calibration)
