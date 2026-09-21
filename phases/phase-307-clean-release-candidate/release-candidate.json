@@ -1,0 +1,64 @@
+{
+  "schema": "wrench.portable-release-candidate.v1",
+  "status": "PASS_RELEASE_CANDIDATE_MANIFEST",
+  "publication_performed": false,
+  "package_dir": "D:\\models\\_wrench-release-candidate-20260921",
+  "package_candidate_identity": "Wrench-4B-Qwen3.6-8E-base",
+  "package_manifest_sha256": "d037dbccbeba4e7258466751952c409beac5104df1b556398f141b0c0b8894de",
+  "package_file_count": 20,
+  "package_bytes": 3423306231,
+  "parameter_count": 3881244016,
+  "parameter_ceiling": 4250000000,
+  "under_parameter_ceiling": true,
+  "context": {
+    "declared_input_context_tokens": 4000000,
+    "native_attention_context_tokens_target": 2000000,
+    "native_attention_context_tokens_verified": null,
+    "effective_working_context_tokens_default": 64000,
+    "hot_context_tokens_default": 48000,
+    "reference_card_tokens_default": 16000
+  },
+  "runtime": {
+    "bundled": true,
+    "verifier_is_bundled": true,
+    "embedded_mechanical_route": true,
+    "dynamic_staged_prefill": true,
+    "model_prefill_budget_tokens": 64000,
+    "context_gate": {
+      "stage": "first_model_side_pruner_cherrypicker",
+      "strategy": "mapreduce_dynamic_native",
+      "declared_raw_input_context_tokens": 4000000,
+      "raw_input_limit_enforced": true,
+      "over_limit_behavior": "HTTP_400_fail_closed",
+      "effective_working_context_tokens": 64000,
+      "dense_native_gate": "conditional_optional"
+    },
+    "entrypoint": "tokenization_wrench.py",
+    "server_entrypoint": "wrench_server.py",
+    "model_calls_for_mechanical_lookup": 0
+  },
+  "publication_target": {
+    "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview",
+    "public_upload_authorized": true,
+    "copy_paste_command": "hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview"
+  },
+  "source": {
+    "root": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-clean-775483c",
+    "commit": "e83a454f85be6881e989c9453291ef35d0b97429",
+    "dirty": false,
+    "dirty_policy": "must be clean before publication or independent cross-host promotion"
+  },
+  "evidence": {
+    "package_validation": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-307-clean-release-candidate\\validation.json",
+    "portable_clients": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-307-clean-release-candidate\\portable-client-acceptance.json",
+    "ollama_portable": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-307-clean-release-candidate\\ollama.json"
+  },
+  "claims_not_authorized": [
+    "HF upload or publication",
+    "independent RTX 5060 Ti current-source verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ],
+  "all_local_checks_pass": true
+}
