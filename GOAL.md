@@ -2772,3 +2772,16 @@ warnings`. Evidence: `phases/phase-266-paired-ci-re-score`, commit
 2026-09-21 current 5060 Ti queue recheck: the latest pinned package preflight
 manifest remains in Drive `jobs/pending`; `jobs/running` remains empty and no
 new completed 5060 Ti receipt exists. No independent 5060 Ti result is claimed.
+
+2026-09-21 isolated current Claude Code integration: with a fresh Claude
+configuration directory, loopback-only gateway settings, a local-only auth
+token, and an external proxy blocker, the installed Claude Code 2.1.251 CLI
+completed a real read-only `Read` operation through the current v103 Wrench
+Anthropic endpoint. Two `/v1/messages` requests were observed: a streaming
+`embedded-mechanical` proposal and an `embedded-mechanical-settlement`, both
+with `model_calls=0`. The request contained 249 estimated raw tokens and was
+compacted to 61 effective working tokens; the first-layer gate took 1.683 ms.
+This supersedes the earlier unisolated `NOT_VERIFIED` diagnostic for the
+current local Claude Code smoke path. It does not prove learned MiniMax parity,
+dense-native 4M decoder quality, production readiness, or 5060 Ti performance.
+Evidence: `phases/phase-267-claude-local-isolated`, commit `1a9fd36`.
