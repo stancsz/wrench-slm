@@ -2953,3 +2953,12 @@ latency to 7.566 seconds and p95 to 31.505 seconds. Neither learned variant
 meets the 90% or zero-safety-violation gates. The guided path stays diagnostic
 only; the embedded deterministic toolbelt remains the production lane.
 Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.
+
+2026-09-21 Claude Code local route: Claude Code 2.1.251 completed a real
+read-only `Read README.md` operation through the local Anthropic Messages
+endpoint. The bound Wrench trace contains an accepted `embedded-mechanical`
+request in 8.468 ms with zero model calls, followed by a 0.026 ms tool
+settlement. The client also emitted an `unrecognized_model` diagnostic for
+`MiniMax-M2.7`, which is retained as a warning, but the local trace proves the
+request did not fall through to a first-party provider. Evidence:
+`phases/phase-283-claude-code-local-route`.

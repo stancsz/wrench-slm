@@ -282,3 +282,16 @@ do not meet the production gates. Guided decoding remains a diagnostic option
 in the HF evaluator, not a portable-package default.
 
 Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.
+
+## Claude Code local smoke
+
+Claude Code 2.1.251 was run in print mode with an isolated config and an
+external-traffic blocker. A real `Read README.md` tool loop reached the local
+Anthropic Messages route. The Wrench trace records an accepted deterministic
+request in 8.468 ms, zero model calls, and a subsequent 0.026 ms settlement.
+The CLI printed an `unrecognized_model` warning for `MiniMax-M2.7`, so the
+client warning remains part of the evidence, but the trace-bound local route
+is verified. This is integration evidence only, not learned-model quality or
+provider parity.
+
+Evidence: `phases/phase-283-claude-code-local-route`.
