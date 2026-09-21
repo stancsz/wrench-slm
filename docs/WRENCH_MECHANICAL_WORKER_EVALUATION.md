@@ -106,6 +106,16 @@ These are direct package intake and deterministic retrieval results. The
 receipt explicitly keeps `native_input_claim=false`, so they do not establish
 dense full-attention 4M decoder quality.
 
+The current NVFP4 runtime was also tested with a real ambiguous decoder call.
+The 4M request reached the package-local endpoint, staged 1,991 model-prefill
+tokens after a 159.6 ms gate, made one native-upstream model call, and returned
+HTTP 200 in 2,017.855 ms. Its assistant content was malformed
+(`{"n}{"1}{"1}{"1}{"1}`). A 65,536-token control reproduced the same class of
+malformed output (`{"n}{"n}`) with a 3.488 ms gate and 1,024.030 ms total
+latency. This shows a native decoder/protocol quality gap independent of 4M
+context pressure. The learned/native lane remains fail-closed and is not a
+quality pass. Evidence: `phases/phase-279-current-v103-real-generation-gap`.
+
 The connected 5060TI host also produced a partial independent receipt for its
 older Experimental Preview package: a direct model-local 4M probe passed in
 570.417 ms with 31,997,963 raw characters, and its six-case 2M/4M retrieval

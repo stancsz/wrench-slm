@@ -2907,6 +2907,14 @@ covering 2M and 4M payloads with needles at 1%, 50%, and 99% offsets. This is
 direct package intake and retrieval evidence, not a dense full-attention 4M
 decoder claim. Evidence: `phases/phase-277-current-v103-4m-retrieval`.
 
+2026-09-21 real decoder control: the current NVFP4 package accepted a direct
+4M ambiguous request, staged 1,991 model-prefill tokens after a 159.6 ms gate,
+and made one actual native model call in 2,017.855 ms, but returned malformed
+JSON-like text. A 65,536-token control reproduced the same malformed-output
+class, proving that this is not only 4M context pressure. The native learned
+lane therefore remains fail-closed and is not a MiniMax-quality pass. Evidence:
+`phases/phase-279-current-v103-real-generation-gap`.
+
 2026-09-21 5060 Ti partial direct-context evidence: the connected
 `DESKTOP-KET1SKP` host executed a real package-local 4M probe with 31,997,963
 raw characters in 570.417 ms and passed the six-case 2M/4M retrieval probe
