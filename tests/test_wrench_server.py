@@ -53,6 +53,39 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         thread.join(timeout=5)
 
 
+def test_model_local_server_can_force_model_only_diagnostic(tmp_path: Path):
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-model-only-test",
+        max_request_bytes=4 * 1024 * 1024,
+        use_mechanical_route=False,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-model-only-test",
+            "messages": [{"role": "user", "content": "Read README.md with a 4096 byte limit."}],
+            "max_tokens": 64,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = json.loads(response.read().decode("utf-8"))
+        assert body["wrench"]["fallback_reason"] == "model_not_loaded"
+        assert body["wrench"]["mechanical_fast_path"] is False
+        assert body["wrench"]["backend"] != "embedded-mechanical"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def test_model_local_server_streams_embedded_read_as_openai_sse(tmp_path: Path):
     server = WrenchHTTPServer(
         ("127.0.0.1", 0),

@@ -1019,8 +1019,12 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             if raw_tokens > MAX_INPUT_CONTEXT_TOKENS:
                 raise ValueError("input_context_exceeds_4000000_token_limit")
             started = time.perf_counter()
-            title_result = _deterministic_title_result(messages)
-            settlement = None if title_result is not None else _tool_settlement_result(messages)
+            title_result = _deterministic_title_result(messages) if server.use_mechanical_route else None
+            settlement = (
+                None
+                if title_result is not None or not server.use_mechanical_route
+                else _tool_settlement_result(messages)
+            )
             if title_result is not None:
                 result = title_result
             elif settlement is not None:
@@ -1030,7 +1034,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     result = server.worker.propose(
                         messages,
                         max_tokens=int(request.get("max_tokens", 256)),
-                        use_mechanical_route=True,
+                        use_mechanical_route=server.use_mechanical_route,
                     )
                     if server.upstream_url and not result.get("mechanical_fast_path", False):
                         # The downloaded package accepts the complete raw request,
@@ -1228,6 +1232,7 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         upstream_url: str | None = None,
         upstream_timeout_seconds: float = 600.0,
         trace_log: Path | None = None,
+        use_mechanical_route: bool = True,
     ) -> None:
         super().__init__(address, WrenchRequestHandler)
         self.worker = worker
@@ -1235,6 +1240,7 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         self.max_request_bytes = max_request_bytes
         self.upstream_url = upstream_url
         self.upstream_timeout_seconds = upstream_timeout_seconds
+        self.use_mechanical_route = use_mechanical_route
         self.worker_lock = threading.Lock()
         self.trace_log = trace_log.resolve() if trace_log is not None else None
         self.trace_lock = threading.Lock()
@@ -1263,6 +1269,7 @@ def serve(
     upstream_timeout_seconds: float = 600.0,
     prefill_cache_bytes: int | None = None,
     trace_log: Path | None = None,
+    use_mechanical_route: bool = True,
 ) -> None:
     worker = WrenchWorker.from_pretrained(
         model_dir,
@@ -1278,6 +1285,7 @@ def serve(
         upstream_url=upstream_url,
         upstream_timeout_seconds=upstream_timeout_seconds,
         trace_log=trace_log,
+        use_mechanical_route=use_mechanical_route,
     )
     print(json.dumps({"status": "READY", "host": host, "port": server.server_port, "model": model_name}))
     try:
@@ -1309,6 +1317,11 @@ def main() -> int:
         default=None,
         help="append metadata-only request observations as JSONL",
     )
+    parser.add_argument(
+        "--disable-mechanical-route",
+        action="store_true",
+        help="diagnostic only: force requests through the loaded model instead of the embedded toolbelt",
+    )
     args = parser.parse_args()
     serve(
         args.model_dir.resolve(),
@@ -1322,6 +1335,7 @@ def main() -> int:
         upstream_timeout_seconds=args.upstream_timeout_seconds,
         prefill_cache_bytes=args.prefill_cache_bytes,
         trace_log=args.trace_log,
+        use_mechanical_route=not args.disable_mechanical_route,
     )
     return 0
 

@@ -67,6 +67,16 @@ accepts, zero transport/runtime abstentions, zero model calls, 2.516 ms median
 latency, and 108.383 ms p95 latency. No matching teacher capture was present,
 so this remains `DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`, not a parity result.
 
+The model-only control is now explicit. The local server accepts the
+diagnostic-only `--disable-mechanical-route` switch, while the default package
+path keeps the embedded route enabled. A 3.88B BF16 v7 candidate with a
+rank-16 head-only LoRA trained on the 132-row calibration split was evaluated
+on the unseen 44-row development split with the route disabled. It achieved
+18/44 correct outcomes, 4/44 exact proposals, 4/24 exact eligible accepts,
+one prohibited accept, ten transport/runtime abstentions, 4.570 s median, and
+10.683 s p95. This is a model-only diagnostic failure, not evidence against
+the embedded toolbelt result. Evidence: `phases/phase-275-head-only-model-only-diagnostic`.
+
 ## North Star
 
 Wrench is successful when it behaves like a specialized local MiniMax worker

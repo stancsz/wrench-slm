@@ -2872,3 +2872,15 @@ No matching teacher capture was available, so the result remains
 `DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`; it is not teacher parity or the 90%
 weighted gate. Evidence remains in the external worker audit and the phase 274
 receipt.
+
+2026-09-21 model-only control: the server gained a diagnostic-only
+`--disable-mechanical-route` switch, leaving the default embedded toolbelt
+unchanged. A frozen-backbone rank-16 head-only LoRA trained on the 132-row v2
+calibration split reached final loss `0.00406`, then ran against the unseen
+44-row development split with the route disabled. It achieved 18/44 correct
+outcomes, 4/44 exact proposals, 4/24 exact eligible accepts, one prohibited
+accept, ten transport/runtime abstentions, 37 model calls, 4.570 s median, and
+10.683 s p95 latency. This fails the 90% worker and zero-safety-violation
+requirements. The evidence confirms that current mechanical-worker utility is
+coming from the embedded toolbelt plus verifier, not this LoRA alone. Evidence:
+`phases/phase-275-head-only-model-only-diagnostic`.
