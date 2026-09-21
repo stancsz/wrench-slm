@@ -1,0 +1,92 @@
+{
+  "schema": "wrench.portable-model-package-validation.v1",
+  "model_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "errors": [],
+  "config_max_position_embeddings": 4000000,
+  "safetensors_shard_count": 2,
+  "file_hashes": {
+    "config.json": {
+      "bytes": 14167,
+      "sha256": "3bfae2046275c0488890c5b1470abbb8c5b1fab699fc924b036ff2aee067f986"
+    },
+    "tokenizer.json": {
+      "bytes": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    "tokenizer_config.json": {
+      "bytes": 1270,
+      "sha256": "4ea568e1962e9162b087779b0bd72da9539f43b7f4a98aea0fd1feab9bd34eaa"
+    },
+    "tokenization_wrench.py": {
+      "bytes": 3945,
+      "sha256": "0a9acab101fd47dffa0a4bff59ae6597293fcc0dcb4f6d0b8d5e81b63f0dcdb7"
+    },
+    "wrench_prefill.py": {
+      "bytes": 44138,
+      "sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428"
+    },
+    "wrench_mechanical.py": {
+      "bytes": 31526,
+      "sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8"
+    },
+    "wrench_toolbelt.py": {
+      "bytes": 129,
+      "sha256": "d32890c50ae109435d90d01898d43ab67ce8bbf9e663d68b07240af9eae98217"
+    },
+    "toolbelt.py": {
+      "bytes": 15829,
+      "sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb"
+    },
+    "core.py": {
+      "bytes": 23060,
+      "sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7"
+    },
+    "wrench_runtime/prefill.py": {
+      "bytes": 44138,
+      "sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428"
+    },
+    "wrench_runtime/toolbelt.py": {
+      "bytes": 15829,
+      "sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb"
+    },
+    "wrench_runtime/core.py": {
+      "bytes": 23060,
+      "sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7"
+    },
+    "wrench_runtime/mechanical.py": {
+      "bytes": 31526,
+      "sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8"
+    },
+    "wrench_runtime/patching.py": {
+      "bytes": 3629,
+      "sha256": "5afb996c03a0c0338f2b5ca465a4299e8080594af214fa75b6fc57ced929845e"
+    },
+    "wrench_runtime/worker.py": {
+      "bytes": 20164,
+      "sha256": "5a6b8f5832915ddc117f8ace194a6701417b07486df7d23cf43b8953f871c55c"
+    },
+    "wrench_worker.py": {
+      "bytes": 137,
+      "sha256": "27f77e545710f734e22ec3641f8df6136e5baf0e93ce0335a822b2784f39332d"
+    },
+    "Modelfile": {
+      "bytes": 206,
+      "sha256": "5e17c63acb03ed88bc25821b6a5eba288dcc575414f1e681420264d5691e9ed9"
+    },
+    "model-00001-of-00002.safetensors": {
+      "bytes": 2385916912,
+      "sha256": "de471ea7ce455a027232f33a59ac0b051739daf9cdffd4bd5cc6e220d2e8e42e"
+    },
+    "model-00002-of-00002.safetensors": {
+      "bytes": 1017118848,
+      "sha256": "8cecb339791dedbe1b4926b351003f1723670f8442ab670148d3b533d6fff2f7"
+    },
+    "wrench-package.json": {
+      "bytes": 2299,
+      "sha256": "28455a60bd57f965467a9c17a5092ae870d9f8e2f1c054eef132edb87fb1d09b"
+    }
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "wrench.huggingface-package-mechanical-smoke.v1",
+  "model_dir": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli",
+  "proposal_status": "accepted",
+  "result": {
+    "status": "accepted",
+    "action": "read_file",
+    "observation": {
+      "path": "D:\\models\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v103-ollama-cli\\generation_config.json",
+      "bytes": 214,
+      "text": "{\n  \"bos_token_id\": 248044,\n  \"do_sample\": true,\n  \"eos_token_id\": [\n    248046,\n    248044\n  ],\n  \"pad_token_id\": 248044,\n  \"temperature\": 1.0,\n  \"top_k\": 20,\n  \"top_p\": 0.95,\n  \"transformers_version\": \"5.16.1\"\n}\n"
+    },
+    "model_output_validated": true,
+    "ttc": {
+      "schema": "wrench.test-time-compute-receipt.v1",
+      "profile": "fast",
+      "max_model_passes": 1,
+      "passes_requested": [
+        "schema",
+        "authority",
+        "evidence",
+        "consistency"
+      ],
+      "checks": {
+        "schema": true,
+        "authority": true,
+        "evidence": true,
+        "consistency": true,
+        "blind_critic": true,
+        "final_gate": true
+      },
+      "failed_checks": [],
+      "early_exit": true,
+      "passed": true,
+      "base_verifier": {
+        "schema": "wrench.multi-pass-verifier.v1",
+        "passed": true,
+        "passes": [
+          {
+            "name": "schema",
+            "passed": true
+          },
+          {
+            "name": "authority",
+            "passed": true
+          },
+          {
+            "name": "evidence",
+            "passed": true
+          },
+          {
+            "name": "consistency",
+            "passed": true
+          }
+        ],
+        "proposal_sha256": "6f3846c11ded2b3945dfffd92a0a84e96e654899ec5fc57a7090cc9d797c4783",
+        "execution_status": "accepted"
+      }
+    },
+    "backend": "embedded-mechanical",
+    "mechanical_fast_path": true,
+    "raw_model_output": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"generation_config.json\",\"max_bytes\":512}",
+    "context_gate": {
+      "schema": "wrench.first-layer-context-gate.v1",
+      "stage": "mechanical_fast_pruner_cherrypicker",
+      "strategy": "latest_intent_plus_exact_lookup",
+      "raw_context_limit_tokens": 4000000,
+      "raw_input_tokens": 7,
+      "effective_working_context_tokens": 7,
+      "working_context_budget_tokens": 64000,
+      "selected_hot_spans": 1,
+      "selected_reference_spans": 0,
+      "omitted_reference_spans": 0,
+      "route_source": "latest_intent",
+      "raw_payload_sha256": "084f90a203693def147e1f6db8ad03d29371ae21686bb297eddf399761353bfa",
+      "raw_payload_hash_bound": true,
+      "native_input_claim": false,
+      "gate_latency_ms": 1.826,
+      "reference_scan_tokens": 7
+    }
+  },
+  "runtime_identity": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "status": "PASS_HF_PACKAGE_MECHANICAL_SMOKE",
+  "quality_claim": false,
+  "native_attention_claim": false
+}

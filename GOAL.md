@@ -2727,3 +2727,11 @@ The pending 5060 Ti manifest was refreshed to source commit `6d25fc8` and the
 same pinned Hub revision. It is now visibly present in Drive `jobs/pending` as
 file `1V0AcZ-EQ_lRDB-aaJYVwRNMxMVkpNFAW`, but the worker has not consumed it
 after the bounded observation window. No remote result is claimed.
+
+2026-09-21 v103 package validation: the current NVFP4 Hugging Face package
+passed structural validation with declared `4,000,000` context capacity and
+two Safetensors shards. Its embedded mechanical smoke passed a validated
+`read_file` proposal with all multi-pass verifier checks true and a
+`1.826 ms` first-layer gate. This is local package evidence, not independent
+5060 Ti verification or native dense attention quality. Evidence:
+`phases/phase-258-v103-package-validation`.
