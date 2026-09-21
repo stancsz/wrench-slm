@@ -49,6 +49,10 @@ Wrench/
   wrench_worker.py                     # convenience import
   wrench-runtime.json                 # fast/native mode contract
   serve_freetoken.ps1                 # native 4M experimental launcher
+  run_claude_code.ps1                 # isolated local Claude Code launcher
+  wrench_loopback_blocker.py          # fail-closed external proxy guard
+  opencode.wrench.json                # OpenCode local provider template
+  dsh-wrench.patch.yml                # DeepSeek Harness local overlay
   wrench-package.json
   README.md
   LICENSE
@@ -67,6 +71,11 @@ On Windows, the downloaded directory can be started with one command:
 This starts the bounded mechanical endpoint on `http://127.0.0.1:28900`.
 Pass `-LoadModel` only when the local Transformers backend is configured and
 you want ambiguous requests to load the checkpoint.
+
+The same downloaded directory includes client configuration templates for
+OpenCode and DeepSeek Harness, plus an isolated Claude Code launcher. These
+templates point at the package-local endpoint and are not an additional Wrench
+harness installation.
 
 The package-local server also exposes a small Ollama-compatible surface at
 `/api/tags`, `/api/show`, `/api/chat`, and `/api/generate`. The `/api/chat`
@@ -275,6 +284,136 @@ The current experimental profile declares 4M endpoint input, targets 2M native
 model input, and uses a 64K effective working context. The package is not
 allowed to advertise native 1M or 2M until a reducer-bypassed probe records
 exact model-side prompt tokens and no truncation.
+
+## Verification tasks after download
+
+Run these tasks against the exact downloaded directory and record each result
+as a receipt. A successful HTTP response, a model name, or a client process
+that starts is not sufficient evidence by itself.
+
+### Task 1: package integrity and authority boundary
+
+From the Wrench source repository, validate the exact package directory:
+
+```powershell
+python tools/validate_wrench_package.py `
+  --model-dir C:\path\to\Wrench `
+  --output phases\local-package-validation.json
+```
+
+The receipt must bind the package revision, every Safetensors shard, tokenizer,
+runtime file, parameter count, and package hash. Confirm all of the following:
+
+- verified parameters are below `4,250,000,000`;
+- `release_status` remains `EXPERIMENTAL_PUBLIC_ARTIFACT`;
+- the server accepts only bounded proposals or abstentions;
+- no arbitrary shell, credential access, or autonomous mutation path exists;
+- the allowed root is explicit and the verifier remains enabled.
+
+### Task 2: direct model-local 4M intake
+
+Start the downloaded package and run the 4M raw-payload probe:
+
+```powershell
+python tools/probe_public_package_4m_route.py `
+  --package-dir C:\path\to\Wrench `
+  --allowed-root C:\path\to\repo `
+  --payload-tokens 4000000 `
+  --output phases\local-package-4m.json
+```
+
+The receipt must show that the package endpoint itself received the complete
+raw payload, bound its hash, stayed within the 4M limit, selected a bounded
+working context, and returned a verifier-bound result. Record raw estimated
+tokens, effective working tokens, gate latency, request bytes, cache hits, and
+model calls separately. Do not relabel a gateway-side truncation as model-local
+4M support.
+
+### Task 3: lookup and retrieval quality
+
+Run the package retrieval probe:
+
+```powershell
+python tools/probe_package_retrieval_quality.py `
+  --package-dir C:\path\to\Wrench `
+  --output phases\local-package-retrieval.json
+```
+
+The receipt must include current-intent preservation, exact old-reference
+lookup, selected evidence windows, omitted spans, payload hash, and abstention
+results for missing or ambiguous references. A fast reduction without target
+recall is not a retrieval pass.
+
+### Task 4: complete mechanical-worker replay
+
+Run all 220 cases, not only the 28-case smoke subset:
+
+```powershell
+python tools/run_package_220_replay.py `
+  --package-dir C:\path\to\Wrench `
+  --cases evals\wrench-expanded-v2\cases.jsonl `
+  --teacher-traces phases\phase-261-v103-220-replay\trace-manifest.json `
+  --root C:\path\to\repo `
+  --output-dir phases\local-220-replay
+```
+
+The acceptance receipt must report all three matched arms, weighted final
+success, verifier success, eligible-task coverage, net frontier-token savings,
+fallback count and tokens, median and p95 latency, prohibited accepts, and
+unexpected mutations. The target is at least 90% weighted mechanical coverage,
+at least 95% net frontier-token savings, no material final-success regression,
+and zero prohibited accepts. The 220-case result remains diagnostic until the
+trace set is approved and independently reproduced.
+
+### Task 5: real client work
+
+With `run_wrench.ps1` running from the downloaded directory, perform one
+read-only task through each client and retain the client log plus Wrench trace:
+
+```powershell
+# OpenCode: copy opencode.wrench.json to opencode.json in the test project
+opencode run --pure -m wrench/wrench-local "Read README.md and report its first heading."
+
+# DeepSeek Harness
+$env:WRENCH_LOCAL_API_KEY = "wrench-local"
+dsh --profile headless --patch .\dsh-wrench.patch.yml "Read README.md and report its first heading."
+
+# Claude Code
+.\run_claude_code.ps1 -Print -Prompt "Read README.md and report its first heading."
+```
+
+Each client receipt must prove a structured read tool call, client-side tool
+execution, one bounded settlement, zero unintended mutation, and the expected
+Wrench protocol trace. Keep OpenCode and DeepSeek Harness configs isolated per
+test. The Claude launcher must retain the local-only auth token and external
+proxy blocker evidence.
+
+### Task 6: independent RTX 5060 Ti worker
+
+Run Tasks 1 through 5 on the separate RTX 5060 Ti worker, using a fresh
+authenticated worker session and the exact package revision under test. The
+worker receipt must include hostname, GPU name and VRAM, source commit, package
+hash, raw and effective context measurements, 220-case metrics, client smoke
+results, and timestamps. Keep at least 10% of host RAM and VRAM free during
+every run. A connected remote-control device without terminal stdout, GPU
+identity, and a nonce-bound receipt is not an independent worker result.
+
+### Task 7: optional dense-native gate
+
+If dense native mode is enabled, repeat the 4M probe with the first-layer
+pruner and cherrypicker active, then run a reducer-bypassed comparison. The
+first layer must inspect the complete raw input and record compaction to the
+32K to 64K working range, selected spans, omitted spans, and raw payload hash.
+Report staged and reducer-bypassed quality separately. Never use the fast
+staged result as evidence for dense native attention quality.
+
+### Receipt decision
+
+Use `PASS` only when the required task receipts are present and their scope
+matches the claim. Use `DIAGNOSTIC_ONLY` for historical fixtures, local stubs,
+or single-client smoke tests. Use `NO-GO` for any missing receipt, prohibited
+accept, unexpected mutation, failed authority bound, missing 10% memory or
+VRAM reserve, or unverified native-context claim.
 
 ## Release checklist
 

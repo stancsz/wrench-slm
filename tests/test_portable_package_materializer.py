@@ -60,6 +60,8 @@ def test_materializer_is_available_and_does_not_overwrite_by_contract():
     assert "serve_freetoken.ps1" in script
     assert "run_claude_code.ps1" in script
     assert "wrench_loopback_blocker.py" in script
+    assert "opencode.wrench.json" in script
+    assert "dsh-wrench.patch.yml" in script
     assert "wrench_toolbelt.py" in script
     assert "runtime_dir / \"toolbelt.py\"" in script
     assert 'tokenizer_config["model_max_length"] = 4_000_000' in script
@@ -134,6 +136,17 @@ def test_materializer_receipt_lists_claude_files():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert '"wrench_loopback_blocker.py"' in script
     assert '"run_claude_code.ps1"' in script
+
+
+def test_portable_client_configs_declare_model_local_four_million_context():
+    opencode = Path("packaging/opencode.wrench.json").read_text(encoding="utf-8")
+    dsh = Path("packaging/dsh-wrench.patch.yml").read_text(encoding="utf-8")
+    assert '"baseURL": "http://127.0.0.1:28900/v1"' in opencode
+    assert '"context": 4000000' in opencode
+    assert 'baseURL: http://127.0.0.1:28900/v1' in dsh
+    assert "contextWindow: 4000000" in dsh
+    assert "wrench-local" in opencode
+    assert "wrench-local" in dsh
 
 
 def test_materializer_keeps_toolbelt_distinct_from_verifier():

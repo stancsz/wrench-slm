@@ -107,6 +107,8 @@ def materialize(
         shutil.copy2(repo_root / "wrench_server.py", target / "wrench_server.py")
         shutil.copy2(repo_root / "runtime" / "wrench_model_package" / "tokenization_wrench.py", target / "tokenization_wrench.py")
         shutil.copy2(repo_root / "packaging" / "wrench_loopback_blocker.py", target / "wrench_loopback_blocker.py")
+        shutil.copy2(repo_root / "packaging" / "opencode.wrench.json", target / "opencode.wrench.json")
+        shutil.copy2(repo_root / "packaging" / "dsh-wrench.patch.yml", target / "dsh-wrench.patch.yml")
         (runtime_dir / "__init__.py").write_text(
             "\"\"\"Bundled Wrench deterministic runtime.\"\"\"\n"
             "from .worker import WrenchWorker\n\n"
@@ -506,6 +508,8 @@ def materialize(
                 "wrench_loopback_blocker.py",
                 "run_wrench.ps1",
                 "run_claude_code.ps1",
+                "opencode.wrench.json",
+                "dsh-wrench.patch.yml",
                 "wrench_runtime/sitecustomize.py",
                 "wrench_runtime/server.py",
                 "wrench-runtime.json",

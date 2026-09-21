@@ -65,6 +65,33 @@ This is a local integration path, not a claim of Claude model ownership,
 MiniMax parity, or production readiness. Wrench remains bounded by its own
 verifier and has no direct mutation authority.
 
+## Connect OpenCode and DeepSeek Harness
+
+Start the package server in one terminal:
+
+```powershell
+.\run_wrench.ps1
+```
+
+In the project directory, copy `opencode.wrench.json` to the client config
+name `opencode.json`, then run:
+
+```powershell
+opencode run --pure -m wrench/wrench-local "Read README.md and report its first heading."
+```
+
+For DeepSeek Harness, set the local-only key and apply the bundled overlay:
+
+```powershell
+$env:WRENCH_LOCAL_API_KEY = "wrench-local"
+dsh --profile headless --patch .\dsh-wrench.patch.yml "Read README.md and report its first heading."
+```
+
+Both configs declare the package's 4,000,000-token raw input surface. The
+Wrench server receives the complete request and applies its deterministic
+first-layer reducer. The client integrations are local smoke paths and do not
+claim dense native attention quality or production readiness.
+
 ## What the 4M claim means
 
 The production-value path is hybrid and model-local:
