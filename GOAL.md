@@ -3215,3 +3215,10 @@ the model-local 2M/4M raw-input contract, but production mechanical work must
 use deterministic MapReduce and the first-layer pruner to reduce expensive
 attention to 32K to 64K. Evidence:
 `phases/phase-323-current-head-native-direct-2m`.
+
+2026-09-21 direct-probe package binding: after commit `9cc0c68`, the portable
+candidate `D:\models\_wrench-release-candidate-9cc0c68` was rematerialized and
+passed structural validation. It bundles the direct raw-token probe and the
+resource-safe cleanup fix. This is the package bound for the next 4M or
+independent RTX 5060 Ti run. Evidence:
+`phases/phase-324-current-head-package-binding`.
