@@ -905,8 +905,12 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                             "model": server.model_name,
                             "modified_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                             "size": 0,
+                            "digest": "sha256:" + ("0" * 64),
                             "details": {
+                                "parent_model": "",
+                                "format": "safetensors",
                                 "family": "wrench",
+                                "families": ["wrench"],
                                 "parameter_size": "3.88B",
                                 "quantization_level": "NVFP4-W4A16",
                             },

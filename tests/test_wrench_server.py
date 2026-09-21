@@ -265,6 +265,8 @@ def test_model_local_server_exposes_ollama_compatible_routes(tmp_path: Path):
                 assert body["wrench_api"] == "ollama-compatible"
             elif path == "/api/tags":
                 assert body["models"][0]["name"] == "wrench-test"
+                assert body["models"][0]["digest"].startswith("sha256:")
+                assert body["models"][0]["details"]["families"] == ["wrench"]
             else:
                 assert body["details"]["context_length"] == 4_000_000
 
