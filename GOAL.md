@@ -2704,3 +2704,12 @@ The upstream was a local protocol stub, so this proves direct package intake
 and bounded handoff, not dense-native decoder quality, retrieval quality, or
 production enablement. Evidence:
 `phases/phase-254-v102-package-4m-handoff`.
+
+2026-09-21 Hugging Face model-card revalidation: all five model repositories
+listed under `stancsz` retain the `-Experimental-Preview` suffix. Each README
+was refreshed with the same explicit non-production warning and an
+`Experimental Preview` title marker. The five remote commits and a fresh API
+plus README verification are recorded in
+`phases/phase-256-hf-experimental-preview/publication-receipt.json`.
+This changes publication labeling only. It does not promote the model to
+production and does not replace the missing independent 5060 Ti receipt.

@@ -1,0 +1,47 @@
+{
+  "schema": "wrench.huggingface.experimental-preview-publication.v1",
+  "created_at": "2026-09-21",
+  "namespace": "stancsz",
+  "scope": "all model repositories returned by the authenticated Hugging Face account listing",
+  "policy": {
+    "repository_name_suffix": "-Experimental-Preview",
+    "model_card_warning": "Experimental Preview. Not for production use.",
+    "weights_changed": false,
+    "runtime_changed": false
+  },
+  "verification": {
+    "model_count": 5,
+    "repository_names_all_end_with_suffix": true,
+    "readme_warning_present_in_all": true,
+    "readme_title_marks_experimental_preview_in_all": true,
+    "verified_with": "huggingface_hub.HfApi.model_info plus README download",
+    "result": "PASS"
+  },
+  "repositories": [
+    {
+      "id": "stancsz/wrench-pro-v21-Experimental-Preview",
+      "visibility": "private",
+      "commit": "014451deb4bce56863377562add5f547faee9025"
+    },
+    {
+      "id": "stancsz/Wrench-4B-Qwen3.6-8E-Experimental-Preview",
+      "visibility": "public",
+      "commit": "b859135bad8b9a968e58d191a3472427da27f1d4"
+    },
+    {
+      "id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+      "visibility": "public",
+      "commit": "0aedb2cbddfe0c84f521302a7b4940a6391a7bc7"
+    },
+    {
+      "id": "stancsz/Wrench-4B-Qwen3.6-8E-BF16-hybrid-v97-dense-native-gate-Experimental-Preview",
+      "visibility": "public",
+      "commit": "372a4526cdbfe9d2a4c832396fda289ca5366561"
+    },
+    {
+      "id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview",
+      "visibility": "public",
+      "commit": "9c6303c2c17a3798a134388c7e544728b22bd481"
+    }
+  ]
+}
