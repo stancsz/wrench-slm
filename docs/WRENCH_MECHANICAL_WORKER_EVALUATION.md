@@ -93,6 +93,29 @@ approval, the teacher capture itself contains two prohibited accepts, and the
 run does not establish learned MiniMax parity, native dense 4M decoder quality,
 or independent RTX 5060 Ti performance.
 
+The same current v103 package also passed a fresh direct 4M intake probe. The
+model-local endpoint received 4,000,000 nominal tokens and 35,199,491 raw
+characters, completed in 29.827 ms, bound the raw payload hash, and compacted
+the request through its internal first-layer gate to a 19-token effective
+working context. The gate latency was 29.145 ms and model calls were zero. A
+separate retrieval probe passed all six cases spanning 2M and 4M payloads with
+needles at 1%, 50%, and 99% offsets. Its case latencies ranged from 16.442 ms
+to 40.012 ms. Evidence: `phases/phase-277-current-v103-4m-retrieval`.
+
+These are direct package intake and deterministic retrieval results. The
+receipt explicitly keeps `native_input_claim=false`, so they do not establish
+dense full-attention 4M decoder quality.
+
+The connected 5060TI host also produced a partial independent receipt for its
+older Experimental Preview package: a direct model-local 4M probe passed in
+570.417 ms with 31,997,963 raw characters, and its six-case 2M/4M retrieval
+probe passed with zero model calls. However, that worker reported
+`origin/main=aaf0c79`, which is behind the current `2d52a19`, and it did not
+produce a current 220-case receipt or nonce-bound final summary. This evidence
+therefore remains partial and stale relative to the current package. It is
+recorded separately in `phases/phase-278-5060ti-direct-4m-partial` and is not
+merged into the local 5070Ti benchmark.
+
 ## North Star
 
 Wrench is successful when it behaves like a specialized local MiniMax worker

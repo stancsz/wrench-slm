@@ -2896,3 +2896,22 @@ token position limit. This remains diagnostic only because the suite is draft,
 the teacher capture contains two prohibited accepts, and native dense 4M
 decoder quality and independent 5060 Ti performance remain unverified.
 Evidence: `phases/phase-276-current-v103-v2-replay`.
+
+2026-09-21 current v103 direct long-context probe: the model-local package
+accepted a nominal 4,000,000-token payload containing 35,199,491 raw
+characters, bound its raw payload hash, and completed the internal first-layer
+MapReduce/pruner/cherrypicker route in 29.827 ms. It selected current intent and
+an exact old-reference span, reduced the effective working context to 19
+tokens, and used zero model calls. A separate retrieval probe passed six cases
+covering 2M and 4M payloads with needles at 1%, 50%, and 99% offsets. This is
+direct package intake and retrieval evidence, not a dense full-attention 4M
+decoder claim. Evidence: `phases/phase-277-current-v103-4m-retrieval`.
+
+2026-09-21 5060 Ti partial direct-context evidence: the connected
+`DESKTOP-KET1SKP` host executed a real package-local 4M probe with 31,997,963
+raw characters in 570.417 ms and passed the six-case 2M/4M retrieval probe
+with zero model calls while preserving the 10% RAM and VRAM reserve. The
+worker's reported `origin/main=aaf0c79` is behind the current `2d52a19`, and
+no current 220-case receipt or nonce-bound final summary was produced. This is
+partial independent context evidence, not current-source benchmark or teacher
+parity evidence. Evidence: `phases/phase-278-5060ti-direct-4m-partial`.
