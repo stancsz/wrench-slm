@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.5060-connectivity-receipt.v1",
+  "created_at": "2026-09-21",
+  "candidate_host": "10.0.0.207",
+  "network": {
+    "icmp": "reachable",
+    "tcp": {
+      "22": "open",
+      "3389": "closed_or_filtered",
+      "5900": "closed_or_filtered",
+      "8080": "closed_or_filtered"
+    }
+  },
+  "ssh": {
+    "existing_worker_key_present": true,
+    "authentication": "rejected",
+    "remote_command_executed": false
+  },
+  "result": "ACCESS_NOT_AUTHENTICATED",
+  "claims_authorized": false
+}

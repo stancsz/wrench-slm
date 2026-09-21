@@ -2735,3 +2735,9 @@ two Safetensors shards. Its embedded mechanical smoke passed a validated
 `1.826 ms` first-layer gate. This is local package evidence, not independent
 5060 Ti verification or native dense attention quality. Evidence:
 `phases/phase-258-v103-package-validation`.
+
+2026-09-21 5060 Ti connectivity probe: candidate host `10.0.0.207` is
+reachable and exposes TCP port 22, but the existing local worker key was
+rejected for the tested accounts. No remote command was executed and no GPU
+or performance claim was made. Evidence:
+`phases/phase-259-5060-connectivity`.
