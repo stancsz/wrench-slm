@@ -4,14 +4,15 @@ Wrench should be downloadable as one model package. Users should not need to
 understand the evaluation harness, context ledger, or local development
 repository.
 
-The current public experimental package is
-`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M`. Copy it with:
+The current public Experimental Preview package is
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`. Copy it with:
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
 ```
 
-This is a public artifact release, not a production-readiness declaration.
+This is an Experimental Preview artifact, not a production-readiness
+declaration. Do not deploy it in production or safety-critical workflows.
 
 The user-facing Wrench value is the embedded hybrid long-context worker. The
 package accepts a raw 2M or 4M logical payload at its own model-local endpoint,

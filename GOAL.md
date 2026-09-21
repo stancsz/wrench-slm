@@ -1,7 +1,7 @@
 # Goal: Wrench 多快好省
 
 Status: active
-Updated: 2026-09-20
+Updated: 2026-09-21
 Owner: repository agent
 
 ## Outcome
@@ -2613,3 +2613,22 @@ the raw payload hash. The upstream was a local protocol stub, so this is
 package intake and reduction evidence, not dense decoder quality, retrieval
 quality, 5060 Ti verification, or MiniMax parity. Evidence:
 `phases/phase-240-dense-native-first-layer/portable-v97-native-handoff-4m.json`.
+
+2026-09-21 compact v97 publication: the BF16 compatibility package was about
+7.9 GiB, so the current public copy-and-try artifact is the NVFP4 W4A16
+package at `stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`.
+The pinned Hub revision is `585af6a3ba2e415718e58e7e06a004734229c31b`, with a
+public dry-run of about 3.4 GiB and two Safetensors shards. Local structural
+validation, mechanical smoke, and direct model-local 4M intake passed. This
+is still an experimental preview and does not prove MiniMax parity, dense
+native decoder quality, or independent 5060 Ti performance. Evidence:
+`phases/phase-245-compact-v97-nvfp4`.
+
+2026-09-21 Hugging Face publication labeling: all five `stancsz` model repos,
+including the private adapter, were renamed with the `-Experimental-Preview`
+suffix and each model card now carries an explicit warning against production
+deployment and safety-critical use. Hugging Face redirects the old repo IDs
+to the new names. The current 5060 Ti queue manifest was updated to the new
+compact repo and pinned revision, but the worker job remains `pending`; no
+independent 5060 Ti result is claimed yet. The source regression after the
+publication-default rename is `176 passed, 18 warnings`.

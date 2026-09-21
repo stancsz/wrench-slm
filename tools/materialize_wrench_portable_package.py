@@ -18,13 +18,16 @@ from pathlib import Path
 
 PARAMETER_COUNT = 3_881_244_016
 PARAMETER_CEILING = 4_250_000_000
+DEFAULT_HUGGINGFACE_REPO_ID = (
+    "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview"
+)
 
 
 def materialize(
     source: Path,
     target: Path,
     repo_root: Path,
-    huggingface_repo_id: str = "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+    huggingface_repo_id: str = DEFAULT_HUGGINGFACE_REPO_ID,
 ) -> dict[str, object]:
     if not source.is_dir() or not (source / "config.json").is_file():
         raise ValueError(f"source artifact is missing config.json: {source}")
@@ -367,7 +370,7 @@ def materialize(
         readme_path = target / "README.md"
         shutil.copy2(repo_root / "packaging" / "WRENCH_HF_README.md", readme_path)
         readme = readme_path.read_text(encoding="utf-8").replace(
-            "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M", huggingface_repo_id
+            DEFAULT_HUGGINGFACE_REPO_ID, huggingface_repo_id
         )
         if quantized_candidate:
             readme = readme.replace(
@@ -382,29 +385,21 @@ def materialize(
                 "and stays below the 4.25B parameter ceiling.",
             )
         package_dir_name = huggingface_repo_id.rsplit("/", 1)[-1]
-        readme = readme.replace(
-            "--local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
-            f"--local-dir {package_dir_name}",
-        )
-        readme = readme.replace(
-            "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M", f"./{package_dir_name}"
-        )
-        readme = readme.replace(
-            "Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
-            f"Set-Location {package_dir_name}",
-        )
+        default_package_dir_name = DEFAULT_HUGGINGFACE_REPO_ID.rsplit("/", 1)[-1]
+        readme = readme.replace(default_package_dir_name, package_dir_name)
         readme_path.write_text(readme, encoding="utf-8")
         distribution_doc = target / "WRENCH_PORTABLE_DISTRIBUTION.md"
         shutil.copy2(repo_root / "docs" / "WRENCH_PORTABLE_DISTRIBUTION.md", distribution_doc)
-        distribution_text = distribution_doc.read_text(encoding="utf-8").replace(
-            "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M", "__WRENCH_HF_URL__"
-        )
-        # Replace the documented package directory as a whole.  A prefix-only
-        # replacement would duplicate the suffix when the package name itself
-        # already contains `Wrench-4B-Qwen3.6-8E`.
+        distribution_text = distribution_doc.read_text(encoding="utf-8")
         distribution_text = distribution_text.replace(
-            "Wrench-4B-Qwen3.6-8E-NVFP4-native4M", package_dir_name
-        ).replace("__WRENCH_HF_URL__", huggingface_repo_id)
+            DEFAULT_HUGGINGFACE_REPO_ID, huggingface_repo_id
+        )
+        # Replace the documented package directory as a whole. A prefix-only
+        # replacement would duplicate the suffix when the package name itself
+        # already contains the canonical model name.
+        distribution_text = distribution_text.replace(
+            DEFAULT_HUGGINGFACE_REPO_ID.rsplit("/", 1)[-1], package_dir_name
+        )
         distribution_doc.write_text(distribution_text, encoding="utf-8")
         candidate_identity = (
             "Wrench-4B-Qwen3.6-8E-Safety-v7-NVFP4-native4M"
@@ -535,7 +530,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument(
         "--huggingface-repo-id",
-        default="stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M",
+        default=DEFAULT_HUGGINGFACE_REPO_ID,
         help="Hub repo id embedded in the portable package copy command",
     )
     args = parser.parse_args()

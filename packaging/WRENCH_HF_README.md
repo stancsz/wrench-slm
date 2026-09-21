@@ -8,9 +8,15 @@ tags:
 - developer-tools
 - qwen3.6
 - long-context
+- experimental-preview
 ---
 
 # Wrench-4B-Qwen3.6-8E
+
+> [!WARNING]
+> **Experimental Preview. Not for production use.** This is a research and
+> preview artifact. Do not deploy it in production or safety-critical
+> workflows, and do not treat benchmark results as production validation.
 
 Wrench is a bounded developer-tool execution SLM for fast, repetitive,
 verifiable mechanical work. It proposes structured actions or abstains. An
@@ -25,9 +31,9 @@ parameter ceiling. It is not a general coding agent.
 ## Copy the package
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M `
-  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
-Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview `
+  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
+Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
 .\run_wrench.ps1
 ```
 
@@ -88,7 +94,7 @@ directory:
 from wrench_worker import WrenchWorker
 
 worker = WrenchWorker.from_pretrained(
-    "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M", load_model=False
+    "./Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview", load_model=False
 )
 result = worker.propose([
     {"role": "user", "content": "Read README.md with a 65536 byte limit."}

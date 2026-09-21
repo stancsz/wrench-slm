@@ -6,8 +6,8 @@
   "source_repository": "https://github.com/stancsz/wrench-slm.git",
   "source_commit": "6a34c76ebe4500605fdea47981a5b64aac0e6dba",
   "artifact_source": "huggingface",
-  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate",
-  "huggingface_revision": "1a43e77e44e25a09459c4d350d8bf7c4527c590b",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview",
+  "huggingface_revision": "585af6a3ba2e415718e58e7e06a004734229c31b",
   "purpose": "Independently verify the pinned compact v97 Hugging Face package and bounded mechanical route on RTX 5060 Ti.",
   "inputs": [
     "AGENTS.md",

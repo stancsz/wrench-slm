@@ -2,7 +2,7 @@ from tools.verify_hf_cross_host_receipt import verify_receipt
 
 
 SOURCE = "a" * 40
-REPO = "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M"
+REPO = "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview"
 REVISION = "b" * 40
 
 

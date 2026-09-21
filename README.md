@@ -8,16 +8,20 @@ autonomously.
 
 ## Copy-paste model package
 
-The current experimental Hugging Face artifact is:
+The current experimental preview Hugging Face artifact is:
 
-`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M`
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`
 
 ```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M `
-  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M
-Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M
+hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview `
+  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
+Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
 .\run_wrench.ps1
 ```
+
+This is an **Experimental Preview**. It is not for production deployment,
+safety-critical use, or treating benchmark results as production validation.
+Run it only in an isolated, non-production environment.
 
 The package is a Hugging Face Safetensors directory with tokenizer, bundled
 verifier, deterministic toolbelt, context policy, and a model-local server.
@@ -56,7 +60,7 @@ operation, returned one bounded Wrench proposal, and settled without a model
 call or repeated tool loop. See
 `phases/phase-238-real-harness-integration/receipt.json`.
 
-## Current v94 evidence
+## Current v97 evidence
 
 The current portable runtime is below the 4.25B parameter ceiling at
 `3,881,244,016` verified parameters.
@@ -90,6 +94,6 @@ receipts are under `phases/phase-230-current-source-matched-arms-v2`,
 `phases/phase-236-portable-package-http-4m`, and
 `phases/phase-238-real-harness-integration`.
 
-The full source regression is `171 passed, 14 warnings`. Final release still
+The full source regression is `176 passed, 18 warnings`. Final release still
 requires the human-approved family-disjoint MiniMax-worker trace set,
 independent RTX 5060 Ti verification, and operational shadow evidence.
