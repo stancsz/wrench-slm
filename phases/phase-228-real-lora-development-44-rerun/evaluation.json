@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.real-lora-development-44-rerun.v1",
+  "status": "DEVELOPMENT_GAPS",
+  "model": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-calibrated-v4-attn-lora-1024-fused-20260920",
+  "cases": "evals/wrench-expanded-v2/development.jsonl",
+  "case_count": 44,
+  "mechanical_shortcut": false,
+  "device": "cuda:0",
+  "outcome_matches": 30,
+  "exact_target_matches": 16,
+  "verified_accepted": 18,
+  "median_latency_ms": 3768.53,
+  "p95_latency_ms": 8688.215,
+  "failure_buckets": {
+    "read_file_missing_path": 2,
+    "read_lines_missing_path": 3,
+    "read_lines_wrong_accept": 2,
+    "health_read_transport_error": 2,
+    "patch_semantic_mismatch": 3,
+    "patch_invalid_json": 2
+  },
+  "sealed_final_used": false,
+  "quality_claim": false
+}

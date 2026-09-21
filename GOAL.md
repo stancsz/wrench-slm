@@ -2455,3 +2455,13 @@ generation. The worker now defaults to CUDA when available while retaining an
 explicit device override and Accelerate device-map compatibility. This is
 device-placement and real-generation evidence, not broad quality or release
 evidence. Evidence: `phases/phase-227-real-worker-cuda-generation`.
+
+2026-09-20 fresh real LoRA development rerun: the current fused rank-8 LoRA
+checkpoint generated all 44 development rows on `cuda:0` with the mechanical
+shortcut disabled. It reached 30/44 outcome matches, 16/44 exact targets, and
+18 verified accepts, with 3,768.530 ms median and 8,688.215 ms p95 generation
+latency. Misses clustered in long path copying, patch diff copying, and health
+transport behavior. This confirms LoRA is useful but not sufficient to own
+routine mechanical work; the deterministic route remains the high-leverage
+owner and the learned model remains fallback-only. Evidence:
+`phases/phase-228-real-lora-development-44-rerun`.
