@@ -3148,3 +3148,13 @@ compacted to `19` effective working tokens. The 4M first-layer gate measured
 attention or learned MiniMax quality. Evidence:
 `phases/phase-317-current-head-retrieval-2m-4m.json` and
 `phases/phase-317-current-head-retrieval-2m-4m.md`.
+
+2026-09-21 standard HF loader boundary: the current-head candidate was
+checked in an isolated Transformers `5.17.0` runtime. `AutoConfig` resolved
+`Qwen3_5MoeConfig` and `Qwen3_5MoeForConditionalGeneration`, and the local
+tokenizer loaded with a 4,000,000-token advertised context. The verifier was
+fixed to use the stable config architecture list because Transformers 5.17
+removed its old private `_model_mapping` attribute. Full tensor loading was
+not claimed because the isolated runtime has no PyTorch. After the fix, the
+full local regression remained `194 passed`, `0 failed`, `18 warnings`.
+Evidence: `phases/phase-318-current-head-standard-hf`.

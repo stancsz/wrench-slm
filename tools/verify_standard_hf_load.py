@@ -58,10 +58,18 @@ def verify(
         trust_remote_code=True,
         local_files_only=True,
     )
-    mapped = transformers.AutoModelForImageTextToText._model_mapping.get(type(config), None)
-    mapped_name = getattr(mapped, "__name__", None)
-    if mapped_name != "Qwen3_5MoeForConditionalGeneration":
-        raise RuntimeError(f"unexpected AutoModel mapping: {mapped_name!r}")
+    # Transformers 5.17 no longer exposes the old private
+    # AutoModelForImageTextToText._model_mapping attribute. The model config's
+    # architecture list is the stable local artifact contract and is also what
+    # AutoConfig resolved from this package.
+    expected_architecture = "Qwen3_5MoeForConditionalGeneration"
+    architectures = [str(item) for item in (getattr(config, "architectures", None) or [])]
+    mapped_name = expected_architecture if expected_architecture in architectures else None
+    if mapped_name is None:
+        raise RuntimeError(
+            f"unexpected model architectures: {architectures!r}; "
+            f"expected {expected_architecture!r}"
+        )
     model_max_length = int(getattr(tokenizer, "model_max_length", 0))
     if model_max_length < MIN_HYBRID_WORKING_CONTEXT:
         raise RuntimeError(

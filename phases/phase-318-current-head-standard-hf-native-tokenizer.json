@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.standard-hf-load-receipt.v1",
+  "status": "PASS_STANDARD_HF_CONFIG_TOKENIZER_NATIVE",
+  "model_dir": "D:\\models\\_wrench-release-candidate-a8a75c3",
+  "transformers_version": "5.17.0",
+  "config_class": "Qwen3_5MoeConfig",
+  "config_model_type": "qwen3_5_moe",
+  "mapped_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "tokenizer_class": "WrenchTokenizer",
+  "tokenizer_model_max_length": 4000000,
+  "declared_logical_raw_input_context_tokens": 4000000,
+  "declared_effective_working_context_tokens": 64000,
+  "native_tokenizer_context_supported": true,
+  "hybrid_raw_intake_contract": true,
+  "native_context_required_by_probe": true,
+  "full_weight_load_verified": false,
+  "full_weight_generation_verified": false,
+  "native_long_context_quality_verified": false,
+  "file_hashes": {
+    "config.json": "3bfae2046275c0488890c5b1470abbb8c5b1fab699fc924b036ff2aee067f986",
+    "tokenizer_config.json": "4ea568e1962e9162b087779b0bd72da9539f43b7f4a98aea0fd1feab9bd34eaa",
+    "tokenization_wrench.py": "d4a760477417dbee75ce319eb2776eddaf4ec8872dad6c9097f9037dac5a2793"
+  },
+  "missing_optional_files": []
+}
