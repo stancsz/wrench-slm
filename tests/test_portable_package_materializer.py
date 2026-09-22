@@ -127,6 +127,7 @@ def test_freetoken_native_backend_verifier_is_explicit_about_scope():
 def test_materializer_embeds_worker_runtime():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert "wrench_runtime/worker.py" in script
+    assert "wrench_runtime/intent_safety_gate.py" in script
     assert "wrench_runtime/patching.py" in script
     assert "WrenchWorker" in script
     assert "--moe-cache-auto" in script

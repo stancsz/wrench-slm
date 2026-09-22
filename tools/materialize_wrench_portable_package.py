@@ -121,6 +121,10 @@ def materialize(
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
+        shutil.copy2(
+            repo_root / "src" / "wrench_harness" / "intent_safety_gate.py",
+            runtime_dir / "intent_safety_gate.py",
+        )
         shutil.copy2(repo_root / "src" / "wrench_harness" / "server.py", runtime_dir / "server.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "core.py", runtime_dir / "core.py")
         shutil.copy2(repo_root / "wrench_worker.py", target / "wrench_worker.py")
@@ -528,6 +532,7 @@ def materialize(
                 "wrench_runtime/mechanical.py",
                 "wrench_runtime/patching.py",
                 "wrench_runtime/worker.py",
+                "wrench_runtime/intent_safety_gate.py",
                 "wrench_worker.py",
                 "wrench_server.py",
                 "wrench_loopback_blocker.py",

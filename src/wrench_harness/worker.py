@@ -231,6 +231,7 @@ class WrenchWorker:
     model: Any | None
     allowed_root: Path
     prefill_index: MechanicalPrefillIndex = field(default_factory=MechanicalPrefillIndex)
+    intent_safety_gate: Any | None = None
 
     @classmethod
     def from_pretrained(
@@ -245,6 +246,7 @@ class WrenchWorker:
         model_path = Path(model_dir)
         tokenizer = None
         model = None
+        intent_safety_gate = None
         if load_model:
             from transformers import AutoModelForImageTextToText, AutoTokenizer
 
@@ -275,6 +277,22 @@ class WrenchWorker:
                     requested_device = "cuda" if torch.cuda.is_available() else "cpu"
                 model.to(requested_device)
             model.eval()
+            if os.environ.get("WRENCH_INTENT_SAFETY_GATE", "0").casefold() in {"1", "true", "on", "yes"}:
+                artifact = Path(
+                    os.environ.get(
+                        "WRENCH_INTENT_SAFETY_GATE_ARTIFACT",
+                        str(model_path / "wrench-intent-router.pt"),
+                    )
+                )
+                if not artifact.is_file():
+                    raise ValueError(f"intent safety gate enabled but sidecar is missing: {artifact}")
+                from .intent_safety_gate import IntentSafetyGate
+
+                intent_safety_gate = IntentSafetyGate.from_artifact(
+                    artifact,
+                    model=model,
+                    tokenizer=tokenizer,
+                )
         root = Path(allowed_root).expanduser().resolve()
         if not root.is_dir():
             raise ValueError(f"allowed_root is not a directory: {root}")
@@ -283,6 +301,7 @@ class WrenchWorker:
             model=model,
             allowed_root=root,
             prefill_index=MechanicalPrefillIndex(max_bytes=prefill_cache_bytes),
+            intent_safety_gate=intent_safety_gate,
         )
 
     def propose(
@@ -453,6 +472,23 @@ class WrenchWorker:
                     result,
                     context_pressure=prefill_receipt is not None,
                 )
+            if self.intent_safety_gate is not None:
+                try:
+                    gate_receipt = self.intent_safety_gate.check(request_messages, content)
+                except Exception as exc:
+                    gate_receipt = {
+                        "schema": "wrench.intent-safety-gate.v1",
+                        "gate_passed": False,
+                        "authority": "abstain_only",
+                        "error": type(exc).__name__,
+                    }
+                result["intent_safety_gate"] = gate_receipt
+                if result.get("status") == "accepted" and not gate_receipt.get("gate_passed"):
+                    result = {
+                        "status": "abstain",
+                        "fallback_reason": "intent_safety_gate_rejected",
+                        "intent_safety_gate": gate_receipt,
+                    }
             retryable = result.get("fallback_reason") in {
                 "model_output_not_text",
                 "model_output_invalid_json",

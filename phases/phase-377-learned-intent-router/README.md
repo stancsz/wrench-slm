@@ -79,6 +79,29 @@ This proves portable sidecar distribution and hybrid model-local intake. It
 does not yet prove learned-router inference inside the runtime, dense-native
 attention quality, or independent 5060Ti execution of this new sidecar.
 
+## Optional runtime safety gate
+
+The sidecar was evaluated as an abstain-only safety gate over the existing
+free-generation receipt. The direct-generation baseline was `21/44` outcomes,
+`10` verified accepts, and `2` prohibited accepts. With the gate, the same
+outputs produced `23/44` outcomes, `8` verified accepts, and `0` prohibited
+accepts. Gate embedding median/p95 latency was `147.615/225.423 ms`. Receipt
+SHA-256:
+`58D72333EF50171FB70C85F6927BC98859CC470F6DB807E267A2E00FEFEE47FA`.
+
+The gate is wired into `WrenchWorker` behind
+`WRENCH_INTENT_SAFETY_GATE=1`. It can only replace an accepted generated
+proposal with an abstention when the predicted family and generated action do
+not agree. It never runs on the deterministic mechanical fast path. A real
+Transformers worker smoke loaded the sidecar and emitted
+`wrench.intent-safety-gate.v1`; malformed generated output was fail-closed to
+`abstain`. Receipt SHA-256:
+`7F674CCE87A07FB022F47734942F6BB831A7E7ED1BEC52B0299248532DDF8BD0`.
+
+This is an optional safety improvement, not a claim that the learned model is
+already a MiniMax replacement. It remains disabled by default and still needs
+package-level 5060Ti verification before promotion.
+
 ## Reproducibility boundary
 
 The implementation is `tools/train_intent_router.py`, SHA-256

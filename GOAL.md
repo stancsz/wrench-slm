@@ -3628,3 +3628,14 @@ zero model calls. The manifest keeps the sidecar opt-in and disabled by
 default. This is portable distribution and hybrid intake evidence, not yet
 learned-router runtime enablement, dense-native quality, or independent
 5060TI execution of the new sidecar.
+
+The optional sidecar was then used as an abstain-only safety gate over the
+learned free-generation receipt. It improved the development diagnostic from
+`21/44` to `23/44` outcomes and reduced prohibited accepts from `2` to `0`,
+with `225.423 ms` p95 embedding latency. The gate is wired behind an explicit
+environment variable and never runs on the deterministic mechanical fast path.
+A real Transformers worker smoke loaded the sidecar and fail-closed on
+malformed output. It remains disabled by default and requires package-level
+5060TI verification before promotion. Evidence:
+`phases/phase-377-learned-intent-router/` and external gate receipts under
+`D:\models\wrench-intent-router-shadow-20260921`.

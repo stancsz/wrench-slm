@@ -325,6 +325,15 @@ sidecar. The package copies it as `wrench-intent-router.pt` while recording
 retrieval cases with zero model calls. This is distribution and hybrid intake
 evidence, not learned-router runtime enablement or dense-native quality.
 
+An optional abstain-only intent/action safety gate was also tested over the
+existing learned-generation receipt. It improved the diagnostic slice from
+`21/44` to `23/44` outcome matches and reduced prohibited accepts from `2` to
+`0`, at `225.423 ms` p95 embedding latency. The gate is wired behind an opt-in
+environment variable and never runs on the deterministic mechanical fast path.
+Its real Transformers smoke failed closed on malformed output and emitted a
+hash-bound gate receipt. It remains disabled by default and is not a MiniMax
+parity claim.
+
 ## Claude Code local smoke
 
 Claude Code 2.1.251 was run in print mode with an isolated config and an
