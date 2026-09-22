@@ -3438,3 +3438,14 @@ was free afterward. The package-local Ollama-shaped API remains independently
 verified in phase 341; this phase means stock Ollama native generation is not
 yet a portable Windows claim. vLLM and GGUF remain unverified. Evidence:
 `phases/phase-343-stock-ollama-native-boundary.md`.
+
+2026-09-22 current-head package binding: the materializer created
+`D:\models\_wrench-release-candidate-ae78a84` from exact HEAD
+`ae78a84301522de4dfe0745f456090a7dcf8aa36` while hard-linking the existing
+immutable weight files. Structural validation passed. The new package passed
+its own 4M Ollama-shaped surface with `3,995,426` raw tokens, `45.197 ms`
+total elapsed, `24.983 ms` first-layer gate, `9` effective tokens, zero model
+calls, hash binding, and resource reserves. OpenCode, DeepSeek Harness, and
+Claude Code also passed against this current-head package. Evidence:
+`phases/phase-344-current-head-package-binding.md` and
+`phases/phase-345-current-head-client-smoke/README.md`.

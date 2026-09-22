@@ -1,0 +1,301 @@
+{
+  "schema": "wrench.ollama-portable-package-smoke.v1",
+  "status": "PASS_OLLAMA_SHAPED_MODEL_LOCAL_4M",
+  "scope": "downloaded package subprocess; model-local Ollama-shaped route; no dense native or production claim",
+  "package_dir": "D:\\models\\_wrench-release-candidate-ae78a84",
+  "surface": {
+    "version": true,
+    "tags": true,
+    "show": true,
+    "chat_small": true,
+    "chat_monster": true
+  },
+  "response": {
+    "version": {
+      "version": "0.32.13",
+      "wrench_api": "ollama-compatible"
+    },
+    "tags": {
+      "models": [
+        {
+          "name": "wrench-4b",
+          "model": "wrench-4b",
+          "modified_at": "2026-09-22T00:28:08Z",
+          "size": 0,
+          "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "details": {
+            "parent_model": "",
+            "format": "safetensors",
+            "family": "wrench",
+            "families": [
+              "wrench"
+            ],
+            "parameter_size": "3.88B",
+            "quantization_level": "NVFP4-W4A16"
+          }
+        }
+      ]
+    },
+    "show_status": 200,
+    "show": {
+      "name": "wrench-4b",
+      "details": {
+        "family": "wrench",
+        "parameter_size": "3.88B",
+        "context_length": 4000000
+      },
+      "parameters": "num_ctx 4000000\ntemperature 0",
+      "wrench": {
+        "declared_input_context_tokens": 4000000,
+        "effective_working_context_tokens": 64000,
+        "native_attention_context_tokens_verified": null
+      }
+    },
+    "small_status": 200,
+    "small": {
+      "model": "wrench-ollama-shadow",
+      "created_at": "2026-09-22T00:28:08Z",
+      "done": true,
+      "done_reason": "stop",
+      "prompt_eval_count": 7,
+      "eval_count": 1,
+      "wrench": {
+        "raw_input_chars": 48,
+        "raw_input_tokens_estimate": 7,
+        "elapsed_ms": 1.58,
+        "status": "accepted",
+        "backend": "embedded-mechanical",
+        "mechanical_fast_path": true,
+        "model_calls": 0,
+        "context_gate": {
+          "schema": "wrench.first-layer-context-gate.v1",
+          "stage": "mechanical_fast_pruner_cherrypicker",
+          "strategy": "latest_intent_plus_exact_lookup",
+          "raw_context_limit_tokens": 4000000,
+          "raw_input_tokens": 7,
+          "effective_working_context_tokens": 7,
+          "working_context_budget_tokens": 64000,
+          "selected_hot_spans": 1,
+          "selected_reference_spans": 0,
+          "omitted_reference_spans": 0,
+          "route_source": "latest_intent",
+          "raw_payload_sha256": "fdaaf006d243b360f169edaa6f5748c29f0a0e88d9a5078367e5fcbda1ab6aa7",
+          "raw_payload_hash_bound": true,
+          "native_input_claim": false,
+          "gate_latency_ms": 1.528,
+          "reference_scan_tokens": 7
+        },
+        "dynamic_prefill": null,
+        "fallback_reason": null,
+        "ttc": {
+          "schema": "wrench.test-time-compute-receipt.v1",
+          "profile": "fast",
+          "max_model_passes": 1,
+          "passes_requested": [
+            "schema",
+            "authority",
+            "evidence",
+            "consistency"
+          ],
+          "checks": {
+            "schema": true,
+            "authority": true,
+            "evidence": true,
+            "consistency": true,
+            "blind_critic": true,
+            "final_gate": true
+          },
+          "failed_checks": [],
+          "early_exit": true,
+          "passed": true,
+          "base_verifier": {
+            "schema": "wrench.multi-pass-verifier.v1",
+            "passed": true,
+            "passes": [
+              {
+                "name": "schema",
+                "passed": true
+              },
+              {
+                "name": "authority",
+                "passed": true
+              },
+              {
+                "name": "evidence",
+                "passed": true
+              },
+              {
+                "name": "consistency",
+                "passed": true
+              }
+            ],
+            "proposal_sha256": "e40496f761c664dcbbd517d76e6828dbf185a42fbbdc2d98c5b2a453cb59f08b",
+            "execution_status": "accepted"
+          }
+        },
+        "declared_context_tokens": 4000000,
+        "cost_accounting": {
+          "schema": "wrench.cost-accounting-receipt.v1",
+          "raw_input_tokens": 7,
+          "model_prompt_tokens": 0,
+          "model_completion_tokens": 0,
+          "local_model_tokens": 0,
+          "input_tokens_not_sent_to_model": 7,
+          "model_calls": 0,
+          "repair_passes": 0,
+          "mechanical_fast_path": true,
+          "total_local_elapsed_ms": 1.58,
+          "usd_cost": null,
+          "usd_cost_status": "not_priced_local_runtime"
+        }
+      },
+      "message": {
+        "role": "assistant",
+        "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"wrench-package.json\",\"max_bytes\":4096}"
+      }
+    },
+    "monster_status": 200,
+    "monster": {
+      "model": "wrench-ollama-shadow",
+      "created_at": "2026-09-22T00:28:09Z",
+      "done": true,
+      "done_reason": "stop",
+      "prompt_eval_count": 3995426,
+      "eval_count": 1,
+      "wrench": {
+        "raw_input_chars": 35163267,
+        "raw_input_tokens_estimate": 3995426,
+        "elapsed_ms": 45.197,
+        "status": "accepted",
+        "backend": "embedded-mechanical",
+        "mechanical_fast_path": true,
+        "model_calls": 0,
+        "context_gate": {
+          "schema": "wrench.first-layer-context-gate.v1",
+          "stage": "mechanical_fast_pruner_cherrypicker",
+          "strategy": "latest_intent_plus_exact_lookup",
+          "raw_context_limit_tokens": 4000000,
+          "raw_input_tokens": 3995426,
+          "effective_working_context_tokens": 9,
+          "working_context_budget_tokens": 64000,
+          "selected_hot_spans": 1,
+          "selected_reference_spans": 0,
+          "omitted_reference_spans": 0,
+          "route_source": "latest_intent",
+          "raw_payload_sha256": "dc056d5f97d5063056cb0c2717900290901b8d298160ff7e8dbc0ab489a49161",
+          "raw_payload_hash_bound": true,
+          "native_input_claim": false,
+          "gate_latency_ms": 24.983,
+          "reference_scan_tokens": 3995426
+        },
+        "dynamic_prefill": null,
+        "fallback_reason": null,
+        "ttc": {
+          "schema": "wrench.test-time-compute-receipt.v1",
+          "profile": "guarded",
+          "max_model_passes": 2,
+          "passes_requested": [
+            "schema",
+            "authority",
+            "evidence",
+            "consistency",
+            "ast_gate",
+            "diff_gate"
+          ],
+          "checks": {
+            "schema": true,
+            "authority": true,
+            "evidence": true,
+            "consistency": true,
+            "blind_critic": true,
+            "ast_gate": true,
+            "diff_gate": true,
+            "final_gate": true
+          },
+          "failed_checks": [],
+          "early_exit": true,
+          "passed": true,
+          "base_verifier": {
+            "schema": "wrench.multi-pass-verifier.v1",
+            "passed": true,
+            "passes": [
+              {
+                "name": "schema",
+                "passed": true
+              },
+              {
+                "name": "authority",
+                "passed": true
+              },
+              {
+                "name": "evidence",
+                "passed": true
+              },
+              {
+                "name": "consistency",
+                "passed": true
+              }
+            ],
+            "proposal_sha256": "e40496f761c664dcbbd517d76e6828dbf185a42fbbdc2d98c5b2a453cb59f08b",
+            "execution_status": "accepted"
+          }
+        },
+        "declared_context_tokens": 4000000,
+        "cost_accounting": {
+          "schema": "wrench.cost-accounting-receipt.v1",
+          "raw_input_tokens": 3995426,
+          "model_prompt_tokens": 0,
+          "model_completion_tokens": 0,
+          "local_model_tokens": 0,
+          "input_tokens_not_sent_to_model": 3995426,
+          "model_calls": 0,
+          "repair_passes": 0,
+          "mechanical_fast_path": true,
+          "total_local_elapsed_ms": 45.197,
+          "usd_cost": null,
+          "usd_cost_status": "not_priced_local_runtime"
+        }
+      },
+      "message": {
+        "role": "assistant",
+        "content": "{\"schema\":\"wrench.proposal.v1\",\"action\":\"read_file\",\"path\":\"wrench-package.json\",\"max_bytes\":4096}"
+      }
+    },
+    "monster_elapsed_ms": 266.121,
+    "monster_raw_chars": 35163323
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27696766976,
+    "ram_available_ratio": 0.5392,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27482386432,
+    "ram_available_ratio": 0.535,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "ollama_compatible_version": true,
+    "model_catalog_available": true,
+    "declared_4m_context": true,
+    "small_chat_no_model_call": true,
+    "monster_chat_accepted_at_endpoint": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "claims_not_authorized": [
+    "dense-native 4M attention",
+    "learned MiniMax parity",
+    "independent RTX 5060 Ti verification",
+    "production readiness"
+  ],
+  "all_checks_pass": true
+}
