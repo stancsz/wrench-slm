@@ -140,13 +140,14 @@ conversation directly and emits hash-bound context-gate receipts.
 | Bundled model-local server | Verified | Accepts about 4M raw tokens and reduces to a bounded working context. |
 | Ollama-shaped `/api/*` surface | Verified | Package-local compatibility API, not stock Ollama native generation. |
 | OpenCode, DeepSeek Harness, Claude Code | Verified | Read-only local client smoke completed with zero model calls. |
-| Stock Ollama native runner on Windows | Not verified | Ollama `0.32.13` failed because the MLX dynamic library was unavailable. |
+| Stock Ollama native runner on Windows | Not verified | Ollama `0.32.13` failed during NVFP4 conversion because `model.language_model.layers.0.linear_attn.in_proj_qkv.weight_scale` lacks FP8 block-size metadata. |
 | vLLM | Not verified | Requires a registered Wrench architecture and staged-prefill adapter. |
 | GGUF / llama.cpp | Not verified | Do not use a conversion that silently drops the Wrench retrieval runtime. |
 
-The current package-local evidence is recorded in phases 341 through 343 in
+The current package-local evidence is recorded in phases 350 through 365 in
 the source repository. The supported portable path is the bundled server and
-its local client templates.
+its local client templates. The stock Ollama import boundary is recorded in
+phase 366.
 
 The `--mechanical-only` mode is the verified fast path. Remove it only when a
 compatible local native backend is available for ambiguous requests. Native
@@ -176,21 +177,22 @@ result = worker.propose([
 
 ## Current evidence
 
-On the historical 220-case diagnostic replay, with client-side mechanical
+On the current-package 220-case diagnostic replay, with client-side mechanical
 shortcut disabled:
 
-- weighted mechanical frontier-token coverage: `99.2986%`;
-- net frontier-token savings: `100%`;
-- Wrench plus identical MiniMax fallback final success: `99.6503%`;
-- median / p95 latency: `185.095 ms` / `299.445 ms`;
+- cases: `220/220`, including `120` eligible rows;
+- Wrench plus identical MiniMax fallback weighted final success: `100%`;
+- Wrench plus identical MiniMax fallback frontier tokens: `0`, local tokens: `24,141`;
+- median / p95 latency: `184.804 ms` / `297.676 ms`;
 - prohibited accepts: `0`;
 - unexpected mutations: `0`.
 
-The current v102 package-local 4M handoff accepted `3,996,267` raw estimated
-tokens, staged `1,955` effective model-prefill tokens, and completed in
-`238.189 ms`, including `31.663 ms` context-gate time. The upstream in this
-handoff was a local protocol stub, so this is direct raw intake and bounded
-MapReduce handoff evidence, not native dense decoder quality.
+The current release-candidate package-local 4M probe accepted `3,999,995` raw
+estimated tokens and completed in `172.585 ms`, including `23.772 ms` of
+context-gate time. It compacted to a bounded `64,000`-token working budget and
+made zero model calls. The 2M/4M retrieval probe passed all `6/6` needle
+placements. These are direct raw intake and bounded MapReduce diagnostics, not
+native dense decoder quality.
 
 These are hybrid model-local diagnostics, not dense native attention quality,
 stock Ollama native generation quality, family-disjoint approval, or
@@ -200,8 +202,8 @@ require architecture adapters and are not claimed as verified.
 
 ## Development status
 
-The full source regression is `196 passed`. Final release still requires the
-human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
-Ti verification, and operational shadow evidence. Wrench has no direct
+The full source regression is `202 passed, 0 failed`. Final release still
+requires the human-approved family-disjoint MiniMax-worker trace set,
+independent RTX 5060 Ti verification, and operational shadow evidence. Wrench has no direct
 mutation authority. It proposes bounded actions or abstains, and the
 surrounding verifier must enforce execution policy.
