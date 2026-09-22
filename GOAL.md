@@ -3588,3 +3588,16 @@ PowerShell parsing passed, and the full repository regression passed
 `202/202` with `0` failures and `18` warnings. This makes the next authenticated worker run
 recoverable and auditable, but it is not a 5060TI execution result. Evidence:
 `phases/phase-357-5060ti-job-manifest/`.
+
+2026-09-21 full 5060TI verification workload: commit `56dd8ef` adds a
+self-contained read-only worker entrypoint that extends the old package
+preflight with the full 220-case package-only replay, direct model-local 4M
+intake, 2M/4M retrieval, optional client smoke, and before/after 10 percent
+RAM/VRAM reserve checks. The source regression passed `203/203`, and the
+PowerShell entrypoint parsed successfully. A nonce-bound manifest was built
+for source commit `56dd8ef75f385ec57a3e99792c4340cebd6ca128`, but the Drive
+upload connector returned `404 Not Found` for the discovered pending-folder
+ID. The manifest is therefore not a dispatched job and no 5060TI execution
+claim is made. Evidence: `phases/phase-375-5060ti-full-verification-dispatch/`
+and local manifest hash
+`50D2DB9AF7D268B63C47F2BED006DC8F94120AE141FD0CD742CB50A6BCA1FD1D`.

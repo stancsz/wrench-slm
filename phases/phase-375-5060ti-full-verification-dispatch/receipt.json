@@ -1,0 +1,34 @@
+{
+  "schema": "wrench.phase.5060ti-full-verification-dispatch.v1",
+  "phase": 375,
+  "date": "2026-09-21",
+  "status": "IMPLEMENTED_NOT_DISPATCHED_DRIVE_TARGET_UNAVAILABLE",
+  "source_commit": "56dd8ef75f385ec57a3e99792c4340cebd6ca128",
+  "manifest": {
+    "path": "D:\\models\\wrench-5060ti-full-verification-20260921-01.json",
+    "sha256": "50D2DB9AF7D268B63C47F2BED006DC8F94120AE141FD0CD742CB50A6BCA1FD1D",
+    "job_id": "wrench-5060ti-full-verification-20260921-01",
+    "claim_nonce": "7d95be8bf41245c1a60895c5406d4c81",
+    "workload": "wrench_current_package_verification",
+    "hf_revision": "9c6303c2c17a3798a134388c7e544728b22bd481"
+  },
+  "queue_discovery": {
+    "jobs_folder_id": "1ifhD2IlDoMfWLfAewCg96hsdltmOuzWz",
+    "pending_folder_id": "16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv",
+    "pending_folder_listed": true,
+    "pending_folder_metadata_read": false,
+    "upload_result": "HTTP 404 Not Found: File not found",
+    "uploaded": false
+  },
+  "local_verification": {
+    "targeted_manifest_tests": "3 passed",
+    "powershell_parse": "PASS_POWERSHELL_PARSE",
+    "full_pytest": "203 passed, 18 warnings"
+  },
+  "claims_not_authorized": [
+    "5060Ti execution",
+    "teacher parity",
+    "dense-native 4M attention quality",
+    "production readiness"
+  ]
+}
