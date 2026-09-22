@@ -3449,3 +3449,13 @@ calls, hash binding, and resource reserves. OpenCode, DeepSeek Harness, and
 Claude Code also passed against this current-head package. Evidence:
 `phases/phase-344-current-head-package-binding.md` and
 `phases/phase-345-current-head-client-smoke/README.md`.
+
+2026-09-22 fresh 5060Ti thread retry: following the empty-turn boundary in
+phase 340, a new remote child task was created instead of appending context
+to an old thread. It completed after `40,168 ms` but returned no assistant
+message, nonce, host identity, command marker, resource snapshot, package
+path, or receipt. Per `AGENTS.local.md`, this is recorded as
+`UNVERIFIED_5060TI_EMPTY_REMOTE_TURN` and remote retries stop until the
+control surface exposes a working authenticated worker session. No 5060Ti
+benchmark or package-quality claim is made. Evidence:
+`phases/phase-346-fresh-5060ti-thread-empty-turn/receipt.json`.

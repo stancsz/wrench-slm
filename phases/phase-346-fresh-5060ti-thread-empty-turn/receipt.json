@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.phase-346-fresh-5060ti-thread-empty-turn.v1",
+  "status": "UNVERIFIED_5060TI_EMPTY_REMOTE_TURN",
+  "date": "2026-09-22",
+  "source_thread_id": "01a0c5e5-75e8-7330-9b1a-95b45b438176",
+  "fresh_thread_id": "01a0c685-5e30-7e90-bf8a-218b80b2234e",
+  "host_id": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+  "expected_nonce": "5060ti-wrench-a6871f5-fresh-r3",
+  "duration_ms": 40168,
+  "thread_status": "completed_then_idle",
+  "assistant_message_present": false,
+  "required_fields_present": false,
+  "required_fields": [
+    "nonce",
+    "host_identity",
+    "command_marker",
+    "resource_snapshot",
+    "package_path",
+    "receipt_paths"
+  ],
+  "benchmark_claim": false,
+  "retry_policy": "stop_after_empty_turn_and_do_not_append_context",
+  "source_commit_expected": "a6871f5c63d599857363cb46dbfc311792038354"
+}
