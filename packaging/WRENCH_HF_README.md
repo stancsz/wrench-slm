@@ -133,6 +133,21 @@ also exposes `/api/tags`, `/api/show`, `/api/chat`, and `/api/generate` for
 clients that expect an Ollama-shaped surface. It receives the full raw
 conversation directly and emits hash-bound context-gate receipts.
 
+## Backend support matrix
+
+| Surface | Current status | Boundary |
+| --- | --- | --- |
+| Bundled model-local server | Verified | Accepts about 4M raw tokens and reduces to a bounded working context. |
+| Ollama-shaped `/api/*` surface | Verified | Package-local compatibility API, not stock Ollama native generation. |
+| OpenCode, DeepSeek Harness, Claude Code | Verified | Read-only local client smoke completed with zero model calls. |
+| Stock Ollama native runner on Windows | Not verified | Ollama `0.32.13` failed because the MLX dynamic library was unavailable. |
+| vLLM | Not verified | Requires a registered Wrench architecture and staged-prefill adapter. |
+| GGUF / llama.cpp | Not verified | Do not use a conversion that silently drops the Wrench retrieval runtime. |
+
+The current package-local evidence is recorded in phases 341 through 343 in
+the source repository. The supported portable path is the bundled server and
+its local client templates.
+
 The `--mechanical-only` mode is the verified fast path. Remove it only when a
 compatible local native backend is available for ambiguous requests. Native
 generation is separately verified and must not be inferred from the API shape.
@@ -180,12 +195,12 @@ MapReduce handoff evidence, not native dense decoder quality.
 These are hybrid model-local diagnostics, not dense native attention quality,
 stock Ollama native generation quality, family-disjoint approval, or
 production enablement. The current stock Ollama native generation boundary is
-explicitly recorded as failed on the validation host. GGUF and vLLM require
-architecture adapters and are not claimed as verified.
+explicitly recorded as failed on the Windows validation host. GGUF and vLLM
+require architecture adapters and are not claimed as verified.
 
 ## Development status
 
-The full source regression is `182 passed`. Final release still requires the
+The full source regression is `196 passed`. Final release still requires the
 human-approved family-disjoint MiniMax-worker trace set, independent RTX 5060
 Ti verification, and operational shadow evidence. Wrench has no direct
 mutation authority. It proposes bounded actions or abstains, and the
