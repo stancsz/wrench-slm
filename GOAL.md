@@ -3328,3 +3328,15 @@ resource-safe cleanup for the exact package, not dense-native 4M quality or
 fast direct prefill. Evidence:
 `phases/phase-335-current-head-freetoken-native.json` and
 `phases/phase-335-current-head-freetoken-native.md`.
+
+2026-09-21 exact current-head 2M/4M retrieval probe: the same
+`D:\models\_wrench-release-candidate-bbc680f` package passed `6/6` deterministic
+reference lookups with the needle placed near the beginning, middle, and end
+of 2M and 4M raw payloads. The route returned the exact expected proposal with
+zero model calls. Elapsed time was `14.853` to `42.766 ms`, median `22.401 ms`,
+and the first-layer gate reduced each case to `19` effective working tokens
+inside a `64,000` token budget. This validates the fast model-local
+MapReduce/reference path, not dense-native attention quality, learned MiniMax
+parity, or production approval. Evidence:
+`phases/phase-336-current-head-retrieval-2m-4m.md` and
+`phases/phase-336-current-head-retrieval-2m-4m.json`.
