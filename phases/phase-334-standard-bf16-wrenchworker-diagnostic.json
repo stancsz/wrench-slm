@@ -1,0 +1,23 @@
+{
+  "phase": "phase-334-standard-bf16-wrenchworker-diagnostic",
+  "status": "DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY",
+  "package_dir": "D:\\models\\_wrench-standard-release-candidate-bbc680f",
+  "transformers_version": "5.17.0",
+  "device": "cuda:0",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "mechanical_route_enabled": false,
+  "max_tokens": 64,
+  "model_calls": 2,
+  "repair_pass_count": 1,
+  "load_ready_ms": 12858.085,
+  "final_status": "abstain",
+  "fallback_reason": "model_output_invalid_json",
+  "raw_model_output_prefix": "> Ċ 1 9 9 9 9 9 9 9 9 9 9 9",
+  "quality_claim": false,
+  "production_enablement": false,
+  "evidence": [
+    "phases/phase-334-standard-bf16-wrenchworker-diagnostic.md",
+    "phases/phase-333-standard-bf16-hf-load.json",
+    "phases/phase-333-standard-bf16-candidate.json"
+  ]
+}

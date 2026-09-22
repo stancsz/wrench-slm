@@ -3308,3 +3308,12 @@ standard-HF reference. A bounded GPU smoke generated four tokens with more
 than 10% VRAM remaining, but no quality claim is made. Evidence:
 `phases/phase-333-standard-bf16-candidate.md` and
 `phases/phase-333-standard-bf16-candidate.json`.
+
+2026-09-21 standard BF16 learned-lane diagnostic: the standard package was
+loaded through its embedded `WrenchWorker` with the mechanical route disabled
+and the model placed on the RTX 5070 Ti. It loaded in `12,858.085 ms`, made
+two bounded model passes including repair, and then failed closed with
+`model_output_invalid_json`. This confirms that standard weight compatibility
+does not equal learned MiniMax-worker quality. The deterministic mechanical
+route remains the practical value and learned routing stays disabled. Evidence:
+`phases/phase-334-standard-bf16-wrenchworker-diagnostic`.
