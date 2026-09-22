@@ -300,25 +300,26 @@ Evidence: `phases/phase-283-claude-code-local-route`.
 
 A fresh run on `DESKTOP-KET1SKP` used the downloaded public package after its
 Claude launcher dependencies were repaired. The portable client receipt is
-`C:\wreceipts\wrench-5060ti-client-smoke-20260921-09\receipt.json` and reports
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\clients\receipt.json`
+and reports
 `PASSED`: OpenCode, DeepSeek Harness, and Claude Code each exited with zero,
 each observed a structured read, and Claude Code produced three trace rows.
 The DSH run used an isolated HOME/XDG profile so an old provider snapshot could
 not select an external route.
 
 The same package accepted a direct 4M model-local payload in
-`C:\wreceipts\wrench-5060ti-client-smoke-20260921-09\model-local-4m.json`:
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\probe-4m.json`:
 `PASS_MODEL_LOCAL_SERVER_4M`, `prompt_tokens=3,999,995`, raw input estimate
-`3,999,995`, outer elapsed `450.368 ms`, server elapsed `133.759 ms`, and a
-first-layer gate latency of `61.57 ms` with a `64,000` token working budget.
+`3,999,995`, outer elapsed `426.555 ms`, server elapsed `136.672 ms`, and a
+first-layer gate latency of `62.969 ms` with a `64,000` token working budget.
 The receipt explicitly records `native_input_claim=false`, so this proves the
 hybrid model-local 4M intake and reduction path, not dense-native attention
 quality.
 
 The subsequent nonce-bound consolidated receipt is
-`C:\wreceipts\wrench-5060ti-full-verification-20260921-03\full-verification-receipt.json`.
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\full-verification-receipt.json`.
 It reports `PASS_5060TI_CURRENT_PACKAGE_VERIFICATION` for source commit
-`56dd8ef75f385ec57a3e99792c4340cebd6ca128`, HF revision
+`bdbdb19a47965df2f6a8ef0e4cb2ec18c6b3a066`, HF revision
 `2925399f14c8a70ee3b8385f74292b6663f5630d`, and `NVIDIA GeForce RTX 5060 Ti`.
 The resource snapshots retain `47.5%` free host RAM and `92.1%` free VRAM.
 The same receipt contains the 220-case replay, 4M intake, 2M/4M retrieval,
@@ -327,6 +328,6 @@ is now passed.
 
 The 220-case summary is `220/220` outcome matches, `120/120` eligible exact
 accepts, `0` prohibited accepts, `0` transport/runtime abstentions, median
-`2.253 ms`, and p95 `149.177 ms`. This remains package-only diagnostic
+`2.206 ms`, and p95 `151.071 ms`. This remains package-only diagnostic
 evidence without a matched teacher trace. It therefore does not establish
 learned MiniMax parity, dense-native decoder quality, or production readiness.
