@@ -13,6 +13,16 @@
       id: wrench-local
 - id: llm-deepseek
   config:
+    deepseek:
+      apiKeyEnv: DEEPSEEK_API_KEY
+      baseURL: http://127.0.0.1:28900/v1
+      models:
+        - id: wrench-local
+          name: Wrench local Experimental Preview
+          contextWindow: 4000000
+          maxTokens: 256
+      defaultModel:
+        id: wrench-local
     # Keep the local sentinel explicit for current DSH releases. Older
     # releases used apiKeyEnv, so retain it for backward compatibility.
     apiKey: wrench-local
