@@ -299,8 +299,9 @@ Evidence: `phases/phase-283-claude-code-local-route`.
 ## Current 5060 Ti client and 4M intake evidence
 
 A fresh run on `DESKTOP-KET1SKP` used the downloaded public package after its
-Claude launcher dependencies were repaired. The portable client receipt is
-`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\clients\receipt.json`
+runtime files were refreshed from the current source. The portable client
+receipt is
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-05\clients\receipt.json`
 and reports
 `PASSED`: OpenCode, DeepSeek Harness, and Claude Code each exited with zero,
 each observed a structured read, and Claude Code produced three trace rows.
@@ -308,26 +309,29 @@ The DSH run used an isolated HOME/XDG profile so an old provider snapshot could
 not select an external route.
 
 The same package accepted a direct 4M model-local payload in
-`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\probe-4m.json`:
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-05\probe-4m.json`:
 `PASS_MODEL_LOCAL_SERVER_4M`, `prompt_tokens=3,999,995`, raw input estimate
-`3,999,995`, outer elapsed `426.555 ms`, server elapsed `136.672 ms`, and a
-first-layer gate latency of `62.969 ms` with a `64,000` token working budget.
+`3,999,995`, outer elapsed `430.491 ms`, with a `64,000` token working budget.
 The receipt explicitly records `native_input_claim=false`, so this proves the
 hybrid model-local 4M intake and reduction path, not dense-native attention
 quality.
 
 The subsequent nonce-bound consolidated receipt is
-`C:\wreceipts\wrench-5060ti-full-verification-20260921-04\full-verification-receipt.json`.
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-05\full-verification-receipt.json`.
 It reports `PASS_5060TI_CURRENT_PACKAGE_VERIFICATION` for source commit
-`bdbdb19a47965df2f6a8ef0e4cb2ec18c6b3a066`, HF revision
-`2925399f14c8a70ee3b8385f74292b6663f5630d`, and `NVIDIA GeForce RTX 5060 Ti`.
-The resource snapshots retain `47.5%` free host RAM and `92.1%` free VRAM.
+`538ec6feee35bd02165111015fa1c0c1972ee96c`, HF revision
+`b83282e717e67d9dd28f9eccc2fb8d7f9e0e5693`, and `NVIDIA GeForce RTX 5060 Ti`.
+The before/after resource snapshots retained roughly `47%` free host RAM and
+`91%` free VRAM, above the required 10% host reserve.
 The same receipt contains the 220-case replay, 4M intake, 2M/4M retrieval,
 and three-client smoke receipts, so the independent package-verification gate
 is now passed.
 
 The 220-case summary is `220/220` outcome matches, `120/120` eligible exact
 accepts, `0` prohibited accepts, `0` transport/runtime abstentions, median
-`2.206 ms`, and p95 `151.071 ms`. This remains package-only diagnostic
+`2.183 ms`, and p95 `152.919 ms`. The runtime core alignment receipt is
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-05\core-alignment.json`
+with `PASS_CORE_RUNTIME_ALIGNED_WITH_HEAD`; its comparison normalizes only
+Python CRLF versus LF line endings. This remains package-only diagnostic
 evidence without a matched teacher trace. It therefore does not establish
 learned MiniMax parity, dense-native decoder quality, or production readiness.
