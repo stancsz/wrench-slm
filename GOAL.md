@@ -3566,3 +3566,12 @@ calls. This is sealed-final diagnostic evidence with `quality_claim=false` and
 5060TI evidence, learned MiniMax parity, or dense-native quality. Evidence:
 `phases/phase-355-sealed-final-diagnostic/` and external hash-bound receipts
 under `D:\models\wrench-phase-355-sealed-final-diagnostic`.
+
+2026-09-21 5060TI network/auth boundary: `DESKTOP-KET1SKP.local` resolved to
+`10.0.0.4` and TCP `22` was reachable, but both the default SSH identity and
+the repository's `wrench_worker_ed25519` identity were rejected. WinRM was
+unavailable and no remote command executed. This confirms that the current
+remote-control gap is authentication or saved-project/queue provisioning,
+not evidence of a successful or failed 5060TI benchmark. No independent
+hardware claim is made. Evidence:
+`phases/phase-356-5060ti-network-auth-boundary/`.

@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.5060ti-network-auth-boundary.v1",
+  "status": "UNVERIFIED_5060TI_AUTH_BOUNDARY",
+  "quality_claim": false,
+  "independent_5060_claim": false,
+  "host": {
+    "requested_name": "DESKTOP-KET1SKP",
+    "resolved_name": "DESKTOP-KET1SKP.local",
+    "resolved_ipv4": "10.0.0.4",
+    "icmp_ping": false,
+    "tcp_22": true,
+    "winrm": false
+  },
+  "authentication": {
+    "default_ssh_identity": "rejected",
+    "wrench_worker_ed25519": "rejected",
+    "remote_command_executed": false
+  },
+  "required_missing": [
+    "host identity receipt",
+    "GPU identity and VRAM snapshot",
+    "RAM reserve snapshot",
+    "exact source commit",
+    "artifact and input hashes",
+    "benchmark receipt"
+  ],
+  "recovery": "Provision explicit worker authentication or restore an authenticated Codex project or private job queue for DESKTOP-KET1SKP."
+}
