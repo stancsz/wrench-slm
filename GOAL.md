@@ -3390,8 +3390,9 @@ project or queue surface exists. No 5060Ti result is claimed. Evidence:
 2026-09-21 newly received package-verification receipts were preserved from
 the remote branch under `phases/phase-340-5060ti-independent-verification`.
 Their own host preflight identifies an RTX `5070 Ti`, not the requested 5060
-Ti, so they are not independent 5060Ti evidence. They do add current-package
-diagnostics: structural package validation passed, retrieval passed `6/6`,
+Ti, and their source head is `55c0fb0`, behind the current `7265b3b`, so they
+are neither independent 5060Ti evidence nor exact-current-head evidence. They
+do add same-package diagnostics: structural package validation passed, retrieval passed `6/6`,
 the 220-case replay passed `220/220` with weighted success `1.0`, verifier
 success `1.0`, coverage `1.0`, net savings `1.0`, `310` fallback frontier
 tokens, `24,045` local tokens, and p50/p95 `218.578/350.519 ms`; the 44-row
