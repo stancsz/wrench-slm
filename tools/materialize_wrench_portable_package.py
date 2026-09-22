@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import errno
+import hashlib
 import json
 import os
 import shutil
@@ -28,6 +29,7 @@ def materialize(
     target: Path,
     repo_root: Path,
     huggingface_repo_id: str = DEFAULT_HUGGINGFACE_REPO_ID,
+    intent_router_artifact: Path | None = None,
 ) -> dict[str, object]:
     if not source.is_dir() or not (source / "config.json").is_file():
         raise ValueError(f"source artifact is missing config.json: {source}")
@@ -38,6 +40,11 @@ def materialize(
     safety_candidate = "safety" in source_name_lower or "calibrated" in source_name_lower
     quantized_candidate = (source / "hf_quant_config.json").is_file()
     native4m_candidate = "native4m" in source_name_lower
+    intent_router_metadata: dict[str, object] = {
+        "enabled": False,
+        "production_enabled": False,
+        "schema": "wrench.intent-router-sidecar.v1",
+    }
     weight_materialization_mode = "hardlink"
     try:
         for item in sorted(source.iterdir(), key=lambda path: path.name):
@@ -58,6 +65,19 @@ def materialize(
                     weight_materialization_mode = "copy_cross_volume"
             elif item.is_file():
                 shutil.copy2(item, target / item.name)
+        if intent_router_artifact is not None:
+            if not intent_router_artifact.is_file():
+                raise ValueError(f"intent router artifact is missing: {intent_router_artifact}")
+            sidecar_target = target / "wrench-intent-router.pt"
+            shutil.copy2(intent_router_artifact, sidecar_target)
+            intent_router_metadata = {
+                "enabled": False,
+                "production_enabled": False,
+                "schema": "wrench.intent-router-sidecar.v1",
+                "file": sidecar_target.name,
+                "sha256": hashlib.sha256(sidecar_target.read_bytes()).hexdigest(),
+                "mode": "opt_in_shadow_only",
+            }
         tokenizer_config_path = target / "tokenizer_config.json"
         if tokenizer_config_path.is_file():
             tokenizer_config = json.loads(tokenizer_config_path.read_text(encoding="utf-8"))
@@ -466,6 +486,7 @@ def materialize(
             "server_entrypoint": "wrench_server.py",
             "model_calls_for_mechanical_lookup": 0,
             },
+            "learned_intent_router": intent_router_metadata,
             "backends": {
                 "transformers": "Transformers >=5.17.0 config/tokenizer verified; packed NVFP4 tensor load requires the FreeToken ModelOpt backend",
                 "freetoken": (
@@ -529,6 +550,9 @@ def materialize(
                 "register and verify backend adapters",
             ],
         }
+        if intent_router_artifact is not None:
+            receipt["runtime_files"].append("wrench-intent-router.pt")  # type: ignore[union-attr]
+            receipt["intent_router_artifact_sha256"] = intent_router_metadata["sha256"]
         (target / "wrench-package-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
         return receipt
     except Exception:
@@ -546,8 +570,20 @@ def main() -> int:
         default=DEFAULT_HUGGINGFACE_REPO_ID,
         help="Hub repo id embedded in the portable package copy command",
     )
+    parser.add_argument(
+        "--intent-router-artifact",
+        type=Path,
+        default=None,
+        help="optional shadow-only wrench.intent-router-sidecar.v1 to copy into the package",
+    )
     args = parser.parse_args()
-    receipt = materialize(args.source, args.target, args.repo_root, args.huggingface_repo_id)
+    receipt = materialize(
+        args.source,
+        args.target,
+        args.repo_root,
+        args.huggingface_repo_id,
+        args.intent_router_artifact,
+    )
     print(json.dumps({"status": receipt["status"], "target": receipt["target"]}))
     return 0
 

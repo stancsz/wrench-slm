@@ -3618,3 +3618,13 @@ The two final mismatches were health cases without the local fixture. This is
 not yet packaged, enabled, 5060TI-verified, or production evidence. Evidence:
 `phases/phase-377-learned-intent-router/` and external receipts under
 `D:\models\wrench-intent-router-shadow-20260921`.
+
+The phase then exported the fitted head as a 59,725-byte
+`wrench.intent-router-sidecar.v1` and materialized it into a real NVFP4
+portable package. Structural validation passed, the sidecar loaded on CPU,
+the package accepted a direct `3,999,995`-token model-local payload in
+`160.783 ms` with zero model calls, and six 2M/4M retrieval cases passed with
+zero model calls. The manifest keeps the sidecar opt-in and disabled by
+default. This is portable distribution and hybrid intake evidence, not yet
+learned-router runtime enablement, dense-native quality, or independent
+5060TI execution of the new sidecar.

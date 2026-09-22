@@ -53,6 +53,24 @@ def test_materializer_rewrites_copy_command_without_duplicate_suffix(tmp_path):
     assert "failed Windows startup can leak Torch workers" in launcher
 
 
+def test_materializer_can_copy_shadow_intent_router_sidecar(tmp_path):
+    from tools.materialize_wrench_portable_package import materialize
+
+    source = tmp_path / "source-native4M"
+    target = tmp_path / "package"
+    source.mkdir()
+    (source / "config.json").write_text("{}\n", encoding="utf-8")
+    artifact = tmp_path / "wrench-intent-router.pt"
+    artifact.write_bytes(b"shadow-router")
+    receipt = materialize(source, target, Path.cwd(), intent_router_artifact=artifact)
+
+    assert (target / "wrench-intent-router.pt").read_bytes() == b"shadow-router"
+    manifest = (target / "wrench-package.json").read_text(encoding="utf-8")
+    assert '"learned_intent_router"' in manifest
+    assert '"mode": "opt_in_shadow_only"' in manifest
+    assert "wrench-intent-router.pt" in receipt["runtime_files"]
+
+
 def test_materializer_is_available_and_does_not_overwrite_by_contract():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert "refusing to overwrite existing target" in script

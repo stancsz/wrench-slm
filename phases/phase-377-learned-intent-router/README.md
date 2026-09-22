@@ -59,6 +59,26 @@ still not promoted because the dataset manifest is marked
 fixture, and the router has not yet been packaged or independently verified
 on the 5060Ti. The deterministic hybrid worker remains authoritative.
 
+## Portable sidecar materialization
+
+The fitted head was exported as a 59,725-byte
+`wrench.intent-router-sidecar.v1` artifact. It contains only the seven labels,
+the calibration-selected `0.5` confidence threshold, and the 2,048-wide
+linear head. The artifact hash is
+`ADCDFEC780639CB77948FD44783744EF5D36D9F4C1E074249FAEA5876E4F8AA9`.
+
+The real NVFP4 v103 source was materialized into
+`D:\models\_wrench-release-candidate-intent-router-7611ea9` with the sidecar
+copied as `wrench-intent-router.pt`. The package passed structural validation,
+loaded the sidecar on CPU, accepted a direct `3,999,995`-token raw payload in
+`160.783 ms` with the embedded mechanical route and zero model calls, and
+passed all six 2M/4M retrieval cases with zero model calls. The package
+manifest records `mode=opt_in_shadow_only` and `production_enabled=false`.
+
+This proves portable sidecar distribution and hybrid model-local intake. It
+does not yet prove learned-router inference inside the runtime, dense-native
+attention quality, or independent 5060Ti execution of this new sidecar.
+
 ## Reproducibility boundary
 
 The implementation is `tools/train_intent_router.py`, SHA-256

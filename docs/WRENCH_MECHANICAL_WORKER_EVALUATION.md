@@ -318,6 +318,13 @@ does not establish native dense 4M quality or MiniMax parity.
 Evidence: `phases/phase-377-learned-intent-router` and the external receipts
 under `D:\models\wrench-intent-router-shadow-20260921`.
 
+The same phase also materializes the learned head as a 59,725-byte portable
+sidecar. The package copies it as `wrench-intent-router.pt` while recording
+`production_enabled=false`. The package passed structural validation, a direct
+`3,999,995`-token model-local 4M intake in `160.783 ms`, and six 2M/4M
+retrieval cases with zero model calls. This is distribution and hybrid intake
+evidence, not learned-router runtime enablement or dense-native quality.
+
 ## Claude Code local smoke
 
 Claude Code 2.1.251 was run in print mode with an isolated config and an

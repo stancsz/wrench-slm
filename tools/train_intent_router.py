@@ -251,6 +251,12 @@ def main() -> int:
     )
     parser.add_argument("--allowed-root", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--router-artifact",
+        type=Path,
+        default=None,
+        help="optional portable sidecar path for the fitted linear head",
+    )
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--fit-steps", type=int, default=300)
     parser.add_argument("--cv-folds", type=int, default=5)
@@ -323,6 +329,22 @@ def main() -> int:
             "maximum_embedding_p95_ms": 1000,
         },
     }
+    if args.router_artifact is not None:
+        args.router_artifact.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            {
+                "schema": "wrench.intent-router-sidecar.v1",
+                "labels": list(LABELS),
+                "confidence_threshold": cv["chosen_threshold"],
+                "embedding_width": int(calibration_features.shape[-1]),
+                "base_model": str(args.model.resolve()),
+                "state_dict": {key: value.detach().cpu() for key, value in head.state_dict().items()},
+                "production_enabled": False,
+            },
+            args.router_artifact,
+        )
+        receipt["router_artifact"] = str(args.router_artifact.resolve())
+        receipt["router_artifact_sha256"] = hashlib.sha256(args.router_artifact.read_bytes()).hexdigest()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({
