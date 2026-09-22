@@ -37,3 +37,16 @@ def test_manifest_can_bind_a_case_hash(tmp_path):
 
     assert manifest["inputs"]["cases"]["canonical_sha256"]
     assert manifest["inputs"]["raw_teacher_trace_upload"] is False
+
+
+def test_manifest_can_dispatch_current_package_verification():
+    manifest = build_manifest(
+        source_commit="a" * 40,
+        hf_revision="b" * 40,
+        job_id="test-5060-full-verification",
+        workload="wrench_current_package_verification",
+    )
+
+    assert manifest["execution"]["workload"] == "wrench_current_package_verification"
+    assert manifest["execution"]["script"].endswith("run_5060ti_current_package_verification.ps1")
+    assert "run_5060ti_current_package_verification.ps1" in manifest["execution"]["command"]

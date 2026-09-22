@@ -38,6 +38,7 @@ def build_manifest(
     job_id: str | None = None,
     target_host: str = "DESKTOP-KET1SKP",
     cases_path: Path | None = None,
+    workload: str = "wrench_hf_package_preflight",
 ) -> dict[str, Any]:
     if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
         raise ValueError("source_commit must be a 40-character hexadecimal commit")
@@ -55,9 +56,15 @@ def build_manifest(
             "path": str(cases_path),
             "canonical_sha256": canonical_sha256(cases_path),
         }
+    workload_scripts = {
+        "wrench_hf_package_preflight": "run_5060ti_hf_preflight.ps1",
+        "wrench_current_package_verification": "run_5060ti_current_package_verification.ps1",
+    }
+    if workload not in workload_scripts:
+        raise ValueError(f"unsupported workload: {workload}")
     command = (
         "powershell -NoProfile -ExecutionPolicy Bypass -File "
-        f"{REMOTE_SOURCE_ROOT}\\tools\\run_5060ti_hf_preflight.ps1 "
+        f"{REMOTE_SOURCE_ROOT}\\tools\\{workload_scripts[workload]} "
         f"-SourceRoot {REMOTE_SOURCE_ROOT} "
         f"-ExpectedSourceCommit {source_commit} "
         f"-HuggingFaceRepoId {HF_REPO_ID} "
@@ -87,8 +94,8 @@ def build_manifest(
             "raw_teacher_trace_upload": False,
         },
         "execution": {
-            "workload": "wrench_hf_package_preflight",
-            "script": "tools/run_5060ti_hf_preflight.ps1",
+            "workload": workload,
+            "script": f"tools/{workload_scripts[workload]}",
             "command": command,
             "timeout_seconds": 1800,
             "retry_limit": 1,
@@ -148,6 +155,11 @@ def main() -> int:
     parser.add_argument("--job-id")
     parser.add_argument("--target-host", default="DESKTOP-KET1SKP")
     parser.add_argument("--cases", type=Path)
+    parser.add_argument(
+        "--workload",
+        choices=("wrench_hf_package_preflight", "wrench_current_package_verification"),
+        default="wrench_hf_package_preflight",
+    )
     args = parser.parse_args()
     if args.cases is not None and not args.cases.is_file():
         raise SystemExit(f"cases file does not exist: {args.cases}")
@@ -157,6 +169,7 @@ def main() -> int:
         job_id=args.job_id,
         target_host=args.target_host,
         cases_path=args.cases,
+        workload=args.workload,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
