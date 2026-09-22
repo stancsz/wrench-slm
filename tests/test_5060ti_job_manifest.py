@@ -20,6 +20,8 @@ def test_manifest_is_self_contained_and_requires_host_reserves():
     assert manifest["boundaries"]["mutation_authority"] is False
     assert "a" * 40 in manifest["execution"]["command"]
     assert "b" * 40 in manifest["execution"]["command"]
+    assert manifest["job_id"] in manifest["execution"]["command"]
+    assert manifest["claim_nonce"] in manifest["execution"]["command"]
     assert "claim_nonce" in manifest["required_receipt"]["must_echo"]
 
 

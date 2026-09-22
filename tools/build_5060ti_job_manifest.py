@@ -63,7 +63,8 @@ def build_manifest(
         f"-HuggingFaceRepoId {HF_REPO_ID} "
         f"-HuggingFaceRevision {hf_revision} "
         f"-ModelRoot {REMOTE_MODEL_ROOT} "
-        f"-ReceiptRoot {REMOTE_RECEIPT_ROOT}\\{resolved_job_id}"
+        f"-ReceiptRoot {REMOTE_RECEIPT_ROOT}\\{resolved_job_id} "
+        f"-JobId {resolved_job_id} -ClaimNonce {nonce}"
     )
     return {
         "schema": "wrench.worker-job.v1",
