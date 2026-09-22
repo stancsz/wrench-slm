@@ -1,0 +1,25 @@
+{
+  "schema": "wrench.current-head-claude-code-smoke.v1",
+  "status": "PASSED_READ_ONLY",
+  "package_dir": "D:\\models\\_wrench-release-candidate-8d9ea2c",
+  "client": "Claude Code",
+  "exit_code": 0,
+  "trace": "claude.trace.jsonl",
+  "trace_rows": 2,
+  "protocol": "anthropic-messages",
+  "backend_sequence": [
+    "embedded-mechanical",
+    "embedded-mechanical-settlement"
+  ],
+  "model_calls": 0,
+  "first_gate_ms": 2.547,
+  "structured_read_observed": true,
+  "mutation_claim": false,
+  "client_warning": "unrecognized_model MiniMax-M2.7 retained as a local client warning; no provider call occurred",
+  "claims_not_authorized": [
+    "independent RTX 5060 Ti verification",
+    "learned MiniMax parity",
+    "dense-native 4M decoder quality",
+    "production readiness"
+  ]
+}

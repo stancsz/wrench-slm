@@ -3494,3 +3494,16 @@ Evidence: `phases/phase-349-current-head-package-binding.md`,
 `phases/phase-349-current-head-package-ollama.json`,
 `phases/phase-350-current-head-220-replay/`, and
 `phases/phase-350-current-head-heldout-final/`.
+
+2026-09-22 exact current-head client integration: the same package completed
+fresh read-only OpenCode and DeepSeek Harness smokes with exit `0`, structured
+reads, three trace rows, zero model calls, and embedded mechanical plus
+settlement backends. Claude Code also exited `0`, read `README.md`, recorded
+two Anthropic rows, used zero model calls, and completed its first-layer gate
+in `2.547 ms` with no mutation claim. The local `MiniMax-M2.7`
+unrecognized-model warning did not cause a provider call. This is current
+package client-wiring evidence, not learned MiniMax parity, dense-native 4M
+quality, independent 5060Ti evidence, or production approval. Evidence:
+`phases/phase-351-current-head-client-smoke/README.md`,
+`phases/phase-351-current-head-client-smoke/receipt.json`, and
+`phases/phase-351-current-head-client-smoke/claude-receipt.json`.
