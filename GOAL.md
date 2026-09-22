@@ -3340,3 +3340,28 @@ MapReduce/reference path, not dense-native attention quality, learned MiniMax
 parity, or production approval. Evidence:
 `phases/phase-336-current-head-retrieval-2m-4m.md` and
 `phases/phase-336-current-head-retrieval-2m-4m.json`.
+
+2026-09-21 exact current-head package replay: the same
+`D:\models\_wrench-release-candidate-bbc680f` package completed the full
+corrected 220-case diagnostic replay with `220/220` traces, including `120`
+eligible traces. Weighted Wrench final success and verifier success were both
+`1.0`; weighted frontier-token coverage and net savings were both `1.0`; local
+tokens were `24,141`, frontier tokens were `0`, p50/p95 latency was
+`190.199/306.474 ms`, and prohibited accepts and unexpected mutations were
+both `0`. This is deterministic current-package evidence, not learned MiniMax
+parity, dense-native 4M quality, independent RTX 5060 Ti evidence, or
+production enablement. Evidence:
+`phases/phase-337-current-head-220-replay.md` and
+`phases/phase-337-current-head-220-replay/evaluation.json`.
+
+2026-09-21 exact current-head held-out slice rerun: the same package completed
+all `44/44` rows in `evals/wrench-expanded-v2/final.jsonl`, including `24`
+eligible traces. Weighted Wrench final success and verifier success were both
+`1.0`; weighted frontier-token coverage and net savings were both `1.0`; local
+tokens were `4,805`, frontier tokens were `0`, p50/p95 latency was
+`289.126/353.990 ms`, and prohibited accepts and unexpected mutations were
+both `0`. The slice remains diagnostic pending human and family-disjoint
+approval, and does not prove learned parity, dense-native 4M quality,
+independent RTX 5060 Ti execution, or production enablement. Evidence:
+`phases/phase-338-current-head-heldout-final.md` and
+`phases/phase-338-current-head-heldout-final/evaluation.json`.
