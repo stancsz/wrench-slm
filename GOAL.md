@@ -3415,3 +3415,17 @@ current portable model-local evidence, not dense-native quality, learned
 MiniMax parity, independent 5060Ti evidence, or production approval. Evidence:
 `phases/phase-341-current-head-ollama-surface.md` and
 `phases/phase-341-current-head-ollama-surface.json`.
+
+2026-09-22 current-head real client integration: the exact package completed
+read-only work through OpenCode, DeepSeek Harness, and Claude Code. OpenCode
+and DeepSeek Harness both exited `0` with structured reads; their trace had
+`3` rows, zero model calls, embedded mechanical routing, and no mutation claim.
+Claude Code exited `0`, completed `Read README.md`, recorded two Anthropic
+Messages rows, used zero model calls, and completed its first pass in
+`2.535 ms` with `4,148` raw input characters. The one `MiniMax-M2.7`
+unrecognized-model warning is retained as a client warning, not a provider
+call. This proves the practical local client slice, not learned parity,
+dense-native 4M quality, independent 5060Ti verification, or production
+approval. Evidence:
+`phases/phase-342-current-head-client-smoke/README.md` and
+`phases/phase-342-current-head-client-smoke/receipt.json`.
