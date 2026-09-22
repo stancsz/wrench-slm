@@ -2,6 +2,9 @@
 # This overlay points DeepSeek Harness at the package-local endpoint.
 - id: llm-deepseek
   config:
+    # Keep the local sentinel explicit for current DSH releases. Older
+    # releases used apiKeyEnv, so retain it for backward compatibility.
+    apiKey: wrench-local
     apiKeyEnv: WRENCH_LOCAL_API_KEY
     baseURL: http://127.0.0.1:28900/v1
     models:

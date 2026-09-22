@@ -68,6 +68,8 @@ $opencodeOutput = ""
 $dshOutput = ""
 $opencodeExit = $null
 $dshExit = $null
+$opencodeMode = "normal"
+$opencodeSupportsPure = $false
 $originalKey = $env:WRENCH_LOCAL_API_KEY
 
 try {
@@ -95,9 +97,18 @@ try {
     try {
         $clientErrorPreference = $ErrorActionPreference
         $ErrorActionPreference = "Continue"
-        $opencodeOutput = (& $opencode run --pure -m wrench/wrench-local `
+        $opencodeHelp = (& $opencode run --help 2>&1 | Out-String)
+        $opencodeSupportsPure = $opencodeHelp -match "(?m)--pure\b"
+        $opencodeOutput = (& $opencode run -m wrench/wrench-local `
             "Read README.md and report its first heading." 2>&1 | Out-String)
         $opencodeExit = $LASTEXITCODE
+        if ($opencodeExit -ne 0 -and $opencodeSupportsPure) {
+            $opencodeMode = "pure-fallback"
+            $pureOutput = (& $opencode run --pure -m wrench/wrench-local `
+                "Read README.md and report its first heading." 2>&1 | Out-String)
+            $opencodeOutput = "NORMAL ATTEMPT:`n$opencodeOutput`nPURE FALLBACK:`n$pureOutput"
+            $opencodeExit = $LASTEXITCODE
+        }
 
         $env:WRENCH_LOCAL_API_KEY = "wrench-local"
         $dshOutput = (& $dsh --profile headless --patch $dshPatchForSmoke `
@@ -127,6 +138,8 @@ try {
         clients = [ordered]@{
             opencode = [ordered]@{
                 exit_code = $opencodeExit
+                mode = $opencodeMode
+                supports_pure = $opencodeSupportsPure
                 structured_read_observed = $readToolObserved
                 output_file = "opencode.stdout.txt"
             }

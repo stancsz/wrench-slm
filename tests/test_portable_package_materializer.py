@@ -170,6 +170,7 @@ def test_portable_client_configs_declare_model_local_four_million_context():
     assert "contextWindow: 4000000" in dsh
     assert "wrench-local" in opencode
     assert "wrench-local" in dsh
+    assert "apiKey: wrench-local" in dsh
 
 
 def test_portable_client_smoke_runner_has_fail_closed_receipt_contract():
