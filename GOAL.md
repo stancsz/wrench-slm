@@ -3375,3 +3375,14 @@ failed because no matching saved Wrench project exists on the 5060Ti host;
 one bounded worker-control inspection also timed out. No 5060Ti benchmark was
 claimed, and no stale thread was continued. Evidence:
 `phases/phase-339-fresh-5060ti-dispatch-boundary.md`.
+
+2026-09-21 fresh remote child attempts: two new child tasks on the configured
+remote host received complete nonce-bound current-head verification payloads,
+then completed as empty turns after `38.713 s` and `43.334 s`. Neither emitted
+a nonce, host identity, command marker, resource snapshot, or receipt. A local
+inspection found no real queue submission entry point; the only queue helper
+is explicitly a mock-only simulator. Following the bounded Luna advisor
+decision, remote retries stop until explicit host targeting and a working saved
+project or queue surface exists. No 5060Ti result is claimed. Evidence:
+`phases/phase-340-fresh-remote-control-empty-turns.md` and
+`phases/phase-340-fresh-remote-control-empty-turns.json`.

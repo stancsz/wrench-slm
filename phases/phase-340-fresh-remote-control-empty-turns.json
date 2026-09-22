@@ -1,0 +1,30 @@
+{
+  "schema": "wrench.fresh-remote-control-boundary.v1",
+  "status": "UNVERIFIED_CONTROL_SURFACE_EMPTY_TURNS",
+  "job_id": "wrench-5060ti-independent-20260921T1900Z-7265b3b",
+  "source_commit": "7265b3b93c3e0c29fedcde2dabd4218c98e4459a",
+  "package_dir": "D:\\models\\_wrench-release-candidate-bbc680f",
+  "target_host": "remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a",
+  "source_thread": "01a0c5e5-75e8-7330-9b1a-95b45b438176",
+  "fresh_children": [
+    {
+      "thread_id": "01a0c678-41b2-74b1-8b1b-492f9f11e892",
+      "nonce": "5060ti-wrench-7265b3b-4m-retrieval-r1",
+      "turn_duration_ms": 38713,
+      "status": "EMPTY_TURN",
+      "required_fields_observed": false
+    },
+    {
+      "thread_id": "01a0c679-8084-7d11-94f9-e2778dceb19e",
+      "nonce": "wrench-5060ti-7265b3b-r2",
+      "turn_duration_ms": 43334,
+      "status": "EMPTY_TURN",
+      "required_fields_observed": false
+    }
+  ],
+  "queue_entry_point_available": false,
+  "mock_queue_only": "tools/simulate_5060ti_worker_claim.py",
+  "independent_5060_claim": false,
+  "quality_claim": false,
+  "next_action": "Stop until an explicit host-targeted queue or saved-project control surface is available."
+}
