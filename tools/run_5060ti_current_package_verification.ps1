@@ -23,7 +23,8 @@ param(
     [string] $HfExecutable = "hf",
     [string] $JobId = "",
     [string] $ClaimNonce = "",
-    [switch] $SkipPackageDownload
+    [switch] $SkipPackageDownload,
+    [switch] $SkipPreflight
 )
 
 $ErrorActionPreference = "Stop"
@@ -115,32 +116,42 @@ try {
         throw "missing canonical 220-case fixture: $CasesPath"
     }
 
-    $preflight = Join-Path $ScriptRoot "tools\run_5060ti_hf_preflight.ps1"
-    $preflightArgs = @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $preflight,
-        "-SourceRoot", $SourceRoot,
-        "-ExpectedSourceCommit", $ExpectedSourceCommit,
-        "-HuggingFaceRepoId", $HuggingFaceRepoId,
-        "-HuggingFaceRevision", $HuggingFaceRevision,
-        "-ModelRoot", $ModelRoot,
-        "-ReceiptRoot", $ReceiptRoot,
-        "-PythonExe", $PythonExe,
-        "-HfExecutable", $HfExecutable,
-        "-JobId", $JobId,
-        "-ClaimNonce", $ClaimNonce
-    )
-    if ($SkipPackageDownload) { $preflightArgs += "-SkipDownload" }
-    # The nested Windows PowerShell invocation already defaults to `py -3`.
-    # Passing the bare `-3` as a value makes the child parser treat it as a
-    # switch, so only forward Python arguments when the caller explicitly
-    # selected a non-default launcher argument.
-    $defaultPythonArguments = @("-3")
-    if (-not (@($PythonArguments).Count -eq 1 -and @($PythonArguments)[0] -ceq $defaultPythonArguments[0])) {
-        foreach ($argument in $PythonArguments) {
-            $preflightArgs += @("-PythonArguments", $argument)
+    if (-not $SkipPreflight) {
+        $preflight = Join-Path $ScriptRoot "tools\run_5060ti_hf_preflight.ps1"
+        $preflightArgs = @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $preflight,
+            "-SourceRoot", $SourceRoot,
+            "-ExpectedSourceCommit", $ExpectedSourceCommit,
+            "-HuggingFaceRepoId", $HuggingFaceRepoId,
+            "-HuggingFaceRevision", $HuggingFaceRevision,
+            "-ModelRoot", $ModelRoot,
+            "-ReceiptRoot", $ReceiptRoot,
+            "-PythonExe", $PythonExe,
+            "-HfExecutable", $HfExecutable,
+            "-JobId", $JobId,
+            "-ClaimNonce", $ClaimNonce
+        )
+        if ($SkipPackageDownload) { $preflightArgs += "-SkipDownload" }
+        # The nested Windows PowerShell invocation already defaults to `py -3`.
+        # Passing the bare `-3` as a value makes the child parser treat it as a
+        # switch, so only forward Python arguments when the caller explicitly
+        # selected a non-default launcher argument.
+        $defaultPythonArguments = @("-3")
+        if (-not (@($PythonArguments).Count -eq 1 -and @($PythonArguments)[0] -ceq $defaultPythonArguments[0])) {
+            foreach ($argument in $PythonArguments) {
+                $preflightArgs += @("-PythonArguments", $argument)
+            }
+        }
+        Invoke-Checked -Executable "powershell" -Arguments $preflightArgs
+    } else {
+        if (-not (Test-Path -LiteralPath $PreflightReceiptPath -PathType Leaf)) {
+            throw "SkipPreflight requires a verified receipt: $PreflightReceiptPath"
+        }
+        $verifiedPreflight = Get-Content -LiteralPath $PreflightReceiptPath -Raw | ConvertFrom-Json
+        if ($verifiedPreflight.status -ne "PASS_HF_PACKAGE_RECEIPT") {
+            throw "preflight receipt is not verified: $($verifiedPreflight.status)"
         }
     }
-    Invoke-Checked -Executable "powershell" -Arguments $preflightArgs
 
     $serverOut = Join-Path $ReceiptRoot "package-server.stdout.log"
     $serverErr = Join-Path $ReceiptRoot "package-server.stderr.log"
