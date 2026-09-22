@@ -3296,3 +3296,15 @@ phase 330 receipts.
 package validation, replay, and client integration code regression-clean. It
 does not convert the diagnostic receipts into production approval. Evidence:
 `phases/phase-331-current-head-regression.json`.
+
+2026-09-21 standard HF fallback candidate: an existing BF16 checkpoint with
+the same `3,881,244,016` parameters was materialized into a standard
+Safetensors package. Transformers `5.17.0` loaded all weights successfully,
+the package accepted the model-local 4M route in `31.24 ms`, and OpenCode,
+DeepSeek Harness, and Claude Code all completed read-only smokes. The package
+is `7.368 GiB`, compared with `3.189 GiB` for the NVFP4 default candidate, so
+NVFP4 remains the fast and smaller default while BF16 is retained as a
+standard-HF reference. A bounded GPU smoke generated four tokens with more
+than 10% VRAM remaining, but no quality claim is made. Evidence:
+`phases/phase-333-standard-bf16-candidate.md` and
+`phases/phase-333-standard-bf16-candidate.json`.

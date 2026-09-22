@@ -1,0 +1,50 @@
+{
+  "phase": "phase-333-standard-bf16-candidate",
+  "status": "PASS_STANDARD_HF_CONFIG_TOKENIZER_NATIVE",
+  "source_runtime_commit": "753ba8e",
+  "source_weights": "D:\\models\\Wrench-Qwen3.6-8expert-BF16-hybrid-v96-dense-native-gate",
+  "package_dir": "D:\\models\\_wrench-standard-release-candidate-bbc680f",
+  "verified_parameters": 3881244016,
+  "hard_parameter_ceiling": 4250000000,
+  "package_bytes": 7910979763,
+  "package_gib": 7.368,
+  "nvfp4_default_package_bytes": 3424211481,
+  "nvfp4_default_package_gib": 3.189,
+  "transformers_version": "5.17.0",
+  "full_weight_load_verified": true,
+  "loaded_model_class": "Qwen3_5MoeForConditionalGeneration",
+  "full_weight_load_elapsed_ms": 7514.245,
+  "gpu_generation_smoke": {
+    "status": "PASS_GENERATION_SMOKE",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "generated_tokens": 4,
+    "output": "< : c >",
+    "vram_free_before_bytes": 15767437312,
+    "vram_free_ready_bytes": 7957643264,
+    "vram_free_after_bytes": 7752122368,
+    "generation_quality_claim": false
+  },
+  "four_million_route": {
+    "status": "PASS_PUBLIC_PACKAGE_4M_MECHANICAL_ROUTE",
+    "elapsed_ms": 31.24,
+    "model_calls": 0,
+    "receipt": "phases/phase-333-standard-bf16-4m-route.json"
+  },
+  "clients": {
+    "opencode": {"exit_code": 0, "structured_read_observed": true},
+    "deepseek_harness": {"exit_code": 0, "structured_read_observed": true},
+    "claude_code": {"exit_code": 0, "structured_read_observed": true}
+  },
+  "decision": "retain_nvfp4_as_default_fast_small_candidate; keep_bf16_as_standard_hf_reference",
+  "quality_claim": false,
+  "production_enablement": false,
+  "evidence": [
+    "phases/phase-333-standard-bf16-candidate.md",
+    "phases/phase-333-standard-bf16-package-validation.json",
+    "phases/phase-333-standard-bf16-hf-load.json",
+    "phases/phase-333-standard-bf16-4m-route.json",
+    "phases/phase-333-standard-bf16-client-smoke/receipt.json",
+    "phases/phase-333-standard-bf16-client-smoke/wrench-client.trace.jsonl",
+    "phases/phase-333-standard-bf16-client-smoke/claude.trace.jsonl"
+  ]
+}

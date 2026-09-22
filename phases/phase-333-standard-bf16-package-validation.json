@@ -1,0 +1,124 @@
+{
+  "schema": "wrench.portable-model-package-validation.v1",
+  "model_dir": "D:\\models\\_wrench-standard-release-candidate-bbc680f",
+  "status": "PASS_STRUCTURAL_PACKAGE",
+  "errors": [],
+  "config_max_position_embeddings": 2000000,
+  "safetensors_shard_count": 9,
+  "file_hashes": {
+    "config.json": {
+      "bytes": 3339,
+      "sha256": "440a85ef4465d6feaed1cae318278c065131597be60b9140fd03732c2b27d9a2"
+    },
+    "tokenizer.json": {
+      "bytes": 12807982,
+      "sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42"
+    },
+    "tokenizer_config.json": {
+      "bytes": 15568,
+      "sha256": "4dd3676b7c928162540364427becea525bfe52a9809764e27063001ba998a7ba"
+    },
+    "tokenization_wrench.py": {
+      "bytes": 3945,
+      "sha256": "0a9acab101fd47dffa0a4bff59ae6597293fcc0dcb4f6d0b8d5e81b63f0dcdb7"
+    },
+    "wrench_prefill.py": {
+      "bytes": 44138,
+      "sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428"
+    },
+    "wrench_mechanical.py": {
+      "bytes": 31526,
+      "sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8"
+    },
+    "wrench_toolbelt.py": {
+      "bytes": 129,
+      "sha256": "d32890c50ae109435d90d01898d43ab67ce8bbf9e663d68b07240af9eae98217"
+    },
+    "toolbelt.py": {
+      "bytes": 15829,
+      "sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb"
+    },
+    "core.py": {
+      "bytes": 23060,
+      "sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7"
+    },
+    "wrench_runtime/prefill.py": {
+      "bytes": 44138,
+      "sha256": "47137991d6f5e3e0198c8e2d1fdf6ad7641f04f2f93dfbcf38ce6ba26582b428"
+    },
+    "wrench_runtime/toolbelt.py": {
+      "bytes": 15829,
+      "sha256": "84ba67bf8a286b6c5832344a732b2183262aae731daa67cb962cdea0005c7bbb"
+    },
+    "wrench_runtime/core.py": {
+      "bytes": 23060,
+      "sha256": "7f437e77c510d837133adc4621186a8d8e966aeade699dcc4ddcc1ab6237b3a7"
+    },
+    "wrench_runtime/mechanical.py": {
+      "bytes": 31526,
+      "sha256": "6888c0d4c31f2b12de43659facff7dc1671cfe13122798d966c1ec79f5a79ee8"
+    },
+    "wrench_runtime/patching.py": {
+      "bytes": 3629,
+      "sha256": "5afb996c03a0c0338f2b5ca465a4299e8080594af214fa75b6fc57ced929845e"
+    },
+    "wrench_runtime/worker.py": {
+      "bytes": 20164,
+      "sha256": "5a6b8f5832915ddc117f8ace194a6701417b07486df7d23cf43b8953f871c55c"
+    },
+    "wrench_worker.py": {
+      "bytes": 137,
+      "sha256": "27f77e545710f734e22ec3641f8df6136e5baf0e93ce0335a822b2784f39332d"
+    },
+    "Modelfile": {
+      "bytes": 206,
+      "sha256": "5e17c63acb03ed88bc25821b6a5eba288dcc575414f1e681420264d5691e9ed9"
+    },
+    "verify_freetoken_backend.py": {
+      "bytes": 17454,
+      "sha256": "c8963950979748216e3436bc94daa5c46997cf4593b1c1beed7828bb0ff437f1"
+    },
+    "model-00001-of-00009.safetensors": {
+      "bytes": 1067450800,
+      "sha256": "ab0aae1ef5fa64e1557eac07ce6d92e4f8d866fe5708ac1591fe234e1930cc39"
+    },
+    "model-00002-of-00009.safetensors": {
+      "bytes": 1072268008,
+      "sha256": "3a124c8b97b37d3c8f9460dc555d79c8984995a75a08f3e8dc09a73b4fddb695"
+    },
+    "model-00003-of-00009.safetensors": {
+      "bytes": 1056720464,
+      "sha256": "aef830184d3925332126f043a10b26cefd6232ac97a26737d9d4cda228008242"
+    },
+    "model-00004-of-00009.safetensors": {
+      "bytes": 1068452584,
+      "sha256": "2f1c0cae7e5ffeee1044a3da0ce29fd20c6672b342e8253044b624e3d0792a08"
+    },
+    "model-00005-of-00009.safetensors": {
+      "bytes": 1067369744,
+      "sha256": "4fda838c7156114608ddaacf4de4131cfa4334aff298dd346e461a6425c1ee0a"
+    },
+    "model-00006-of-00009.safetensors": {
+      "bytes": 1054152088,
+      "sha256": "c9c000df3d524911cdcf534442273f1011ce924aa426210196f3195dc29770bf"
+    },
+    "model-00007-of-00009.safetensors": {
+      "bytes": 314991392,
+      "sha256": "772349de19a5ff159189ba4144aab44677c69b417191ca9f17df114de763e2d4"
+    },
+    "model-00008-of-00009.safetensors": {
+      "bytes": 1059109568,
+      "sha256": "ccc66ec81746f956ef275e178406ad9c7b166c82b28be9b9f08e527e1bc74359"
+    },
+    "model-00009-of-00009.safetensors": {
+      "bytes": 130088224,
+      "sha256": "ade84ac5655ae45708afd998ad8718b9bd327628566b7ceb733e59e242fda431"
+    },
+    "wrench-package.json": {
+      "bytes": 2292,
+      "sha256": "d87934d8ce8d1bfcfe24865affb736b83e11e3abd572ad44fbc6c510f0c83dc8"
+    }
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}
