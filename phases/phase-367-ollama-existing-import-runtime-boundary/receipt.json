@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.ollama-existing-import-runtime-boundary.v1",
+  "status": "FAIL_OLLAMA_MLX_RUNTIME_WINDOWS",
+  "ollama_version": "0.32.13",
+  "model": "wrench-v84-mlx-import:latest",
+  "declared_context_tokens": 4000000,
+  "request_context_tokens": 4096,
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "request_completed": false,
+  "failure": "mlx runner failed: MLX not available: failed to load MLX dynamic library",
+  "existing_model_modified": false,
+  "native_ollama_claim": false
+}
