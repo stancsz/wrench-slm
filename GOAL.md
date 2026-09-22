@@ -3507,3 +3507,15 @@ quality, independent 5060Ti evidence, or production approval. Evidence:
 `phases/phase-351-current-head-client-smoke/README.md`,
 `phases/phase-351-current-head-client-smoke/receipt.json`, and
 `phases/phase-351-current-head-client-smoke/claude-receipt.json`.
+
+2026-09-22 current package context matrix: the exact portable package was
+sent real raw payloads at `64K`, `128K`, `256K`, `2M`, and `4M` directly to
+its model-local endpoint. All five passed no-truncation intake and hash
+binding, measured raw token counts of `63,994`, `127,993`, `255,993`,
+`1,999,998`, and `3,999,995`, total latencies of `26.718`, `34.716`,
+`31.736`, `92.177`, and `173.287 ms`, first-layer gates of `2.060`,
+`2.456`, `3.015`, `12.681`, and `24.041 ms`, and exactly `9` effective
+working tokens with zero model calls in every case. This closes the direct
+model-local hybrid intake matrix, not dense native attention quality, learned
+MiniMax parity, independent 5060Ti execution, or production approval.
+Evidence: `phases/phase-352-current-head-context-matrix/`.
