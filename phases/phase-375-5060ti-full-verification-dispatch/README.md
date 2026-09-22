@@ -2,7 +2,7 @@
 
 Date: 2026-09-21
 
-Status: `IMPLEMENTED_NOT_DISPATCHED_DRIVE_TARGET_UNAVAILABLE`
+Status: `DISPATCHED_PENDING_5060TI_CLAIM`
 
 ## Progress
 
@@ -30,10 +30,18 @@ manifest builder can select it with
 - Claim nonce: `7d95be8bf41245c1a60895c5406d4c81`
 - HF revision: `9c6303c2c17a3798a134388c7e544728b22bd481`
 
-The job was not accepted by the Drive upload connector. The verified queue
-folder discovered by listing `jobs` was `16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv`,
-but both folder metadata and upload returned Google Drive `404 Not Found`.
-Therefore the manifest is local only and there is no 5060Ti execution claim.
+The first Drive connector upload attempt returned `404 Not Found` even though
+the folder was visible in Drive. The manifest was then uploaded through the
+authenticated Drive UI and verified by Drive metadata readback:
+
+- Drive file ID: `1iIxpVZ8TyPIjsO1P-sBpT4AA6VZ3Xl3X`
+- Drive URL: `https://drive.google.com/file/d/1iIxpVZ8TyPIjsO1P-sBpT4AA6VZ3Xl3X/view?usp=drivesdk`
+- Parent: `jobs/pending` (`16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv`)
+- Uploaded size: `3063` bytes
+
+The job is now genuinely dispatched and awaiting a worker claim. There is
+still no 5060Ti execution claim until the worker moves it to running and
+returns the nonce-bound receipt.
 
 ## Boundary
 

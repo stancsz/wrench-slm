@@ -2,7 +2,7 @@
   "schema": "wrench.phase.5060ti-full-verification-dispatch.v1",
   "phase": 375,
   "date": "2026-09-21",
-  "status": "IMPLEMENTED_NOT_DISPATCHED_DRIVE_TARGET_UNAVAILABLE",
+  "status": "DISPATCHED_PENDING_5060TI_CLAIM",
   "source_commit": "56dd8ef75f385ec57a3e99792c4340cebd6ca128",
   "manifest": {
     "path": "D:\\models\\wrench-5060ti-full-verification-20260921-01.json",
@@ -18,7 +18,13 @@
     "pending_folder_listed": true,
     "pending_folder_metadata_read": false,
     "upload_result": "HTTP 404 Not Found: File not found",
-    "uploaded": false
+    "uploaded": true,
+    "upload_path": "authenticated_drive_ui",
+    "drive_file_id": "1iIxpVZ8TyPIjsO1P-sBpT4AA6VZ3Xl3X",
+    "drive_url": "https://drive.google.com/file/d/1iIxpVZ8TyPIjsO1P-sBpT4AA6VZ3Xl3X/view?usp=drivesdk",
+    "parent_folder_id": "16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv",
+    "uploaded_bytes": 3063,
+    "metadata_readback": true
   },
   "local_verification": {
     "targeted_manifest_tests": "3 passed",
