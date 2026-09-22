@@ -71,6 +71,7 @@ $dshExit = $null
 $opencodeMode = "normal"
 $opencodeSupportsPure = $false
 $originalKey = $env:WRENCH_LOCAL_API_KEY
+$originalDeepSeekKey = $env:DEEPSEEK_API_KEY
 
 try {
     $serverProcess = Start-Process -FilePath $python.Source -ArgumentList $serverArgs `
@@ -111,6 +112,10 @@ try {
         }
 
         $env:WRENCH_LOCAL_API_KEY = "wrench-local"
+        # Current DSH resolves the deepseek-official route through its
+        # credentials service, whose environment discovery uses this name.
+        # Keep the package-local variable too for older DSH releases.
+        $env:DEEPSEEK_API_KEY = "wrench-local"
         $dshOutput = (& $dsh --profile headless --patch $dshPatchForSmoke `
             "Read README.md and report its first heading." 2>&1 | Out-String)
         $dshExit = $LASTEXITCODE
@@ -118,6 +123,7 @@ try {
         $ErrorActionPreference = $clientErrorPreference
         Pop-Location
         $env:WRENCH_LOCAL_API_KEY = $originalKey
+        $env:DEEPSEEK_API_KEY = $originalDeepSeekKey
     }
 
     $traceRows = @()
@@ -172,6 +178,7 @@ try {
     if ($receipt.status -ne "PASSED") { exit 1 }
 } finally {
     $env:WRENCH_LOCAL_API_KEY = $originalKey
+    $env:DEEPSEEK_API_KEY = $originalDeepSeekKey
     if ($serverProcess -and -not $serverProcess.HasExited) {
         try { Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue } catch { }
     }
