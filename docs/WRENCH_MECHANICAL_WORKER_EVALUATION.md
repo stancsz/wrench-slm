@@ -315,8 +315,18 @@ The receipt explicitly records `native_input_claim=false`, so this proves the
 hybrid model-local 4M intake and reduction path, not dense-native attention
 quality.
 
-This is stronger current evidence than the earlier no-receipt attempt, but it
-is not yet the complete independent GPU gate. That gate remains open until one
-nonce-bound consolidated receipt includes the exact source and package hashes,
-220-case results, 4M retrieval results, host GPU identity, and before/after
-10% RAM/VRAM reserve measurements.
+The subsequent nonce-bound consolidated receipt is
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-03\full-verification-receipt.json`.
+It reports `PASS_5060TI_CURRENT_PACKAGE_VERIFICATION` for source commit
+`56dd8ef75f385ec57a3e99792c4340cebd6ca128`, HF revision
+`2925399f14c8a70ee3b8385f74292b6663f5630d`, and `NVIDIA GeForce RTX 5060 Ti`.
+The resource snapshots retain `47.5%` free host RAM and `92.1%` free VRAM.
+The same receipt contains the 220-case replay, 4M intake, 2M/4M retrieval,
+and three-client smoke receipts, so the independent package-verification gate
+is now passed.
+
+The 220-case summary is `220/220` outcome matches, `120/120` eligible exact
+accepts, `0` prohibited accepts, `0` transport/runtime abstentions, median
+`2.253 ms`, and p95 `149.177 ms`. This remains package-only diagnostic
+evidence without a matched teacher trace. It therefore does not establish
+learned MiniMax parity, dense-native decoder quality, or production readiness.
