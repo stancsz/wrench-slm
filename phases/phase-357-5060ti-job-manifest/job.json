@@ -1,0 +1,78 @@
+{
+  "schema": "wrench.worker-job.v1",
+  "job_id": "wrench-5060ti-current-package-preflight",
+  "claim_nonce": "f9d26378d81c43b7b010f1ffc799de70",
+  "state": "pending",
+  "queue_contract": "jobs/pending -> jobs/running -> jobs/completed or jobs/failed",
+  "created_at": "2026-09-22T01:16:20.008322+00:00",
+  "target": {
+    "host_name": "DESKTOP-KET1SKP",
+    "required_gpu_identity": "NVIDIA GeForce RTX 5060 Ti",
+    "source_root": "C:\\Users\\stanc\\github\\wrench-slm",
+    "source_commit": "a422353469869785ba5b0ab1f2366dd82706f8f6",
+    "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview",
+    "huggingface_revision": "9c6303c2c17a3798a134388c7e544728b22bd481"
+  },
+  "inputs": {
+    "cases": {
+      "path": "evals\\wrench-expanded-v2\\cases.jsonl",
+      "canonical_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72"
+    },
+    "artifact_is_pinned": true,
+    "raw_teacher_trace_upload": false
+  },
+  "execution": {
+    "workload": "wrench_hf_package_preflight",
+    "script": "tools/run_5060ti_hf_preflight.ps1",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\stanc\\github\\wrench-slm\\tools\\run_5060ti_hf_preflight.ps1 -SourceRoot C:\\Users\\stanc\\github\\wrench-slm -ExpectedSourceCommit a422353469869785ba5b0ab1f2366dd82706f8f6 -HuggingFaceRepoId stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview -HuggingFaceRevision 9c6303c2c17a3798a134388c7e544728b22bd481 -ModelRoot D:\\models\\wrench-5060ti-cache -ReceiptRoot D:\\models\\wrench-5060ti-receipts\\wrench-5060ti-current-package-preflight -JobId wrench-5060ti-current-package-preflight -ClaimNonce f9d26378d81c43b7b010f1ffc799de70",
+    "timeout_seconds": 1800,
+    "retry_limit": 1,
+    "allowed_mutation": "none"
+  },
+  "resource_requirements": {
+    "minimum_host_ram_free_fraction": 0.1,
+    "minimum_host_vram_free_fraction": 0.1,
+    "sample_before_and_after": true,
+    "abort_if_reserve_breached": true
+  },
+  "boundaries": {
+    "provider_spending": false,
+    "credential_access": false,
+    "arbitrary_shell": false,
+    "production_routing": false,
+    "mutation_authority": false,
+    "parity_claim_without_attestation": false
+  },
+  "required_receipt": {
+    "schema": "wrench.hf-cross-host-receipt.v1",
+    "must_echo": [
+      "job_id",
+      "claim_nonce"
+    ],
+    "must_report": [
+      "worker_identity",
+      "host_name",
+      "gpu_identity",
+      "source_commit",
+      "huggingface_repo_id",
+      "huggingface_revision",
+      "package_hashes",
+      "resource_snapshot_before",
+      "resource_snapshot_after",
+      "command",
+      "exit_code",
+      "validation_receipt_path",
+      "smoke_receipt_path",
+      "failure_details"
+    ],
+    "independent_5060_claim_requires": [
+      "host_name == DESKTOP-KET1SKP",
+      "gpu_identity contains RTX 5060 Ti",
+      "claim_nonce echo",
+      "source_commit exact match",
+      "huggingface_revision exact match",
+      "both resource reserves >= 0.10",
+      "exit_code == 0"
+    ]
+  }
+}

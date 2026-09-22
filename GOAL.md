@@ -3575,3 +3575,15 @@ remote-control gap is authentication or saved-project/queue provisioning,
 not evidence of a successful or failed 5060TI benchmark. No independent
 hardware claim is made. Evidence:
 `phases/phase-356-5060ti-network-auth-boundary/`.
+
+2026-09-21 5060TI job handoff hardening: added a self-contained pending worker
+manifest with a unique job ID and nonce, exact current source commit
+`a422353469869785ba5b0ab1f2366dd82706f8f6`, Hub revision
+`9c6303c2c17a3798a134388c7e544728b22bd481`, canonical 220-case hash, exact
+preflight command, 10 percent RAM/VRAM reserve gates, and no-spend,
+no-credential, no-mutation boundaries. The HF cross-host receipt chain now
+echoes and verifies `job_id`, `claim_nonce`, and actual `COMPUTERNAME` when a
+job supplies them. The focused manifest and receipt tests passed `7/7` and
+PowerShell parsing passed. This makes the next authenticated worker run
+recoverable and auditable, but it is not a 5060TI execution result. Evidence:
+`phases/phase-357-5060ti-job-manifest/`.
