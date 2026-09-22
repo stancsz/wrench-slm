@@ -3528,3 +3528,22 @@ helped constrain syntax but did not solve semantic errors, including
 hallucinated paths, wrong actions, invalid health URLs, and unusable patch
 diffs. It remains development-only and is not promoted into the production
 router. Evidence: `phases/phase-353-guided-json-lora-development/`.
+
+2026-09-21 preregistered family-disjoint development pilot: the development
+groups `6` and `7` were captured from the local MiniMax-compatible teacher with
+`44/44` transport-complete proposal-only traces, then replayed against the
+exact package from runtime commit `8d9ea2c` with the client mechanical shortcut
+disabled and an isolated health fixture. Wrench plus identical fallback and
+the Wrench-only diagnostic both recorded weighted final/verifier success
+`1.0`, weighted frontier-token coverage `1.0`, net frontier-token savings
+`1.0`, zero frontier tokens, `4,849` local tokens, `174.242/272.873 ms`
+median/p95 latency, zero prohibited accepts, and zero mutations. The teacher
+arm recorded weighted final success `0.900604`, `7,818` frontier tokens, and
+one prohibited accept, which remains visible in the receipt. A separate 44-case
+deterministic retrieval diagnostic recorded `1.0` target-reference recall,
+`1.0` evidence-window recall, `1.0` current-intent preservation, and `1.0`
+hash-bound reference rate. This is stronger family-disjoint development
+evidence for the hybrid product lane, not human approval, sealed-final proof,
+learned MiniMax parity, dense-native quality, or 5060TI evidence. Evidence:
+`phases/phase-354-family-disjoint-development-pilot/` and the external
+hash-bound receipts under `D:\models\wrench-phase-354-family-disjoint-development-pilot`.
