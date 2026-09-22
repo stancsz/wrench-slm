@@ -1,4 +1,5 @@
 from tools.verify_hf_cross_host_receipt import verify_receipt
+from tools.compose_hf_cross_host_receipt import compose_receipt, git_head
 
 
 SOURCE = "a" * 40
@@ -66,6 +67,48 @@ def test_hf_receipt_blocks_nonce_mismatch():
         expected_host_name="DESKTOP-KET1SKP",
     )
     assert result["reasons"] == ["claim_nonce_mismatch"]
+
+
+def test_composer_echoes_nonce_and_actual_host(tmp_path):
+    source_root = __import__("pathlib").Path.cwd()
+    package_root = tmp_path / "package"
+    package_root.mkdir()
+    (package_root / "model.safetensors").write_bytes(b"weights")
+    validation = tmp_path / "validation.json"
+    validation.write_text(
+        '{"status":"PASS_STRUCTURAL_PACKAGE","config_max_position_embeddings":4000000,"file_hashes":{"model":"x"}}',
+        encoding="utf-8",
+    )
+    smoke = tmp_path / "smoke.json"
+    smoke.write_text(
+        '{"status":"PASS_HF_PACKAGE_MECHANICAL_SMOKE","proposal_status":"accepted"}',
+        encoding="utf-8",
+    )
+    resources = tmp_path / "resources.json"
+    resources.write_text(
+        '{"status":"PASS_HOST_RESOURCE_RESERVE","before_download":{"ram_free_fraction":0.5,"gpus":[{"free_fraction":0.5}]},"after_download":{"ram_free_fraction":0.5,"gpus":[{"free_fraction":0.5}]}}',
+        encoding="utf-8",
+    )
+
+    receipt = compose_receipt(
+        host="rtx-5060-ti",
+        source_root=source_root,
+        source_commit=git_head(source_root),
+        repo_id=REPO,
+        revision=REVISION,
+        package_root=package_root,
+        validation_path=validation,
+        smoke_path=smoke,
+        resource_snapshot_path=resources,
+        gpu_identity="NVIDIA GeForce RTX 5060 Ti",
+        job_id="job-1",
+        claim_nonce="nonce-1",
+        host_name="DESKTOP-KET1SKP",
+    )
+
+    assert receipt["job_id"] == "job-1"
+    assert receipt["claim_nonce"] == "nonce-1"
+    assert receipt["host_name"] == "DESKTOP-KET1SKP"
 
 
 def test_hf_receipt_blocks_revision_mismatch():
