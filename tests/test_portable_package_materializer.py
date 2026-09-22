@@ -180,6 +180,9 @@ def test_portable_client_smoke_runner_has_fail_closed_receipt_contract():
     assert "--mechanical-only" in runner
     assert "opencode" in runner
     assert "deepseek_harness" in runner
+    assert "claude_code" in runner
+    assert "run_claude_code.ps1" in runner
+    assert "claudeReadToolObserved" in runner
     assert "model_calls" in runner
     assert "claims_not_authorized" in runner
     assert "dsh-isolated" in runner
