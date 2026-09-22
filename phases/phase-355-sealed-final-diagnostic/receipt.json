@@ -1,0 +1,111 @@
+{
+  "schema": "wrench.sealed-final-diagnostic.v1",
+  "status": "PASS_DIAGNOSTIC_SEALED_FINAL",
+  "quality_claim": false,
+  "production_enablement": false,
+  "suite": {
+    "path": "evals/wrench-expanded-v2/final.jsonl",
+    "manifest_status": "DRAFT_PENDING_HUMAN_APPROVAL",
+    "canonical_sha256": "3e24ba47b78a99b1ef81bb8ea269e4377ca45097186812ce71aa99bb2c2f222b",
+    "rows": 44,
+    "eligible_rows": 24
+  },
+  "wrench": {
+    "package_dir": "D:\\models\\_wrench-release-candidate-8d9ea2c",
+    "runtime_source_commit": "8d9ea2c",
+    "client_mechanical_fast_path": false,
+    "health_fixture": true
+  },
+  "teacher": {
+    "endpoint": "http://127.0.0.1:4000/v1/chat/completions",
+    "model": "minimax",
+    "max_tokens": 768,
+    "proposal_only": true,
+    "first_capture_transport_failures": 7,
+    "retry_transport_failures": 0
+  },
+  "arms": {
+    "minimax_teacher_only": {
+      "weighted_final_success": 0.972588297311545,
+      "weighted_verifier_success": 1.0,
+      "weighted_frontier_baseline": 7447.0,
+      "frontier_tokens_total": 15176.0,
+      "local_tokens": 0.0,
+      "fallback_count": 0,
+      "median_latency_ms": 5238.106,
+      "p95_latency_ms": 10386.799,
+      "prohibited_accepts": 1,
+      "unexpected_mutations": 0
+    },
+    "rules_plus_identical_minimax_fallback": {
+      "weighted_final_success": 0.972588297311545,
+      "weighted_verifier_success": 1.0,
+      "frontier_tokens_total": 7729.0,
+      "local_tokens": 0.0,
+      "fallback_count": 20,
+      "median_latency_ms": 0.565,
+      "p95_latency_ms": 33.581,
+      "prohibited_accepts": 1,
+      "unexpected_mutations": 0
+    },
+    "wrench_plus_identical_minimax_fallback": {
+      "weighted_final_success": 1.0,
+      "weighted_verifier_success": 1.0,
+      "frontier_tokens_total": 0.0,
+      "local_tokens": 4805.0,
+      "fallback_count": 0,
+      "median_latency_ms": 172.941,
+      "p95_latency_ms": 266.582,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0
+    },
+    "wrench_only_diagnostic": {
+      "weighted_final_success": 1.0,
+      "weighted_verifier_success": 1.0,
+      "frontier_tokens_total": 0.0,
+      "local_tokens": 4805.0,
+      "fallback_count": 0,
+      "median_latency_ms": 172.941,
+      "p95_latency_ms": 266.582,
+      "prohibited_accepts": 0,
+      "unexpected_mutations": 0
+    }
+  },
+  "gates": {
+    "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": true,
+    "net_frontier_token_savings_at_least_95_percent": true,
+    "teacher_final_success_noninferiority": true,
+    "zero_wrench_prohibited_accepts": true,
+    "zero_wrench_unexpected_mutations": true
+  },
+  "uncertainty": {
+    "paired_final_success_difference": 0.027411702688455497,
+    "paired_final_success_difference_95_ci": {
+      "lower": 0.0,
+      "upper": 0.06818181818181818,
+      "confidence": 0.95,
+      "method": "paired_trace_bootstrap",
+      "resamples": 4000
+    }
+  },
+  "retrieval_probe": {
+    "cases": 6,
+    "payload_sizes": [2000000, 4000000],
+    "placements": [0.01, 0.5, 0.99],
+    "status": "PASS_PACKAGE_RETRIEVAL_2M_4M",
+    "model_calls": 0
+  },
+  "external_receipts": {
+    "teacher_retry_sha256": "519BF32CF84E6EEA79C999232345C915617D714701636BEAD25A321DBFF7C9B1",
+    "replay_evaluation_sha256": "3B293FA7C8D9C5EAD47A82A029A42872C1518916EC07EA09B0708BFD12149DDB",
+    "replay_trace_manifest_sha256": "A61AD755A888F884D4042A927F08E033E21687044CD1188143B9C2438EFEF0C8",
+    "package_retrieval_sha256": "CF9E8E71A6BD68C7EB8E1DF0F499B0033927767FAFA72EFE64FA3FA42885FBCE"
+  },
+  "limitations": [
+    "The suite is not human approved.",
+    "This receipt is diagnostic and was not used for training or tuning.",
+    "This is deterministic hybrid workflow evidence, not learned MiniMax parity.",
+    "No current-head independent RTX 5060 Ti host attestation is included.",
+    "No dense native 2M/4M attention quality claim is made."
+  ]
+}

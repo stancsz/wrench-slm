@@ -3547,3 +3547,22 @@ evidence for the hybrid product lane, not human approval, sealed-final proof,
 learned MiniMax parity, dense-native quality, or 5060TI evidence. Evidence:
 `phases/phase-354-family-disjoint-development-pilot/` and the external
 hash-bound receipts under `D:\models\wrench-phase-354-family-disjoint-development-pilot`.
+
+2026-09-21 sealed-final diagnostic replay: the first concurrent teacher
+capture was rejected because seven requests returned HTTP errors. A bounded
+single-worker retry completed `44/44` final traces with zero transport
+failures. The exact `final.jsonl` split was then replayed against package
+runtime commit `8d9ea2c` with the client mechanical shortcut disabled and an
+isolated health fixture. Wrench plus identical MiniMax fallback recorded
+weighted final/verifier success `1.0`, weighted frontier-token coverage `1.0`,
+net frontier-token savings `1.0`, zero frontier tokens, `4,805` local tokens,
+`172.941/266.582 ms` median/p95 latency, zero prohibited accepts, and zero
+mutations. Teacher-only recorded weighted final success `0.972588`, weighted
+frontier baseline `7,447`, and one prohibited accept. The paired success
+difference was `0.027412`, with 95% bootstrap interval `[0.0, 0.068182]`.
+The package's separate six-case 2M/4M retrieval probe passed with zero model
+calls. This is sealed-final diagnostic evidence with `quality_claim=false` and
+`production_enablement=false`, not human approval, current-head independent
+5060TI evidence, learned MiniMax parity, or dense-native quality. Evidence:
+`phases/phase-355-sealed-final-diagnostic/` and external hash-bound receipts
+under `D:\models\wrench-phase-355-sealed-final-diagnostic`.
