@@ -22,7 +22,8 @@ param(
     [string[]] $PythonArguments = @("-3"),
     [string] $HfExecutable = "hf",
     [string] $JobId = "",
-    [string] $ClaimNonce = ""
+    [string] $ClaimNonce = "",
+    [switch] $SkipDownload
 )
 
 $ErrorActionPreference = "Stop"
@@ -122,10 +123,14 @@ try {
         throw "Hugging Face CLI not found: $HfExecutable"
     }
     New-Item -ItemType Directory -Force -Path $PackageRoot | Out-Null
-    Invoke-Checked -Executable $HfExecutable -Arguments @(
-        "download", $HuggingFaceRepoId, "--revision", $HuggingFaceRevision,
-        "--local-dir", $PackageRoot
-    )
+    if (-not $SkipDownload) {
+        Invoke-Checked -Executable $HfExecutable -Arguments @(
+            "download", $HuggingFaceRepoId, "--revision", $HuggingFaceRevision,
+            "--local-dir", $PackageRoot
+        )
+    } elseif (-not (Test-Path -LiteralPath $PackageRoot -PathType Container)) {
+        throw "skip download requested but package root is missing: $PackageRoot"
+    }
 
     $after = Get-HostResourceSample
     Assert-HostResourceReserve -Sample $after

@@ -22,7 +22,8 @@ param(
     [string[]] $PythonArguments = @("-3"),
     [string] $HfExecutable = "hf",
     [string] $JobId = "",
-    [string] $ClaimNonce = ""
+    [string] $ClaimNonce = "",
+    [switch] $SkipPackageDownload
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,6 +40,7 @@ $PreflightReceiptPath = Join-Path $ReceiptRoot "verified-hf-cross-host-receipt.j
 $FullPort = Get-Random -Minimum 29000 -Maximum 29900
 
 New-Item -ItemType Directory -Force -Path $ReceiptRoot | Out-Null
+$LogPath | ForEach-Object { New-Item -ItemType File -Force -Path $_ | Out-Null }
 
 function Get-HostResourceSample {
     $os = Get-CimInstance Win32_OperatingSystem
@@ -127,6 +129,7 @@ try {
         "-JobId", $JobId,
         "-ClaimNonce", $ClaimNonce
     )
+    if ($SkipPackageDownload) { $preflightArgs += "-SkipDownload" }
     foreach ($argument in $PythonArguments) { $preflightArgs += @("-PythonArguments", $argument) }
     Invoke-Checked -Executable "powershell" -Arguments $preflightArgs
 
@@ -219,6 +222,7 @@ try {
 }
 catch {
     $failure = $_.Exception.Message
+    Add-Content -LiteralPath $LogPath -Value ("FAILURE: " + $failure)
     $after = try { Get-HostResourceSample } catch { $null }
     $receipt = [ordered]@{
         schema = "wrench.5060ti.current-package-verification.v1"
