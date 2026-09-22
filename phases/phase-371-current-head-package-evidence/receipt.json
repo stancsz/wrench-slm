@@ -1,0 +1,73 @@
+{
+  "schema": "wrench.current-head-package-evidence.v1",
+  "status": "PASS_CURRENT_HEAD_HYBRID_PACKAGE_DIAGNOSTIC",
+  "date": "2026-09-21",
+  "source_head_at_package_materialization": "59b8b7c61639c3a9576af377eb6fe21067a39f98",
+  "package_dir": "D:\\models\\_wrench-release-candidate-59b8b7c",
+  "source_artifact": "_wrench-release-candidate-search-concurrent",
+  "weight_shards": 2,
+  "weight_materialization_mode": "hardlink",
+  "package_manifest_sha256": "7a2e10dafa825c70a765ee031efcc6e78327a39659a029e37a125f08f28a3588",
+  "package_receipt_sha256": "8c7fec6cddc4c874688d923295d41b01026f5ff322d55f5bd32fdd55b530046e",
+  "package_validation": "PASS_STRUCTURAL_PACKAGE",
+  "package_smoke": "PASS_HF_PACKAGE_MECHANICAL_SMOKE",
+  "four_million_probe": {
+    "status": "PASS_MODEL_LOCAL_SERVER_4M",
+    "requested_payload_tokens": 4000000,
+    "raw_input_tokens": 3999995,
+    "raw_payload_chars": 31997963,
+    "http_status": 200,
+    "elapsed_ms": 276.011,
+    "gate_latency_ms": 24.587,
+    "effective_working_context_tokens": 9,
+    "working_context_budget_tokens": 64000,
+    "model_calls": 0,
+    "raw_payload_hash_bound": true,
+    "native_input_claim": false,
+    "receipt_sha256": "9d14b436c4adb93b7fe3ece048faed9cdab449ec6233bd891b8ff0d28e2a5564"
+  },
+  "retrieval_probe": {
+    "status": "PASS_PACKAGE_RETRIEVAL_2M_4M",
+    "case_count": 6,
+    "passed_cases": 6,
+    "model_calls": 0,
+    "receipt_sha256": "f7c60fa9213749b2afa898a395732b3a1483ea0d2b665f3bea8793bb33b1f8a1"
+  },
+  "client_smoke": {
+    "opencode_exit_code": 0,
+    "deepseek_harness_exit_code": 0,
+    "claude_code_exit_code": 0,
+    "model_calls": 0,
+    "mutation_claim": false,
+    "receipt_sha256": "f6f7e93b2d5ee2ad4c1f3d98ec0b02751fedc9ce508759178cf6aee60b197bea",
+    "claude_trace_sha256": "d9c7ce974d5e87ead2837827e3176a064feda692bf12d52d5219df3336d9282f"
+  },
+  "replay_220": {
+    "status": "PASS_MECHANICAL_WORKER",
+    "trace_count": 220,
+    "mechanical_trace_count": 120,
+    "wrench_fallback_weighted_final_success": 1.0,
+    "wrench_fallback_frontier_tokens": 377,
+    "wrench_fallback_local_tokens": 24046,
+    "wrench_fallback_count": 1,
+    "wrench_fallback_latency_p50_ms": 188.154,
+    "wrench_fallback_latency_p95_ms": 301.577,
+    "wrench_only_weighted_final_success": 0.9949362668063558,
+    "teacher_weighted_final_success": 0.8934198331788693,
+    "teacher_frontier_tokens": 74450,
+    "teacher_latency_p50_ms": 3458.722,
+    "teacher_latency_p95_ms": 8180.346,
+    "weighted_frontier_token_mass_coverage": 1.0,
+    "net_frontier_token_savings": 1.0,
+    "prohibited_accepts_wrench": 0,
+    "unexpected_mutations_wrench": 0,
+    "evaluation_sha256": "979294c54f4e2ba7a7811aa9a9c1b10018067c854e29bc2ab95373c67d1e8fd7",
+    "trace_manifest_sha256": "b274e7830bc1189b15511abbd9b91177b4646415beae6d7cfa62a14658ffbb69"
+  },
+  "claims_not_authorized": [
+    "learned_minimax_parity",
+    "dense_native_4m_decoder_quality",
+    "independent_rtx_5060_ti_verification",
+    "production_readiness"
+  ]
+}
