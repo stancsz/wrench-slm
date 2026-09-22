@@ -130,7 +130,16 @@ try {
         "-ClaimNonce", $ClaimNonce
     )
     if ($SkipPackageDownload) { $preflightArgs += "-SkipDownload" }
-    foreach ($argument in $PythonArguments) { $preflightArgs += @("-PythonArguments", $argument) }
+    # The nested Windows PowerShell invocation already defaults to `py -3`.
+    # Passing the bare `-3` as a value makes the child parser treat it as a
+    # switch, so only forward Python arguments when the caller explicitly
+    # selected a non-default launcher argument.
+    $defaultPythonArguments = @("-3")
+    if (-not (@($PythonArguments).Count -eq 1 -and @($PythonArguments)[0] -ceq $defaultPythonArguments[0])) {
+        foreach ($argument in $PythonArguments) {
+            $preflightArgs += @("-PythonArguments", $argument)
+        }
+    }
     Invoke-Checked -Executable "powershell" -Arguments $preflightArgs
 
     $serverOut = Join-Path $ReceiptRoot "package-server.stdout.log"
