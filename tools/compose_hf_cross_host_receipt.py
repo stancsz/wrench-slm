@@ -10,6 +10,11 @@ import subprocess
 from pathlib import Path
 
 
+def _read_json(path: Path) -> dict:
+    """Read JSON receipts emitted by both PowerShell and Python writers."""
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
 def git_head(root: Path) -> str:
     result = subprocess.run(
         ["git", "-C", str(root), "rev-parse", "HEAD"],
@@ -39,17 +44,17 @@ def compose_receipt(
     actual = git_head(source_root)
     if actual != source_commit:
         raise ValueError(f"source commit mismatch: {actual} != {source_commit}")
-    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    validation = _read_json(validation_path)
     if validation.get("status") != "PASS_STRUCTURAL_PACKAGE":
         raise ValueError(f"package validation did not pass: {validation.get('status')!r}")
-    smoke = json.loads(smoke_path.read_text(encoding="utf-8"))
+    smoke = _read_json(smoke_path)
     if smoke.get("status") != "PASS_HF_PACKAGE_MECHANICAL_SMOKE":
         raise ValueError(f"package smoke did not pass: {smoke.get('status')!r}")
     if not gpu_identity.strip():
         raise ValueError("GPU identity is empty")
     if bool(job_id) != bool(claim_nonce):
         raise ValueError("job_id and claim_nonce must be supplied together")
-    resource_snapshot = json.loads(resource_snapshot_path.read_text(encoding="utf-8"))
+    resource_snapshot = _read_json(resource_snapshot_path)
     if resource_snapshot.get("status") != "PASS_HOST_RESOURCE_RESERVE":
         raise ValueError(f"host resource reserve did not pass: {resource_snapshot.get('status')!r}")
     for sample_name in ("before_download", "after_download"):
