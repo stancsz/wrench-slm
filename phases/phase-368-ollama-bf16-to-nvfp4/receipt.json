@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.ollama-bf16-to-nvfp4.v1",
+  "status": "FAIL_OLLAMA_MLX_QUANTIZER_WINDOWS",
+  "ollama_version": "0.34.2",
+  "source_dir": "D:\\models\\Wrench-Qwen3.6-8expert-BF16",
+  "source_size_gb": 7.37,
+  "command": "ollama create wrench-bf16-nvfp4-test --force -q nvfp4 -f phases/phase-368-ollama-bf16-to-nvfp4/Modelfile",
+  "source_detected": true,
+  "tensor_count_detected": 1045,
+  "quantization_started": true,
+  "failure_tensor": "lm_head.weight",
+  "failure": "quantize blob lm_head.weight: MLX init failed: failed to load MLX dynamic library",
+  "model_created": false,
+  "existing_models_modified": false,
+  "ram_free_ratio_before": 0.548,
+  "vram_free_mib_before": 15159,
+  "native_ollama_claim": false
+}

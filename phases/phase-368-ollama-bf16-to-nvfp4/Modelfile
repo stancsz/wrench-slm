@@ -1,0 +1,3 @@
+FROM D:\models\Wrench-Qwen3.6-8expert-BF16
+PARAMETER num_ctx 4000000
+PARAMETER temperature 0
