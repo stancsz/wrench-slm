@@ -3317,3 +3317,14 @@ two bounded model passes including repair, and then failed closed with
 does not equal learned MiniMax-worker quality. The deterministic mechanical
 route remains the practical value and learned routing stays disabled. Evidence:
 `phases/phase-334-standard-bf16-wrenchworker-diagnostic`.
+
+2026-09-21 exact current-head native binding: the NVFP4 package bound to the
+current release line was loaded by the explicit FreeToken ModelOpt backend and
+returned a real HTTP `200` native completion. The backend configured a
+`4,000,000`-token KV capacity, maintained `48.351%` RAM free and `50.893%`
+VRAM free while ready, and returned to `93.504%` VRAM free after cleanup. The
+minimal generated text began with `{"`. This proves native weight loading and
+resource-safe cleanup for the exact package, not dense-native 4M quality or
+fast direct prefill. Evidence:
+`phases/phase-335-current-head-freetoken-native.json` and
+`phases/phase-335-current-head-freetoken-native.md`.
