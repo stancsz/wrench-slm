@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.stock-ollama-native-boundary.v1",
+  "status": "FAIL_OLLAMA_NATIVE_RUN_MLX_UNAVAILABLE",
+  "ollama_version": "0.32.13",
+  "model": "wrench-4b-native4m-exp:latest",
+  "model_metadata": {
+    "context_length": 4000000,
+    "renderer": "qwen3.5",
+    "parameter": "num_ctx 4e+06"
+  },
+  "command": "ollama run wrench-4b-native4m-exp:latest \"Return only OK.\"",
+  "error": "500 Internal Server Error: mlx runner failed: MLX not available: failed to load MLX dynamic library",
+  "host_gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "post_run_vram_free_mib": 15167,
+  "post_run_ollama_ps": "no loaded model",
+  "package_local_ollama_shaped_surface": "PASS_OLLAMA_SHAPED_MODEL_LOCAL_4M",
+  "stock_ollama_native_generation_verified": false,
+  "independent_5060_claim": false,
+  "dense_native_quality_claim": false,
+  "production_claim": false
+}

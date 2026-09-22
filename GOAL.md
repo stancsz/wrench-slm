@@ -3429,3 +3429,12 @@ dense-native 4M quality, independent 5060Ti verification, or production
 approval. Evidence:
 `phases/phase-342-current-head-client-smoke/README.md` and
 `phases/phase-342-current-head-client-smoke/receipt.json`.
+
+2026-09-22 stock Ollama boundary: the installed Ollama `0.32.13` recognized
+an existing Wrench model with `4,000,000` context metadata, but a bounded real
+`ollama run` failed before generation because the Windows MLX runner dynamic
+library was unavailable. No model remained loaded and about `15,167 MiB` VRAM
+was free afterward. The package-local Ollama-shaped API remains independently
+verified in phase 341; this phase means stock Ollama native generation is not
+yet a portable Windows claim. vLLM and GGUF remain unverified. Evidence:
+`phases/phase-343-stock-ollama-native-boundary.md`.
