@@ -3603,3 +3603,18 @@ verified by metadata readback as file
 and awaiting worker claim; no 5060TI execution claim is made yet. Evidence:
 `phases/phase-375-5060ti-full-verification-dispatch/` and local manifest hash
 `50D2DB9AF7D268B63C47F2BED006DC8F94120AE141FD0CD742CB50A6BCA1FD1D`.
+
+2026-09-21 learned intent-router shadow candidate: after the free-form
+generation lane remained at `21/44` development outcomes with `10` verified
+accepts and multi-second p95 latency, a frozen model embedding plus a small
+linear head was trained only on the 132-row calibration split. It selects one
+allowlisted tool family or abstains; deterministic proposal construction and
+the independent verifier remain authoritative. Batch-one development shadow
+evaluation recorded `41/44` outcomes, `21/44` verified accepts, zero
+prohibited accepts, and `143.467/168.259 ms` median/p95 embedding latency.
+The one-time sealed-final diagnostic recorded `42/44` outcomes, `22/44`
+verified accepts, zero prohibited accepts, and `142.498/170.087 ms` median/p95.
+The two final mismatches were health cases without the local fixture. This is
+not yet packaged, enabled, 5060TI-verified, or production evidence. Evidence:
+`phases/phase-377-learned-intent-router/` and external receipts under
+`D:\models\wrench-intent-router-shadow-20260921`.

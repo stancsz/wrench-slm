@@ -299,6 +299,25 @@ included in the production utility score, and learned routing stays disabled.
 Evidence: `phases/phase-376-learned-head-direct-eval` and the external receipt
 `D:\models\wrench-v2-head-only-r16-20260921\development-eval-44-current.json`.
 
+## Learned intent-router shadow candidate
+
+The next learned intervention does not generate free-form JSON. A frozen model
+embedding feeds a small linear head that selects one allowlisted tool family or
+`abstain`; the existing deterministic route and independent verifier retain
+authority. On the 44-row development split it produced `41/44` outcome
+matches, `21/44` verified accepts, `0` prohibited accepts, and
+`143.467/168.259 ms` embedding median/p95 latency with batch size one.
+
+The one-time sealed-final diagnostic produced `42/44` outcome matches,
+`22/44` verified accepts, `0` prohibited accepts, and `142.498/170.087 ms`
+embedding median/p95 latency. The two mismatches were accepted health cases
+without the required local health fixture. This is a shadow candidate only. It
+has not been packaged, enabled, or independently verified on the 5060TI, and
+does not establish native dense 4M quality or MiniMax parity.
+
+Evidence: `phases/phase-377-learned-intent-router` and the external receipts
+under `D:\models\wrench-intent-router-shadow-20260921`.
+
 ## Claude Code local smoke
 
 Claude Code 2.1.251 was run in print mode with an isolated config and an
