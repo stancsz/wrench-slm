@@ -1,0 +1,13 @@
+{
+  "schema": "wrench.ollama-native-import-boundary.v1",
+  "status": "FAIL_OLLAMA_NATIVE_IMPORT_METADATA",
+  "ollama_version": "0.32.13",
+  "package_dir": "D:\\models\\_wrench-release-candidate-8d9ea2c",
+  "modelfile": "FROM .\\n\\nPARAMETER num_ctx 4000000\\nPARAMETER temperature 0\\n",
+  "command": "ollama create wrench-experimental-4m-local -f Modelfile",
+  "failure": "missing fp8 block size metadata for tensor \\"model.language_model.layers.0.linear_attn.in_proj_qkv.weight_scale\\"",
+  "model_name_left_in_ollama_list": false,
+  "existing_models_modified": false,
+  "native_ollama_claim": false,
+  "ollama_shaped_endpoint_claim": true
+}
