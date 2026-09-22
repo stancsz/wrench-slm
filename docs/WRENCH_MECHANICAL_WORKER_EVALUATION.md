@@ -351,3 +351,11 @@ with `PASS_CORE_RUNTIME_ALIGNED_WITH_HEAD`; its comparison normalizes only
 Python CRLF versus LF line endings. This remains package-only diagnostic
 evidence without a matched teacher trace. It therefore does not establish
 learned MiniMax parity, dense-native decoder quality, or production readiness.
+
+After the learned-head receipt was recorded, the 5060TI source checkout was
+fast-forwarded to `4d067b9` and rechecked against the same downloaded package.
+The fresh receipt
+`C:\wreceipts\wrench-5060ti-full-verification-20260921-07\core-alignment-current-head.json`
+also reports `PASS_CORE_RUNTIME_ALIGNED_WITH_HEAD`. This is a source/package
+alignment check only; it does not replace the full package-verification receipt
+above or promote the learned route.
