@@ -1,0 +1,81 @@
+{
+  "schema": "wrench.operational-shadow-receipt.v1",
+  "status": "FAIL_BOUNDED_OPERATIONAL_SHADOW",
+  "scope": "local mechanical-only portable package; no tool execution; no production approval",
+  "package_dir": "D:\\models\\_wrench-release-candidate-ae78a84",
+  "concurrency": 4,
+  "rounds": 10,
+  "requests_expected": 40,
+  "requests_completed": 38,
+  "errors": [
+    "health_read:TimeoutError",
+    "literal_search:TimeoutError"
+  ],
+  "accepted": 14,
+  "abstained": 24,
+  "status_histogram": {
+    "accepted": 14,
+    "abstain": 24
+  },
+  "mechanical_fast_path": 32,
+  "model_calls": 0,
+  "latency_ms": {
+    "p50": 13.722,
+    "p95": 2051.751,
+    "max": 4096.478,
+    "burst_elapsed": 12286.94
+  },
+  "cancel_probe": {
+    "client_closed_mid_request": true,
+    "recovery": {
+      "elapsed_ms": 1.963,
+      "status": "accepted",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "cost_accounting": {
+        "schema": "wrench.cost-accounting-receipt.v1",
+        "raw_input_tokens": 7,
+        "model_prompt_tokens": 0,
+        "model_completion_tokens": 0,
+        "local_model_tokens": 0,
+        "input_tokens_not_sent_to_model": 7,
+        "model_calls": 0,
+        "repair_passes": 0,
+        "mechanical_fast_path": true,
+        "total_local_elapsed_ms": 0.729,
+        "usd_cost": null,
+        "usd_cost_status": "not_priced_local_runtime"
+      }
+    }
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27598925824,
+    "ram_available_ratio": 0.5373,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27392634880,
+    "ram_available_ratio": 0.5332,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "all_expected_requests_completed": false,
+    "all_responses_bounded": true,
+    "mechanical_fast_path_coverage_recorded": true,
+    "zero_model_calls": true,
+    "cancel_recovery_accepted": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "all_checks_pass": false,
+  "receipt_sha256": "12674d7d19ad117531778fde3d125d95f7fc14791c784ac097a77f7493221d6a"
+}

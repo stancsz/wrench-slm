@@ -1,0 +1,118 @@
+{
+  "schema": "wrench.operational-shadow-receipt.v1",
+  "status": "PASS_BOUNDED_OPERATIONAL_SHADOW",
+  "scope": "local mechanical-only portable package; no tool execution; no production approval",
+  "package_dir": "D:\\models\\_wrench-release-candidate-search-budget",
+  "concurrency": 4,
+  "rounds": 10,
+  "requests_expected": 40,
+  "requests_completed": 40,
+  "errors": [],
+  "accepted": 14,
+  "abstained": 26,
+  "status_histogram": {
+    "accepted": 14,
+    "abstain": 26
+  },
+  "mechanical_fast_path": 33,
+  "model_calls": 0,
+  "latency_ms": {
+    "p50": 2038.612,
+    "p95": 4069.488,
+    "max": 4069.726,
+    "burst_elapsed": 12317.411,
+    "accepted_only_p50": 2049.439,
+    "accepted_only_p95": 2070.893
+  },
+  "latency_by_action_ms": {
+    "git_read_status": {
+      "count": 7,
+      "p50": 3.529,
+      "p95": 3.994,
+      "max": 4.728
+    },
+    "health_read": {
+      "count": 6,
+      "p50": 2053.252,
+      "p95": 2070.172,
+      "max": 4069.511
+    },
+    "literal_search": {
+      "count": 7,
+      "p50": 3.178,
+      "p95": 3.494,
+      "max": 3.679
+    },
+    "patch_draft": {
+      "count": 6,
+      "p50": 2053.226,
+      "p95": 2069.386,
+      "max": 4069.726
+    },
+    "read_file": {
+      "count": 7,
+      "p50": 2054.219,
+      "p95": 2069.892,
+      "max": 4069.488
+    },
+    "read_lines": {
+      "count": 7,
+      "p50": 2049.439,
+      "p95": 2054.848,
+      "max": 2070.893
+    }
+  },
+  "cancel_probe": {
+    "client_closed_mid_request": true,
+    "recovery": {
+      "elapsed_ms": 1.484,
+      "status": "accepted",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "cost_accounting": {
+        "schema": "wrench.cost-accounting-receipt.v1",
+        "raw_input_tokens": 7,
+        "model_prompt_tokens": 0,
+        "model_completion_tokens": 0,
+        "local_model_tokens": 0,
+        "input_tokens_not_sent_to_model": 7,
+        "model_calls": 0,
+        "repair_passes": 0,
+        "mechanical_fast_path": true,
+        "total_local_elapsed_ms": 0.508,
+        "usd_cost": null,
+        "usd_cost_status": "not_priced_local_runtime"
+      }
+    }
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27658854400,
+    "ram_available_ratio": 0.5384,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27467767808,
+    "ram_available_ratio": 0.5347,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "all_expected_requests_completed": true,
+    "all_responses_bounded": true,
+    "mechanical_fast_path_coverage_recorded": true,
+    "zero_model_calls": true,
+    "cancel_recovery_accepted": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "all_checks_pass": true,
+  "receipt_sha256": "604f1205c8a8a1e1d2bb6d46307c0f8f14aa0a67973ec4cf44476feb1e34394b"
+}

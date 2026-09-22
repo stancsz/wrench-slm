@@ -3,6 +3,7 @@ import re
 import pytest
 
 from wrench_harness import mechanical_route
+from wrench_harness import core
 from wrench_harness.mechanical import reference_patch_route
 
 
@@ -57,6 +58,26 @@ def test_mechanical_route_handles_literal_health_and_git():
         "timeout_seconds": 3.0,
         "max_bytes": 65536,
     }
+
+
+def test_literal_search_accelerator_timeout_does_not_fall_back_to_unbounded_walk(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        core,
+        "_literal_search_with_rg",
+        lambda *args: {"status": "abstain", "fallback_reason": "search_timeout"},
+    )
+
+    result = core._literal_search(
+        {
+            "action": "literal_search",
+            "root": ".",
+            "literal": "Wrench",
+            "max_matches": 5,
+        },
+        tmp_path,
+    )
+
+    assert result == {"status": "abstain", "fallback_reason": "search_timeout"}
 
 
 def test_mechanical_route_abstains_on_risky_or_ambiguous_requests():

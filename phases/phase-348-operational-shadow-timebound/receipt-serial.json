@@ -1,0 +1,93 @@
+{
+  "schema": "wrench.operational-shadow-receipt.v1",
+  "status": "PASS_BOUNDED_OPERATIONAL_SHADOW",
+  "scope": "local mechanical-only portable package; no tool execution; no production approval",
+  "package_dir": "D:\\models\\_wrench-release-candidate-search-budget",
+  "concurrency": 1,
+  "rounds": 2,
+  "requests_expected": 2,
+  "requests_completed": 2,
+  "errors": [],
+  "accepted": 2,
+  "abstained": 0,
+  "status_histogram": {
+    "accepted": 2
+  },
+  "mechanical_fast_path": 2,
+  "model_calls": 0,
+  "latency_ms": {
+    "p50": 1.918,
+    "p95": 1.918,
+    "max": 12.718,
+    "burst_elapsed": 15.388,
+    "accepted_only_p50": 1.918,
+    "accepted_only_p95": 1.918
+  },
+  "latency_by_action_ms": {
+    "read_file": {
+      "count": 1,
+      "p50": 12.718,
+      "p95": 12.718,
+      "max": 12.718
+    },
+    "read_lines": {
+      "count": 1,
+      "p50": 1.918,
+      "p95": 1.918,
+      "max": 1.918
+    }
+  },
+  "cancel_probe": {
+    "client_closed_mid_request": true,
+    "recovery": {
+      "elapsed_ms": 2.083,
+      "status": "accepted",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "cost_accounting": {
+        "schema": "wrench.cost-accounting-receipt.v1",
+        "raw_input_tokens": 7,
+        "model_prompt_tokens": 0,
+        "model_completion_tokens": 0,
+        "local_model_tokens": 0,
+        "input_tokens_not_sent_to_model": 7,
+        "model_calls": 0,
+        "repair_passes": 0,
+        "mechanical_fast_path": true,
+        "total_local_elapsed_ms": 0.732,
+        "usd_cost": null,
+        "usd_cost_status": "not_priced_local_runtime"
+      }
+    }
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27605176320,
+    "ram_available_ratio": 0.5374,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 27432476672,
+    "ram_available_ratio": 0.534,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "all_expected_requests_completed": true,
+    "all_responses_bounded": true,
+    "mechanical_fast_path_coverage_recorded": true,
+    "zero_model_calls": true,
+    "cancel_recovery_accepted": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "all_checks_pass": true,
+  "receipt_sha256": "9d03c0b0a30d8b7cae46cdbe90df304f85fab50ddf9bc836326a0b6b716f79f0"
+}

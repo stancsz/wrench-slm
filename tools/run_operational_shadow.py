@@ -137,6 +137,26 @@ def _percentile(values: list[float], fraction: float) -> float:
     return round(ordered[index], 3)
 
 
+def _latency_by_action(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    grouped: dict[str, list[float]] = {}
+    for row in rows:
+        action = row.get("action")
+        elapsed = row.get("elapsed_ms")
+        if not isinstance(action, str) or not isinstance(elapsed, (int, float)):
+            continue
+        grouped.setdefault(action, []).append(float(elapsed))
+    return {
+        action: {
+            "count": len(values),
+            "p50": _percentile(values, 0.50),
+            "p95": _percentile(values, 0.95),
+            "max": max(values),
+        }
+        for action, values in sorted(grouped.items())
+        if values
+    }
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     package_dir = args.package_dir.resolve()
     server_script = package_dir / "wrench_server.py"
@@ -197,6 +217,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             process.wait(timeout=5)
 
     latencies = [float(row["elapsed_ms"]) for row in rows]
+    accepted_latencies = [
+        float(row["elapsed_ms"])
+        for row in rows
+        if row.get("status") == "accepted"
+    ]
     accepted = sum(row.get("status") == "accepted" for row in rows)
     abstained = sum(row.get("status") == "abstain" for row in rows)
     mechanical = sum(row.get("mechanical_fast_path") is True for row in rows)
@@ -227,7 +252,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "p95": _percentile(latencies, 0.95) if latencies else None,
             "max": max(latencies) if latencies else None,
             "burst_elapsed": round(burst_elapsed_ms, 3),
+            "accepted_only_p50": _percentile(accepted_latencies, 0.50) if accepted_latencies else None,
+            "accepted_only_p95": _percentile(accepted_latencies, 0.95) if accepted_latencies else None,
         },
+        "latency_by_action_ms": _latency_by_action(rows),
         "cancel_probe": {"client_closed_mid_request": cancelled, "recovery": recovery},
         "resource_before": before,
         "resource_after": after,

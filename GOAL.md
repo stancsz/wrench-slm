@@ -3459,3 +3459,19 @@ path, or receipt. Per `AGENTS.local.md`, this is recorded as
 control surface exposes a working authenticated worker session. No 5060Ti
 benchmark or package-quality claim is made. Evidence:
 `phases/phase-346-fresh-5060ti-thread-empty-turn/receipt.json`.
+
+2026-09-22 bounded operational shadow repair: the first concurrent Gate E
+probe exposed two timeouts because a failed ripgrep lookup fell through to a
+second full-tree scan, while the model-unloaded server serialized mechanical
+requests behind the worker lock. The runtime now fails closed at a `0.75 s`
+literal-search budget and skips that lock when no in-process model is loaded.
+A fresh four-worker, ten-round shadow then completed `40/40` requests with
+zero errors, `0` model calls, accepted-only p50/p95 latency of
+`3.153/17.770 ms`, successful cancellation recovery, and RAM/VRAM reserve
+checks passing. The full regression passed `197` tests. The unreachable
+health probe remains separately visible as an intentional abstention and is
+not included in the successful-task distribution. This is local
+mechanical-only operational evidence, not native 4M quality, MiniMax parity,
+5060Ti evidence, or production approval. Evidence:
+`phases/phase-348-operational-shadow-timebound/README.md` and
+`phases/phase-348-operational-shadow-timebound/receipt-r4.json`.

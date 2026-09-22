@@ -27,6 +27,9 @@ MAX_LINES = 500
 MAX_MATCHES = 200
 MAX_DIFF_BYTES = 128 * 1024
 MAX_SEARCH_FILE_BYTES = 8 * 1024 * 1024
+# Broad repository searches must fail closed quickly. A mechanical worker
+# should not occupy a server slot for the same duration as a model request.
+MAX_LITERAL_SEARCH_SECONDS = 0.75
 SEARCH_PRUNED_DIRS = {
     ".git",
     ".mypy_cache",
@@ -236,7 +239,7 @@ def _literal_search_with_rg(
     reader.start()
 
     matches: list[dict[str, Any]] = []
-    deadline = time.monotonic() + 5
+    deadline = time.monotonic() + MAX_LITERAL_SEARCH_SECONDS
     completed_early = False
     timed_out = False
     while True:
@@ -290,9 +293,14 @@ def _literal_search_with_rg(
     try:
         process.wait(timeout=1)
     except subprocess.TimeoutExpired:
-        return None
+        # Do not fall through to the unbounded Python walker after an
+        # accelerator deadline. A second full-tree scan defeats the bounded
+        # mechanical contract and can starve concurrent health requests.
+        return _abstain("search_timeout")
     if timed_out:
-        return None
+        # The search process was killed at its deadline. Return a bounded
+        # abstention instead of repeating the same expensive scan in Python.
+        return _abstain("search_timeout")
     if not completed_early and process.returncode not in {0, 1}:
         return None
     if len(matches) >= limit:

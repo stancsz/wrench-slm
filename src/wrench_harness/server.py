@@ -8,6 +8,7 @@ bounded model prefill. It is intentionally narrow and never executes tools.
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import hashlib
 import json
 import os
@@ -1030,7 +1031,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             elif settlement is not None:
                 result = settlement
             else:
-                with server.worker_lock:
+                # Mechanical-only and native-upstream package modes keep the
+                # Transformers model unloaded. Their bounded parser, verifier,
+                # and read-only routes are independent per request, so holding
+                # the model-generation lock would serialize otherwise cheap
+                # concurrent work behind a slow health/search probe. Retain
+                # the lock only when an in-process model can actually generate.
+                worker_guard = (
+                    server.worker_lock
+                    if server.worker.model is not None
+                    else nullcontext()
+                )
+                with worker_guard:
                     result = server.worker.propose(
                         messages,
                         max_tokens=int(request.get("max_tokens", 256)),
