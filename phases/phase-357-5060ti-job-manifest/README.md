@@ -23,6 +23,7 @@ The exact manifest is [job.json](job.json). It invokes the existing
 now binds those values and the actual Windows `COMPUTERNAME` into the receipt,
 and the verifier fails closed on mismatch. Tests for the manifest and receipt
 chain passed: `8 passed`.
+The full repository regression then passed `202 passed, 0 failed, 18 warnings`.
 
 This is not a 5060TI result. The remote execution surface still needs an
 authenticated queue or worker session. No hardware, latency, memory, or

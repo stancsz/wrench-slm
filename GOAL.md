@@ -3583,7 +3583,8 @@ manifest with a unique job ID and nonce, exact current source commit
 preflight command, 10 percent RAM/VRAM reserve gates, and no-spend,
 no-credential, no-mutation boundaries. The HF cross-host receipt chain now
 echoes and verifies `job_id`, `claim_nonce`, and actual `COMPUTERNAME` when a
-job supplies them. The focused manifest and receipt tests passed `7/7` and
-PowerShell parsing passed. This makes the next authenticated worker run
+job supplies them. The focused manifest and receipt tests passed `8/8` and
+PowerShell parsing passed, and the full repository regression passed
+`202/202` with `0` failures and `18` warnings. This makes the next authenticated worker run
 recoverable and auditable, but it is not a 5060TI execution result. Evidence:
 `phases/phase-357-5060ti-job-manifest/`.
