@@ -47,6 +47,8 @@ def main() -> int:
         "run_wrench.ps1",
         "Modelfile",
         "serve_freetoken.ps1",
+        "opencode.wrench.json",
+        "dsh-wrench.patch.yml",
         "verify_freetoken_backend.py",
     ]
     for name in required:
@@ -85,6 +87,8 @@ def main() -> int:
         args.model_dir / "wrench_runtime" / "worker.py",
         args.model_dir / "wrench_worker.py",
         args.model_dir / "Modelfile",
+        args.model_dir / "opencode.wrench.json",
+        args.model_dir / "dsh-wrench.patch.yml",
         args.model_dir / "verify_freetoken_backend.py",
         *safetensors,
         package_manifest,
