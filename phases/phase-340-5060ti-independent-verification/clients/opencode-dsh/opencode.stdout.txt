@@ -1,0 +1,14 @@
+
+> build · wrench-local
+
+→ Read README.md [limit=1]
+Wrench completed the requested read-only tool call. The client tool result is authoritative.
+
+Tool result:
+<path>C:\Users\stanc\.codex\worktrees\3e63\wrench-slm\phases\phase-340-5060ti-independent-verification\clients\opencode-dsh\client-workspace\README.md</path>
+<type>file</type>
+<content>
+1: # Wrench SLM
+
+(Showing lines 1-1 of 99. Use offset=2 to continue.)
+</content>

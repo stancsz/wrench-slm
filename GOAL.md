@@ -3386,3 +3386,17 @@ decision, remote retries stop until explicit host targeting and a working saved
 project or queue surface exists. No 5060Ti result is claimed. Evidence:
 `phases/phase-340-fresh-remote-control-empty-turns.md` and
 `phases/phase-340-fresh-remote-control-empty-turns.json`.
+
+2026-09-21 newly received package-verification receipts were preserved from
+the remote branch under `phases/phase-340-5060ti-independent-verification`.
+Their own host preflight identifies an RTX `5070 Ti`, not the requested 5060
+Ti, so they are not independent 5060Ti evidence. They do add current-package
+diagnostics: structural package validation passed, retrieval passed `6/6`,
+the 220-case replay passed `220/220` with weighted success `1.0`, verifier
+success `1.0`, coverage `1.0`, net savings `1.0`, `310` fallback frontier
+tokens, `24,045` local tokens, and p50/p95 `218.578/350.519 ms`; the 44-row
+slice passed `44/44`. OpenCode, DeepSeek Harness, and Claude Code smokes also
+passed. Native direct raw-context verification failed and dense-native quality
+remains unproven. Evidence:
+`phases/phase-340-5060ti-independent-verification/README.md` and
+`phases/phase-340-5060ti-independent-verification/host-preflight.json`.

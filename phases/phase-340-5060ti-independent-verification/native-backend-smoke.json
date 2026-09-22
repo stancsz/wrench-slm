@@ -1,0 +1,120 @@
+{
+  "schema": "wrench.freetoken-native-backend-receipt.v1",
+  "status": "FAIL_FREETOKEN_NATIVE_BACKEND",
+  "model_dir": "D:\\models\\_wrench-release-candidate-bbc680f",
+  "package_manifest_sha256": "27801ca54134e28e083d9b9571f902d2fe74852c8551908b3e335fb5467b4641",
+  "candidate_identity": "Wrench-4B-Qwen3.6-8E-base",
+  "model_architectures": [
+    "Qwen3_5MoeForConditionalGeneration"
+  ],
+  "backend": "freetoken_modelopt_nvfp4",
+  "direct_model_endpoint": true,
+  "declared_raw_context_tokens": 4000000,
+  "native_context_capacity_configured": true,
+  "full_weight_load_verified": true,
+  "native_generation_verified": true,
+  "direct_raw_context_verified": false,
+  "native_probe": {
+    "requested_tokens": 1024,
+    "sent_tokens": 769,
+    "raw_payload_bytes": 1578,
+    "raw_payload_sha256": "319258eb3ce40550f9f37e5de4cb3522f581b1dd2bfe8c7da85d139a19c52e59",
+    "prompt_tokens": 779,
+    "status": "FAIL_DIRECT_RAW_CONTEXT"
+  },
+  "dense_native_quality_verified": false,
+  "http_status": 200,
+  "generated_text": "{\" a a a a a a",
+  "error": null,
+  "elapsed_ms": 71600.435,
+  "resource_reserve_maintained": true,
+  "resource_snapshots": {
+    "before": {
+      "ram_free_fraction": 0.536893,
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "total_mib": 16303.0,
+          "used_mib": 760.0,
+          "free_mib": 15236.0,
+          "free_fraction": 0.934552
+        }
+      ],
+      "ram_total_bytes": 51370344448,
+      "ram_free_bytes": 27580395520
+    },
+    "after_ready": {
+      "ram_free_fraction": 0.464177,
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "total_mib": 16303.0,
+          "used_mib": 7783.0,
+          "free_mib": 8213.0,
+          "free_fraction": 0.503772
+        }
+      ],
+      "ram_total_bytes": 51370344448,
+      "ram_free_bytes": 23844937728
+    },
+    "after_stop": {
+      "ram_free_fraction": 0.464275,
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "total_mib": 16303.0,
+          "used_mib": 824.0,
+          "free_mib": 15172.0,
+          "free_fraction": 0.930626
+        }
+      ],
+      "ram_total_bytes": 51370344448,
+      "ram_free_bytes": 23849955328
+    }
+  },
+  "command": [
+    "C:\\Users\\stanc\\AppData\\Local\\FreeToken\\venv\\Scripts\\ft.exe",
+    "serve",
+    "--model",
+    "D:\\models\\_wrench-release-candidate-bbc680f",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "28916",
+    "--served-model-name",
+    "wrench-4b-qwen3.6-8e",
+    "--moe-strategy",
+    "offload",
+    "--expert-load",
+    "serial",
+    "--moe-cache-auto",
+    "--kv-reserve-tokens",
+    "8192",
+    "--num-tokens",
+    "4000000",
+    "--max-seq-len-override",
+    "4000000",
+    "--max-prefill-length",
+    "32768",
+    "--max-running-requests",
+    "1",
+    "--num-tokenizer",
+    "0",
+    "--memory-ratio",
+    "0.90",
+    "--text-model-only",
+    "--cache-type",
+    "radix",
+    "--tool-call-parser",
+    "qwen",
+    "--reasoning-parser",
+    "off"
+  ],
+  "stdout_log": "C:\\Users\\stanc\\.codex\\worktrees\\3e63\\wrench-slm\\phases\\phase-340-5060ti-independent-verification\\native-backend-smoke.stdout.log",
+  "stderr_log": "C:\\Users\\stanc\\.codex\\worktrees\\3e63\\wrench-slm\\phases\\phase-340-5060ti-independent-verification\\native-backend-smoke.stderr.log",
+  "quality_claim": false,
+  "notes": [
+    "This proves the ModelOpt/NVFP4 FreeToken backend path, not ordinary Transformers tensor loading.",
+    "The 4M capacity is configured in the model backend; this receipt does not claim a 4M quality pass."
+  ]
+}
