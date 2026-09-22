@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.5060ti.current-head-queue-dispatch.v1",
+  "status": "PENDING_WORKER_CLAIM",
+  "date": "2026-09-21",
+  "queue_folder_id": "16Cyxb70EcN5hBhDaEjNdDaKmi44d4Wvv",
+  "drive_file_id": "1tXiJce_L1FkVgRqakCPhnG6USVmgjEBQ",
+  "manifest_name": "wrench-5060ti-current-package-20260921-04.json",
+  "job_id": "wrench-5060ti-current-package-20260921-04",
+  "claim_nonce": "7dab95c411cf4039b23a5e2633e9f875",
+  "target_host": "DESKTOP-KET1SKP",
+  "gpu_identity": "NVIDIA GeForce RTX 5060 Ti",
+  "source_commit": "8391b72da22915a0b9c8fa277446541efecd7412",
+  "huggingface_revision": "9c6303c2c17a3798a134388c7e544728b22bd481",
+  "manifest_sha256": "b3cb3dca5df98f80ebf1b571dbff95505a38ce4221c35c49d1b3d0f18f0296c6",
+  "readback_state": "pending",
+  "execution_verified": false,
+  "independent_5060_claim": false,
+  "quality_claim": false
+}
