@@ -1,0 +1,15 @@
+{
+  "schema": "wrench.current-source-regression.v1",
+  "status": "PASS_LOCAL_REGRESSION",
+  "source_commit": "1a847f7b5579c6e020e37dc871f2515f7b422c58",
+  "command": "python -m pytest -q",
+  "passed": 202,
+  "failed": 0,
+  "warnings": 18,
+  "duration_seconds": 19.14,
+  "scope": "local source regression",
+  "independent_5060ti_result": false,
+  "dense_native_quality_claim": false,
+  "minimax_parity_claim": false,
+  "production_readiness_claim": false
+}

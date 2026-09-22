@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.luna-advisor.v1",
+  "status": "ADVICE_APPLIED",
+  "model": "codex-sol-advisor",
+  "decision_changed": true,
+  "packet_chars": 1518,
+  "advice_words": 96,
+  "usage": {
+    "completion_tokens": 518,
+    "prompt_tokens": 489,
+    "total_tokens": 1007
+  },
+  "verdict": "Stop repeating remote attempts and move to a locally controlled read-only attestation path on the actual RTX 5060 Ti.",
+  "next_experiment": "Run the pinned preflight once in a fresh process with exact source, Hub revision, job, nonce, 10% RAM/VRAM reserve, raw logs, timestamped receipt, GPU identity, snapshots, command, exit code, and artifact hashes.",
+  "stop_condition": "Do not claim a pass if the actual 5060 Ti is not directly addressed, headroom falls below 10%, or any required receipt field is absent.",
+  "provider": "codex-sol-advisor"
+}

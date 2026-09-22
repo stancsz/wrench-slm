@@ -1,0 +1,12 @@
+Decision blocker: What is the smallest next experiment that can restore independently verifiable RTX 5060 Ti execution for the nonce-bound Wrench preflight, without fighting stale threads or fabricating a pass?
+
+Observed facts:
+- The approved job is fully pinned: source a422353469869785ba5b0ab1f2366dd82706f8f6, HF revision 9c6303c2c17a3798a134388c7e544728b22bd481, job wrench-5060ti-current-package-preflight, nonce f9d26378d81c43b7b010f1ffc799de70.
+- A fresh remote same-directory child thread on remote-control:env_e_6a8d3f00ccd88322b0b02865ae4cbc9a was created and received the complete payload twice.
+- Both child turns completed with empty item lists. No command, host attestation, resource snapshot, exit code, or receipt exists.
+- DESKTOP-KET1SKP.local resolves to 10.0.0.4 and TCP 22 is reachable, but SSH with the configured worker key returns publickey authentication denied.
+- Local evidence proves the hybrid package path and 2M/4M retrieval diagnostics, but strict current-source independent 5060Ti verification remains open.
+
+Constraints and rejected paths: preserve 10% RAM/VRAM; no credentials, provider spend, arbitrary shell, mutation, or promotion of stale receipts. Do not reuse the old worker thread.
+
+Question: Should the next experiment be one different fresh remote-thread creation/handoff route, or should we stop remote attempts and move the current-source verification to a locally controlled attestation path? Give one verdict, the smallest safe experiment, and a concrete stop condition.
