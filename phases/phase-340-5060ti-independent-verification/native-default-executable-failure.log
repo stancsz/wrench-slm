@@ -1,0 +1,4 @@
+Command: python -X utf8 D:\models\_wrench-release-candidate-bbc680f\verify_freetoken_backend.py --model-dir D:\models\_wrench-release-candidate-bbc680f --output phases\phase-337-5060ti-independent-verification\native-backend-smoke.json --port 28916 --startup-timeout-seconds 90 --probe-payload-tokens 1024 --probe-timeout-seconds 90
+Result: FileNotFoundError: [WinError 2] The system cannot find the file specified
+Cause: verifier defaulted to executable name ft, which was not on PATH.
+Resolution: one bounded retry used C:\Users\stanc\AppData\Local\FreeToken\venv\Scripts\ft.exe explicitly.

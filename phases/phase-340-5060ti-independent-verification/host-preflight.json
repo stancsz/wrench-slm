@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.independent-verification-host-preflight.v1",
+  "captured_at": "2026-09-21T18:15:41.0668444-06:00",
+  "source_checkout": "C:\\Users\\stanc\\.codex\\worktrees\\3e63\\wrench-slm",
+  "source_head": "55c0fb0165faa18c5d222e3ff4d7b8cc776a1f4d",
+  "goal_sha256": "566bdb3177dc1af6455b4bc844603577aadc300066a75dea27029f6ac139fe11",
+  "worktree_status_before_receipts": "clean detached HEAD at source_head",
+  "host": {
+    "manufacturer": "Micro-Star International Co., Ltd.",
+    "model": "US Desktop Codex R",
+    "os": "Microsoft Windows 11 Home 10.0.26200",
+    "ram_total_bytes": 51370344448,
+    "ram_free_bytes": 27580395520,
+    "ram_free_fraction": 0.536893,
+    "ram_reserve_required_fraction": 0.10
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 5070 Ti",
+    "driver": "616.56",
+    "total_mib": 16303,
+    "used_mib": 760,
+    "free_mib": 15236,
+    "free_fraction": 0.934552,
+    "vram_reserve_required_fraction": 0.10
+  },
+  "requested_worker_identity": "RTX 5060 Ti",
+  "identity_match": false,
+  "resource_reserve_before_work": true,
+  "package": {
+    "path": "D:\\models\\_wrench-release-candidate-bbc680f",
+    "present": true,
+    "candidate_identity": "Wrench-4B-Qwen3.6-8E-base",
+    "model_lineage": "Qwen3.6-35B-A3B -> Wrench 8E structural prune",
+    "package_manifest_sha256": "27801ca54134e28e083d9b9571f902d2fe74852c8551908b3e335fb5467b4641",
+    "structural_validation": "PASS_STRUCTURAL_PACKAGE",
+    "structural_validation_receipt_sha256": "ea453c1962a754dcf5e81aaa04b8cbb16610d556783598509553b40a35a27902",
+    "quantization": "NVFP4-W4A16-ModelOpt",
+    "declared_raw_context_tokens": 4000000,
+    "effective_working_context_tokens": 64000
+  },
+  "note": "This is a 5070 Ti host. It cannot establish independent RTX 5060 Ti evidence."
+}

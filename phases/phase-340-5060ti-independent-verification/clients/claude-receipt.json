@@ -1,0 +1,19 @@
+{
+  "schema": "wrench.claude-client-smoke.v1",
+  "status": "PASSED",
+  "package_dir": "D:\\models\\_wrench-release-candidate-bbc680f",
+  "allowed_root": "C:\\Users\\stanc\\.codex\\worktrees\\3e63\\wrench-slm\\phases\\phase-340-5060ti-independent-verification\\clients\\claude-workspace",
+  "exit_code": 0,
+  "trace": {
+    "rows": 2,
+    "protocol": "anthropic-messages",
+    "model_calls": 0,
+    "raw_input_chars": [2077, 2091],
+    "raw_input_tokens_estimate": [310, 314],
+    "tool_names": ["Bash", "Edit", "Read"],
+    "backend": ["embedded-mechanical", "embedded-mechanical-settlement"],
+    "mutation_executed": false,
+    "trace_sha256": "4a5e127120eefa50790aa59d9ec7cb0e1c017aaa944c39f05c17fd24afaba2c2"
+  },
+  "warning": "Claude Code emitted an unrecognized_model warning for MiniMax-M2.7, then completed the read-only request."
+}
