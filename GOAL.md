@@ -3401,3 +3401,17 @@ passed. Native direct raw-context verification failed and dense-native quality
 remains unproven. Evidence:
 `phases/phase-340-5060ti-independent-verification/README.md` and
 `phases/phase-340-5060ti-independent-verification/host-preflight.json`.
+
+2026-09-22 current-head portable surface verification: the exact package
+`D:\models\_wrench-release-candidate-bbc680f` passed its own subprocess
+Ollama-shaped API, without an external gateway. The package reported API
+version `0.32.13`, a `4,000,000` context length, and a `64,000` effective
+working budget. A `3,995,426`-token monster payload was accepted in `48.313 ms`;
+the first-layer gate took `27.144 ms`, reduced the working context to `9`
+tokens, bound the raw payload hash, and made `0` model calls. RAM and VRAM
+reserve checks passed before and after. Structural validation passed and the
+full regression remained `196 passed`, `0 failed`. This is the strongest
+current portable model-local evidence, not dense-native quality, learned
+MiniMax parity, independent 5060Ti evidence, or production approval. Evidence:
+`phases/phase-341-current-head-ollama-surface.md` and
+`phases/phase-341-current-head-ollama-surface.json`.
