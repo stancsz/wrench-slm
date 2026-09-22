@@ -3475,3 +3475,22 @@ mechanical-only operational evidence, not native 4M quality, MiniMax parity,
 5060Ti evidence, or production approval. Evidence:
 `phases/phase-348-operational-shadow-timebound/README.md` and
 `phases/phase-348-operational-shadow-timebound/receipt-r4.json`.
+
+2026-09-22 exact current-head package and replay: commit `8d9ea2c` was bound
+to `D:\models\_wrench-release-candidate-8d9ea2c`, passed structural package
+validation, and passed its own Ollama-shaped model-local surface with a
+`3,995,426`-token request in `44.373 ms`, a `24.636 ms` first-layer gate,
+`9` effective tokens, raw hash binding, and zero model calls. The same exact
+package completed the full `220/220` replay and the `44/44` held-out slice.
+The 220 replay recorded Wrench weighted final success and verifier success
+`1.0`, full weighted coverage, `100%` net frontier-token savings, zero
+frontier tokens, `24,141` local tokens, p50/p95 `184.804/297.676 ms`, zero
+prohibited accepts, and zero mutations. The held-out slice recorded `1.0`
+success, zero frontier tokens, `4,805` local tokens, p50/p95
+`187.545/282.136 ms`, and zero prohibited accepts or mutations. This is
+deterministic package-worker evidence, not learned MiniMax parity, dense
+native 4M quality, independent 5060Ti evidence, or production approval.
+Evidence: `phases/phase-349-current-head-package-binding.md`,
+`phases/phase-349-current-head-package-ollama.json`,
+`phases/phase-350-current-head-220-replay/`, and
+`phases/phase-350-current-head-heldout-final/`.
