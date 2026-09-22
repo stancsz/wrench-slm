@@ -3519,3 +3519,12 @@ working tokens with zero model calls in every case. This closes the direct
 model-local hybrid intake matrix, not dense native attention quality, learned
 MiniMax parity, independent 5060Ti execution, or production approval.
 Evidence: `phases/phase-352-current-head-context-matrix/`.
+
+2026-09-21 learned fallback diagnostic: attention LoRA rank `8` with guided
+JSON decoding was evaluated on the `44`-case development split. It produced
+`23/44` outcome matches, `4/44` exact target matches, and `7/44` verified
+accepts, with median/p95 latency of `3,662.212/30,459.054 ms`. The decoder
+helped constrain syntax but did not solve semantic errors, including
+hallucinated paths, wrong actions, invalid health URLs, and unusable patch
+diffs. It remains development-only and is not promoted into the production
+router. Evidence: `phases/phase-353-guided-json-lora-development/`.
