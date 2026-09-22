@@ -389,7 +389,8 @@ read-only task through each client and retain the client log plus Wrench trace:
 
 The repository also provides a repeatable local smoke runner. It starts a
 mechanical-only package server, creates an isolated client workspace, runs both
-OpenCode and DeepSeek Harness, and writes a JSON receipt plus client logs:
+OpenCode and DeepSeek Harness, then runs the isolated Claude Code launcher and
+writes a JSON receipt plus client logs:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\smoke_portable_clients.ps1 `
@@ -414,11 +415,11 @@ dsh --profile headless --patch .\dsh-wrench.patch.yml "Read README.md and report
 .\run_claude_code.ps1 -Print -Prompt "Read README.md and report its first heading."
 ```
 
-Each client receipt must prove a structured read tool call, client-side tool
-execution, one bounded settlement, zero unintended mutation, and the expected
-Wrench protocol trace. Keep OpenCode and DeepSeek Harness configs isolated per
-test. The Claude launcher must retain the local-only auth token and external
-proxy blocker evidence.
+The three client receipts must prove a structured read tool call, client-side
+tool execution, one bounded settlement, zero unintended mutation, and the
+expected Wrench protocol trace. Keep OpenCode and DeepSeek Harness configs
+isolated per test. The Claude launcher must retain the local-only auth token
+and external proxy blocker evidence.
 
 ### Task 6: independent RTX 5060 Ti worker
 

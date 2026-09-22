@@ -296,13 +296,27 @@ provider parity.
 
 Evidence: `phases/phase-283-claude-code-local-route`.
 
-## Independent 5060 Ti verification state
+## Current 5060 Ti client and 4M intake evidence
 
-The current-source 5060 Ti verification attempt produced no receipt, command
-output, nonce echo, or final resource summary after the remote turn completed.
-The stale partial 5060 evidence is therefore not a current benchmark. The
-independent GPU gate remains open until a nonce-bound receipt reports exact
-source/package hashes, 220-case results, 4M intake/retrieval results, and the
-10% RAM/VRAM reserve.
+A fresh run on `DESKTOP-KET1SKP` used the downloaded public package after its
+Claude launcher dependencies were repaired. The portable client receipt is
+`C:\wreceipts\wrench-5060ti-client-smoke-20260921-09\receipt.json` and reports
+`PASSED`: OpenCode, DeepSeek Harness, and Claude Code each exited with zero,
+each observed a structured read, and Claude Code produced three trace rows.
+The DSH run used an isolated HOME/XDG profile so an old provider snapshot could
+not select an external route.
 
-Evidence: `phases/phase-284-5060ti-current-verification-no-receipt`.
+The same package accepted a direct 4M model-local payload in
+`C:\wreceipts\wrench-5060ti-client-smoke-20260921-09\model-local-4m.json`:
+`PASS_MODEL_LOCAL_SERVER_4M`, `prompt_tokens=3,999,995`, raw input estimate
+`3,999,995`, outer elapsed `450.368 ms`, server elapsed `133.759 ms`, and a
+first-layer gate latency of `61.57 ms` with a `64,000` token working budget.
+The receipt explicitly records `native_input_claim=false`, so this proves the
+hybrid model-local 4M intake and reduction path, not dense-native attention
+quality.
+
+This is stronger current evidence than the earlier no-receipt attempt, but it
+is not yet the complete independent GPU gate. That gate remains open until one
+nonce-bound consolidated receipt includes the exact source and package hashes,
+220-case results, 4M retrieval results, host GPU identity, and before/after
+10% RAM/VRAM reserve measurements.
