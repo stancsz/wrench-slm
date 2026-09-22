@@ -474,7 +474,7 @@ def materialize(
                     else "local experimental backend"
                 ),
                 "vllm": "requires registered Wrench architecture",
-                "ollama_safetensors": "Ollama 0.34.2 MLX import and 4M metadata verified; native generation quality failed on validation host",
+                "ollama_safetensors": "stock Ollama native import not verified on Windows; package-local Ollama-shaped 4M route verified; BF16 to NVFP4 conversion blocked by missing MLX runtime",
                 "ollama_gguf": "not verified",
             },
             "publication": {

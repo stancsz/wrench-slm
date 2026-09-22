@@ -56,7 +56,7 @@
     "transformers": "config_and_tokenizer_verified_only; packed_NVFP4_tensor_load_requires_FreeToken_ModelOpt_backend",
     "freetoken": "experimental_verified_local_backend",
     "vllm": "requires_registered_wrench_architecture",
-    "ollama": "Ollama_0.34.2_MLX_safetensors_import_and_4M_metadata_verified; native_generation_quality_failed_on_validation_host",
+    "ollama": "stock_native_import_not_verified_on_windows; package_local_ollama_shaped_4M_verified; BF16_to_NVFP4_blocked_by_missing_MLX_runtime",
     "llama_cpp_gguf": "not_verified"
   },
   "retrieval": {
