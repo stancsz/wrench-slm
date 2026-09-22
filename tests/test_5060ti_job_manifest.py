@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from tools.build_5060ti_job_manifest import build_manifest
 
 
@@ -50,3 +52,12 @@ def test_manifest_can_dispatch_current_package_verification():
     assert manifest["execution"]["workload"] == "wrench_current_package_verification"
     assert manifest["execution"]["script"].endswith("run_5060ti_current_package_verification.ps1")
     assert "run_5060ti_current_package_verification.ps1" in manifest["execution"]["command"]
+
+
+def test_current_package_runner_does_not_forward_empty_nonce_arguments():
+    script = Path("tools/run_5060ti_current_package_verification.ps1").read_text(
+        encoding="utf-8"
+    )
+    assert '"-HfExecutable", $HfExecutable\n        )' in script
+    assert '$preflightArgs += @("-JobId", $JobId, "-ClaimNonce", $ClaimNonce)' in script
+    assert "JobId and ClaimNonce must be supplied together" in script

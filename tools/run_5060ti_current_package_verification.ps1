@@ -127,10 +127,14 @@ try {
             "-ModelRoot", $ModelRoot,
             "-ReceiptRoot", $ReceiptRoot,
             "-PythonExe", $PythonExe,
-            "-HfExecutable", $HfExecutable,
-            "-JobId", $JobId,
-            "-ClaimNonce", $ClaimNonce
+            "-HfExecutable", $HfExecutable
         )
+        if ($JobId -or $ClaimNonce) {
+            if (-not ($JobId -and $ClaimNonce)) {
+                throw "JobId and ClaimNonce must be supplied together"
+            }
+            $preflightArgs += @("-JobId", $JobId, "-ClaimNonce", $ClaimNonce)
+        }
         if ($SkipPackageDownload) { $preflightArgs += "-SkipDownload" }
         # The nested Windows PowerShell invocation already defaults to `py -3`.
         # Passing the bare `-3` as a value makes the child parser treat it as a
