@@ -72,6 +72,13 @@ $opencodeMode = "normal"
 $opencodeSupportsPure = $false
 $originalKey = $env:WRENCH_LOCAL_API_KEY
 $originalDeepSeekKey = $env:DEEPSEEK_API_KEY
+$originalHome = $env:HOME
+$originalUserProfile = $env:USERPROFILE
+$originalXdgConfigHome = $env:XDG_CONFIG_HOME
+$originalXdgCacheHome = $env:XDG_CACHE_HOME
+$originalXdgDataHome = $env:XDG_DATA_HOME
+$originalXdgStateHome = $env:XDG_STATE_HOME
+$originalXdgRuntimeDir = $env:XDG_RUNTIME_DIR
 
 try {
     $serverProcess = Start-Process -FilePath $python.Source -ArgumentList $serverArgs `
@@ -116,6 +123,32 @@ try {
         # credentials service, whose environment discovery uses this name.
         # Keep the package-local variable too for older DSH releases.
         $env:DEEPSEEK_API_KEY = "wrench-local"
+        # DSH can keep a background profile or credential snapshot alive.
+        # Give this smoke a disposable home so a previous provider session
+        # cannot decide the route or credential state for this run.
+        $dshHome = Join-Path $OutputDir "dsh-isolated"
+        $dshConfigHome = Join-Path $dshHome "config"
+        $dshCacheHome = Join-Path $dshHome "cache"
+        $dshDataHome = Join-Path $dshHome "data"
+        $dshStateHome = Join-Path $dshHome "state"
+        $dshRuntimeHome = Join-Path $dshHome "runtime"
+        foreach ($dshDirectory in @(
+            $dshHome,
+            $dshConfigHome,
+            $dshCacheHome,
+            $dshDataHome,
+            $dshStateHome,
+            $dshRuntimeHome
+        )) {
+            New-Item -ItemType Directory -Force -Path $dshDirectory | Out-Null
+        }
+        $env:HOME = $dshHome
+        $env:USERPROFILE = $dshHome
+        $env:XDG_CONFIG_HOME = $dshConfigHome
+        $env:XDG_CACHE_HOME = $dshCacheHome
+        $env:XDG_DATA_HOME = $dshDataHome
+        $env:XDG_STATE_HOME = $dshStateHome
+        $env:XDG_RUNTIME_DIR = $dshRuntimeHome
         $dshOutput = (& $dsh --profile headless --patch $dshPatchForSmoke `
             "Read README.md and report its first heading." 2>&1 | Out-String)
         $dshExit = $LASTEXITCODE
@@ -124,6 +157,13 @@ try {
         Pop-Location
         $env:WRENCH_LOCAL_API_KEY = $originalKey
         $env:DEEPSEEK_API_KEY = $originalDeepSeekKey
+        $env:HOME = $originalHome
+        $env:USERPROFILE = $originalUserProfile
+        $env:XDG_CONFIG_HOME = $originalXdgConfigHome
+        $env:XDG_CACHE_HOME = $originalXdgCacheHome
+        $env:XDG_DATA_HOME = $originalXdgDataHome
+        $env:XDG_STATE_HOME = $originalXdgStateHome
+        $env:XDG_RUNTIME_DIR = $originalXdgRuntimeDir
     }
 
     $traceRows = @()
@@ -152,6 +192,7 @@ try {
             deepseek_harness = [ordered]@{
                 exit_code = $dshExit
                 structured_read_observed = $readToolObserved
+                isolated_home = "dsh-isolated"
                 output_file = "dsh.stdout.txt"
             }
         }
@@ -179,6 +220,13 @@ try {
 } finally {
     $env:WRENCH_LOCAL_API_KEY = $originalKey
     $env:DEEPSEEK_API_KEY = $originalDeepSeekKey
+    $env:HOME = $originalHome
+    $env:USERPROFILE = $originalUserProfile
+    $env:XDG_CONFIG_HOME = $originalXdgConfigHome
+    $env:XDG_CACHE_HOME = $originalXdgCacheHome
+    $env:XDG_DATA_HOME = $originalXdgDataHome
+    $env:XDG_STATE_HOME = $originalXdgStateHome
+    $env:XDG_RUNTIME_DIR = $originalXdgRuntimeDir
     if ($serverProcess -and -not $serverProcess.HasExited) {
         try { Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue } catch { }
     }

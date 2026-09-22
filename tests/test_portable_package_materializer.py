@@ -182,6 +182,8 @@ def test_portable_client_smoke_runner_has_fail_closed_receipt_contract():
     assert "deepseek_harness" in runner
     assert "model_calls" in runner
     assert "claims_not_authorized" in runner
+    assert "dsh-isolated" in runner
+    assert "XDG_CONFIG_HOME" in runner
     assert "Stop-Process -Id $serverProcess.Id" in runner
 
 
