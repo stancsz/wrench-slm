@@ -1,99 +1,54 @@
 # Wrench SLM
 
-Wrench is a bounded developer-tool execution SLM for fast, repetitive,
-verifiable mechanical work. It proposes structured actions or abstains. An
-independent verifier and the stronger-model fallback retain final authority.
-Wrench never executes arbitrary shell commands, uses credentials, or writes
-autonomously.
+Wrench is a bounded developer-tool worker for fast, repetitive, verifiable
+mechanical work. It proposes structured read-only or review-only actions, or
+abstains. An independent verifier and the stronger-model fallback retain final
+authority. Wrench does not execute arbitrary shell commands, access
+credentials, or write autonomously.
 
-## Copy-paste model package
+## Active productive-value scope
 
-The current experimental preview Hugging Face artifact is:
+The project is intentionally narrow. We are keeping and continuing:
 
-`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`
+1. deterministic mechanical work;
+2. independent verification and the no-mutation boundary;
+3. hybrid long-context intake and retrieval;
+4. the bounded two-state client protocol;
+5. OpenCode, DeepSeek Harness, and Claude Code support;
+6. latency and timeout repair;
+7. one paired real-workflow canary;
+8. targeted fallback expansion based on real traces;
+9. sustained operational testing.
 
-```powershell
-hf download stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview `
-  --local-dir Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
-Set-Location Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview
-.\run_wrench.ps1
-```
+The North Star is measured productive value against the stronger-model
+baseline: final success, safety, successful-task latency, frontier-token use,
+local overhead, cost, retries, corrections, abstentions, and fallback.
 
-This is an **Experimental Preview**. It is not for production deployment,
-safety-critical use, or treating benchmark results as production validation.
-Run it only in an isolated, non-production environment.
+## Explicitly skipped
 
-The package is a Hugging Face Safetensors directory with tokenizer, bundled
-verifier, deterministic toolbelt, context policy, and a model-local server.
-It accepts Ollama-shaped `/api/chat` and `/api/generate` requests, including
-`options.num_ctx=4000000`, without an external gateway.
+RTX 5060 Ti verification, private release packaging as a separate workstream,
+learned free-form routing and LoRA optimization, dense-native 4M attention,
+stock Ollama or vLLM or GGUF adapters, synthetic replay as a primary milestone,
+broad speculative tool expansion, and public production release are out of
+scope unless the human product owner changes the goal.
 
-## What the 4M claim means
+## Current status
 
-The production-value path is hybrid and model-local:
+The deterministic worker, verifier, hybrid intake, two-state protocol, and
+three named client surfaces have current local evidence. The active proof still
+requires the paired real-workflow canary, latency and timeout repair, targeted
+fallback selection, and sustained operational testing.
 
-1. receive the complete raw payload directly at the package endpoint;
-2. use deterministic MapReduce, bounded search, AST/dependency extraction,
-   and exact lookup windows to identify useful evidence;
-3. keep recent intent hot and old material reference-only;
-4. compact model work to a bounded effective context, normally 64K;
-5. run the bounded proposal, verifier, and identical stronger-model fallback.
+Learned routing remains disabled. This repository is an active,
+evidence-gated project, not a production release.
 
-The first-layer receipt records selected and omitted spans, raw payload hash,
-effective working context, route source, and gate latency. Dense native 2M/4M
-attention is optional research. It is not the Wrench product claim.
+## Source of truth
 
-If a dense-native lane is enabled later, this is an explicit model/runtime
-requirement: the portable package must include a fast first model-side pruner
-and cherrypicker. It must inspect the complete raw sequence and compact it to a
-bounded 32K to 64K active working context before expensive attention runs. A
-gateway-only reducer or a metadata-only context setting does not satisfy this
-target.
-
-## Real harness integration
-
-The model-local endpoint now has verified local smoke paths for OpenCode,
-Claude Code, and DeepSeek Harness. OpenCode uses OpenAI-compatible tool calls,
-Claude Code uses Anthropic `tool_use` and `tool_result`, and DeepSeek Harness
-uses an isolated headless profile. Each path performed a real read-only file
-operation, returned one bounded Wrench proposal, and settled without a model
-call or repeated tool loop. See
-`phases/phase-238-real-harness-integration/receipt.json`.
-
-## Current v97 evidence
-
-The current portable runtime is below the 4.25B parameter ceiling at
-`3,881,244,016` verified parameters.
-
-On the historical 220-case diagnostic replay, with client-side mechanical
-shortcut disabled:
-
-- weighted mechanical frontier-token coverage: `94.5411%`;
-- net frontier-token savings: `95.5310%`;
-- Wrench plus identical MiniMax fallback final success: `99.6503%`;
-- median / p95 latency: `183.314 ms` / `337.174 ms`;
-- prohibited accepts: `0`;
-- unexpected mutations: `0`.
-
-The direct model-local context matrix passed three repetitions each at 64K,
-128K, 256K, 2M, and 4M. At 4M, the measured raw estimate was `3,999,995`
-tokens and complete HTTP p50/p95 was `158.906` / `159.251 ms`. The 2M/4M
-reference-lookup probe recovered exact proposals in `18/18` cases, with 4M
-retrieval p50/p95 of `32.560` / `40.772 ms` and zero model calls.
-
-These are hybrid model-local diagnostics, not dense native attention quality,
-stock Ollama native generation quality, family-disjoint approval, or
-production enablement. The current stock Ollama native generation boundary is
-explicitly recorded as failed on the validation host. GGUF and vLLM require
-architecture adapters and are not claimed as verified.
-
-## Development status
-
-The repository contract and evidence live in [GOAL.md](GOAL.md). The latest
-receipts are under `phases/phase-230-current-source-matched-arms-v2`,
-`phases/phase-236-portable-package-http-4m`, and
-`phases/phase-238-real-harness-integration`.
-
-The full source regression is `182 passed, 18 warnings`. Final release still
-requires the human-approved family-disjoint MiniMax-worker trace set,
-independent RTX 5060 Ti verification, and operational shadow evidence.
+- [GOAL.md](GOAL.md): active goal and North Star
+- [COLLABORATION_CONTRACT.json](COLLABORATION_CONTRACT.json): Q4 authority and
+  escalation contract
+- [docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md](docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md):
+  active productive-value evidence contract
+- [docs/evidence/README.md](docs/evidence/README.md): evidence map
+- [docs/archive/2026-09-22/](docs/archive/2026-09-22/): superseded plans and
+  contracts

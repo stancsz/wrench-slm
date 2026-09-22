@@ -1,7 +1,13 @@
 # Wrench Mechanical Worker Evaluation
 
-Status: evaluation contract active; the current 220-case suite remains a draft
-pending human approval
+Status: local evaluation contract active; the paired real-workflow canary and
+sustained operational tests are active, while cross-host and historical
+diagnostic sections remain evidence only
+
+The active goal does not include new RTX 5060 Ti verification, model-tier
+selection, or synthetic replay as a primary milestone. Receipts for those
+older activities remain preserved for provenance and must not be presented as
+current productive-value proof.
 
 ## Current evidence snapshot
 

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_id": "wrench-slm-q4-2026-09-22",
+  "version": "1.0",
+  "project": "wrench-slm",
+  "collaboration": {
+    "mode": "CHALLENGE",
+    "classification": {
+      "risk": "high",
+      "risk_reasons": [
+        "production_or_system_of_record",
+        "money",
+        "permissions",
+        "privacy",
+        "security",
+        "external_representation",
+        "outside_isolated_sandbox",
+        "cannot_simulate_before_commit"
+      ],
+      "complexity": "high",
+      "complexity_reasons": [
+        "novel_condition",
+        "multiple_dependencies",
+        "hard_to_verify",
+        "reasonable_expert_disagreement"
+      ],
+      "confidence_in_classification": "high"
+    },
+    "authority": {
+      "intent": "human",
+      "initiative": "human",
+      "execution": "ai_analysis_human_decision",
+      "acceptance": "human_or_independent_review",
+      "commit": "human_only"
+    },
+    "task_routing": [
+      {
+        "task_class": "read-only inspection, documentation-only edits, deterministic local tests, reversible evidence indexing",
+        "mode": "AUTO",
+        "boundary": "Repository-only, reversible, with diff and test verification"
+      },
+      {
+        "task_class": "mechanically understood packaging, bounded local benchmarking, nonce-bound worker dispatch",
+        "mode": "GUARD",
+        "boundary": "Stop for human.approve_commit before external effect or promotion"
+      },
+      {
+        "task_class": "product wording, open design tradeoffs, user-facing interpretation",
+        "mode": "COCREATE",
+        "boundary": "Human acceptance and final commit"
+      },
+      {
+        "task_class": "training, candidate selection, parity, release evaluation, architecture changes",
+        "mode": "CHALLENGE",
+        "boundary": "Human decision with AI evidence, alternatives, and dissent"
+      },
+      {
+        "task_class": "production enablement, deployment, publication, credential approval, unverified safety or privacy judgment",
+        "mode": "HUMAN_ONLY",
+        "boundary": "Human performs or explicitly takes over"
+      }
+    ],
+    "bounds": {
+      "scope": "Develop and verify one smallest-sufficient sub-5B Wrench SLM and its bounded model-local runtime, real client integrations, worker evaluation, and release evidence.",
+      "permissions": [
+        "read the repository and approved redacted evaluation inputs",
+        "make reversible changes inside the repository",
+        "run approved local tests and bounded evaluation entry points",
+        "dispatch nonce-bound worker jobs through the approved queue"
+      ],
+      "prohibited_actions": [
+        "deploy or enable production routing",
+        "publish or release an artifact without human approval",
+        "spend provider money without an approved child contract",
+        "access or expose credentials",
+        "upload customer data or unrestricted private data",
+        "execute arbitrary external mutation",
+        "weaken verifier, safety, or evidence gates",
+        "claim parity or production value from a smoke, HTTP 200, or offline result"
+      ],
+      "data_access": [
+        "repository source and documentation",
+        "approved redacted traces and fixtures",
+        "hash-bound model and package metadata",
+        "worker receipts that contain no credentials or unrestricted private data"
+      ],
+      "token_budget": 0,
+      "monetary_budget": 0,
+      "max_retries": 2
+    },
+    "evidence_required": [
+      "validated Q4 contract",
+      "git diff --check",
+      "relevant automated tests",
+      "hash-bound source, artifact, tokenizer, runtime, and verifier identities",
+      "resource snapshots preserving 10 percent RAM and VRAM reserve",
+      "worker nonce, job ID, host identity, command marker, and response schema",
+      "failure logs and preserved rejected or unverified evidence",
+      "paired token, cost, latency, retry, correction, and outcome accounting",
+      "zero prohibited accepts",
+      "zero unexpected mutations",
+      "human decision receipt before promotion, publication, deployment, or spend"
+    ],
+    "human_checkpoint": {
+      "type": "human.approve_commit",
+      "required_for": [
+        "promotion",
+        "production enablement",
+        "deployment",
+        "publication",
+        "provider spending",
+        "permission or data-scope expansion"
+      ]
+    },
+    "escalation": {
+      "triggers": [
+        "verifier_failure",
+        "novel_condition",
+        "scope_expansion",
+        "permission_expansion",
+        "budget_exceeded",
+        "unresolved_disagreement",
+        "irreversible_side_effect",
+        "security_or_privacy_concern",
+        "missing_or_stale_identity",
+        "wrong_host",
+        "missing_nonce",
+        "empty_worker_turn",
+        "sealed_split_exposure",
+        "production_enablement_request",
+        "provider_spend_request"
+      ],
+      "target_mode": "HUMAN_ONLY",
+      "on_human_timeout": "stop_and_preserve_state"
+    },
+    "rollback": {
+      "available": true,
+      "procedure": "Disable learned routing, restore the named source and artifact recovery point, preserve all receipts and failures, and do not rewrite evidence.",
+      "recovery_point": "Record source commit, artifact manifest hash, tokenizer hash, runtime identity, verifier identity, and working-tree state before each consequential task."
+    },
+    "audit": {
+      "decision_log": true,
+      "override_reason_required": true,
+      "artifacts": [
+        "GOAL.md",
+        "COLLABORATION_CONTRACT.json",
+        "AGENTS.md",
+        "AGENTS.local.md",
+        "docs/evidence/",
+        "phases/"
+      ]
+    }
+  }
+}

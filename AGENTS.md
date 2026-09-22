@@ -4,16 +4,24 @@ Write naturally. Do not use em dashes.
 
 ## Core Objective and Production Target
 
-The single delivery target of this repository is **one smallest-sufficient production-ready Wrench SLM**. The former 4.25B figure is a ceiling, not the objective. Choose the smallest candidate that delivers broad verified mechanical coverage, lower latency, preserved final success and safety, and at least 95% net frontier-token savings.
+The active delivery target of this repository is **measured productive value from one bounded Wrench worker**. The former 4.25B figure is archived context, not the objective. Keep the deterministic hybrid path safe, fast, useful on real workflows, and operationally reliable before expanding model or platform scope.
 
 The model operates as a bounded, specialized developer-tool execution SLM and fast defensive gatekeeper:
-1. **Eligible Routine Tools**: Offload at least 90% of the weighted mechanical-workload frontier-token mass for routine, verifiable developer-tool tasks (`read_file`, `read_lines`, `literal_search`, `git_read_status`, `health_read`, `patch_draft`).
+1. **Eligible Routine Tools**: Offload routine, verifiable developer-tool tasks (`read_file`, `read_lines`, `literal_search`, `git_read_status`, `health_read`, `patch_draft`) only when the paired workflow evidence shows real value.
 2. **Deterministic Abstention and Clean Escalation**: Confidently identify out-of-boundary, risky, complex, or multi-step tasks, emitting structured `abstain` outcomes so the harness cleanly routes requests to the smarter frontier model without corrupting context or materially regressing final success.
 3. **No Direct Mutation Authority**: Wrench proposes bounded structured actions or abstains. It never executes arbitrary shell commands, accesses credentials, or writes autonomously.
 
+The current Keep and Continue scope is defined only by the nine workstreams in
+the root `GOAL.md`: deterministic mechanics, independent verification, hybrid
+retrieval, the two-state protocol, the three named clients, latency repair,
+one paired canary, targeted fallback expansion, and sustained operational
+testing. RTX 5060 Ti verification, learned routing, dense-native 4M work,
+adapter work, broad tool expansion, and separate packaging work are skipped
+unless the human product owner changes the goal.
+
 ## Ownership and Completion Gates
 
-All engineering, training, calibration, and evaluation must directly target the release gates defined in `docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md`:
+All active engineering, evaluation, and operational testing must directly target the release gates defined in `docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md` and the North Star in `GOAL.md`:
 
 - **Gate A (Proposal Semantics)**: Zero schema errors. Eligible cases match typed oracles; out-of-boundary cases match exact expected abstention reasons.
 - **Gate B (Verifier & Authority Bounds)**: Strict zero tolerance for prohibited accepts (0 Prohibited Accepts). Any unexpected side effect or unverified boundary escape is an immediate `FAIL_WRENCH`.
@@ -27,13 +35,19 @@ All engineering, training, calibration, and evaluation must directly target the 
 
 ## Training and Iteration Guidelines
 
+Training, learned-routing optimization, candidate selection, pruning, and
+architecture research are not active work under the current goal. Do not start
+them from these instructions without a new human product decision.
+
+When explicitly reactivated, apply the following discipline:
+
 When preparing training data, calibrations, or model weights:
 1. **Dataset Discipline**:
    - Ensure a balanced mix: include high-quality positive routine developer-tool traces AND explicit negative / out-of-scope tasks teaching decisive `abstain`.
    - Never allow training or tuning on the sealed evaluation split (`final.jsonl`).
 2. **Local Worker Coordination**:
-   - Follow `AGENTS.local.md` when delegating batch runs or heavy training jobs to the 5060TI worker via the job queue.
-   - Separate interactive 5070Ti measurements from independent 5060TI verification.
+   - Treat `AGENTS.local.md` worker-queue procedures as historical unless the
+     human product owner reactivates the skipped 5060TI workstream.
 3. **Evidence Over Assumptions**:
    - Never equate prompt tweaks, synthetic fixture passes, or parameter count with production utility.
    - Record verifiable receipts (hash-bound checkpoints, latency distributions, exact failure logs) under `phases/` before claiming progress.

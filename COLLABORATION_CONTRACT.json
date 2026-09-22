@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_id": "wrench-slm-productive-value-2026-09-22",
+  "version": "2.0",
+  "project": "wrench-slm",
+  "collaboration": {
+    "mode": "CHALLENGE",
+    "classification": {
+      "risk": "high",
+      "risk_reasons": [
+        "production_or_system_of_record",
+        "money",
+        "permissions",
+        "privacy",
+        "security",
+        "external_representation",
+        "outside_isolated_sandbox",
+        "cannot_simulate_before_commit"
+      ],
+      "complexity": "high",
+      "complexity_reasons": [
+        "ambiguous_productive_value",
+        "multiple_dependencies",
+        "hard_to_verify",
+        "reasonable_expert_disagreement"
+      ],
+      "confidence_in_classification": "high"
+    },
+    "authority": {
+      "intent": "human",
+      "initiative": "human",
+      "execution": "ai_analysis_human_decision",
+      "acceptance": "human_or_independent_review",
+      "commit": "human_only"
+    },
+    "task_routing": [
+      {
+        "task_class": "read-only inspection, documentation edits, deterministic local tests, and reversible evidence indexing",
+        "mode": "AUTO",
+        "boundary": "Repository-only, reversible, with diff and test verification"
+      },
+      {
+        "task_class": "sustained local operational testing and bounded real-client canary preparation",
+        "mode": "GUARD",
+        "boundary": "Stop before external effect, provider spending, or promotion"
+      },
+      {
+        "task_class": "product wording, tradeoffs, and interpretation of canary value",
+        "mode": "COCREATE",
+        "boundary": "Human acceptance and final commit"
+      },
+      {
+        "task_class": "workflow comparison, targeted fallback expansion, routing, and architecture changes",
+        "mode": "CHALLENGE",
+        "boundary": "Human decision with AI evidence, alternatives, and dissent"
+      },
+      {
+        "task_class": "production enablement, deployment, publication, credential approval, or unverified safety judgment",
+        "mode": "HUMAN_ONLY",
+        "boundary": "Human performs or explicitly takes over"
+      }
+    ],
+    "bounds": {
+      "scope": "Develop and verify the deterministic hybrid Wrench worker, its independent verifier, two-state client protocol, three named client surfaces, paired productive-value canary, targeted fallback handlers, and sustained local operational behavior.",
+      "permissions": [
+        "read the repository and approved redacted evaluation inputs",
+        "make reversible changes inside the repository",
+        "run approved local tests and bounded evaluation entry points",
+        "exercise the three named client surfaces with bounded read-only or review-only work"
+      ],
+      "prohibited_actions": [
+        "deploy or enable production routing",
+        "publish or release an artifact without human approval",
+        "spend provider money without an approved child contract",
+        "access or expose credentials",
+        "upload customer data or unrestricted private data",
+        "execute arbitrary external mutation",
+        "weaken verifier, safety, or evidence gates",
+        "claim parity or production value from a smoke, HTTP 200, synthetic replay, or offline result",
+        "start skipped hardware, dense-native, learned-routing, adapter, or broad packaging work without a new human decision"
+      ],
+      "data_access": [
+        "repository source and documentation",
+        "approved redacted traces and fixtures",
+        "hash-bound model and package metadata",
+        "client receipts that contain no credentials or unrestricted private data"
+      ],
+      "token_budget": 0,
+      "monetary_budget": 0,
+      "max_retries": 2
+    },
+    "evidence_required": [
+      "validated Q4 contract",
+      "git diff --check",
+      "relevant automated tests",
+      "hash-bound source, artifact, tokenizer, runtime, and verifier identities",
+      "paired baseline and Wrench workflow receipts",
+      "frontier-token, local-token, cost, latency, retry, correction, abstention, and fallback accounting",
+      "zero prohibited accepts",
+      "zero unexpected mutations",
+      "sustained concurrency, cancellation, timeout, recovery, and circuit-breaker receipts",
+      "human decision receipt before promotion, publication, deployment, or spend"
+    ],
+    "human_checkpoint": {
+      "type": "human.approve_commit",
+      "required_for": [
+        "promotion",
+        "production enablement",
+        "deployment",
+        "publication",
+        "provider spending",
+        "permission or data-scope expansion",
+        "reactivating skipped workstreams"
+      ]
+    },
+    "escalation": {
+      "triggers": [
+        "verifier_failure",
+        "novel_condition",
+        "scope_expansion",
+        "permission_expansion",
+        "budget_exceeded",
+        "unresolved_disagreement",
+        "irreversible_side_effect",
+        "security_or_privacy_concern",
+        "missing_or_stale_identity",
+        "unbounded_retry",
+        "sealed_split_exposure",
+        "production_enablement_request",
+        "provider_spend_request",
+        "request_to_reactivate_skipped_workstream"
+      ],
+      "target_mode": "HUMAN_ONLY",
+      "on_human_timeout": "stop_and_preserve_state"
+    },
+    "rollback": {
+      "available": true,
+      "procedure": "Disable learned routing, restore the named source and artifact recovery point, preserve all receipts and failures, and do not rewrite evidence.",
+      "recovery_point": "Record source commit, artifact manifest hash, tokenizer hash, runtime identity, verifier identity, and working-tree state before each consequential task."
+    },
+    "audit": {
+      "decision_log": true,
+      "override_reason_required": true,
+      "artifacts": [
+        "GOAL.md",
+        "COLLABORATION_CONTRACT.json",
+        "AGENTS.md",
+        "AGENTS.local.md",
+        "docs/evidence/",
+        "docs/archive/2026-09-22/",
+        "phases/"
+      ]
+    }
+  }
+}
