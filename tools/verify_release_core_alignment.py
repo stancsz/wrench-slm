@@ -25,9 +25,13 @@ PAIRS = (
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
+    data = path.read_bytes()
+    # A Windows checkout may materialize tracked Python files with CRLF while
+    # the uploaded portable package contains LF.  Line endings are not runtime
+    # identity, so normalize only the executable text files being compared.
+    if path.suffix.lower() == ".py":
+        data = data.replace(b"\r\n", b"\n")
+    digest.update(data)
     return digest.hexdigest()
 
 
@@ -58,6 +62,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "package_dir": str(package),
         "pairs": rows,
         "core_manifest_sha256": hashlib.sha256(core_manifest).hexdigest(),
+        "hash_normalization": "Python runtime files normalize CRLF to LF before SHA-256 comparison",
         "tracked_core_status": tracked_core_status,
         "publication_policy": "unrelated README and phase dirt remains a clean-snapshot concern; no upload performed",
         "claims_not_authorized": [
