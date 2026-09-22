@@ -140,7 +140,7 @@ conversation directly and emits hash-bound context-gate receipts.
 | Bundled model-local server | Verified | Accepts about 4M raw tokens and reduces to a bounded working context. |
 | Ollama-shaped `/api/*` surface | Verified | Package-local compatibility API, not stock Ollama native generation. |
 | OpenCode, DeepSeek Harness, Claude Code | Verified | Read-only local client smoke completed with zero model calls. |
-| Stock Ollama native runner on Windows | Not verified | Current NVFP4 conversion fails because `weight_scale` lacks FP8 block-size metadata; an older MLX import also fails because the Windows MLX dynamic library is unavailable. |
+| Stock Ollama native runner on Windows | Not verified | Ollama `0.34.2` still cannot run the MLX quantizer on Windows; both current NVFP4 import and BF16→NVFP4 conversion fail before a usable native model is created. |
 | vLLM | Not verified | Requires a registered Wrench architecture and staged-prefill adapter. |
 | GGUF / llama.cpp | Not verified | Do not use a conversion that silently drops the Wrench retrieval runtime. |
 
@@ -196,9 +196,10 @@ native dense decoder quality.
 
 These are hybrid model-local diagnostics, not dense native attention quality,
 stock Ollama native generation quality, family-disjoint approval, or
-production enablement. The current stock Ollama native generation boundary is
-explicitly recorded as failed on the Windows validation host. GGUF and vLLM
-require architecture adapters and are not claimed as verified.
+production enablement. The current stock Ollama native import and quantizer
+boundaries are explicitly recorded as failed on the Windows validation host in
+phases 366 through 368. GGUF and vLLM require architecture adapters and are
+not claimed as verified.
 
 ## Development status
 
