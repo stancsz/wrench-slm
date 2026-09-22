@@ -1,0 +1,41 @@
+{
+  "schema": "wrench.current-head.ollama-shaped-4m.v1",
+  "status": "PASS_OLLAMA_SHAPED_MODEL_LOCAL_4M",
+  "date": "2026-09-21",
+  "package_dir": "D:\\models\\_wrench-release-candidate-59b8b7c",
+  "surface": {
+    "api_version": true,
+    "api_tags": true,
+    "api_show": true,
+    "declared_context_tokens": 4000000,
+    "small_chat": true,
+    "monster_chat": true
+  },
+  "monster": {
+    "http_status": 200,
+    "raw_input_tokens_estimate": 3995426,
+    "raw_input_chars": 35163323,
+    "elapsed_ms": 278.944,
+    "gate_latency_ms": 27.215,
+    "effective_working_context_tokens": 9,
+    "working_context_budget_tokens": 64000,
+    "model_calls": 0,
+    "raw_payload_hash_bound": true,
+    "native_input_claim": false
+  },
+  "resource_reserves": {
+    "ram_before": true,
+    "ram_after": true,
+    "vram_before": true,
+    "vram_after": true
+  },
+  "external_receipt": "D:\\models\\wrench-phase-373-current-head-ollama\\receipt.json",
+  "external_receipt_sha256": "92c31a2e9cdf3abc721da1a09a8b6bb97a96f42c8a0984a05e47c67b9809c529",
+  "claims_not_authorized": [
+    "stock_ollama_native_checkpoint_loading",
+    "dense_native_4m_attention",
+    "learned_minimax_parity",
+    "independent_rtx_5060_ti_verification",
+    "production_readiness"
+  ]
+}
