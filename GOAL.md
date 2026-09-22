@@ -3365,3 +3365,13 @@ approval, and does not prove learned parity, dense-native 4M quality,
 independent RTX 5060 Ti execution, or production enablement. Evidence:
 `phases/phase-338-current-head-heldout-final.md` and
 `phases/phase-338-current-head-heldout-final/evaluation.json`.
+
+2026-09-21 fresh 5060Ti dispatch boundary: a new independent verification
+task correctly refused to promote local results because its available host
+was `DESKTOP-AO7CHMG` with an RTX `5070 Ti` and `16,303 MiB`, not the required
+5060 Ti. It confirmed source HEAD `55c0fb0165faa18c5d222e3ff4d7b8cc776a1f4d`
+and the exact package path, then attempted a fresh remote handoff. The handoff
+failed because no matching saved Wrench project exists on the 5060Ti host;
+one bounded worker-control inspection also timed out. No 5060Ti benchmark was
+claimed, and no stale thread was continued. Evidence:
+`phases/phase-339-fresh-5060ti-dispatch-boundary.md`.
