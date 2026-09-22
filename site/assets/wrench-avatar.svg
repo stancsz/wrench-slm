@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Wrench avatar</title>
+  <rect width="128" height="128" rx="28" fill="#E34A2B"/>
+  <g transform="translate(24 27) scale(1.11)" fill="#FFFDF7">
+    <path d="M3 9h13l10 29 10-25h10L29 57H18L3 9Z"/>
+    <path d="M30 9h13l10 29L63 9h6L56 57H45L30 9Z"/>
+  </g>
+</svg>

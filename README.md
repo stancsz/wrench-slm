@@ -1,5 +1,25 @@
 # Wrench SLM
 
+**Affordable AI for the rest of us.**
+
+We want people with less than 8 GB of GPU memory to get useful AI work done
+on hardware they already own, with software that is free to use. The next
+hardware milestone is a useful workflow below 2 GB, with older phones as a
+related target. Longer term: lend your spare compute to friends.
+
+These are product targets. Today's implementation is a bounded developer-tool
+worker; small-device compatibility, shared compute, and general paid-cost
+savings are not established.
+
+- [Developer documentation source and preview](site/README.md)
+- [No-model local example](examples/local_first.py)
+- [Mission and hardware roadmap](site/pages/roadmap.html)
+- [Current evidence and limitations](site/pages/evidence.html)
+
+The source repository is currently private. There is no public install release
+or public license in this checkout. The getting-started instructions are for
+collaborators with repository access.
+
 Wrench is a bounded developer-tool worker for fast, repetitive, verifiable
 mechanical work. It proposes structured read-only or review-only actions, or
 abstains. An independent verifier and the stronger-model fallback retain final

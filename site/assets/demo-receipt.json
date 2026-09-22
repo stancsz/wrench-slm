@@ -1,0 +1,52 @@
+{
+  "scope": "Direct verifier example; no model, cloud call, or savings benchmark.",
+  "cases": [
+    {
+      "title": "Read a setting",
+      "proposal": {
+        "schema": "wrench.proposal.v1",
+        "action": "read_lines",
+        "path": "settings.txt",
+        "start": 1,
+        "end": 1
+      },
+      "result": {
+        "status": "accepted",
+        "action": "read_lines",
+        "observation": {
+          "path": "settings.txt",
+          "start": 1,
+          "end": 1,
+          "lines": [
+            "timeout=30"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Stay inside the workspace",
+      "proposal": {
+        "schema": "wrench.proposal.v1",
+        "action": "read_file",
+        "path": "../outside.txt"
+      },
+      "result": {
+        "status": "abstain",
+        "fallback_reason": "path_outside_allowed_root"
+      }
+    },
+    {
+      "title": "Decline shell execution",
+      "proposal": {
+        "schema": "wrench.proposal.v1",
+        "action": "shell",
+        "command": "echo hello"
+      },
+      "result": {
+        "status": "abstain",
+        "fallback_reason": "action_not_allowlisted"
+      }
+    }
+  ],
+  "fixture_unchanged": true
+}
