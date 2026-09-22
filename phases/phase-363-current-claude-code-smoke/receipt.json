@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.claude-code-local-smoke.v1",
+  "status": "PASSED_LOCAL_CLIENT_SLICE",
+  "package_dir": "D:\\models\\_wrench-release-candidate-8d9ea2c",
+  "client": "Claude Code",
+  "command": "Read README.md and report its first heading.",
+  "exit_code": 0,
+  "result": "# Wrench SLM",
+  "protocol": "anthropic-messages",
+  "requests": 1,
+  "settlements": 1,
+  "model_calls": 0,
+  "backend": "embedded-mechanical",
+  "request_elapsed_ms": 2.989,
+  "settlement_elapsed_ms": 0.019,
+  "unrecognized_model_warning": "MiniMax-M2.7",
+  "provider_fallback_observed": false,
+  "trace_path": "phases/phase-363-current-claude-code-smoke/wrench-claude.trace.jsonl",
+  "independent_5060ti_result": false,
+  "minimax_parity_claim": false,
+  "dense_native_quality_claim": false
+}
