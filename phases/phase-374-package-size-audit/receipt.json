@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.phase.package-size-audit.v1",
+  "phase": 374,
+  "date": "2026-09-21",
+  "status": "PASS_PACKAGE_SIZE_AUDIT_NO_SMALLER_VALIDATED_CANDIDATE",
+  "package": {
+    "path": "D:\\models\\_wrench-release-candidate-59b8b7c",
+    "total_bytes": 3423698468,
+    "total_gib": 3.189,
+    "weight_bytes": 3403035760,
+    "weight_gib": 3.17,
+    "format": "NVFP4-W4A16-ModelOpt",
+    "verified_parameters": 3881244016,
+    "parameter_ceiling": 4250000000,
+    "weight_shards": 2,
+    "shards": [
+      {
+        "name": "model-00001-of-00002.safetensors",
+        "bytes": 2385916912,
+        "sha256": "DE471EA7CE455A027232F33A59AC0B051739DAF9CDFFD4BD5CC6E220D2E8E42E"
+      },
+      {
+        "name": "model-00002-of-00002.safetensors",
+        "bytes": 1017118848,
+        "sha256": "8CECB339791DEDBE1B4926B351003F1723670F8442AB670148D3B533D6FFF2F7"
+      }
+    ]
+  },
+  "comparison": {
+    "scan_root": "D:\\models",
+    "smaller_than_3_gib_verified_safetensors_candidates": 0,
+    "standard_bf16_candidate_gib": 7.35,
+    "promotion": false
+  },
+  "claims_not_authorized": [
+    "stock_ollama_native_checkpoint_loading",
+    "dense_native_attention_quality",
+    "learned_minimax_parity",
+    "independent_rtx_5060_ti_verification",
+    "production_readiness"
+  ]
+}
