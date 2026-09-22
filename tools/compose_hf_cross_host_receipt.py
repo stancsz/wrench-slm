@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import subprocess
 from pathlib import Path
 
@@ -31,6 +32,9 @@ def compose_receipt(
     smoke_path: Path,
     resource_snapshot_path: Path,
     gpu_identity: str,
+    job_id: str | None = None,
+    claim_nonce: str | None = None,
+    host_name: str | None = None,
 ) -> dict:
     actual = git_head(source_root)
     if actual != source_commit:
@@ -43,6 +47,8 @@ def compose_receipt(
         raise ValueError(f"package smoke did not pass: {smoke.get('status')!r}")
     if not gpu_identity.strip():
         raise ValueError("GPU identity is empty")
+    if bool(job_id) != bool(claim_nonce):
+        raise ValueError("job_id and claim_nonce must be supplied together")
     resource_snapshot = json.loads(resource_snapshot_path.read_text(encoding="utf-8"))
     if resource_snapshot.get("status") != "PASS_HOST_RESOURCE_RESERVE":
         raise ValueError(f"host resource reserve did not pass: {resource_snapshot.get('status')!r}")
@@ -56,10 +62,11 @@ def compose_receipt(
     shards = sorted(package_root.glob("*.safetensors"))
     if not shards:
         raise ValueError("downloaded package has no Safetensors shards")
-    return {
+    receipt = {
         "schema": "wrench.huggingface-cross-host-receipt.v1",
         "status": "PASS_HF_PACKAGE_PREFLIGHT",
         "host": host,
+        "host_name": (host_name or platform.node()).strip(),
         "source_commit": source_commit,
         "huggingface_repo_id": repo_id,
         "huggingface_revision": revision,
@@ -81,6 +88,10 @@ def compose_receipt(
         "quality_claim": False,
         "native_attention_claim": False,
     }
+    if job_id is not None and claim_nonce is not None:
+        receipt["job_id"] = job_id
+        receipt["claim_nonce"] = claim_nonce
+    return receipt
 
 
 def main() -> int:
@@ -95,6 +106,9 @@ def main() -> int:
     parser.add_argument("--smoke", type=Path, required=True)
     parser.add_argument("--resource-snapshot", type=Path, required=True)
     parser.add_argument("--gpu-identity", required=True)
+    parser.add_argument("--job-id")
+    parser.add_argument("--claim-nonce")
+    parser.add_argument("--host-name")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     receipt = compose_receipt(
@@ -108,6 +122,9 @@ def main() -> int:
         smoke_path=args.smoke.resolve(),
         resource_snapshot_path=args.resource_snapshot.resolve(),
         gpu_identity=args.gpu_identity,
+        job_id=args.job_id,
+        claim_nonce=args.claim_nonce,
+        host_name=args.host_name,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")

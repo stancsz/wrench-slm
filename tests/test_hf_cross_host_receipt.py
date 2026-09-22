@@ -42,6 +42,32 @@ def test_hf_receipt_passes_with_source_and_hub_pins():
     assert result["native_attention_claim"] is False
 
 
+def test_hf_receipt_passes_when_nonce_and_host_are_bound():
+    result = verify_receipt(
+        _receipt(job_id="job-1", claim_nonce="nonce-1", host_name="DESKTOP-KET1SKP"),
+        expected_source_commit=SOURCE,
+        expected_repo_id=REPO,
+        expected_revision=REVISION,
+        expected_job_id="job-1",
+        expected_claim_nonce="nonce-1",
+        expected_host_name="DESKTOP-KET1SKP",
+    )
+    assert result["status"] == "PASS_HF_PACKAGE_RECEIPT"
+
+
+def test_hf_receipt_blocks_nonce_mismatch():
+    result = verify_receipt(
+        _receipt(job_id="job-1", claim_nonce="wrong", host_name="DESKTOP-KET1SKP"),
+        expected_source_commit=SOURCE,
+        expected_repo_id=REPO,
+        expected_revision=REVISION,
+        expected_job_id="job-1",
+        expected_claim_nonce="nonce-1",
+        expected_host_name="DESKTOP-KET1SKP",
+    )
+    assert result["reasons"] == ["claim_nonce_mismatch"]
+
+
 def test_hf_receipt_blocks_revision_mismatch():
     result = verify_receipt(
         _receipt(),

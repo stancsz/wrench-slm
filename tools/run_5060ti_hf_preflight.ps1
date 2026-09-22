@@ -20,7 +20,9 @@ param(
 
     [string] $PythonExe = "py",
     [string[]] $PythonArguments = @("-3"),
-    [string] $HfExecutable = "hf"
+    [string] $HfExecutable = "hf",
+    [string] $JobId = "",
+    [string] $ClaimNonce = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -149,7 +151,7 @@ try {
     if (-not $gpuIdentity) {
         throw "GPU identity is empty"
     }
-    Invoke-Checked -Executable $PythonExe -Arguments ($PythonArguments + @(
+    $composeArguments = $PythonArguments + @(
         (Join-Path $ScriptRoot "tools\compose_hf_cross_host_receipt.py"),
         "--host", "rtx-5060-ti",
         "--source-root", $SourceRoot,
@@ -161,16 +163,29 @@ try {
         "--smoke", $SmokePath,
         "--resource-snapshot", $ResourcePath,
         "--gpu-identity", $gpuIdentity,
+        "--host-name", $env:COMPUTERNAME,
         "--output", $PreflightPath
-    ))
-    Invoke-Checked -Executable $PythonExe -Arguments ($PythonArguments + @(
+    )
+    if ($JobId -or $ClaimNonce) {
+        if (-not ($JobId -and $ClaimNonce)) {
+            throw "JobId and ClaimNonce must be supplied together"
+        }
+        $composeArguments += @("--job-id", $JobId, "--claim-nonce", $ClaimNonce)
+    }
+    Invoke-Checked -Executable $PythonExe -Arguments $composeArguments
+    $verifyArguments = $PythonArguments + @(
         (Join-Path $ScriptRoot "tools\verify_hf_cross_host_receipt.py"),
         $PreflightPath,
         "--expected-source-commit", $ExpectedSourceCommit,
         "--expected-repo-id", $HuggingFaceRepoId,
         "--expected-revision", $HuggingFaceRevision,
+        "--expected-host-name", $env:COMPUTERNAME,
         "--output", $VerifiedPath
-    ))
+    )
+    if ($JobId -or $ClaimNonce) {
+        $verifyArguments += @("--expected-job-id", $JobId, "--expected-claim-nonce", $ClaimNonce)
+    }
+    Invoke-Checked -Executable $PythonExe -Arguments $verifyArguments
 
     Write-Output "PASS_5060TI_HF_PACKAGE_PREFLIGHT"
     Write-Output "verified receipt: $VerifiedPath"

@@ -25,6 +25,9 @@ def verify_receipt(
     expected_source_commit: str,
     expected_repo_id: str,
     expected_revision: str,
+    expected_job_id: str | None = None,
+    expected_claim_nonce: str | None = None,
+    expected_host_name: str | None = None,
 ) -> dict[str, Any]:
     if receipt.get("schema") != SCHEMA:
         return _error("schema_mismatch")
@@ -42,6 +45,16 @@ def verify_receipt(
         return _error("hub_revision_not_pinned")
     if not str(receipt.get("host", "")).strip():
         return _error("missing_host")
+    if expected_job_id is not None and receipt.get("job_id") != expected_job_id:
+        return _error("job_id_mismatch")
+    if expected_claim_nonce is not None and receipt.get("claim_nonce") != expected_claim_nonce:
+        return _error("claim_nonce_mismatch")
+    if expected_job_id is not None and not str(receipt.get("job_id", "")).strip():
+        return _error("missing_job_id")
+    if expected_claim_nonce is not None and not str(receipt.get("claim_nonce", "")).strip():
+        return _error("missing_claim_nonce")
+    if expected_host_name is not None and receipt.get("host_name") != expected_host_name:
+        return _error("host_name_mismatch")
     if not str(receipt.get("gpu_identity", "")).strip():
         return _error("missing_gpu_identity")
 
@@ -61,6 +74,9 @@ def verify_receipt(
         "status": "PASS_HF_PACKAGE_RECEIPT",
         "schema": SCHEMA,
         "host": receipt["host"],
+        "host_name": receipt.get("host_name"),
+        "job_id": receipt.get("job_id"),
+        "claim_nonce": receipt.get("claim_nonce"),
         "source_commit": receipt["source_commit"],
         "huggingface_repo_id": receipt["huggingface_repo_id"],
         "huggingface_revision": receipt["huggingface_revision"],
@@ -77,6 +93,9 @@ def main() -> int:
     parser.add_argument("--expected-source-commit", required=True)
     parser.add_argument("--expected-repo-id", required=True)
     parser.add_argument("--expected-revision", required=True)
+    parser.add_argument("--expected-job-id")
+    parser.add_argument("--expected-claim-nonce")
+    parser.add_argument("--expected-host-name")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -93,6 +112,9 @@ def main() -> int:
             expected_source_commit=args.expected_source_commit,
             expected_repo_id=args.expected_repo_id,
             expected_revision=args.expected_revision,
+            expected_job_id=args.expected_job_id,
+            expected_claim_nonce=args.expected_claim_nonce,
+            expected_host_name=args.expected_host_name,
         )
     result["input_sha256"] = hashlib.sha256(raw).hexdigest()
     args.output.parent.mkdir(parents=True, exist_ok=True)
