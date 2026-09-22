@@ -283,6 +283,22 @@ in the HF evaluator, not a portable-package default.
 
 Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.
 
+## Current learned-head direct-generation control
+
+The existing rank-16 frozen-backbone output-head calibration was also run
+through the model's own generation path on the 44-row development split using
+the repository's Transformers 5.17 runtime. It completed on `cuda:0` with
+`21/44` expected outcomes, `4/44` exact target objects, and `10` verified
+accepts. Median and p95 generation latency were `3,425.487 ms` and
+`10,246.146 ms`.
+
+This confirms that the current learned candidate is still not a practical
+replacement for the deterministic worker. It remains development-only, is not
+included in the production utility score, and learned routing stays disabled.
+
+Evidence: `phases/phase-376-learned-head-direct-eval` and the external receipt
+`D:\models\wrench-v2-head-only-r16-20260921\development-eval-44-current.json`.
+
 ## Claude Code local smoke
 
 Claude Code 2.1.251 was run in print mode with an isolated config and an
