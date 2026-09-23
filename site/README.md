@@ -27,7 +27,7 @@ required.
 ```powershell
 python tools/build_docs_site.py
 python tools/check_docs_site.py
-python -m http.server 4387 --bind 127.0.0.1 --directory artifacts/docs-site
+python -m http.server 4387 --bind 127.0.0.1 --directory docs/gh-pages
 ```
 
 Open http://127.0.0.1:4387/. Test the mobile layout, documentation navigation,
@@ -54,13 +54,13 @@ editing a receipt to make a claim pass. This example is not a cost benchmark.
 
 ## GitHub Pages
 
-Publish only the checked contents of `artifacts/docs-site` to the root of the
+Publish only the checked contents of `docs/gh-pages` to the root of the
 `gh-pages` branch. Configure Pages to deploy from that branch's root. The
 `.nojekyll` file keeps the static HTML and assets intact. Do not publish the
 repository root, runtime code, raw `phases/`, or local artifacts.
 
 GitHub Pages from a private repository requires an eligible existing GitHub
-plan. The website can be public while the source repository remains private.
+plan. This repository was already public when Pages publication was authorized.
 Do not change repository visibility or upgrade a plan as part of deployment.
 If the current plan blocks Pages, complete the local preview and obtain a
 decision on a separate public documentation-only repository.
@@ -77,13 +77,13 @@ relative URLs. Update the 404 home link if deploying under a different name.
   until each is actually available or demonstrated.
 - Update the review date when refreshing status. Do not auto-label old evidence
   as current during a build.
-- Detailed experiment receipts remain private; call summaries maintainer
-  summaries and give readers a public bounded example they can inspect.
+- Label experiment summaries as maintainer summaries and keep their evidence
+  boundaries visible. Include only curated files in the Pages output.
 
 ## Review findings, 2026-09-22
 
 The original README described internal workstreams without a first-use path.
-The current private GitHub repository had no Pages configuration, homepage,
+At the initial review, the then-private repository had no Pages configuration, homepage,
 release, or license file. Historical site references in memory were absent
 from this checkout. The new site provides a clear mission, tested local
 example, plain-language tool reference, honest client status, and staged
@@ -98,6 +98,17 @@ stars should not be reported as successful use or savings.
 
 The product owner has committed to open source, open weights, and open datasets.
 Lead public copy with that commitment. Downloads and specific licenses are still
-pending; do not describe them as already available. The local-only website
-preference remains in force. This wording change does not publish the repository,
-weights, datasets, or website.
+pending; do not describe them as already available. The user authorized GitHub Pages publication on 2026-09-22. The repository
+was already public when inspected. Publish only the checked static output to
+the gh-pages branch, not the repository root or unrelated local changes.
+
+## GitHub Pages deployment
+
+Live URL: https://stancsz.github.io/wrench-slm/
+
+Pages uses the `gh-pages` branch root. Build with `tools/build_docs_site.py` and
+run `tools/check_docs_site.py` before updating that branch. Its complete tree
+must contain only the checked output from `docs/gh-pages/`. The source
+branch and generated publishing branch are separate; never force-push updates.
+After deployment, compare every hosted file against the checked build and verify
+English/Chinese navigation in a browser.

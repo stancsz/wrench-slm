@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Wrench | AI，也得用得起</title><meta name="description" content="让普通人也用得起 AI。Wrench 想让你手头的硬件多干点实事，从有边界的本地开发任务开始。"><meta name="theme-color" content="#fdfcf8"><link rel="alternate" hreflang="en" href="../index.html"><link rel="icon" type="image/svg+xml" href="../assets/wrench-avatar.svg"><link rel="stylesheet" href="../assets/site.css"><link rel="stylesheet" href="../assets/brand.css"><script defer src="../assets/site.js"></script></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="topbar"><div class="wrap"><a class="brand" href="index.html" aria-label="Wrench 首页"><img src="../assets/wrench-mark.svg" width="40" height="36" alt="">wrench</a><nav class="nav" aria-label="主导航"><a href="getting-started.html">文档</a><a href="roadmap.html">路线图</a><a href="evidence.html">进展</a><a class="language-switch" href="../index.html" lang="en" hreflang="en" aria-label="Switch this page to English">EN</a><a class="nav-cta" href="getting-started.html">认识一下 Wrench ↗</a></nav></div></header><main id="main"><div class="wrap">
+  <section class="home-hero">
+    <div class="release-note"><span>正在打磨</span> 显存不多，想法可不少。↗</div>
+    <h1>AI，也得用得起。<br><span>普通人的电脑也算数。</span></h1>
+    <p class="hero-hook">好钢用在刀刃上。好 token，花在真难题上。</p>
+    <p class="hero-description">搬砖、查文件、拧螺丝，让小模型和本地工具来扛。真正需要动脑的地方，再请大模型出场。这就是 Wrench 想做的：让你的硬件多出点力，让你的预算花得值。</p>
+    <div class="buttons"><a class="button" href="getting-started.html">看看现在能做什么 ↗</a><a class="button secondary" href="roadmap.html">聊聊更大的想法 →</a></div>
+    <p class="hero-footnote">目标是免费给大家用。目前还在开发者预览阶段。</p>
+    <p class="hero-story-links"><a href="author.html">作者留言：写给和我一样的普通人 ↗</a><a href="model-story.html">这把扳手怎么造的 →</a></p>
+    <figure class="hardware-scene"><img src="../assets/hardware-garden-zh.svg" width="1120" height="340" alt="旧笔记本、小显卡和旧手机通过虚线连在一起。这是我们想去的方向，设备支持还需要实测。"></figure>
+    <p class="hardware-caption">画的是我们想去的地方。哪些设备能跑，还得一台台验证。</p>
+  </section>
+  <div class="mission-strip"><div><strong>&lt; 8 GB</strong><span>先照顾小显存的朋友</span></div><div><strong>&lt; 2 GB</strong><span>下一站，再小一点</span></div><div><strong>有算力，一起用</strong><span>未来想做的朋友间互助</span></div></div>
+  <section class="section" id="with-coders">
+    <div class="section-intro"><div><div class="eyebrow">和大模型搭伙，把成本打下来</div><h2>让本地多扛点事，<br>让大模型少操点心。</h2></div><p>查资料、翻长历史、定位原文、读配置、查状态，这些事情攒起来，也能吃掉不少时间和 token。Wrench 的目标是把其中能验证的工作接到本地，整理好证据再交给大模型，让它集中精力理解需求、判断原因、设计修改。<strong>为配合大模型而生，为把 AI 成本打下来而做。</strong></p></div>
+    <div class="cards">
+      <article class="card"><span class="number">01 / 接得准</span><h3>能确定的，就别反复猜。</h3><p>路径、行号、搜索词已经明确，就由本地规则构造操作。把重复小活交给确定性的工具，减少让模型反复生成参数的需要。</p></article>
+      <article class="card"><span class="number">02 / 查得清</span><h3>干完了，还得交得出凭据。</h3><p>独立验证器先检查权限和参数，再由受限执行器完成允许的操作。返回实际结果和出处，补丁只出草稿给你审。</p></article>
+      <article class="card"><span class="number">03 / 退得稳</span><h3>扛不住，就交棒。</h3><p>超出范围或没通过检查，就返回 abstain，由调用方保留原任务、安排兜底。不给小错误一路滚成大返工的机会，是这套设计的目标。</p></article>
+    </div>
+    <p><strong>比如修登录超时：</strong>大模型判断要查什么 → Wrench 读取允许范围内的配置并返回证据 → 大模型继续诊断和提出修改。</p>
+    <p class="small">“更能扛事情”，是我们想通过这种分工实现的目标：本地多分担可验证的工作，整个流程少绕路、少返工。Coder 也能调用工具、接入验证；我们还没有证明 Wrench 比它们普遍更强、更快或更便宜。当前主线是规则、检索与验证，学习式自由路由关闭。<a href="how-it-works.html#coder-difference">分工、abstain 和怎么验收，展开讲 →</a></p>
+  </section>
+  <section class="section ambition-section" id="ambition">
+    <div class="section-intro"><div><div class="eyebrow">目标可以猛，标签得贴清楚</div><h2>大模型动脑，<br>小家伙出力。</h2></div><p>我们的远期愿景：同样的活儿干完，把云端模型花费压到原来的 0.5% 以下，让留下的每一分预算都花在好 token 上。眼下先靠本地规则工具把小事做稳；整笔账到底能省多少，还得实测。</p></div>
+    <div class="ambition-grid">
+      <article><span class="ambition-state">大输入处理方向</span><strong>4M</strong><h3>上下文再多，也别整包刷卡。</h3><p>面向 4M token 级输入，先在本地检索相关材料，再交给有限的模型工作上下文。走混合检索路线，不是原生 4M 注意力，也不保证条条都记得。</p></article>
+      <article><span class="ambition-state">当前 token 目标</span><strong>20×</strong><h3>少花 token，别少交作业。</h3><p>净强模型 token 减少 95%，也就是在评估任务里用到基准的 1/20 或更少。这是目标，校验、重试和备用调用都要记账。</p></article>
+      <article><span class="ambition-state">远期成本愿景</span><strong>&lt; 0.5%</strong><h3>把剩下的预算，花在刀刃上。</h3><p>把付费云端调用留给真难题。这是同等任务的云端费用愿景，尚未实现，也不是承诺把你的包月费砍到这个数。</p></article>
+      <article><span class="ambition-state">当前权限边界</span><strong>0</strong><h3>省钱可以，别动我文件。</h3><p>这个有限 worker 的自主文件写入权限为零。读取、校验、出草稿给你审阅。不能为了省点 token，顺手把仓库改成惊喜盲盒。</p></article>
+    </div><p class="small ambition-footnote">token 少了多少、钱省了多少，是两笔不同的账。本地开销也得算。<a href="evidence.html">怎么算，我们摊开说 ↗</a></p>
+  </section>
+  <section class="section" id="walkthrough">
+    <div class="section-intro"><div><div class="eyebrow">小工具，先把小事做好</div><h2>让你自己的电脑，<br>也出一份力。</h2></div><p>读几行配置、找一段文字、看看 Git 状态，这些活儿未必每次都需要大模型出场。Wrench 先接住能检查清楚的小任务，再把需要动脑的部分交回更强的 AI 助手。</p></div>
+    <div class="cards">
+      <article class="card"><div class="card-icon" aria-hidden="true">&gt;_</div><h3>本地能干的，先本地干。</h3><p>读配置、找原文、查 Git 状态。指令明确、范围清楚的活儿，可以走本地规则处理，不必每一步都请模型猜。</p><a class="text-link" href="how-it-works.html">认识一下这个小帮手 ↗</a></article>
+      <article class="card"><div class="card-icon" aria-hidden="true">[✓]</div><h3>做得对不对，要能查。</h3><p>每个操作提案都交给独立校验器过一遍。读取有边界，补丁只出草稿，不会替你悄悄改文件。</p><a class="text-link" href="how-it-works.html#boundaries">它的权限到哪儿为止 ↗</a></article>
+      <article class="card"><div class="card-icon" aria-hidden="true">↗</div><h3>接不住，就坦诚交回去。</h3><p>遇上范围之外的任务，Wrench 会明确拒绝。上层工作流保留原请求，再决定是否请更强的模型接手。</p><a class="text-link" href="integrations.html">看看和哪些工具配合 ↗</a></article>
+    </div>
+  </section>
+  <section class="section" id="example">
+    <div class="section-intro"><div><div class="eyebrow">现在真能做的</div><h2>少一点玄学，<br>先跑一个给你看。</h2></div><p>下面是实际 Python 校验器跑出来的保存结果。点三个例子就能看懂：什么能做，什么会被拦下。网页不会调用模型，也不会读取你的文件。</p></div>
+    <div class="demo-panel">
+      <div><h3>一行配置，<br>三种明确的结果。</h3><p>给它一个目录、一条指令。该放行就放行，该说不就说不。</p><div class="cases" role="group" aria-label="切换示例"><button class="case" data-case="0" data-title="读取一项配置" aria-pressed="true" disabled>01 &nbsp; 读一项配置</button><button class="case" data-case="1" data-title="拒绝读取工作区之外的文件" aria-pressed="false" disabled>02 &nbsp; 试着跑出工作区</button><button class="case" data-case="2" data-title="拒绝执行 shell 命令" aria-pressed="false" disabled>03 &nbsp; 让它执行 shell 命令</button></div><a class="text-link" href="getting-started.html">跟着步骤自己跑 ↗</a> <span class="small"> · </span> <a class="text-link" href="../assets/demo-receipt.json">看原始结果</a></div>
+      <div class="receipt"><div class="receipt-label" id="demo-title">读取一项配置</div><pre id="demo-output" aria-live="polite">{
+  "status": "accepted",
+  "action": "read_lines",
+  "observation": {
+    "path": "settings.txt",
+    "start": 1,
+    "end": 1,
+    "lines": ["timeout=30"]
+  }
+}</pre></div>
+    </div>
+    <noscript><p>没开 JavaScript 也没关系，<a href="../assets/demo-receipt.json">三个结果都在这里</a>。</p></noscript>
+  </section>
+  <section class="vision-section">
+    <div><div class="eyebrow">再往远处想一点</div><h2>这些老伙计，<br>也许还能再上场。</h2><p>一块不大的显卡，抽屉里的旧手机，朋友闲着的电脑。我们想让更多人用得上 AI，也让已经买过的硬件多一点用武之地。</p><a class="text-link" href="roadmap.html">看看我们想怎么走 ↗</a></div>
+    <div><article class="roadmap-step"><span class="step-num">01</span><div><h3>先从不到 8 GB 开始。</h3><p>在小显存设备上，把一条范围明确的开发流程做出实际价值。正确率、内存、延迟和总成本，都要算。</p><span class="step-status">起步人群 · 硬件支持待实测</span></div></article><article class="roadmap-step"><span class="step-num">02</span><div><h3>再挤挤，给小设备留个位。</h3><p>下一站是不到 2 GB 显存的有用流程，也探索旧手机。装得下只是第一步，还得真能帮上忙。</p><span class="step-status">下一阶段的硬件目标</span></div></article><article class="roadmap-step"><span class="step-num">03</span><div><h3>借点算力给朋友。</h3><p>以后，也许能把闲着的计算能力分享给信得过的人。你这边歇一会儿，他那边往前走一步。</p><span class="step-status">长远想法 · 还没实现</span></div></article></div>
+  </section>
+  <aside class="evidence-banner"><p><strong>想法可以大，成绩得按实数报。</strong>Wrench 目前还是开发者预览版。到底省多少钱、哪些小设备能用、能不能放心上生产，都还要拿证据说话。</p><a class="text-link" href="evidence.html">看看已经验证了什么 ↗</a></aside>
+  <aside class="author-invitation"><div><div class="eyebrow">作者留言</div><p>“让普通人的好奇心，不用每次都先查余额。”</p></div><a class="text-link" href="author.html">聊聊为什么做 Wrench ↗</a></aside>
+  <div class="cta"><h2>电脑小一点，<br>也能是个好起点。</h2><a class="button" href="getting-started.html">从一个小例子开始 ↗</a></div>
+</div>
+</main><footer class="footer"><div class="wrap"><a class="brand" href="index.html" aria-label="Wrench 首页"><img src="../assets/wrench-mark.svg" width="30" height="28" alt="">wrench</a><nav class="footer-links" aria-label="页脚导航"><a href="getting-started.html">使用文档</a><a href="roadmap.html">我们的想法</a><a href="author.html">作者留言</a><a href="evidence.html">进展与证据</a><a href="faq.html">常见问题</a><a href="brand.html">品牌素材</a></nav><p class="footer-note">AI，也得让咱用得起。开发者预览版，认真打磨中。<br>From Calgary with ❤️. BA Research</p></div></footer></body></html>

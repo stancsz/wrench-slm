@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="340" viewBox="0 0 1120 340" fill="none">
+  <title>让手头的硬件再上场</title>
+  <desc>笔记本、小显卡和旧手机由虚线连接。这是硬件和分享愿景的插画，不代表目前支持的设备。</desc>
+  <defs>
+    <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.8" fill="#C9CDC0"/></pattern>
+    <linearGradient id="screen" x1="182" y1="62" x2="318" y2="191" gradientUnits="userSpaceOnUse"><stop stop-color="#E5EBD6"/><stop offset="1" stop-color="#F5F7ED"/></linearGradient>
+  </defs>
+  <ellipse cx="556" cy="178" rx="536" ry="150" fill="url(#dots)"/>
+  <path d="M318 186C405 186 414 251 496 251S643 237 655 178S770 83 850 131" stroke="#ABB5A2" stroke-width="2" stroke-dasharray="4 7"/>
+  <path d="M300 209C368 260 413 286 495 285H778C866 285 899 250 899 222" stroke="#C6CBBD" stroke-width="1.5" stroke-dasharray="4 7"/>
+  <g transform="translate(143 30) rotate(-7 140 110)">
+    <ellipse cx="132" cy="227" rx="145" ry="15" fill="#30372D" opacity=".07"/>
+    <path d="M18 28Q18 18 29 18H226Q238 18 238 30V175H18Z" fill="#DEDCD0" stroke="#43483D" stroke-width="2"/>
+    <rect x="29" y="29" width="197" height="132" rx="4" fill="url(#screen)" stroke="#8A9281"/>
+    <circle cx="128" cy="24" r="1.5" fill="#707866"/>
+    <path d="M18 175H238L262 211Q264 219 254 220H1Q-9 219-5 211Z" fill="#F1EFE5" stroke="#43483D" stroke-width="2"/>
+    <path d="M-5 211H262" stroke="#43483D" stroke-width="1.5"/>
+    <path d="M39 183H217L224 195H31Z" fill="#DBDDD1"/>
+    <path d="M94 201H160L164 209H90Z" fill="#E1E1D6" stroke="#B3B8AA"/>
+    <g transform="translate(48 45)"><rect width="157" height="97" rx="4" fill="#FEFFF9" stroke="#CED3C3"/><path d="M0 17H157" stroke="#CED3C3"/><circle cx="10" cy="8" r="2" fill="#E34A2B"/><circle cx="18" cy="8" r="2" fill="#D7DDCD"/><circle cx="26" cy="8" r="2" fill="#D7DDCD"/>
+      <path d="M15 37L20 42L15 47" stroke="#E34A2B" stroke-width="2"/><path d="M29 42H88M15 60H118M15 73H88" stroke="#BAC5AD" stroke-width="4" stroke-linecap="round"/><rect x="15" y="82" width="39" height="4" rx="2" fill="#E34A2B"/>
+    </g>
+  </g>
+  <g transform="translate(483 80) rotate(8 94 84)">
+    <ellipse cx="99" cy="173" rx="112" ry="15" fill="#30372D" opacity=".07"/>
+    <path d="M1 24L173 24L191 39V144H18L1 129Z" fill="#4C5947" stroke="#313B2B" stroke-width="2"/>
+    <path d="M18 39H191V144H18Z" fill="#DCE5CA" stroke="#313B2B" stroke-width="2"/>
+    <path d="M1 24L18 39M173 24L191 39" stroke="#313B2B" stroke-width="2"/>
+    <rect x="27" y="135" width="79" height="12" fill="#B9A36B" stroke="#313B2B"/>
+    <path d="M34 137V147M42 137V147M50 137V147M58 137V147M66 137V147M74 137V147M82 137V147M90 137V147M98 137V147" stroke="#E2D39E" stroke-width="2"/>
+    <circle cx="80" cy="88" r="39" fill="#8D9C7D" stroke="#34422E" stroke-width="2"/>
+    <circle cx="80" cy="88" r="31" fill="#C6D1B8"/>
+    <g stroke="#657658" stroke-width="10" stroke-linecap="round"><path d="M80 67L86 79M101 82L91 88M93 105L83 98M68 107L74 97M60 83L72 87"/></g><circle cx="80" cy="88" r="10" fill="#3D4D34"/>
+    <rect x="136" y="57" width="34" height="55" rx="4" fill="#F2F5E9" stroke="#829275"/><path d="M146 70H160M146 79H160M146 88H156" stroke="#829275" stroke-width="2"/>
+    <circle cx="178" cy="132" r="2" fill="#526548"/><circle cx="29" cy="50" r="2" fill="#526548"/>
+  </g>
+  <g transform="translate(836 47) rotate(11 46 91)">
+    <ellipse cx="52" cy="197" rx="70" ry="12" fill="#30372D" opacity=".07"/>
+    <rect x="5" y="4" width="99" height="186" rx="18" fill="#B8B7AC" stroke="#42483C" stroke-width="2"/>
+    <rect width="99" height="186" rx="18" fill="#E9E6D9" stroke="#42483C" stroke-width="2"/>
+    <rect x="8" y="20" width="83" height="140" rx="7" fill="#F3D6B9" stroke="#B5AD9D"/>
+    <path d="M39 11H60" stroke="#858879" stroke-width="3" stroke-linecap="round"/><circle cx="49" cy="173" r="6" stroke="#A4A596" stroke-width="1.5"/>
+    <rect x="22" y="58" width="55" height="55" rx="15" fill="#E34A2B"/>
+    <g transform="translate(28 66) scale(.60)" fill="#FFFDF7"><path d="M3 9h13l10 29 10-25h10L29 57H18L3 9Z"/><path d="M30 9h13l10 29L63 9h6L56 57H45L30 9Z"/></g>
+    <path d="M32 131H66" stroke="#C58F6C" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g stroke="#E34A2B" stroke-width="2" stroke-linecap="round"><path d="M436 76V90M429 83H443M749 211V225M742 218H756"/></g>
+  <g fill="#E34A2B"><circle cx="412" cy="227" r="4"/><circle cx="759" cy="118" r="4"/><circle cx="704" cy="285" r="4"/></g>
+  <g font-family="monospace" font-size="11" letter-spacing="1" fill="#6D7665"><text x="186" y="316">桌上那台老伙计</text><text x="495" y="316">再多一点可能</text><text x="824" y="316">抽屉里的旧手机</text></g>
+</svg>

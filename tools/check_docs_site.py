@@ -72,5 +72,5 @@ def check(root):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--site", type=Path, default=Path(__file__).resolve().parents[1] / "artifacts" / "docs-site")
+    parser.add_argument("--site", type=Path, default=Path(__file__).resolve().parents[1] / "docs" / "gh-pages")
     check(parser.parse_args().site.resolve())

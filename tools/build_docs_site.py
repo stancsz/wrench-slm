@@ -103,5 +103,5 @@ def build_language(output: Path, language: str, page_map: dict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "artifacts" / "docs-site")
+    parser.add_argument("--output", type=Path, default=ROOT / "docs" / "gh-pages")
     build(parser.parse_args().output.resolve())
