@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -19,6 +20,16 @@ from typing import Callable, Iterable
 MAX_LOGICAL_CONTEXT_TOKENS = 2_000_000
 RETENTION_TIERS = {"hot", "warm", "reference", "cold"}
 _TOKEN_RE = re.compile(r"\w+", re.UNICODE)
+_QUERY_STOPWORDS = frozenset(
+    {
+        "a", "an", "and", "are", "as", "at", "be", "been", "being", "but",
+        "by", "for", "from", "had", "has", "have", "he", "her", "here",
+        "hers", "him", "his", "i", "in", "into", "is", "it", "its",
+        "me", "my", "of", "on", "or", "our", "ours", "she", "that",
+        "the", "their", "theirs", "them", "there", "these", "they", "this",
+        "those", "to", "was", "we", "were", "with", "you", "your", "yours",
+    }
+)
 
 
 class ContextError(ValueError):
@@ -259,15 +270,62 @@ class ContextLedger:
             raise ContextSelectionError("query must be a string")
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 10_000:
             raise ContextSelectionError("invalid search limit")
-        terms = Counter(_tokens(query))
-        scores: Counter[str] = Counter()
-        for term, weight in terms.items():
-            for segment_id in self._inverted_index.get(term, ()):
-                scores[segment_id] += weight
+        scores = self._search_scores(query)
         return sorted(
             (self._segments[segment_id] for segment_id in scores),
             key=lambda item: (-scores[item.segment_id], -item.source_order, item.segment_id),
         )[:limit]
+
+    def _search_scores(self, query: str, *, retention: set[str] | None = None) -> Counter[str]:
+        """Score unique query terms with inverse-document-frequency weighting."""
+
+        terms = set(_tokens(query)) - _QUERY_STOPWORDS
+        scores: Counter[str] = Counter()
+        if not terms:
+            return scores
+        document_count = max(1, len(self._segments))
+        for term in sorted(terms):
+            matching_ids = [
+                segment_id
+                for segment_id in self._inverted_index.get(term, ())
+                if retention is None or self._segments[segment_id].retention in retention
+            ]
+            document_frequency = len(matching_ids)
+            if not document_frequency:
+                continue
+            inverse_frequency = math.log1p(
+                (document_count - document_frequency + 0.5)
+                / (document_frequency + 0.5)
+            )
+            for segment_id in matching_ids:
+                scores[segment_id] += inverse_frequency
+        return scores
+
+    def _search_unit_scores(
+        self, query: str, *, eligible_units: set[str] | None = None
+    ) -> Counter[str]:
+        """Score each query term once per atomic unit, regardless of its size."""
+
+        terms = set(_tokens(query)) - _QUERY_STOPWORDS
+        unit_matches: dict[str, set[str]] = {}
+        for term in sorted(terms):
+            for segment_id in self._inverted_index.get(term, ()):
+                unit_id = self._unit_for(segment_id)
+                if eligible_units is not None and unit_id not in eligible_units:
+                    continue
+                unit_matches.setdefault(term, set()).add(unit_id)
+        scores: Counter[str] = Counter()
+        document_count = max(1, len(eligible_units) if eligible_units is not None else len(self._units))
+        for term in sorted(unit_matches):
+            matching_units = unit_matches[term]
+            document_frequency = len(matching_units)
+            inverse_frequency = math.log1p(
+                (document_count - document_frequency + 0.5)
+                / (document_frequency + 0.5)
+            )
+            for unit_id in matching_units:
+                scores[unit_id] += inverse_frequency
+        return scores
 
     def session_hash(self) -> str:
         if self._session_hash is not None:
@@ -304,6 +362,19 @@ class ContextLedger:
             raise ContextSelectionError("active_token_budget_exceeds_logical_limit")
         if receipt_detail not in {"full", "summary"}:
             raise ContextSelectionError("invalid_receipt_detail")
+        if not isinstance(query, str):
+            raise ContextSelectionError("query must be a string")
+        if not isinstance(search_limit, int) or isinstance(search_limit, bool) or not 1 <= search_limit <= 10_000:
+            raise ContextSelectionError("invalid search limit")
+        # The query influences automatic unit priority. Build the selectable
+        # atomic-unit corpus first so ineligible cold units cannot affect IDF.
+        eligible_units = {
+            unit_id
+            for unit_id, segment_ids in self._units.items()
+            if any(self._segments[item].retention in {"hot", "warm", "reference"} for item in segment_ids)
+            and all(self._segments[item].retention != "cold" for item in segment_ids)
+        }
+        ranked_unit_scores = self._search_unit_scores(query, eligible_units=eligible_units)
         preserve = tuple(preserve_ids)
         unknown = [item for item in preserve if item not in self._segments]
         if unknown:
@@ -318,18 +389,67 @@ class ContextLedger:
             if unit_id not in ordered_unit_set:
                 ordered_units.append(unit_id)
                 ordered_unit_set.add(unit_id)
-        # Recent hot/warm context is the default working set. Reference and
-        # cold material remains queryable in the ledger but is not silently
-        # forwarded to the model. Callers must explicitly preserve a reference
-        # segment when it is needed for the current task.
+        mandatory_token_count = sum(
+            sum(member.token_count for member in self._unit_segments(unit_id))
+            for unit_id in mandatory_units
+        )
+        if mandatory_token_count > active_token_budget:
+            raise ContextSelectionError("preserved_unit_exceeds_active_budget")
+        # Keep the latest explicit user intent and latest active tool state
+        # ahead of retrieval. Other query-matched hot, warm, and reference
+        # units are ranked by aggregate lexical score, then recency, then unit
+        # ID. search_limit bounds this unit-level candidate window. Reference
+        # content enters only on a query match; unmatched hot/warm is recency
+        # fallback and cold-containing units are never auto-selected.
         active_segments = [
             segment
             for segment in self._segments.values()
             if segment.retention in {"hot", "warm"}
         ]
+        protected_current_units: set[str] = set()
+        latest_intent = max(
+            (segment for segment in active_segments if segment.role == "user"),
+            key=lambda item: item.source_order,
+            default=None,
+        )
+        if latest_intent is not None:
+            protected_current_units.add(self._unit_for(latest_intent.segment_id))
+        active_tool_units = {
+            self._unit_for(segment.segment_id)
+            for segment in active_segments
+            if segment.kind in {"tool_call", "tool_result"}
+        }
+        if active_tool_units:
+            latest_tool_unit = max(
+                active_tool_units,
+                key=lambda unit_id: max(item.source_order for item in self._unit_segments(unit_id)),
+            )
+            protected_current_units.add(latest_tool_unit)
+        protected_current_units &= eligible_units
+        for unit_id in sorted(
+            protected_current_units,
+            key=lambda item: (-max(member.source_order for member in self._unit_segments(item)), item),
+        ):
+            if unit_id not in ordered_unit_set:
+                ordered_units.append(unit_id)
+                ordered_unit_set.add(unit_id)
+
+        ranked_unit_order = sorted(
+            (unit_id for unit_id in ranked_unit_scores if unit_id in eligible_units),
+            key=lambda unit_id: (
+                -ranked_unit_scores[unit_id],
+                -max(item.source_order for item in self._unit_segments(unit_id)),
+                unit_id,
+            ),
+        )[:search_limit]
+        for unit_id in ranked_unit_order:
+            if unit_id not in ordered_unit_set:
+                ordered_units.append(unit_id)
+                ordered_unit_set.add(unit_id)
+
         for segment in sorted(active_segments, key=lambda item: -item.source_order):
             unit_id = self._unit_for(segment.segment_id)
-            if unit_id not in ordered_unit_set:
+            if unit_id in eligible_units and unit_id not in ordered_unit_set:
                 ordered_units.append(unit_id)
                 ordered_unit_set.add(unit_id)
 

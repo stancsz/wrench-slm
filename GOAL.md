@@ -1,7 +1,7 @@
 # Goal: Wrench productive value
 
 Status: active
-Updated: 2026-09-22
+Updated: 2026-09-23
 Owner: repository agent, under human product authority
 
 ## Product mission and hardware direction
@@ -28,9 +28,13 @@ remote-worker, or packaging experiments listed below.
 
 ## Product outcome
 
-Deliver a trustworthy, bounded Wrench worker that creates measurable value on
-routine developer-tool work. The immediate delivery gate is productive
-workflow value; broader hardware milestones follow from that useful slice.
+Deliver one trustworthy Wrench workflow end to end before expanding the
+product. The first target is an OpenCode developer asking where an exact
+symbol or literal appears in the current repository. Wrench should locate the
+matching source lines, verify the result, and return a useful answer in the
+same OpenCode session. This is a read-only, mechanically checkable task that
+fits Wrench's bounded authority and gives us a direct comparison with the
+existing stronger-model workflow.
 
 Wrench handles fast, repetitive, verifiable mechanical work. It proposes
 structured read-only or review-only actions, or abstains. An independent
@@ -38,32 +42,70 @@ verifier and the stronger-model fallback retain final authority. Wrench never
 executes arbitrary shell commands, accesses credentials, or writes
 autonomously.
 
-## North Star
+## First vertical slice: exact repository lookup in OpenCode
 
-The North Star is one paired real-workflow canary:
+The user asks a repository question such as "Where is `SymbolName` defined?"
+or "Find every occurrence of this exact string and show the surrounding
+lines." The slice covers one bounded path:
 
-1. run the same authorized workload through the stronger-model baseline;
-2. run it through the Wrench hybrid path with the same fallback, verifier,
-   retry, and correction policy;
-3. reconcile final success, safety, latency, frontier tokens, local tokens,
-   cost, retries, corrections, abstentions, and fallback overhead.
+1. OpenCode sends the request to Wrench with the current repository context.
+2. When enabled, the local System One head decides whether this request is
+   eligible; it can only abstain or continue. The deterministic route then
+   proposes one typed `literal_search` action with bounded arguments.
+3. The independent verifier checks the proposal and repository boundary.
+4. The bounded read-only action returns matching paths and source lines.
+5. OpenCode returns one final answer grounded in those results. Invalid,
+   unsupported, ambiguous, or failed requests go to the existing stronger
+   fallback without losing the original request.
 
-The paired canary is necessary but not sufficient. Final acceptance must also
-meet all five release gates in the active utility contract, including the
-three-arm replay and weighted-workload coverage requirements.
+First prove this path end to end with the actual local Wrench model and the
+real OpenCode client, not only a stub or harness fixture. Then compare the
+same frozen tasks against stronger-model-only behavior with identical task
+oracles and accounting. Record exact-result correctness, abstentions,
+fallbacks, safety, p50/p95 end-to-end latency, frontier and local tokens,
+cost, retries, corrections, and resource use.
 
-The canary must show no material final-success or safety regression, zero
-prohibited accepts, zero unexpected mutations, meaningful end-to-end latency
+This first slice is proven useful only when accepted Wrench actions produce
+the exact expected source locations, there are zero prohibited accepts and
+unexpected mutations, fallback preserves the final task outcome, and the
+measured workflow improves at least one primary user cost (successful-task
+latency or net frontier-token use) without materially regressing correctness
+or safety. Publish the result with task denominators and the exact client,
+model, repository fixture, and hardware. A local end-to-end pass is a product
+milestone, not permission to claim general production readiness.
+
+Do not add another tool, client, benchmark track, training campaign, or
+hardware target until this slice passes. Synthetic replay, an HTTP success, a
+client smoke, a smaller checkpoint, or a lower teacher-call count is not
+end-to-end usefulness evidence by itself.
+
+## North Star and eventual publication bar
+
+The North Star starts with a paired real-workflow canary for this exact
+OpenCode repository-lookup workflow:
+
+1. run the same authorized tasks through the stronger-model baseline;
+2. run them through Wrench plus the same verifier and fallback policy;
+3. reconcile correctness, safety, latency, frontier and local tokens, cost,
+   retries, corrections, abstentions, and fallback overhead.
+
+After this vertical slice works and shows measured value, expand deliberately
+to additional task families and clients. Publication and production routing
+still require all five release gates in the active utility contract, including
+the three-arm replay and weighted-workload coverage requirements. The final
+bar remains zero prohibited accepts, zero unexpected mutations, no material
+final-success regression, at least 50% median and p95 end-to-end latency
 improvement on successful eligible tasks, and at least 95% net frontier-token
-savings after compaction, verification, retries, corrections, and fallback.
+savings after all overhead across at least 90% of weighted mechanical-workload
+frontier-token mass.
 
-Synthetic replay, an HTTP success, a client smoke, a smaller checkpoint, or a
-lower teacher-call count is not North Star evidence by itself.
+## Later release workstreams
 
-## Keep and continue
-
-These are the active workstreams. The scoped binary-model addition below was
-authorized by the human product owner in this conversation on 2026-09-22.
+The list below remains the eventual release scope. It is not a parallel
+backlog. Until the OpenCode exact-lookup slice passes end to end, work only on
+the model, verifier, protocol, and measurements needed for that one path.
+Use the existing frozen binary head as a candidate. Pause further synthetic
+training until its behavior is measured in the selected real workflow.
 
 1. **Deterministic mechanical worker**
 
@@ -108,8 +150,10 @@ authorized by the human product owner in this conversation on 2026-09-22.
    backbone forward without vocabulary projection or autoregressive decoding.
    Its only decisions are `abstain` and `not_abstain`; the latter merely
    continues to the existing proposal/verifier path. It grants no execution
-   authority. Training and local evaluation for this bounded model are now
-   authorized, with the existing 10% RAM/VRAM reserves. No OpenJev weights,
+   authority. Training and local evaluation for this bounded model were
+   authorized on 2026-09-22, with the existing 10% RAM/VRAM reserves. That
+   authorization does not make further synthetic training the current priority.
+   No OpenJev weights,
    paid model calls, remote worker work, or production enablement are included.
    Use an additional head artifact under 1 MiB. The earlier <=5 ms total
    latency target belonged to the superseded standalone lexical model;
@@ -165,6 +209,27 @@ authorized by the human product owner in this conversation on 2026-09-22.
    of the consumed suite; that is not a fresh pass. Human label review and
    real-workflow validation are still absent. The evidence and frozen head
    are in [owner-approved training](phases/system-one-authorized-training-20260923/README.md).
+
+## First vertical-slice progress
+
+- 2026-09-23: Added server CLI plumbing to load the existing binary head and
+  optional abstain-only preflight. The focused forwarding test passes and Ruff
+  passes. This makes the experimental head selectable by the real local
+  server; no model inference or OpenCode request was run in this step.
+- The repository head is not currently bound to the evaluated artifact:
+  `qwen-abstain-head.json` is 358,727 bytes with SHA-256
+  `27308dc7c91e81390971852361f3f57f49d18fd45dbe26fe388bad5d06085f3d`, while
+  the fit and replacement-evaluation receipts bind 358,728 bytes with SHA-256
+  `602696a35b5f7a822ab0b8e9e25328982cb0fdf5ff542d1a864cae703e25f903`.
+  Do not load or report the checked-in head as the evaluated candidate unless
+  the exact receipt-bound artifact is recovered and verified.
+- Remaining: identify and pin the local model package and runtime, run the
+  exact receipt-bound head and base checkpoint, confirm safe runtime headroom,
+  run the exact-lookup request through Wrench, complete the real OpenCode
+  request and final-answer flow, then measure it against the matched
+  stronger-model baseline. The original diagnostic missed its target with
+  80/5,000 unsafe continuations; a posthoc rule change over those stored
+  predictions is not a fresh holdout. Real-workflow usefulness is unproven.
 
 ## Explicitly skipped
 
@@ -396,7 +461,7 @@ escalates to the human.
 
 ## Builder execution record
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
 ### Progress and validation
 
@@ -429,6 +494,103 @@ Updated: 2026-09-22
 - [Phase 441 malformed callback regression](phases/phase-441-router-malformed-callback/README.md) verifies invalid test-only callback results fail closed through the router circuit. It does not exercise the model worker or close Gate E.
 - [Phase 442 MiniMax/OpenRouter credential check](phases/phase-442-minimax-openrouter-credential-check/README.md) confirms both gateway aliases and read-only credential acceptance. It is not a model-completion, cost-export, or provider-cap test.
 - [Phase 443 parent-route binding review](phases/phase-443-parent-route-binding/README.md) records the synthetic route mismatch and Sol's guard recommendation. The active [Q4 parent contract](COLLABORATION_CONTRACT.json) records the human route choice and binds the one-canary scope to OpenRouter MiniMax M3. Local canary and paid-receipt validators reject missing or mismatched child routes. This is authorization evidence only; no provider call was made.
+- [Phase 450 tool settlement binding](phases/phase-450-tool-settlement-call-binding/README.md)
+  requires embedded settlement results to match a Wrench-issued read-only
+  call. The focused server suite passes 18 tests, including OpenAI and
+  Anthropic positive paths and unmatched or non-read-only rejection cases.
+  This closes one local acceptance path only; it does not establish
+  independent client-result authenticity or close the production gates.
+- [Phase 451 latest-intent abstention](phases/phase-451-latest-intent-abstention/README.md)
+  preserves explicit latest-message abstentions rather than falling back to
+  earlier eligible work. Fourteen focused worker tests pass, including the
+  two boundary reasons and an ambiguous-wrapper control. This does not
+  establish overall abstention quality or production utility.
+- [Phase 452 partial local usage accounting](phases/phase-452-partial-local-usage-accounting/README.md)
+  retains observed local token usage when generation or a later frontier
+  fallback fails, while keeping unknown totals null. The focused worker and
+  server suites pass 37 tests. These loopback and fake-worker checks do not
+  establish matched real-workflow utility or close Gates C, D, or E.
+- [Phase 453 bounded read_lines](phases/phase-453-bounded-read-lines/README.md)
+  streams only the requested range and caps scanned bytes at 256 KiB, while
+  still allowing early-line reads from larger files. The full harness test
+  module passes 21 tests. This is local resource-boundary evidence, not a
+  production-value result; release gates remain open.
+- [Phase 454 issued tool settlement provenance](phases/phase-454-issued-tool-settlement-provenance/README.md)
+  binds settlement to a one-time, expiring server record of the read-only call,
+  its arguments, and latest user intent. The combined focused server and
+  harness suites pass 43 tests. The client still supplies unauthenticated
+  execution results, and the process-local registry does not close Gate B or
+  the production gates.
+- [Phase 455 canary accounting validation](phases/phase-455-canary-accounting-validation/README.md)
+  rejects malformed usage, cost, request identity, and trace rows before
+  counting hybrid tokens. The full canary test module passes 57 tests using
+  self-contained synthetic preflight fixtures. Gate D remains open.
+- [Phase 456 query-ranked context assembly](phases/phase-456-query-ranked-context-assembly/README.md)
+  ranks complete context units by query while preserving explicit intent and
+  tool state, excluding mixed cold units from automatic selection, and failing
+  closed when mandatory preserved units exceed budget. Nineteen focused tests
+  pass; retrieval quality and production utility remain unproven.
+- [Phase 446 evaluation portfolio](phases/phase-446-agent-benchmark-fit/README.md)
+  defines the five-benchmark showcase: Wrench Production Utility Suite plus
+  BFCL v4, When2Call, ToolBeHonest, and RepoBench-R. External suites measure
+  bounded capability slices; only the paired Wrench workflow suite can support
+  the production-utility claim. Current adapter pilots have zero eligible Wrench
+  calls for When2Call and ToolBeHonest, so they are not showcase scores yet.
+- [Phase 457 client response correlation](phases/phase-457-client-response-correlation/README.md)
+  binds each local client response to its exact request body, workflow, attempt,
+  request ID, and model before proposal use or cost attribution. Its focused
+  local tests pass; external-client parity and production utility remain open.
+- [Phase 458 context receipt on abstain](phases/phase-458-context-receipt-on-abstain/README.md)
+  preserves the assembled context receipt across local-client refusals,
+  prefill errors, correlation failures, and verifier abstentions. This improves
+  fallback auditability only; the full prompt budget and production gates
+  remain unproven.
+- [Phase 459 context relevance weighting](phases/phase-459-context-relevance-weighting/README.md)
+  removes repeated/common-word dominance from lexical retrieval using unique
+  terms and inverse document frequency. Focused tests cover ranking behavior;
+  representative-workflow retrieval quality remains unmeasured.
+- [Phase 460 delivery-aware accounting](phases/phase-460-delivery-aware-accounting/README.md)
+  records server-side response-write outcomes separately from compute status,
+  and prevents a downstream proxy write failure from duplicating provider
+  usage. Focused server and canary suites pass; client receipt and real
+  workflow outcomes remain unproven.
+- [Phase 461 native-upstream request hash](phases/phase-461-native-upstream-request-hash/README.md)
+  binds each native-upstream attempt to the exact serialized request-body
+  digest, including failed transport attempts and retries. Focused server and
+  canary suites pass; provider receipt and real workflow outcomes remain
+  unproven.
+- [Phase 462 duplicate-key proposal rejection](phases/phase-462-duplicate-key-proposal-rejection/README.md)
+  rejects ambiguous proposal JSON before schema validation or execution, and
+  keeps the local-client correlation fixture aligned with the current request
+  contract. Focused verifier tests pass; this does not establish workload-wide
+  Gate A acceptance.
+- [Phase 463 capture locator prevalence](phases/phase-463-capture-locator-prevalence/README.md)
+  screens the owner-authorized capture without emitting or persisting prompt
+  or context text. Locator patterns appear in 56 prompt fields and 126 context
+  fields, but this is not a count of eligible current requests or evidence of
+  token savings. Privacy, rights, and task-outcome review remain open.
+- [Phase 464 capture request-boundary audit](phases/phase-464-capture-request-boundary-audit/README.md)
+  confirms from the hash-bound writer source that `prompt` means the last
+  non-empty user message, not a validated atomic task; selected messages may
+  contain history. No capture text was inspected. Privacy, rights, and outcome
+  blockers remain open.
+- [Phase 465 read_file handle byte bound](phases/phase-465-read-file-handle-byte-bound/README.md)
+  records the bounded byte read and preserves UTF-8 and newline behavior.
+- [Phase 466 handle-bound path containment](phases/phase-466-handle-bound-path-containment/README.md)
+  compares the pinned allowed-root identity to the identity recorded during
+  root validation, then binds `read_file`, `read_lines`, and `literal_search`
+  content reads to opened handles. Focused tests cover root replacement,
+  bounded reads, Windows handle-relative traversal, a nested-directory rename
+  block, and one junction replacement interleaving. `git_read_status`,
+  `patch_draft`, other Windows filesystems and reparse types, Gate B, and
+  production utility remain unproven.
+- [Phase 448 trace source audit](phases/phase-448-paired-canary-trace-source-audit/README.md)
+  now records the user's approval for local review and a hash-matched regex
+  scan of the candidate capture. The corrected scan found 226 email-like
+  regex occurrences across 189 records; these are review candidates, not
+  confirmed sensitive values. Privacy review, external rights, verifier
+  outcomes, and final-task outcomes remain open, so no trace is eligible for
+  training or paired replay.
 - [Current client-output audit](phases/opencode-output-diagnosis-20260922/README.md) records the pinned OpenCode repair and remaining direct-baseline/accounting gaps.
 
 ### Next decision and stop condition

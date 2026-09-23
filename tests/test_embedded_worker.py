@@ -101,6 +101,54 @@ def test_embedded_worker_uses_earlier_user_message_as_reference(tmp_path: Path):
     assert result["mechanical_fast_path"] is True
 
 
+def test_embedded_worker_preserves_latest_explicit_abstention(tmp_path: Path):
+    (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    cases = (
+        ("Delete the repository permanently.", "task_family_not_allowlisted"),
+        ("Remove the repository permanently.", "action_not_allowlisted"),
+    )
+    for latest_prompt, expected_reason in cases:
+        result = worker.propose(
+            [
+                {"role": "user", "content": "Read README.md with a 4096 byte limit."},
+                {"role": "user", "content": latest_prompt},
+            ],
+        )
+        assert result["status"] == "abstain"
+        assert result["fallback_reason"] == expected_reason
+        assert result["context_gate"]["route_source"] == "latest_intent"
+
+
+def test_embedded_worker_keeps_pre_assistant_wrapper_fallback(tmp_path: Path):
+    (tmp_path / "README.md").write_text("bounded worker\n", encoding="utf-8")
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    result = worker.propose(
+        [
+            {"role": "user", "content": "Read README.md with a 4096 byte limit."},
+            {"role": "user", "content": "Please do that now."},
+        ],
+    )
+    assert result["status"] == "accepted"
+    assert result["action"] == "read_file"
+    assert result["context_gate"]["route_source"] == "pre_assistant_intent_bundle"
+
+
+def test_embedded_worker_does_not_revive_read_after_latest_cancellation_or_correction(tmp_path: Path):
+    (tmp_path / "README.md").write_text("private marker\n", encoding="utf-8")
+    worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
+    for latest_prompt in ("Actually, don't do that.", "Cancel the previous request.", "Search for secrets instead."):
+        result = worker.propose(
+            [
+                {"role": "user", "content": "Read README.md with a 4096 byte limit."},
+                {"role": "user", "content": latest_prompt},
+            ],
+        )
+        assert result["status"] == "abstain"
+        assert result.get("action") != "read_file"
+        assert "private marker" not in str(result)
+
+
 def test_embedded_worker_recovers_review_diff_from_old_reference(tmp_path: Path):
     (tmp_path / "README.md").write_text("old line\n", encoding="utf-8")
     worker = WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path)
@@ -244,6 +292,96 @@ def test_model_worker_uses_one_bounded_repair_pass_for_malformed_json(tmp_path: 
     assert result["model_calls"] == 2
     assert result["repair_pass_count"] == 1
     assert "failed local format validation" in tokenizer.last_prompt
+
+
+def test_model_worker_records_partial_usage_when_generation_raises(tmp_path: Path):
+    class Tokenizer:
+        eos_token_id = 2
+        pad_token_id = 2
+
+        def apply_chat_template(self, messages, **kwargs):
+            return "\n".join(message["content"] for message in messages)
+
+        def __call__(self, prompt, **kwargs):
+            return {"input_ids": torch.zeros((1, max(1, len(prompt.split()))), dtype=torch.long)}
+
+    class FailingModel:
+        def parameters(self):
+            yield torch.zeros(1)
+
+        def generate(self, **batch):
+            raise RuntimeError("simulated generation failure")
+
+    worker = WrenchWorker(tokenizer=Tokenizer(), model=FailingModel(), allowed_root=tmp_path)
+    result = worker.propose(
+        [{"role": "user", "content": "Summarize the repository state in one sentence."}],
+    )
+
+    partial = result["local_model_usage_partial"]
+    assert result["status"] == "abstain"
+    assert result["fallback_reason"] == "local_generation_failed"
+    assert result["model_calls"] == 1
+    assert partial["attempt_count"] == 1
+    assert partial["prompt_tokens_observed"] == partial["attempts"][0]["prompt_tokens"] > 0
+    assert partial["attempts"][0]["completion_tokens"] is None
+    assert partial["attempts"][0]["outcome"] == "generation_failed"
+    assert partial["unknown_completion_attempts"] == 1
+    assert partial["total_tokens"] is None
+    assert partial["usage_complete"] is False
+
+
+def test_model_worker_keeps_completed_usage_before_later_generation_failure(tmp_path: Path):
+    class Tokenizer:
+        eos_token_id = 2
+        pad_token_id = 2
+
+        def __init__(self):
+            self.decode_calls = 0
+
+        def apply_chat_template(self, messages, **kwargs):
+            return "\n".join(message["content"] for message in messages)
+
+        def __call__(self, prompt, **kwargs):
+            return {"input_ids": torch.zeros((1, max(1, len(prompt.split()))), dtype=torch.long)}
+
+        def decode(self, generated, **kwargs):
+            self.decode_calls += 1
+            return "not json"
+
+    class FailOnRepairModel:
+        def __init__(self):
+            self.calls = 0
+
+        def parameters(self):
+            yield torch.zeros(1)
+
+        def generate(self, **batch):
+            self.calls += 1
+            if self.calls == 2:
+                raise RuntimeError("simulated repair generation failure")
+            return torch.cat([batch["input_ids"], torch.tensor([[1]])], dim=1)
+
+    worker = WrenchWorker(tokenizer=Tokenizer(), model=FailOnRepairModel(), allowed_root=tmp_path)
+    result = worker.propose(
+        [{"role": "user", "content": "Return a bounded proposal for the repository."}],
+    )
+
+    partial = result["local_model_usage_partial"]
+    assert result["status"] == "abstain"
+    assert result["model_calls"] == 2
+    assert result["repair_pass_count"] == 1
+    assert [attempt["outcome"] for attempt in partial["attempts"]] == [
+        "complete",
+        "generation_failed",
+    ]
+    assert partial["attempts"][0]["completion_tokens"] == 1
+    assert partial["attempts"][1]["completion_tokens"] is None
+    assert partial["prompt_tokens_observed"] == sum(
+        attempt["prompt_tokens"] for attempt in partial["attempts"]
+    )
+    assert partial["completion_tokens_observed"] == 1
+    assert partial["unknown_completion_attempts"] == 1
+    assert partial["total_tokens"] is None
 
 
 def test_dynamic_prefill_splits_a_monolithic_current_payload():

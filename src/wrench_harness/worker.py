@@ -47,6 +47,22 @@ _ADAPTIVE_CONTEXT_MARKERS = (
     "across several files",
 )
 
+_PRE_ASSISTANT_CONTINUATIONS = {
+    "do that",
+    "do that now",
+    "go ahead",
+    "okay",
+    "ok",
+    "please do that",
+    "please do that now",
+    "please go ahead",
+    "please proceed",
+    "proceed",
+    "sure",
+    "yes",
+    "yes please",
+}
+
 
 def _estimated_tokens(value: str) -> int:
     # Keep the worker and prefill index on the same bounded-sampling policy.
@@ -438,8 +454,14 @@ class WrenchWorker:
                 isinstance(item, dict) and item.get("role") in {"assistant", "tool"}
                 for item in messages
             )
-            if len(users) > 1 and not has_assistant_boundary:
-                for bundle_prompt in users:
+            latest_continuation = prompt.casefold().strip().rstrip(".!?")
+            if (
+                mechanical is None
+                and len(users) > 1
+                and not has_assistant_boundary
+                and latest_continuation in _PRE_ASSISTANT_CONTINUATIONS
+            ):
+                for bundle_prompt in reversed(users[:-1]):
                     earlier_route_prompt = active_intent_suffix(
                         bundle_prompt,
                         suffix_chars=max(1, route_suffix_chars),
@@ -523,6 +545,7 @@ class WrenchWorker:
         patch_retry_count = 0
         repair_pass_count = 0
         model_calls = 0
+        local_usage_attempts: list[dict[str, Any]] = []
         while True:
             prompt_text = self.tokenizer.apply_chat_template(
                 request_messages,
@@ -537,15 +560,78 @@ class WrenchWorker:
             except StopIteration:
                 pass
             model_calls += 1
-            output = self.model.generate(
-                **batch,
-                max_new_tokens=max_tokens,
-                do_sample=False,
-                use_cache=True,
-                eos_token_id=self.tokenizer.eos_token_id,
-                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
-            )
+            usage_attempt: dict[str, Any] = {
+                "attempt": model_calls,
+                "prompt_tokens": int(batch["input_ids"].shape[-1]),
+            }
+            local_usage_attempts.append(usage_attempt)
+            try:
+                output = self.model.generate(
+                    **batch,
+                    max_new_tokens=max_tokens,
+                    do_sample=False,
+                    use_cache=True,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+                )
+            except Exception as exc:
+                usage_attempt.update(
+                    {
+                        "completion_tokens": None,
+                        "outcome": "generation_failed",
+                        "error_type": type(exc).__name__,
+                    }
+                )
+                known_completion_tokens = sum(
+                    attempt["completion_tokens"]
+                    for attempt in local_usage_attempts
+                    if isinstance(attempt.get("completion_tokens"), int)
+                    and not isinstance(attempt.get("completion_tokens"), bool)
+                )
+                unknown_completion_attempts = sum(
+                    attempt.get("completion_tokens") is None
+                    for attempt in local_usage_attempts
+                )
+                partial_usage = {
+                    "schema": "wrench.local-model-usage-partial.v1",
+                    "attempt_count": len(local_usage_attempts),
+                    "attempts": [dict(attempt) for attempt in local_usage_attempts],
+                    "prompt_tokens_observed": sum(
+                        attempt["prompt_tokens"] for attempt in local_usage_attempts
+                    ),
+                    "completion_tokens_observed": known_completion_tokens,
+                    "unknown_completion_attempts": unknown_completion_attempts,
+                    "total_tokens": None,
+                    "usage_complete": False,
+                    "source": "transformers_tokenizer_ids",
+                }
+                failed_result: dict[str, Any] = {
+                    "status": "abstain",
+                    "fallback_reason": "local_generation_failed",
+                    "detail": type(exc).__name__,
+                    "backend": "transformers",
+                    "mechanical_fast_path": False,
+                    "model_calls": model_calls,
+                    "local_model_usage_partial": partial_usage,
+                }
+                if binary_receipt is not None:
+                    failed_result["binary_abstain_gate"] = binary_receipt
+                if prefill_receipt is not None:
+                    prefill_receipt["cache"] = self.prefill_index.stats()
+                    failed_result["dynamic_prefill"] = prefill_receipt
+                if is_patch_prompt(prompt):
+                    failed_result["patch_retry_count"] = patch_retry_count
+                if repair_pass_count:
+                    failed_result["repair_pass_count"] = repair_pass_count
+                return _attach_advisor_handoff(
+                    failed_result,
+                    messages,
+                    working_messages=request_messages,
+                    prefill_receipt=prefill_receipt,
+                )
             generated = output[0, batch["input_ids"].shape[-1] :]
+            usage_attempt["completion_tokens"] = int(generated.shape[-1])
+            usage_attempt["outcome"] = "complete"
             content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
             result = execute_model_output(
                 content,
@@ -599,6 +685,18 @@ class WrenchWorker:
                 "mechanical_fast_path": False,
                 "raw_model_output": content,
                 "model_calls": model_calls,
+                "local_model_usage": {
+                    "schema": "wrench.local-model-usage-receipt.v1",
+                    "attempt_count": len(local_usage_attempts),
+                    "attempts": local_usage_attempts,
+                    "prompt_tokens": sum(item["prompt_tokens"] for item in local_usage_attempts),
+                    "completion_tokens": sum(item["completion_tokens"] for item in local_usage_attempts),
+                    "total_tokens": sum(
+                        item["prompt_tokens"] + item["completion_tokens"]
+                        for item in local_usage_attempts
+                    ),
+                    "source": "transformers_tokenizer_ids",
+                },
                 "model_device": str(next(self.model.parameters()).device),
             }
         )

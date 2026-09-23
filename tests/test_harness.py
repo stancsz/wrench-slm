@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import subprocess
+import hashlib
 import json
 import struct
+import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -34,6 +35,303 @@ def test_read_file_and_lines_are_bounded(tmp_path: Path):
     assert rejected == {"status": "abstain", "fallback_reason": "path_outside_allowed_root"}
 
 
+def test_read_file_reads_at_most_limit_plus_one_bytes(tmp_path: Path, monkeypatch):
+    target = tmp_path / "growing.txt"
+    target.write_bytes(b"x" * 4096)
+    from wrench_harness import core
+
+    real_open = core._open_contained_file
+    returned_bytes = 0
+
+    class TrackingReader:
+        def __init__(self, wrapped):
+            self.context = wrapped
+            self.wrapped = None
+
+        def __enter__(self):
+            self.wrapped = self.context.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.context.__exit__(*args)
+
+        def read(self, size=-1):
+            nonlocal returned_bytes
+            chunk = self.wrapped.read(size)
+            returned_bytes += len(chunk)
+            return chunk
+
+    def tracking_open(path, root, anchor):
+        opened = real_open(path, root, anchor)
+        return TrackingReader(opened) if path == target else opened
+
+    monkeypatch.setattr(core, "_open_contained_file", tracking_open)
+    result = execute_proposal(
+        proposal("read_file", path="growing.txt", max_bytes=32), tmp_path
+    )
+
+    assert result == {"status": "abstain", "fallback_reason": "file_size_limit"}
+    assert returned_bytes == 33
+
+
+def test_read_file_rejects_leaf_symlink_swap_before_open(tmp_path: Path, monkeypatch):
+    import os
+    import pytest
+    import wrench_harness.core as core
+
+    if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
+        pytest.skip("requires POSIX descriptor-relative no-follow open")
+
+    target = tmp_path / "note.txt"
+    outside = tmp_path.parent / f"{tmp_path.name}-outside.txt"
+    target.write_text("inside", encoding="utf-8")
+    outside.write_text("outside-secret", encoding="utf-8")
+    real_open = os.open
+    swapped = False
+
+    def swap_then_open(path, flags, mode=0o777, *, dir_fd=None):
+        nonlocal swapped
+        if path == "note.txt" and dir_fd is not None and not swapped:
+            target.unlink()
+            target.symlink_to(outside)
+            swapped = True
+        return real_open(path, flags, mode, dir_fd=dir_fd) if dir_fd is not None else real_open(path, flags, mode)
+
+    monkeypatch.setattr(core.os, "open", swap_then_open)
+    result = execute_proposal(proposal("read_file", path="note.txt"), tmp_path)
+
+    assert swapped is True
+    assert result["status"] == "abstain"
+    assert "outside-secret" not in json.dumps(result)
+    outside.unlink(missing_ok=True)
+
+
+def test_windows_handle_relative_open_reads_nested_file_and_pins_ancestors(tmp_path: Path):
+    import os
+    import pytest
+    import wrench_harness.core as core
+
+    if os.name != "nt":
+        pytest.skip("requires Windows handle-relative file opens")
+
+    root = tmp_path / "allowed"
+    parent = root / "nested"
+    parent.mkdir(parents=True)
+    (parent / "note.txt").write_text("inside", encoding="utf-8")
+    root_data = core._root(str(root))
+    assert root_data is not None
+    resolved_root, root_identity = root_data
+    anchor = core._RootAnchor(resolved_root, root_identity)
+    directory_fd = None
+    file_fd = None
+    try:
+        with pytest.raises(OSError):
+            root.rename(tmp_path / "allowed-renamed")
+        directory_fd = core._windows_open_relative_component(
+            anchor.handle, "nested", directory=True
+        )
+        with pytest.raises(OSError):
+            parent.rename(root / "renamed")
+        file_fd = core._windows_open_relative_component(
+            directory_fd, "note.txt", directory=False
+        )
+        with pytest.raises(OSError):
+            (parent / "note.txt").rename(parent / "renamed.txt")
+        result = execute_proposal(
+            proposal("read_file", path="nested/note.txt"), root
+        )
+        assert result["status"] == "accepted"
+        assert result["observation"]["text"] == "inside"
+    finally:
+        if file_fd is not None:
+            os.close(file_fd)
+        if directory_fd is not None:
+            os.close(directory_fd)
+        anchor.close()
+
+
+def test_windows_handle_relative_open_rejects_junction_swap(tmp_path: Path, monkeypatch):
+    import os
+    import pytest
+    import wrench_harness.core as core
+
+    if os.name != "nt":
+        pytest.skip("requires Windows reparse-point handling")
+
+    root = tmp_path / "allowed"
+    nested = root / "nested"
+    outside = tmp_path / "outside"
+    root.mkdir()
+    nested.mkdir()
+    outside.mkdir()
+    (nested / "secret.txt").write_text("inside", encoding="utf-8")
+    sentinel = outside / "secret.txt"
+    sentinel.write_text("outside-secret", encoding="utf-8")
+    moved_nested = root / "nested-original"
+    junction = nested
+    real_open_component = core._windows_open_relative_component
+    swapped = False
+    junction_created = False
+
+    def swap_to_junction(parent_fd, component, *, directory):
+        nonlocal swapped, junction_created
+        if component == "nested" and not swapped:
+            nested.rename(moved_nested)
+            command = subprocess.list2cmdline(
+                ["mklink", "/J", str(junction), str(outside)]
+            )
+            completed = subprocess.run(
+                ["cmd.exe", "/c", command], capture_output=True, text=True
+            )
+            if completed.returncode != 0:
+                moved_nested.rename(nested)
+                pytest.skip(f"junction creation unavailable: {completed.stderr.strip()}")
+            junction_created = True
+            swapped = True
+        return real_open_component(parent_fd, component, directory=directory)
+
+    monkeypatch.setattr(core, "_windows_open_relative_component", swap_to_junction)
+    try:
+        result = execute_proposal(
+            proposal("read_file", path="nested/secret.txt"), root
+        )
+        assert swapped is True
+        assert result["status"] == "abstain"
+        assert result["fallback_reason"] == "path_containment_unverified"
+        assert "outside-secret" not in json.dumps(result)
+    finally:
+        if junction_created:
+            os.rmdir(junction)
+        if moved_nested.exists():
+            moved_nested.rename(nested)
+
+
+def test_read_file_uses_pinned_root_after_root_path_swap(tmp_path: Path, monkeypatch):
+    import os
+    import pytest
+    import wrench_harness.core as core
+
+    if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
+        pytest.skip("requires POSIX descriptor-relative no-follow open")
+
+    root = tmp_path / "allowed"
+    outside = tmp_path / "outside"
+    moved_root = tmp_path / "allowed-original"
+    root.mkdir()
+    outside.mkdir()
+    (root / "note.txt").write_text("inside-secret", encoding="utf-8")
+    (outside / "note.txt").write_text("outside-secret", encoding="utf-8")
+    real_open = core._open_contained_file
+    swapped = False
+
+    def swap_root_before_file_open(path, allowed_root, anchor):
+        nonlocal swapped
+        if not swapped:
+            root.rename(moved_root)
+            root.symlink_to(outside, target_is_directory=True)
+            swapped = True
+        return real_open(path, allowed_root, anchor)
+
+    monkeypatch.setattr(core, "_open_contained_file", swap_root_before_file_open)
+    result = execute_proposal(proposal("read_file", path="note.txt"), root)
+
+    assert swapped is True
+    assert result["status"] == "accepted"
+    assert result["observation"]["text"] == "inside-secret"
+    assert "outside-secret" not in json.dumps(result)
+
+
+def test_read_file_rejects_root_replacement_before_anchor_open(tmp_path: Path, monkeypatch):
+    import wrench_harness.core as core
+
+    root = tmp_path / "allowed"
+    replacement = tmp_path / "replacement"
+    original_root = tmp_path / "allowed-original"
+    root.mkdir()
+    replacement.mkdir()
+    (root / "note.txt").write_text("inside-secret", encoding="utf-8")
+    (replacement / "note.txt").write_text("outside-secret", encoding="utf-8")
+    real_anchor = core._RootAnchor
+    swapped = False
+
+    def swap_then_anchor(path, expected_identity):
+        nonlocal swapped
+        root.rename(original_root)
+        replacement.rename(root)
+        swapped = True
+        return real_anchor(path, expected_identity)
+
+    monkeypatch.setattr(core, "_RootAnchor", swap_then_anchor)
+    result = execute_proposal(proposal("read_file", path="note.txt"), root)
+
+    assert swapped is True
+    assert result["status"] == "abstain"
+    assert result["fallback_reason"] == "path_containment_unverified"
+    assert "outside-secret" not in json.dumps(result)
+
+
+def test_read_lines_stops_after_requested_range_in_large_file(tmp_path: Path, monkeypatch):
+    from wrench_harness import core
+
+    target = tmp_path / "large.log"
+    trailing_line = b"unrequested\n"
+    target.write_bytes(
+        b"first line\n"
+        + trailing_line * (core.MAX_FILE_BYTES // len(trailing_line) + 1)
+    )
+    real_open = core._open_contained_file
+    returned_bytes = 0
+
+    class TrackingReader:
+        def __init__(self, wrapped):
+            self.context = wrapped
+            self.wrapped = None
+
+        def __enter__(self):
+            self.wrapped = self.context.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.context.__exit__(*args)
+
+        def readline(self, size=-1):
+            nonlocal returned_bytes
+            chunk = self.wrapped.readline(size)
+            returned_bytes += len(chunk)
+            return chunk
+
+    def tracking_open(path, root, anchor):
+        opened = real_open(path, root, anchor)
+        return TrackingReader(opened) if path == target else opened
+
+    monkeypatch.setattr(core, "_open_contained_file", tracking_open)
+    result = execute_proposal(proposal("read_lines", path="large.log", start=1, end=1), tmp_path)
+
+    assert result["status"] == "accepted"
+    assert result["observation"]["lines"] == ["first line"]
+    assert returned_bytes == len(b"first line\n")
+    assert core.MAX_FILE_BYTES == 256 * 1024
+
+
+def test_read_lines_rejects_oversized_requested_line_and_invalid_utf8(tmp_path: Path):
+    from wrench_harness import core
+
+    oversized = tmp_path / "oversized.txt"
+    oversized.write_bytes((b"x" * (core.MAX_FILE_BYTES + 32)) + b"\n")
+    rejected = execute_proposal(
+        proposal("read_lines", path="oversized.txt", start=1, end=1), tmp_path
+    )
+    assert rejected == {"status": "abstain", "fallback_reason": "file_size_limit"}
+
+    invalid = tmp_path / "invalid.txt"
+    invalid.write_bytes(b"good line\n\xff\n")
+    rejected = execute_proposal(
+        proposal("read_lines", path="invalid.txt", start=2, end=2), tmp_path
+    )
+    assert rejected["status"] == "abstain"
+    assert rejected["fallback_reason"] == "encoding_or_read_error"
+
+
 def test_literal_search_is_not_regex_and_respects_limit(tmp_path: Path):
     (tmp_path / "a.txt").write_text("needle\nneedle.*\n", encoding="utf-8")
     result = execute_proposal(proposal("literal_search", root=".", literal="needle.*", max_matches=3), tmp_path)
@@ -51,11 +349,174 @@ def test_literal_search_is_not_regex_and_respects_limit(tmp_path: Path):
     assert regex["fallback_reason"] == "literal_mode_required"
 
 
+def test_literal_search_rejects_leaf_swap_before_secure_open(tmp_path: Path, monkeypatch):
+    import os
+    import pytest
+    import wrench_harness.core as core
+
+    if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
+        pytest.skip("requires POSIX descriptor-relative no-follow open")
+
+    target = tmp_path / "note.txt"
+    outside = tmp_path.parent / f"{tmp_path.name}-search-outside.txt"
+    target.write_text("needle inside", encoding="utf-8")
+    outside.write_text("needle outside-secret", encoding="utf-8")
+    real_open = core._open_contained_file
+    swapped = False
+
+    def swap_then_open(path, root, anchor):
+        nonlocal swapped
+        if path == target and not swapped:
+            target.unlink()
+            target.symlink_to(outside)
+            swapped = True
+        return real_open(path, root, anchor)
+
+    monkeypatch.setattr(core, "_open_contained_file", swap_then_open)
+    result = execute_proposal(
+        proposal("literal_search", root=".", literal="needle", max_matches=3),
+        tmp_path,
+    )
+
+    assert swapped is True
+    assert result["status"] == "abstain"
+    assert result["fallback_reason"] == "path_containment_unverified"
+    assert "outside-secret" not in json.dumps(result)
+    outside.unlink(missing_ok=True)
+
+
 def test_git_status_is_read_only(tmp_path: Path):
     subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
+    tracked = tmp_path / "tracked.txt"
+    tracked.write_text("baseline\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "tracked.txt"], check=True)
+    git_dir = tmp_path / ".git"
+    before = {
+        path.relative_to(git_dir).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in git_dir.rglob("*")
+        if path.is_file()
+    }
+
     result = execute_proposal(proposal("git_read_status", repo_root="."), tmp_path)
+
+    after = {
+        path.relative_to(git_dir).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in git_dir.rglob("*")
+        if path.is_file()
+    }
     assert result["status"] == "accepted"
     assert result["observation"]["mutated"] is False
+    assert after == before
+
+
+def test_git_status_rejects_gitfile_indirection(tmp_path: Path):
+    repo = tmp_path / "linked-worktree"
+    repo.mkdir()
+    (repo / ".git").write_text("gitdir: ../outside-metadata\n", encoding="utf-8")
+
+    result = execute_proposal(
+        proposal("git_read_status", repo_root="linked-worktree"), tmp_path
+    )
+
+    assert result == {"status": "abstain", "fallback_reason": "repository_root_invalid"}
+
+
+def test_git_status_strips_environment_overrides_and_disables_external_monitor(
+    tmp_path: Path, monkeypatch
+):
+    import subprocess as subprocess_module
+    import wrench_harness.core as core
+
+    subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
+    monkeypatch.setenv("GIT_DIR", str(tmp_path / "outside.git"))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(tmp_path / "outside-index"))
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    observed = {}
+
+    def fake_run(args, **kwargs):
+        observed.setdefault("calls", []).append(args)
+        observed["env"] = kwargs["env"]
+        if args == ["git", "--version"]:
+            return subprocess_module.CompletedProcess(args, 0, "git version 2.52.0.windows.1\n", "")
+        observed["status_args"] = args
+        return subprocess_module.CompletedProcess(args, 0, "## main\n", "")
+
+    monkeypatch.setattr(core.subprocess, "run", fake_run)
+    result = execute_proposal(proposal("git_read_status", repo_root="."), tmp_path)
+
+    assert result["status"] == "accepted"
+    assert "GIT_DIR" not in observed["env"]
+    assert "GIT_INDEX_FILE" not in observed["env"]
+    assert "GIT_CONFIG_COUNT" not in observed["env"]
+    assert observed["env"]["GIT_OPTIONAL_LOCKS"] == "0"
+    assert "core.fsmonitor=false" in observed["status_args"]
+    assert "--no-optional-locks" in observed["status_args"]
+
+
+def test_git_status_fails_closed_before_unsafe_fsmonitor_versions(tmp_path: Path, monkeypatch):
+    import subprocess as subprocess_module
+    import wrench_harness.core as core
+
+    subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
+    calls = []
+
+    def old_git(args, **kwargs):
+        calls.append(args)
+        return subprocess_module.CompletedProcess(args, 0, "git version 2.35.1\n", "")
+
+    monkeypatch.setattr(core.subprocess, "run", old_git)
+    result = execute_proposal(proposal("git_read_status", repo_root="."), tmp_path)
+
+    assert result == {"status": "abstain", "fallback_reason": "git_version_unsupported"}
+    assert calls == [["git", "--version"]]
+
+
+def test_git_status_does_not_run_repository_fsmonitor_config(tmp_path: Path):
+    import shlex
+    import sys
+
+    subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
+    marker = tmp_path / "fsmonitor-ran.txt"
+    helper = tmp_path / "fsmonitor_helper.py"
+    helper.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('ran', encoding='utf-8')\n"
+        "print('token\\0', end='')\n",
+        encoding="utf-8",
+    )
+    command = f"{shlex.quote(sys.executable)} {shlex.quote(str(helper))}"
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "config", "core.fsmonitor", command],
+        check=True,
+    )
+
+    result = execute_proposal(proposal("git_read_status", repo_root="."), tmp_path)
+
+    assert result["status"] == "accepted"
+    assert not marker.exists()
+
+
+def test_git_status_overrides_repository_worktree_config(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet", str(repo)], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "user.email", "wrench@example.invalid"], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "user.name", "Wrench Test"], check=True)
+    (repo / "tracked.txt").write_text("present\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "tracked.txt"], check=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "--quiet", "-m", "baseline"], check=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    subprocess.run(
+        ["git", "-C", str(repo), "config", "core.worktree", str(outside)], check=True
+    )
+
+    result = execute_proposal(
+        proposal("git_read_status", repo_root="repo"), tmp_path
+    )
+
+    assert result["status"] == "accepted"
+    assert "D  tracked.txt" not in result["observation"]["output"]
 
 
 def test_health_and_patch_fail_closed(tmp_path: Path):
@@ -63,6 +524,27 @@ def test_health_and_patch_fail_closed(tmp_path: Path):
     target.write_text("old\n", encoding="utf-8")
     external = execute_proposal(proposal("health_read", url="https://example.com/health"), tmp_path)
     assert external["fallback_reason"] == "health_endpoint_not_allowlisted"
+
+    bool_timeout = execute_proposal(
+        proposal(
+            "health_read",
+            url="http://localhost:4000/health",
+            timeout_seconds=True,
+            max_bytes=4096,
+        ),
+        tmp_path,
+    )
+    bool_limit = execute_proposal(
+        proposal(
+            "health_read",
+            url="http://localhost:4000/health",
+            timeout_seconds=3,
+            max_bytes=True,
+        ),
+        tmp_path,
+    )
+    assert bool_timeout["fallback_reason"] == "invalid_health_request"
+    assert bool_limit["fallback_reason"] == "invalid_health_request"
 
     patch = execute_proposal(
         proposal(
@@ -399,6 +881,21 @@ def test_model_output_requires_exact_json_object(tmp_path: Path):
     for invalid, reason in (
         ("```json\n" + valid + "\n```", "model_output_invalid_json"),
         ("Here is the proposal: " + valid, "model_output_invalid_json"),
+        (
+            '{"schema":"wrench.proposal.v1","schema":"wrench.proposal.v1",'
+            '"action":"read_file","path":"README.md","max_bytes":4096}',
+            "model_output_invalid_json",
+        ),
+        (
+            '{"schema":"wrench.proposal.v1","action":"read_file",'
+            '"path":"README.md","path":"outside.txt","max_bytes":4096}',
+            "model_output_invalid_json",
+        ),
+        (
+            '{"schema":"wrench.proposal.v1","action":"read_file",'
+            '"path":"README.md","max_bytes":4096,"limits":{"max_bytes":1,"max_bytes":2}}',
+            "model_output_invalid_json",
+        ),
         ("[1, 2, 3]", "model_output_not_object"),
         ("not json", "model_output_invalid_json"),
     ):
@@ -434,12 +931,17 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):  # noqa: N802
             length = int(self.headers["Content-Length"])
-            json.loads(self.rfile.read(length))
+            request_body = self.rfile.read(length)
+            json.loads(request_body)
             payload = {
                 "model": "test-qwen",
                 "choices": [{"message": {"content": expected}}],
                 "usage": {"total_tokens": 9},
                 "wrench": {
+                    "request_id": "fixture-request-id",
+                    "client_workflow_id": self.headers["X-Wrench-Workflow-ID"],
+                    "client_attempt": int(self.headers["X-Wrench-Client-Attempt"]),
+                    "request_body_sha256": hashlib.sha256(request_body).hexdigest(),
                     "backend": "embedded-mechanical",
                     "mechanical_fast_path": True,
                     "model_calls": 0,
@@ -448,6 +950,7 @@ def test_local_qwen_adapter_is_allowlisted_and_parser_gated(tmp_path: Path):
             }
             encoded = json.dumps(payload).encode("utf-8")
             self.send_response(200)
+            self.send_header("X-Wrench-Request-ID", "fixture-request-id")
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(encoded)))
             self.end_headers()
@@ -558,7 +1061,10 @@ def test_local_qwen_adapter_preserves_destructive_intent(tmp_path: Path):
 
 def test_router_attempt_ceiling_circuit_bypass_and_hash_bound_reset():
     router = ProposalRouter(RouterConfig(max_attempts=2, failure_threshold=2))
-    rejected = lambda: {"status": "abstain", "fallback_reason": "model_output_invalid_json"}
+
+    def rejected():
+        return {"status": "abstain", "fallback_reason": "model_output_invalid_json"}
+
     first = router.run(rejected)
     second = router.run(rejected)
     assert first["status"] == "abstain"

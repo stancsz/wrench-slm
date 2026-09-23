@@ -5,6 +5,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 import ctypes
 from ctypes import wintypes
@@ -15,7 +16,7 @@ import pytest
 
 import tools.probe_paired_real_client_canary as canary
 import tools.windows_job_process as windows_job_process
-from tools.probe_paired_real_client_canary import _baseline_clients_correct, _canary_process_exit_code, _classify_canary_status, _classify_request_purpose, _client_for_timestamp, _compare_client_latencies, _effective_baseline_api_key, _LoopbackAccountingProxy, _probe_loopback_spend_logs, _usage_from_response, _validate_external_baseline_guard, load_workload
+from tools.probe_paired_real_client_canary import _baseline_clients_correct, _canary_process_exit_code, _classify_canary_status, _classify_request_purpose, _client_for_timestamp, _compare_client_latencies, _effective_baseline_api_key, _LoopbackAccountingProxy, _probe_loopback_spend_logs, _read_trace_jsonl, _trace_identity_accounting, _trace_token_accounting_complete, _usage_from_response, _validate_external_baseline_guard, load_workload
 
 
 def _test_cost_accounting_binding():
@@ -26,6 +27,26 @@ def _test_cost_accounting_binding():
         "export_endpoint": "https://provider.example/v1/costs",
         "export_path_reference": "test-only-export-path",
     }
+
+
+def _write_synthetic_test_workload(tmp_path):
+    """Create a local-only manifest for tests that exercise preflight guards."""
+    workload_path = tmp_path / "synthetic-test-workload.json"
+    workload_path.write_text(
+        json.dumps({
+            "schema": canary.WORKLOAD_SCHEMA,
+            "workload_id": "synthetic-preflight-test-only",
+            "authorization": "approved_real_workflow",
+            "test_fixture_only": True,
+            "cases": [{
+                "case_id": "synthetic-preflight-case",
+                "prompt": "Synthetic test prompt.",
+                "expected_observation": "Synthetic expected observation.",
+            }],
+        }),
+        encoding="utf-8",
+    )
+    return workload_path
 
 
 def _test_parent_route_allowance(*, endpoint, alias, provider_model):
@@ -340,6 +361,9 @@ def test_loopback_capture_records_reordered_title_purpose_and_client_without_tex
             }
         )
         calls = capture["calls"]
+        assert capture["snapshot_complete"] is True
+        assert capture["delivery_status_complete"] is True
+        assert all(call["downstream_write_status"] == "server_write_completed" for call in calls)
         assert [call["client_attribution"] for call in calls] == [
             "deepseek_harness",
             "opencode",
@@ -361,6 +385,69 @@ def test_loopback_capture_records_reordered_title_purpose_and_client_without_tex
         assert "PRIVATE_SESSION_TEXT_OPENCODE" not in serialized
         assert "Generate the session title" not in serialized
         assert "Generate a title for this conversation" not in serialized
+    finally:
+        proxy.stop()
+        upstream.shutdown()
+        upstream.server_close()
+        upstream_thread.join(timeout=5)
+
+
+def test_loopback_proxy_records_upstream_usage_once_when_client_write_fails():
+    class UpstreamHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            self.rfile.read(length)
+            body = json.dumps(
+                {
+                    "id": "once-only-request-id",
+                    "choices": [{"message": {"role": "assistant", "content": "ok"}}],
+                    "usage": {"prompt_tokens": 7, "completion_tokens": 2, "total_tokens": 9},
+                }
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("X-LiteLLM-Response-Cost", "0.125")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    class DisconnectingProxy(_LoopbackAccountingProxy):
+        def _send_downstream_response(self, handler, *, status, headers, body) -> None:
+            raise BrokenPipeError("deterministic downstream write failure")
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
+    upstream_thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    upstream_thread.start()
+    proxy = DisconnectingProxy(f"http://127.0.0.1:{upstream.server_port}/v1")
+    proxy.start()
+    request = urllib.request.Request(
+        f"{proxy.base_url}/chat/completions",
+        data=json.dumps(
+            {"model": "test-model", "messages": [{"role": "user", "content": "bounded test"}]}
+        ).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with pytest.raises((urllib.error.URLError, OSError)):
+            urllib.request.urlopen(request, timeout=5)
+        capture = proxy.snapshot()
+        assert capture["call_count"] == 1
+        assert capture["snapshot_complete"] is True
+        assert capture["request_ids_complete"] is True
+        assert capture["delivery_status_complete"] is True
+        assert capture["frontier_tokens"] == 9
+        assert capture["cost_usd"] == 0.125
+        event = capture["calls"][0]
+        assert event["status"] == 200
+        assert event["request_id"] == "once-only-request-id"
+        assert event["usage"]["total_tokens"] == 9
+        assert event["cost_usd"] == 0.125
+        assert event["downstream_write_status"] == "interrupted"
+        assert event["downstream_write_error_type"] == "BrokenPipeError"
     finally:
         proxy.stop()
         upstream.shutdown()
@@ -1461,7 +1548,7 @@ def test_zero_parent_budget_blocks_configured_baseline_before_output_or_network(
         encoding="utf-8",
     )
     monkeypatch.setattr(canary, "PARENT_CONTRACT_PATH", parent_path)
-    workload_path = canary.REPO_ROOT / "phases" / "phase-395-authorized-minimax-canary" / "workload.json"
+    workload_path = _write_synthetic_test_workload(tmp_path)
     workload = load_workload(workload_path)
     child_path = tmp_path / "child-contract.json"
     parent_contract_sha256 = canary.hashlib.sha256(parent_path.read_bytes()).hexdigest()
@@ -1509,7 +1596,7 @@ def test_zero_parent_budget_blocks_configured_baseline_before_output_or_network(
 
 def test_configured_baseline_fails_before_output_or_gateway_request_without_child_contract(tmp_path, monkeypatch):
     output = tmp_path / "new-output" / "receipt.json"
-    workload = canary.REPO_ROOT / "phases" / "phase-395-authorized-minimax-canary" / "workload.json"
+    workload = _write_synthetic_test_workload(tmp_path)
     monkeypatch.setattr(sys, "argv", [
         "probe_paired_real_client_canary.py",
         "--package-dir", str(tmp_path / "package"),
@@ -1537,12 +1624,7 @@ def test_child_contract_template_cannot_authorize_configured_baseline(tmp_path, 
         / "phase-439-openai-cost-export-compatibility"
         / "child-contract-v3.template.json"
     )
-    workload_path = (
-        canary.REPO_ROOT
-        / "phases"
-        / "phase-395-authorized-minimax-canary"
-        / "workload.json"
-    )
+    workload_path = _write_synthetic_test_workload(tmp_path)
     output = tmp_path / "blocked-template-output" / "receipt.json"
     monkeypatch.setattr(sys, "argv", [
         "probe_paired_real_client_canary.py",
@@ -1600,6 +1682,131 @@ def test_usage_capture_handles_json_and_streaming_responses():
         b'data: {"usage":{"prompt_tokens":8,"completion_tokens":2,"total_tokens":10}}\n\ndata: [DONE]\n\n',
         "text/event-stream",
     ) == {"prompt_tokens": 8, "completion_tokens": 2, "total_tokens": 10}
+
+
+@pytest.mark.parametrize(
+    "usage",
+    [
+        {"prompt_tokens": True, "completion_tokens": 1, "total_tokens": 2},
+        {"prompt_tokens": -1, "completion_tokens": 1, "total_tokens": 0},
+        {"prompt_tokens": 2, "completion_tokens": 1, "total_tokens": 4},
+        {"prompt_tokens": 2, "total_tokens": 2},
+    ],
+)
+def test_usage_capture_rejects_malformed_or_inconsistent_accounting(usage):
+    body = json.dumps({"usage": usage}).encode("utf-8")
+    assert _usage_from_response(body, "application/json") is None
+
+
+def test_trace_jsonl_malformed_or_non_object_rows_fail_closed(tmp_path):
+    path = tmp_path / "trace.jsonl"
+    valid_accounting_row = {
+        "request_id": "r1",
+        "client_workflow_id": "w1",
+        "client_attempt": 1,
+        "model_calls": 0,
+        "raw_input_tokens_estimate": 7,
+        "cost_accounting": {
+            "schema": "wrench.cost-accounting-receipt.v1",
+            "token_usage_complete": True,
+            "frontier_tokens": 0,
+            "local_model_tokens": 0,
+            "total_workflow_tokens": 0,
+            "repair_passes": 0,
+            "local_model_calls": 0,
+            "frontier_model_calls": 0,
+        },
+    }
+    path.write_text(json.dumps(valid_accounting_row) + "\nnot-json\n[]\n", encoding="utf-8")
+
+    rows, well_formed = _read_trace_jsonl(path)
+
+    assert rows == [valid_accounting_row]
+    assert well_formed is False
+    assert _trace_token_accounting_complete(rows, trace_jsonl_well_formed=well_formed) is False
+
+
+def test_trace_identity_requires_unique_request_and_present_attempt_ids():
+    valid = [
+        {"request_id": "r1", "client_workflow_id": "w1", "client_attempt": 1},
+        {"request_id": "r2", "client_workflow_id": "w1", "client_attempt": 2},
+    ]
+    assert _trace_identity_accounting(valid) == (True, True)
+    assert _trace_identity_accounting([valid[0], {**valid[1], "request_id": "r1"}]) == (False, True)
+    assert _trace_identity_accounting([{**valid[0], "request_id": " "}]) == (False, True)
+    assert _trace_identity_accounting([{**valid[0], "client_attempt": None}]) == (True, False)
+    assert _trace_identity_accounting([{**valid[0], "client_attempt": True}]) == (True, False)
+    assert _trace_identity_accounting([valid[0], {**valid[1], "client_attempt": 1}]) == (True, False)
+
+
+def test_run_hybrid_malformed_trace_fails_closed_without_losing_client_outcome(tmp_path, monkeypatch):
+    clients = {name: {"exit_code": 0} for name in ("opencode", "deepseek_harness", "claude_code")}
+    (tmp_path / "receipt.json").write_text(json.dumps({"status": "PASSED", "clients": clients}))
+    for filename in ("opencode.stdout.txt", "dsh.stdout.txt", "claude.stdout.txt"):
+        (tmp_path / filename).write_text("The first heading is # Wrench SLM.", encoding="utf-8")
+    (tmp_path / "wrench-client.trace.jsonl").write_text(
+        '{"raw_input_tokens_estimate":7}\nnot-json\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(canary.shutil, "which", lambda _: "powershell.exe")
+    monkeypatch.setattr(canary, "_run_bounded_subprocess", lambda *args, **kwargs: {
+        "exit_code": 0, "timed_out": False, "timeout_seconds": 180,
+        "elapsed_ms": 2, "stdout": "", "stderr": "",
+    })
+
+    result = canary._run_hybrid(tmp_path, tmp_path, 29120, prompt=canary.PROMPT, expected=canary.EXPECTED)
+
+    assert result["correct"] is True
+    assert result["accounting"]["trace_jsonl_well_formed"] is False
+    assert result["accounting"]["token_accounting_complete"] is False
+    assert result["accounting"]["frontier_tokens"] is None
+    assert result["accounting"]["local_model_tokens"] is None
+    assert result["accounting"]["local_input_tokens_estimate"] is None
+    assert result["accounting"]["accounting_complete"] is False
+
+
+@pytest.mark.parametrize("cost_header", ["nan", "inf", "-0.01", "invalid"])
+def test_gateway_cost_capture_rejects_nonfinite_negative_or_invalid_values(cost_header):
+    class UpstreamHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers.get("Content-Length", "0"))
+            self.rfile.read(length)
+            body = json.dumps({
+                "id": "request-1",
+                "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+            }).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("x-litellm-response-cost", cost_header)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
+    upstream_thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    upstream_thread.start()
+    proxy = _LoopbackAccountingProxy(f"http://127.0.0.1:{upstream.server_port}/v1")
+    proxy.start()
+    try:
+        request = urllib.request.Request(
+            f"{proxy.base_url}/chat/completions",
+            data=b'{"model":"test","messages":[]}',
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5):
+            pass
+        capture = proxy.snapshot()
+        assert capture["calls"][0]["cost_usd"] is None
+        assert capture["costs_complete"] is False
+        assert capture["accounting_complete"] is False
+    finally:
+        proxy.stop()
+        upstream.shutdown()
+        upstream.server_close()
+        upstream_thread.join(timeout=5)
 
 
 def test_default_canary_workload_is_hash_bound():

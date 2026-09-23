@@ -19,6 +19,14 @@ evidence, effective working context, retrieval source, staging latency, model
 calls, fallback, and verifier results. Context-management overhead belongs in
 the paired workflow accounting.
 
+For model-local HTTP requests, the client hashes the exact serialized request
+body and the server hashes the bytes it reads. Before consuming a proposal or
+attributing cost, the client checks the echoed body hash, workflow ID, attempt,
+model identity, and a unique request ID consistently present in the response
+JSON, HTTP header, and nested cost receipt. This binds receipts to a request
+within the configured endpoint trust boundary. It does not authenticate the
+server or protect against a malicious endpoint that can fabricate receipts.
+
 ## Required serving shape
 
 ```text

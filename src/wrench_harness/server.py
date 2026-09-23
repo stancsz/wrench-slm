@@ -35,6 +35,8 @@ from .worker import WrenchWorker, _dynamic_prefill_messages
 
 MAX_INPUT_CONTEXT_TOKENS = 4_000_000
 MAX_FINAL_ANSWER_CHARS = 16_384
+ISSUED_TOOL_CALL_TTL_SECONDS = 900.0
+MAX_ISSUED_TOOL_CALLS = 2_048
 TEST_ROUTER_TERMINATE_GRACE_SECONDS = 0.25
 READ_ONLY_TOOL_NAME_MARKERS = {
     "read",
@@ -228,6 +230,147 @@ def _build_read_tool_call(request: dict[str, Any], result: dict[str, Any]) -> di
     }
 
 
+def _validated_local_model_usage(value: object) -> tuple[int, int, int, str] | None:
+    if not isinstance(value, dict) or value.get("schema") != "wrench.local-model-usage-receipt.v1":
+        return None
+    attempts = value.get("attempts")
+    attempt_count = value.get("attempt_count")
+    prompt_total = 0
+    completion_total = 0
+    if (
+        not isinstance(attempts, list)
+        or not isinstance(attempt_count, int)
+        or isinstance(attempt_count, bool)
+        or attempt_count != len(attempts)
+    ):
+        return None
+    for field in (
+        "prompt_tokens_observed",
+        "completion_tokens_observed",
+        "unknown_completion_attempts",
+    ):
+        count = value.get(field)
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            return None
+    for index, attempt in enumerate(attempts, start=1):
+        if not isinstance(attempt, dict):
+            return None
+        attempt_number = attempt.get("attempt")
+        prompt = attempt.get("prompt_tokens")
+        completion = attempt.get("completion_tokens")
+        if (
+            not isinstance(attempt_number, int)
+            or isinstance(attempt_number, bool)
+            or attempt_number != index
+            or not isinstance(prompt, int)
+            or isinstance(prompt, bool)
+            or prompt < 0
+            or not isinstance(completion, int)
+            or isinstance(completion, bool)
+            or completion < 0
+        ):
+            return None
+        prompt_total += prompt
+        completion_total += completion
+    total = value.get("total_tokens")
+    source = value.get("source")
+    if (
+        value.get("prompt_tokens") != prompt_total
+        or value.get("completion_tokens") != completion_total
+        or not isinstance(total, int)
+        or isinstance(total, bool)
+        or total != prompt_total + completion_total
+        or not isinstance(source, str)
+        or not source
+    ):
+        return None
+    return prompt_total, completion_total, total, source
+
+
+def _validated_partial_local_model_usage(value: object) -> dict[str, Any] | None:
+    """Validate known per-attempt counts without inventing failed output usage."""
+
+    if (
+        not isinstance(value, dict)
+        or value.get("schema") != "wrench.local-model-usage-partial.v1"
+        or value.get("usage_complete") is not False
+        or value.get("total_tokens") is not None
+    ):
+        return None
+    attempts = value.get("attempts")
+    attempt_count = value.get("attempt_count")
+    if (
+        not isinstance(attempts, list)
+        or not 1 <= len(attempts) <= 2
+        or not isinstance(attempt_count, int)
+        or isinstance(attempt_count, bool)
+        or attempt_count != len(attempts)
+    ):
+        return None
+    prompt_total = 0
+    completion_total = 0
+    incomplete = 0
+    sanitized_attempts: list[dict[str, Any]] = []
+    for index, attempt in enumerate(attempts, start=1):
+        if not isinstance(attempt, dict):
+            return None
+        number = attempt.get("attempt")
+        prompt = attempt.get("prompt_tokens")
+        completion = attempt.get("completion_tokens")
+        outcome = attempt.get("outcome")
+        if (
+            not isinstance(number, int)
+            or isinstance(number, bool)
+            or number != index
+            or not isinstance(prompt, int)
+            or isinstance(prompt, bool)
+            or prompt < 0
+        ):
+            return None
+        sanitized = {"attempt": number, "prompt_tokens": prompt, "outcome": outcome}
+        if outcome == "complete":
+            if (
+                not isinstance(completion, int)
+                or isinstance(completion, bool)
+                or completion < 0
+            ):
+                return None
+            completion_total += completion
+            sanitized["completion_tokens"] = completion
+        elif outcome == "generation_failed":
+            error_type = attempt.get("error_type")
+            if completion is not None or not isinstance(error_type, str) or not error_type or len(error_type) > 128:
+                return None
+            incomplete += 1
+            sanitized["completion_tokens"] = None
+            sanitized["error_type"] = error_type
+        else:
+            return None
+        prompt_total += prompt
+        sanitized_attempts.append(sanitized)
+    source = value.get("source")
+    if (
+        incomplete < 1
+        or value.get("prompt_tokens_observed") != prompt_total
+        or value.get("completion_tokens_observed") != completion_total
+        or value.get("unknown_completion_attempts") != incomplete
+        or not isinstance(source, str)
+        or not source
+    ):
+        return None
+    return {
+        "schema": "wrench.local-model-usage-partial.v1",
+        "attempt_count": attempt_count,
+        "attempts": sanitized_attempts,
+        "prompt_tokens_observed": prompt_total,
+        "completion_tokens_observed": completion_total,
+        "unknown_completion_attempts": incomplete,
+        "total_tokens": None,
+        "usage_complete": False,
+        "source": source,
+    }
+
+
 def _cost_accounting_receipt(
     result: dict[str, Any],
     *,
@@ -238,12 +381,50 @@ def _cost_accounting_receipt(
     """Expose token-flow facts without pretending they are dollar costs."""
 
     model_calls = result.get("model_calls", 0)
-    model_calls = model_calls if isinstance(model_calls, int) and model_calls >= 0 else 0
+    model_calls = (
+        model_calls
+        if isinstance(model_calls, int) and not isinstance(model_calls, bool) and model_calls >= 0
+        else 0
+    )
     frontier_usage = result.get("frontier_usage")
     has_frontier_usage = isinstance(frontier_usage, dict)
+    local_usage = result.get("local_model_usage")
+    validated_local_usage = _validated_local_model_usage(local_usage)
+    partial_local_usage = _validated_partial_local_model_usage(
+        result.get("local_model_usage_partial")
+    )
+    explicit_local_calls = result.get("local_model_calls")
+    if isinstance(explicit_local_calls, int) and not isinstance(explicit_local_calls, bool) and explicit_local_calls >= 0:
+        local_model_calls = explicit_local_calls
+    elif validated_local_usage is not None:
+        local_model_calls = len(local_usage["attempts"])
+    else:
+        local_model_calls = 0 if has_frontier_usage else model_calls
+    local_usage_count = (
+        local_usage.get("attempt_count") if isinstance(local_usage, dict) else None
+    )
+    if validated_local_usage is not None and local_usage_count != local_model_calls:
+        validated_local_usage = None
+    if partial_local_usage is not None and partial_local_usage["attempt_count"] != local_model_calls:
+        partial_local_usage = None
+    explicit_frontier_calls = result.get("frontier_model_calls")
+    if isinstance(explicit_frontier_calls, int) and not isinstance(explicit_frontier_calls, bool) and explicit_frontier_calls >= 0:
+        frontier_model_calls = explicit_frontier_calls
+    elif has_frontier_usage:
+        frontier_model_calls = frontier_usage.get("attempt_count", model_calls)
+        if not isinstance(frontier_model_calls, int) or isinstance(frontier_model_calls, bool) or frontier_model_calls < 0:
+            frontier_model_calls = model_calls
+    else:
+        frontier_model_calls = 0
     dynamic_prefill = result.get("dynamic_prefill")
     model_prompt_tokens = 0
-    if model_calls and not has_frontier_usage:
+    model_completion_tokens = 0
+    if validated_local_usage is not None:
+        model_prompt_tokens, model_completion_tokens = validated_local_usage[:2]
+    elif partial_local_usage is not None:
+        model_prompt_tokens = partial_local_usage["prompt_tokens_observed"]
+        model_completion_tokens = partial_local_usage["completion_tokens_observed"]
+    elif local_model_calls and not has_frontier_usage:
         if isinstance(dynamic_prefill, dict):
             native_prompt = dynamic_prefill.get("native_backend_prompt_tokens")
             staged_prompt = dynamic_prefill.get("model_prefill_token_count")
@@ -253,8 +434,8 @@ def _cost_accounting_receipt(
                 model_prompt_tokens = staged_prompt
         if model_prompt_tokens == 0:
             model_prompt_tokens = raw_tokens
-    model_completion_tokens = completion_tokens if model_calls and not has_frontier_usage else 0
-    frontier_tokens = 0
+        model_completion_tokens = completion_tokens
+    frontier_tokens: int | None = 0
     frontier_prompt_tokens = 0
     frontier_completion_tokens = 0
     frontier_cost = None
@@ -268,25 +449,111 @@ def _cost_accounting_receipt(
         total = frontier_usage.get("total_tokens")
         if isinstance(total, int) and total >= 0:
             frontier_tokens = total
+        else:
+            frontier_tokens = None
         cost = frontier_usage.get("cost")
         if isinstance(cost, (int, float)) and not isinstance(cost, bool):
             frontier_cost = float(cost)
+    frontier_usage_count = frontier_usage.get("attempt_count", 0) if has_frontier_usage else 0
+    if (
+        not isinstance(frontier_usage_count, int)
+        or isinstance(frontier_usage_count, bool)
+        or frontier_usage_count < 0
+    ):
+        frontier_usage_count = 0
+    frontier_usage_count_matches_calls = frontier_usage_count == frontier_model_calls
+    frontier_usage_missing_calls = max(0, frontier_model_calls - frontier_usage_count)
+    frontier_usage_incomplete_attempts = (
+        frontier_usage.get("usage_incomplete_attempts", 0) if has_frontier_usage else 0
+    )
+    if (
+        not isinstance(frontier_usage_incomplete_attempts, int)
+        or isinstance(frontier_usage_incomplete_attempts, bool)
+        or frontier_usage_incomplete_attempts < 0
+    ):
+        frontier_usage_incomplete_attempts = frontier_usage_count
+    local_repairs = result.get("local_repair_pass_count")
+    if not isinstance(local_repairs, int) or isinstance(local_repairs, bool) or local_repairs < 0:
+        local_repairs = result.get("repair_pass_count", 0) if not has_frontier_usage else 0
+    if not isinstance(local_repairs, int) or isinstance(local_repairs, bool) or local_repairs < 0:
+        local_repairs = 0
+    frontier_repairs = result.get("frontier_repair_pass_count")
+    if not isinstance(frontier_repairs, int) or isinstance(frontier_repairs, bool) or frontier_repairs < 0:
+        frontier_repairs = max(0, frontier_model_calls - 1) if has_frontier_usage else 0
+    local_model_tokens = (
+        None
+        if partial_local_usage is not None
+        else model_prompt_tokens + model_completion_tokens
+    )
+    first_local_prompt_tokens = None
+    if validated_local_usage is not None and local_usage.get("attempts"):
+        first_local_prompt_tokens = local_usage["attempts"][0].get("prompt_tokens")
+    elif partial_local_usage is not None and partial_local_usage.get("attempts"):
+        first_local_prompt_tokens = partial_local_usage["attempts"][0].get("prompt_tokens")
+    input_tokens_not_sent_to_model = (
+        max(0, raw_tokens - first_local_prompt_tokens)
+        if isinstance(first_local_prompt_tokens, int)
+        and not isinstance(first_local_prompt_tokens, bool)
+        else (raw_tokens if local_model_calls == 0 else None)
+    )
     receipt = {
         "schema": "wrench.cost-accounting-receipt.v1",
         "raw_input_tokens": raw_tokens,
         "model_prompt_tokens": model_prompt_tokens,
         "model_completion_tokens": model_completion_tokens,
-        "local_model_tokens": model_prompt_tokens + model_completion_tokens,
-        "input_tokens_not_sent_to_model": max(0, raw_tokens - model_prompt_tokens),
+        "local_model_prompt_tokens_observed": model_prompt_tokens,
+        "local_model_completion_tokens_observed": model_completion_tokens,
+        "local_model_tokens": local_model_tokens,
+        "input_tokens_not_sent_to_model": input_tokens_not_sent_to_model,
         "model_calls": model_calls,
-        "local_model_calls": 0 if has_frontier_usage else model_calls,
-        "repair_passes": result.get("repair_pass_count", 0),
+        "local_model_calls": local_model_calls,
+        "frontier_model_calls": frontier_model_calls,
+        "local_usage_available": validated_local_usage is not None,
+        "local_usage_missing_calls": (
+            local_model_calls if local_model_calls and validated_local_usage is None else 0
+        ),
+        "local_usage_incomplete_attempts": (
+            partial_local_usage["unknown_completion_attempts"]
+            if partial_local_usage is not None
+            else 0
+        ),
+        "local_usage_partial": partial_local_usage,
+        "frontier_usage_missing_calls": frontier_usage_missing_calls,
+        "frontier_usage_incomplete_attempts": frontier_usage_incomplete_attempts,
+        "frontier_cost_incomplete_attempts": (
+            frontier_usage.get("cost_incomplete_attempts", 0)
+            if has_frontier_usage
+            and isinstance(frontier_usage.get("cost_incomplete_attempts", 0), int)
+            and not isinstance(frontier_usage.get("cost_incomplete_attempts", 0), bool)
+            and frontier_usage.get("cost_incomplete_attempts", 0) >= 0
+            else None
+        ),
+        "local_usage_source": (
+            validated_local_usage[3]
+            if validated_local_usage is not None
+            else (
+                partial_local_usage["source"]
+                if partial_local_usage is not None
+                else ("estimated_fallback" if local_model_calls and not has_frontier_usage else None)
+            )
+        ),
+        "repair_passes": local_repairs + frontier_repairs,
+        "local_repair_passes": local_repairs,
+        "frontier_repair_passes": frontier_repairs,
         "frontier_tokens": frontier_tokens,
         "frontier_prompt_tokens": frontier_prompt_tokens,
         "frontier_completion_tokens": frontier_completion_tokens,
         "frontier_cost_usd": frontier_cost,
         "total_workflow_tokens": (
-            model_prompt_tokens + model_completion_tokens + frontier_tokens
+            local_model_tokens + frontier_tokens
+            if isinstance(local_model_tokens, int) and isinstance(frontier_tokens, int)
+            else None
+        ),
+        "token_usage_complete": (
+            (local_model_calls == 0 or validated_local_usage is not None)
+            and frontier_usage_count_matches_calls
+            and frontier_usage_missing_calls == 0
+            and frontier_usage_incomplete_attempts == 0
         ),
         "mechanical_fast_path": bool(result.get("mechanical_fast_path", False)),
         "total_local_elapsed_ms": round(elapsed_ms, 3),
@@ -510,12 +777,15 @@ def _normalize_anthropic_messages(request: dict[str, Any]) -> list[dict[str, Any
                     name = block.get("name")
                     call_id = block.get("id")
                     if isinstance(name, str) and isinstance(call_id, str):
-                        tool_calls.append(
-                            {
-                                "id": call_id,
-                                "function": {"name": name},
-                            }
-                        )
+                        function: dict[str, Any] = {"name": name}
+                        arguments = block.get("input")
+                        if isinstance(arguments, dict):
+                            function["arguments"] = json.dumps(
+                                arguments,
+                                ensure_ascii=False,
+                                separators=(",", ":"),
+                            )
+                        tool_calls.append({"id": call_id, "function": function})
                 if tool_calls:
                     normalized["tool_calls"] = tool_calls
             messages.append(normalized)
@@ -578,6 +848,7 @@ def _anthropic_response(
             "model_calls": result.get("model_calls", 0),
             "repair_pass_count": result.get("repair_pass_count", 0),
             "context_gate": result.get("context_gate"),
+            "dynamic_prefill": result.get("dynamic_prefill"),
             "advisor_handoff": result.get("advisor_handoff"),
             "upstream_attempts": result.get("upstream_attempts"),
             "frontier_usage": result.get("frontier_usage"),
@@ -784,6 +1055,8 @@ def _forward_upstream(
         _upstream_payload(request, path=path, messages_override=messages_override),
         ensure_ascii=False,
     ).encode("utf-8")
+    if response_metadata is not None:
+        response_metadata["request_body_sha256"] = hashlib.sha256(body).hexdigest()
     upstream_request = urllib_request.Request(
         upstream_url,
         data=body,
@@ -821,30 +1094,63 @@ def _frontier_usage_receipt(usages: list[dict[str, Any]]) -> dict[str, Any]:
     total_tokens = 0
     cost = 0.0
     cost_seen = False
+    usage_incomplete_attempts = 0
+    cost_incomplete_attempts = 0
     for usage in usages:
         if not isinstance(usage, dict):
+            usage_incomplete_attempts += 1
+            cost_incomplete_attempts += 1
             continue
         prompt = usage.get("prompt_tokens")
         completion = usage.get("completion_tokens")
         total = usage.get("total_tokens")
-        if isinstance(prompt, int) and not isinstance(prompt, bool):
+        prompt_valid = isinstance(prompt, int) and not isinstance(prompt, bool) and prompt >= 0
+        completion_valid = (
+            isinstance(completion, int)
+            and not isinstance(completion, bool)
+            and completion >= 0
+        )
+        total_valid = (
+            isinstance(total, int) and not isinstance(total, bool) and total >= 0
+        )
+        token_usage_valid = (
+            prompt_valid
+            and completion_valid
+            and (
+                total is None
+                or (total_valid and total == prompt + completion)
+            )
+        )
+        if prompt_valid:
             prompt_tokens += prompt
-        if isinstance(completion, int) and not isinstance(completion, bool):
+        if completion_valid:
             completion_tokens += completion
-        if isinstance(total, int) and not isinstance(total, bool):
+        if total_valid:
             total_tokens += total
-        elif isinstance(prompt, int) and isinstance(completion, int):
+        elif prompt_valid and completion_valid:
             total_tokens += prompt + completion
+        if not token_usage_valid:
+            usage_incomplete_attempts += 1
         value = usage.get("cost")
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(float(value))
+            and value >= 0
+        ):
             cost += float(value)
             cost_seen = True
+        else:
+            cost_incomplete_attempts += 1
     receipt: dict[str, Any] = {
         "schema": "wrench.frontier-usage-receipt.v1",
         "attempt_count": len(usages),
+        "usage_incomplete_attempts": usage_incomplete_attempts,
+        "cost_incomplete_attempts": cost_incomplete_attempts,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "total_tokens": total_tokens,
+        "total_tokens": total_tokens if usage_incomplete_attempts == 0 else None,
+        "token_usage_complete": usage_incomplete_attempts == 0,
     }
     if cost_seen:
         receipt["cost"] = round(cost, 10)
@@ -980,6 +1286,74 @@ def _latest_verified_tool_result(messages: list[dict[str, Any]]) -> dict[str, st
     return None
 
 
+def _has_trailing_tool_result(messages: list[dict[str, Any]]) -> bool:
+    for candidate in reversed(messages):
+        if not isinstance(candidate, dict):
+            continue
+        if candidate.get("role") == "user":
+            return False
+        if candidate.get("role") == "tool":
+            return True
+        content = candidate.get("content")
+        if isinstance(content, list) and any(
+            isinstance(block, dict) and block.get("type") == "tool_result"
+            for block in content
+        ):
+            return True
+        if candidate.get("role") == "assistant":
+            return False
+    return False
+
+
+def _tool_call_identity(call: Any) -> tuple[str, str] | None:
+    if not isinstance(call, dict):
+        return None
+    function = call.get("function")
+    if not isinstance(function, dict) or not isinstance(function.get("name"), str):
+        return None
+    raw_arguments = function.get("arguments", "{}")
+    if isinstance(raw_arguments, str):
+        try:
+            arguments = json.loads(
+                raw_arguments,
+                object_pairs_hook=_json_object_without_duplicate_keys,
+            )
+        except (json.JSONDecodeError, ValueError):
+            return None
+    else:
+        arguments = raw_arguments
+    if not isinstance(arguments, dict):
+        return None
+    return (
+        function["name"].casefold(),
+        json.dumps(arguments, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+    )
+
+
+def _json_object_without_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate_json_object_key")
+        result[key] = value
+    return result
+
+
+def _tool_call_identity_from_history(
+    messages: list[dict[str, Any]], call_id: str
+) -> tuple[str, str] | None:
+    for message in messages:
+        if not isinstance(message, dict) or message.get("role") != "assistant":
+            continue
+        calls = message.get("tool_calls")
+        if not isinstance(calls, list):
+            continue
+        for call in calls:
+            if isinstance(call, dict) and call.get("id") == call_id:
+                return _tool_call_identity(call)
+    return None
+
+
 def _add_bounded_final_answer_instruction(
     messages: list[dict[str, Any]],
     *,
@@ -1035,7 +1409,32 @@ def _parse_final_answer_output(
     }
 
 
-def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | None:
+def _consume_issued_tool_result(
+    messages: list[dict[str, Any]],
+    *,
+    issued_tool_call_validator: Callable[[str, str, str, str], bool] | None,
+) -> dict[str, str] | None:
+    if issued_tool_call_validator is None:
+        return None
+    verified_result = _latest_verified_tool_result(messages)
+    if verified_result is None:
+        return None
+    identity = _tool_call_identity_from_history(messages, verified_result["call_id"])
+    latest_user = _latest_user_prompt(messages)
+    intent_hash = hashlib.sha256(latest_user.encode("utf-8")).hexdigest()
+    if identity is None or not issued_tool_call_validator(
+        verified_result["call_id"], identity[0], identity[1], intent_hash
+    ):
+        return None
+    return verified_result
+
+
+def _tool_settlement_result(
+    messages: list[dict[str, Any]],
+    *,
+    verified_tool_result: dict[str, str] | None = None,
+    issued_tool_call_validator: Callable[[str, str, str, str], bool] | None = None,
+) -> dict[str, Any] | None:
     """Turn a completed client-side read tool call into one final assistant turn.
 
     OpenCode and similar clients send the tool result back to the model after
@@ -1045,30 +1444,13 @@ def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | 
     does not execute, reinterpret, or authorize the returned tool content.
     """
 
-    if not messages:
+    verified_result = verified_tool_result or _consume_issued_tool_result(
+        messages,
+        issued_tool_call_validator=issued_tool_call_validator,
+    )
+    if verified_result is None:
         return None
-    latest: dict[str, Any] | None = None
-    for candidate in reversed(messages):
-        if not isinstance(candidate, dict):
-            continue
-        content = candidate.get("content")
-        is_tool_message = candidate.get("role") == "tool"
-        if isinstance(content, list):
-            is_tool_message = is_tool_message or any(
-                isinstance(block, dict) and block.get("type") == "tool_result"
-                for block in content
-            )
-        if is_tool_message:
-            latest = candidate
-            break
-        # A new ordinary user turn after an earlier tool result starts a new
-        # request and must not be settled from stale tool output.
-        if candidate.get("role") == "user":
-            return None
-    if latest is None:
-        return None
-    content = latest.get("content")
-    bounded = _bounded_tool_result(content)
+    bounded = verified_result["text"]
     return {
         "status": "accepted",
         "backend": "embedded-mechanical-settlement",
@@ -1076,8 +1458,9 @@ def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | 
         "model_calls": 0,
         "repair_pass_count": 0,
         "raw_model_output": (
-            "Wrench completed the requested read-only tool call. "
-            "The client tool result is authoritative.\n\n"
+            "Client-reported result for the single-use Wrench-issued read-only call. "
+            "Wrench verifies call provenance and matching intent, but does not independently "
+            "attest to client execution.\n\n"
             f"Tool result:\n{bounded}"
         ),
         "context_gate": {"mode": "tool_settlement", "tool_result_chars": len(bounded)},
@@ -1162,6 +1545,12 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
         body = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        wrench = payload.get("wrench")
+        request_id = payload.get("request_id")
+        if not isinstance(request_id, str) and isinstance(wrench, dict):
+            request_id = wrench.get("request_id")
+        if isinstance(request_id, str) and request_id:
+            self.send_header("X-Wrench-Request-ID", request_id)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1183,6 +1572,30 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _send_traced_response(
+        self,
+        trace_event: dict[str, Any],
+        write_response: Callable[[], None],
+        *,
+        response_http_status: int,
+    ) -> None:
+        """Persist compute and server-side write outcomes once per request."""
+
+        try:
+            write_response()
+            self.wfile.flush()
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError) as exc:
+            trace_event["response_write_status"] = "server_write_interrupted"
+            trace_event["response_write_error_type"] = type(exc).__name__
+        except Exception as exc:  # noqa: BLE001
+            trace_event["response_write_status"] = "server_write_error"
+            trace_event["response_write_error_type"] = type(exc).__name__
+        else:
+            # A completed local write does not prove client receipt or use.
+            trace_event["response_write_status"] = "server_write_completed"
+        trace_event["response_http_status"] = response_http_status
+        self._server().record_trace(trace_event)
 
     def do_GET(self) -> None:  # noqa: N802
         server = self._server()
@@ -1292,11 +1705,35 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
         if route not in {"/v1/chat/completions", "/v1/messages", "/api/chat", "/api/generate"}:
             self._send_json(404, {"error": {"message": "not_found", "type": "invalid_request_error"}})
             return
+        request_id = uuid.uuid4().hex
+        supplied_workflow_id = self.headers.get("X-Wrench-Workflow-ID", "")
+        workflow_id = (
+            supplied_workflow_id
+            if 1 <= len(supplied_workflow_id) <= 128
+            and supplied_workflow_id.isascii()
+            and all(char.isalnum() or char in "-_" for char in supplied_workflow_id)
+            else request_id
+        )
+        supplied_attempt = self.headers.get("X-Wrench-Client-Attempt", "")
+        client_attempt = (
+            int(supplied_attempt)
+            if supplied_attempt.isdecimal() and len(supplied_attempt) <= 2 and 1 <= int(supplied_attempt) <= 16
+            else None
+        )
+        result: dict[str, Any] | None = None
+        request_body_sha256: str | None = None
+        trace_event: dict[str, Any] | None = None
+        upstream_attempts: list[dict[str, Any]] = []
+        upstream_usages: list[dict[str, Any]] = []
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if length < 1 or length > server.max_request_bytes:
                 raise ValueError("request_body_too_large_or_empty")
-            request = json.loads(self.rfile.read(length).decode("utf-8"))
+            raw_request_body = self.rfile.read(length)
+            if len(raw_request_body) != length:
+                raise ValueError("request_body_length_mismatch")
+            request_body_sha256 = hashlib.sha256(raw_request_body).hexdigest()
+            request = json.loads(raw_request_body.decode("utf-8"))
             if route == "/api/generate":
                 prompt = request.get("prompt")
                 if not isinstance(prompt, str):
@@ -1330,10 +1767,19 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 raise ValueError("input_context_exceeds_4000000_token_limit")
             started = time.perf_counter()
             title_result = _deterministic_title_result(messages) if server.use_mechanical_route else None
+            trailing_tool_result = _has_trailing_tool_result(messages)
+            verified_client_tool_result = (
+                _consume_issued_tool_result(
+                    messages,
+                    issued_tool_call_validator=server.consume_issued_tool_call,
+                )
+                if trailing_tool_result
+                else None
+            )
             settlement = (
                 None
                 if title_result is not None or not server.use_mechanical_route
-                else _tool_settlement_result(messages)
+                else _tool_settlement_result(messages, verified_tool_result=verified_client_tool_result)
             )
             if server.test_only_proposal_router is not None:
                 result = server.run_test_only_proposal()
@@ -1341,6 +1787,14 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 result = title_result
             elif settlement is not None:
                 result = settlement
+            elif trailing_tool_result and verified_client_tool_result is None:
+                result = {
+                    "status": "abstain",
+                    "fallback_reason": "tool_settlement_provenance_missing",
+                    "backend": "embedded-mechanical",
+                    "mechanical_fast_path": True,
+                    "model_calls": 0,
+                }
             else:
                 # Mechanical-only and native-upstream package modes keep the
                 # Transformers model unloaded. Their bounded parser, verifier,
@@ -1392,61 +1846,88 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         upstream_messages = (
                             staged_messages if prefill_receipt is not None else messages
                         )
-                        verified_tool_result = _latest_verified_tool_result(messages)
+                        verified_tool_result = verified_client_tool_result
                         final_answer_round = verified_tool_result is not None
                         if final_answer_round:
                             upstream_messages = _add_bounded_final_answer_instruction(
                                 upstream_messages,
                                 tool_result_sha256=verified_tool_result["sha256"],
                             )
-                        upstream_attempts: list[dict[str, Any]] = []
-                        upstream_usages: list[dict[str, Any]] = []
                         verified: dict[str, Any] = {}
                         upstream_output = ""
                         max_attempts = 1 if final_answer_round else 2
                         for attempt_index in range(max_attempts):
                             upstream_metadata: dict[str, Any] = {}
-                            upstream_output = _forward_upstream(
-                                server.upstream_url,
-                                request,
-                                path=route,
-                                timeout_seconds=server.upstream_timeout_seconds,
-                                messages_override=upstream_messages,
-                                response_metadata=upstream_metadata,
-                            )
+                            try:
+                                upstream_output = _forward_upstream(
+                                    server.upstream_url,
+                                    request,
+                                    path=route,
+                                    timeout_seconds=server.upstream_timeout_seconds,
+                                    messages_override=upstream_messages,
+                                    response_metadata=upstream_metadata,
+                                )
+                            except Exception as exc:
+                                upstream_attempts.append(
+                                    {
+                                        "attempt": attempt_index + 1,
+                                        "status": "upstream_attempt_error",
+                                        "error_type": type(exc).__name__,
+                                        "request_body_sha256": upstream_metadata.get(
+                                            "request_body_sha256"
+                                        ),
+                                        "frontier_round": 2 if final_answer_round else 1,
+                                        "final_answer": final_answer_round,
+                                    }
+                                )
+                                raise
                             usage = upstream_metadata.get("usage")
                             if isinstance(usage, dict):
                                 upstream_usages.append(usage)
-                            if final_answer_round:
-                                verified = _parse_final_answer_output(
-                                    upstream_output,
-                                    tool_result_sha256=verified_tool_result["sha256"],
+                            upstream_attempt = {
+                                "attempt": attempt_index + 1,
+                                "status": "response_received",
+                                "usage": usage if isinstance(usage, dict) else {},
+                                "request_body_sha256": upstream_metadata.get("request_body_sha256"),
+                                "frontier_round": 2 if final_answer_round else 1,
+                                "final_answer": final_answer_round,
+                            }
+                            upstream_attempts.append(upstream_attempt)
+                            try:
+                                if final_answer_round:
+                                    verified = _parse_final_answer_output(
+                                        upstream_output,
+                                        tool_result_sha256=verified_tool_result["sha256"],
+                                    )
+                                else:
+                                    verified = execute_model_output(
+                                        upstream_output,
+                                        server.worker.allowed_root,
+                                        request_prompt=_bounded_verification_prompt(messages),
+                                    )
+                                if verified.get("status") == "accepted" and not final_answer_round:
+                                    try:
+                                        upstream_proposal = json.loads(upstream_output)
+                                    except json.JSONDecodeError:
+                                        upstream_proposal = None
+                                    verified = enforce_ttc(
+                                        upstream_proposal,
+                                        _bounded_verification_prompt(messages),
+                                        verified,
+                                        context_pressure=prefill_receipt is not None,
+                                    )
+                            except Exception as exc:
+                                upstream_attempt.update(
+                                    {
+                                        "status": "verification_error",
+                                        "error_type": type(exc).__name__,
+                                    }
                                 )
-                            else:
-                                verified = execute_model_output(
-                                    upstream_output,
-                                    server.worker.allowed_root,
-                                    request_prompt=_bounded_verification_prompt(messages),
-                                )
-                            if verified.get("status") == "accepted" and not final_answer_round:
-                                try:
-                                    upstream_proposal = json.loads(upstream_output)
-                                except json.JSONDecodeError:
-                                    upstream_proposal = None
-                                verified = enforce_ttc(
-                                    upstream_proposal,
-                                    _bounded_verification_prompt(messages),
-                                    verified,
-                                    context_pressure=prefill_receipt is not None,
-                                )
-                            upstream_attempts.append(
+                                raise
+                            upstream_attempt.update(
                                 {
-                                    "attempt": attempt_index + 1,
                                     "status": verified.get("status"),
                                     "fallback_reason": verified.get("fallback_reason"),
-                                    "usage": usage if isinstance(usage, dict) else {},
-                                    "frontier_round": 2 if final_answer_round else 1,
-                                    "final_answer": final_answer_round,
                                 }
                             )
                             retryable = (
@@ -1461,6 +1942,24 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                             )
                         accepted_final_answer = (
                             final_answer_round and verified.get("status") == "accepted"
+                        )
+                        local_attempts = result.get("model_calls", 0)
+                        if (
+                            not isinstance(local_attempts, int)
+                            or isinstance(local_attempts, bool)
+                            or local_attempts < 0
+                        ):
+                            local_attempts = 0
+                        frontier_attempts = len(upstream_attempts)
+                        local_repairs = result.get("repair_pass_count", 0)
+                        if (
+                            not isinstance(local_repairs, int)
+                            or isinstance(local_repairs, bool)
+                            or local_repairs < 0
+                        ):
+                            local_repairs = 0
+                        frontier_repairs = (
+                            0 if final_answer_round else max(0, frontier_attempts - 1)
                         )
                         verified.update(
                             {
@@ -1479,10 +1978,14 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                     if accepted_final_answer
                                     else upstream_output
                                 ),
-                                "model_calls": len(upstream_attempts),
-                                "repair_pass_count": 0
-                                if final_answer_round
-                                else max(0, len(upstream_attempts) - 1),
+                                "model_calls": local_attempts + frontier_attempts,
+                                "local_model_calls": local_attempts,
+                                "frontier_model_calls": frontier_attempts,
+                                "local_model_usage": result.get("local_model_usage"),
+                                "local_model_usage_partial": result.get("local_model_usage_partial"),
+                                "local_repair_pass_count": local_repairs,
+                                "frontier_repair_pass_count": frontier_repairs,
+                                "repair_pass_count": local_repairs + frontier_repairs,
                                 "upstream_attempts": upstream_attempts,
                                 "frontier_usage": _frontier_usage_receipt(upstream_usages),
                                 "frontier_round": 2 if final_answer_round else 1,
@@ -1530,6 +2033,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 tool_call = _build_read_tool_call(request, result)
                 if tool_call is not None:
                     result["tool_call"] = tool_call
+                    server.register_issued_tool_call(tool_call, messages)
                 if route == "/v1/messages":
                     response = _anthropic_response(
                         result,
@@ -1546,9 +2050,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         raw_tokens=raw_tokens,
                         elapsed_ms=elapsed_ms,
                     )
+                response["wrench"]["request_id"] = request_id
+                response["wrench"]["client_workflow_id"] = workflow_id
+                response["wrench"]["client_attempt"] = client_attempt
+                response["wrench"]["request_body_sha256"] = request_body_sha256
+                response["wrench"]["cost_accounting"]["request_id"] = request_id
                 trace_event = {
                     "schema": "wrench.runtime-observation.v1",
                     "timestamp": time.time(),
+                    "request_id": request_id,
+                    "client_workflow_id": workflow_id,
+                    "client_attempt": client_attempt,
+                    "response_id": response.get("id"),
                     "protocol": (
                         "anthropic-messages"
                         if route == "/v1/messages"
@@ -1563,10 +2076,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     "raw_input_chars": raw_chars,
                     "raw_input_tokens_estimate": raw_tokens,
                     "raw_payload_sha256": raw_payload_sha256,
+                    "request_body_sha256": request_body_sha256,
                     "status": result.get("status"),
                     "backend": result.get("backend"),
                     "mechanical_fast_path": result.get("mechanical_fast_path", False),
                     "model_calls": result.get("model_calls", 0),
+                    "local_model_usage": result.get("local_model_usage"),
+                    "local_model_usage_partial": result.get("local_model_usage_partial"),
+                    "upstream_attempts": result.get("upstream_attempts"),
+                    "frontier_usage": result.get("frontier_usage"),
+                    "repair_pass_count": result.get("repair_pass_count", 0),
+                    "patch_retry_count": result.get("patch_retry_count", 0),
+                    "cost_accounting": response["wrench"].get("cost_accounting"),
                     "fallback_reason": result.get("fallback_reason"),
                     "frontier_round": result.get("frontier_round"),
                     "final_answer": result.get("final_answer", False),
@@ -1577,16 +2098,23 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 test_router_status = result.get("test_only_router_status")
                 if isinstance(test_router_status, dict):
                     trace_event["test_only_proposal_router"] = test_router_status
-                server.record_trace(trace_event)
                 if bool(request.get("stream", False)):
                     chunks = (
                         _anthropic_stream_chunks(response)
                         if route == "/v1/messages"
                         else _completion_stream_chunks(response)
                     )
-                    self._send_sse(chunks)
+                    self._send_traced_response(
+                        trace_event,
+                        lambda: self._send_sse(chunks),
+                        response_http_status=200,
+                    )
                 else:
-                    self._send_json(200, response)
+                    self._send_traced_response(
+                        trace_event,
+                        lambda: self._send_json(200, response),
+                        response_http_status=200,
+                    )
             else:
                 response = _ollama_response(
                     result,
@@ -1597,10 +2125,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                     chat=route == "/api/chat",
                     declared_context_tokens=declared_context_tokens,
                 )
-                server.record_trace(
-                    {
+                response["wrench"]["request_id"] = request_id
+                response["wrench"]["client_workflow_id"] = workflow_id
+                response["wrench"]["client_attempt"] = client_attempt
+                response["wrench"]["request_body_sha256"] = request_body_sha256
+                response["wrench"]["cost_accounting"]["request_id"] = request_id
+                trace_event = {
                         "schema": "wrench.runtime-observation.v1",
                         "timestamp": time.time(),
+                        "request_id": request_id,
+                        "client_workflow_id": workflow_id,
+                        "client_attempt": client_attempt,
+                        "response_id": response.get("id"),
                         "protocol": "ollama",
                         "path": route,
                         "model": model_name,
@@ -1612,10 +2148,18 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         "raw_input_chars": raw_chars,
                         "raw_input_tokens_estimate": raw_tokens,
                         "raw_payload_sha256": raw_payload_sha256,
+                        "request_body_sha256": request_body_sha256,
                         "status": result.get("status"),
                         "backend": result.get("backend"),
                         "mechanical_fast_path": result.get("mechanical_fast_path", False),
                         "model_calls": result.get("model_calls", 0),
+                        "local_model_usage": result.get("local_model_usage"),
+                        "local_model_usage_partial": result.get("local_model_usage_partial"),
+                        "upstream_attempts": result.get("upstream_attempts"),
+                        "frontier_usage": result.get("frontier_usage"),
+                        "repair_pass_count": result.get("repair_pass_count", 0),
+                        "patch_retry_count": result.get("patch_retry_count", 0),
+                        "cost_accounting": response["wrench"].get("cost_accounting"),
                         "fallback_reason": result.get("fallback_reason"),
                         "frontier_round": result.get("frontier_round"),
                         "final_answer": result.get("final_answer", False),
@@ -1623,20 +2167,90 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         "elapsed_ms": round(elapsed_ms, 3),
                         "context_gate": result.get("context_gate"),
                     }
-                )
                 if bool(request.get("stream", False)):
-                    self._send_ndjson(200, response)
+                    self._send_traced_response(
+                        trace_event,
+                        lambda: self._send_ndjson(200, response),
+                        response_http_status=200,
+                    )
                 else:
-                    self._send_json(200, response)
+                    self._send_traced_response(
+                        trace_event,
+                        lambda: self._send_json(200, response),
+                        response_http_status=200,
+                    )
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
-            self._send_json(
-                400,
-                {"error": {"message": str(exc), "type": "invalid_request_error"}},
+            error_trace = {
+                    "schema": "wrench.runtime-observation.v1",
+                    "timestamp": time.time(),
+                    "request_id": request_id,
+                    "client_workflow_id": workflow_id,
+                    "client_attempt": client_attempt,
+                    "protocol": route,
+                    "request_body_sha256": request_body_sha256,
+                    "status": "request_error",
+                    "error_type": type(exc).__name__,
+                    "model_calls": None,
+                    "upstream_attempts": upstream_attempts,
+                    "frontier_usage": (
+                        _frontier_usage_receipt(upstream_usages) if upstream_usages else None
+                    ),
+                    "cost_accounting": None,
+                    "accounting_complete": False,
+                }
+            error_response = {
+                    "request_id": request_id,
+                    "error": {"message": str(exc), "type": "invalid_request_error"},
+                }
+            self._send_traced_response(
+                error_trace,
+                lambda: self._send_json(400, error_response),
+                response_http_status=400,
             )
         except TimeoutError as exc:
-            self._send_json(
-                504,
-                {"error": {"message": str(exc), "type": "upstream_timeout"}},
+            partial_usage = (
+                _validated_partial_local_model_usage(result.get("local_model_usage_partial"))
+                if isinstance(result, dict)
+                else None
+            )
+            error_trace = {
+                    "schema": "wrench.runtime-observation.v1",
+                    "timestamp": time.time(),
+                    "request_id": request_id,
+                    "client_workflow_id": workflow_id,
+                    "client_attempt": client_attempt,
+                    "protocol": route,
+                    "request_body_sha256": request_body_sha256,
+                    "status": "request_timeout",
+                    "error_type": type(exc).__name__,
+                    "model_calls": None,
+                    "upstream_attempts": upstream_attempts,
+                    "frontier_usage": (
+                        _frontier_usage_receipt(upstream_usages) if upstream_usages else None
+                    ),
+                    "local_model_calls": (
+                        partial_usage["attempt_count"] if partial_usage is not None else None
+                    ),
+                    "local_model_usage": (
+                        result.get("local_model_usage") if isinstance(result, dict) else None
+                    ),
+                    "local_model_usage_partial": (
+                        result.get("local_model_usage_partial")
+                        if partial_usage is not None and isinstance(result, dict)
+                        else None
+                    ),
+                    "frontier_usage_missing_calls": None,
+                    "cost_accounting": None,
+                    "accounting_complete": False,
+                }
+            error_response = {
+                    "request_id": request_id,
+                    "error": {"message": str(exc), "type": "upstream_timeout"},
+                }
+            self._send_traced_response(
+                error_trace,
+                lambda: self._send_json(504, error_response),
+                response_http_status=504,
             )
         except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
             # The client may enforce a shorter deadline than the native
@@ -1644,9 +2258,48 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
             # timeout, and there is no response left to write to this socket.
             return
         except Exception as exc:  # pragma: no cover - defensive serving boundary
-            self._send_json(
-                500,
-                {"error": {"message": str(exc), "type": "server_error"}},
+            partial_usage = (
+                _validated_partial_local_model_usage(result.get("local_model_usage_partial"))
+                if isinstance(result, dict)
+                else None
+            )
+            error_trace = {
+                    "schema": "wrench.runtime-observation.v1",
+                    "timestamp": time.time(),
+                    "request_id": request_id,
+                    "client_workflow_id": workflow_id,
+                    "client_attempt": client_attempt,
+                    "protocol": route,
+                    "request_body_sha256": request_body_sha256,
+                    "status": "server_error",
+                    "error_type": type(exc).__name__,
+                    "model_calls": None,
+                    "upstream_attempts": upstream_attempts,
+                    "frontier_usage": (
+                        _frontier_usage_receipt(upstream_usages) if upstream_usages else None
+                    ),
+                    "local_model_calls": (
+                        partial_usage["attempt_count"] if partial_usage is not None else None
+                    ),
+                    "local_model_usage": (
+                        result.get("local_model_usage") if isinstance(result, dict) else None
+                    ),
+                    "local_model_usage_partial": (
+                        result.get("local_model_usage_partial")
+                        if partial_usage is not None and isinstance(result, dict)
+                        else None
+                    ),
+                    "cost_accounting": None,
+                    "accounting_complete": False,
+                }
+            error_response = {
+                    "request_id": request_id,
+                    "error": {"message": str(exc), "type": "server_error"},
+                }
+            self._send_traced_response(
+                error_trace,
+                lambda: self._send_json(500, error_response),
+                response_http_status=500,
             )
 
     def log_message(self, format: str, *args: Any) -> None:
@@ -1714,8 +2367,62 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         self._test_only_shutting_down = False
         self.test_only_child_launches = 0
         self.worker_lock = threading.Lock()
+        self._issued_tool_call_lock = threading.Lock()
+        self._issued_tool_calls: dict[str, tuple[str, str, str, float]] = {}
         self.trace_log = trace_log.resolve() if trace_log is not None else None
         self.trace_lock = threading.Lock()
+
+    def register_issued_tool_call(
+        self, tool_call: dict[str, Any], messages: list[dict[str, Any]]
+    ) -> None:
+        call_id = tool_call.get("id")
+        identity = _tool_call_identity(tool_call)
+        if not isinstance(call_id, str) or identity is None:
+            return
+        intent_hash = hashlib.sha256(_latest_user_prompt(messages).encode("utf-8")).hexdigest()
+        now = time.monotonic()
+        with self._issued_tool_call_lock:
+            expired = [
+                existing_id
+                for existing_id, record in self._issued_tool_calls.items()
+                if record[3] <= now
+            ]
+            for existing_id in expired:
+                self._issued_tool_calls.pop(existing_id, None)
+            while len(self._issued_tool_calls) >= MAX_ISSUED_TOOL_CALLS:
+                oldest_id = next(iter(self._issued_tool_calls))
+                self._issued_tool_calls.pop(oldest_id, None)
+            self._issued_tool_calls[call_id] = (
+                identity[0],
+                identity[1],
+                intent_hash,
+                now + ISSUED_TOOL_CALL_TTL_SECONDS,
+            )
+
+    def consume_issued_tool_call(
+        self,
+        call_id: str,
+        tool_name: str,
+        canonical_arguments: str,
+        intent_hash: str,
+    ) -> bool:
+        now = time.monotonic()
+        with self._issued_tool_call_lock:
+            record = self._issued_tool_calls.get(call_id)
+            if record is None:
+                return False
+            expected_name, expected_arguments, expected_intent_hash, expires_at = record
+            if expires_at <= now:
+                self._issued_tool_calls.pop(call_id, None)
+                return False
+            if (
+                tool_name != expected_name
+                or canonical_arguments != expected_arguments
+                or intent_hash != expected_intent_hash
+            ):
+                return False
+            self._issued_tool_calls.pop(call_id, None)
+            return True
 
     @property
     def test_only_active_child_pids(self) -> tuple[int, ...]:
@@ -1930,12 +2637,16 @@ def serve(
     prefill_cache_bytes: int | None = None,
     trace_log: Path | None = None,
     use_mechanical_route: bool = True,
+    binary_abstain_artifact: Path | None = None,
+    binary_abstain_preflight: bool = False,
 ) -> None:
     worker = WrenchWorker.from_pretrained(
         model_dir,
         allowed_root=allowed_root,
         load_model=load_model,
         prefill_cache_bytes=prefill_cache_bytes,
+        binary_abstain_artifact=binary_abstain_artifact,
+        binary_abstain_preflight=binary_abstain_preflight,
     )
     server = WrenchHTTPServer(
         (host, port),
@@ -1962,6 +2673,17 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=28900)
     parser.add_argument("--model-name", default="wrench-4b")
     parser.add_argument("--mechanical-only", action="store_true")
+    parser.add_argument(
+        "--binary-abstain-artifact",
+        type=Path,
+        default=None,
+        help="experimental System One head evaluated with the loaded local Qwen model",
+    )
+    parser.add_argument(
+        "--binary-abstain-preflight",
+        action="store_true",
+        help="apply the abstain-only System One preflight before bounded proposals",
+    )
     parser.add_argument("--max-request-bytes", type=int, default=256 * 1024 * 1024)
     parser.add_argument("--upstream-url", default=None)
     parser.add_argument("--upstream-timeout-seconds", type=float, default=600.0)
@@ -1996,6 +2718,8 @@ def main() -> int:
         prefill_cache_bytes=args.prefill_cache_bytes,
         trace_log=args.trace_log,
         use_mechanical_route=not args.disable_mechanical_route,
+        binary_abstain_artifact=args.binary_abstain_artifact,
+        binary_abstain_preflight=args.binary_abstain_preflight,
     )
     return 0
 

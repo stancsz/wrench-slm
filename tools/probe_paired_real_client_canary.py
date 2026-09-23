@@ -591,14 +591,105 @@ def _usage_from_response(body: bytes, content_type: str) -> dict[str, Any] | Non
     for payload in reversed(candidates):
         usage = payload.get("usage")
         if isinstance(usage, dict):
-            numeric = {
-                key: usage[key]
-                for key in ("prompt_tokens", "completion_tokens", "total_tokens")
-                if isinstance(usage.get(key), int)
-            }
-            if numeric:
+            numeric = {}
+            for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+                value = usage.get(key)
+                if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                    numeric = {}
+                    break
+                numeric[key] = value
+            if (
+                len(numeric) == 3
+                and numeric["prompt_tokens"] + numeric["completion_tokens"]
+                == numeric["total_tokens"]
+            ):
                 return numeric
     return None
+
+
+def _read_trace_jsonl(path: Path) -> tuple[list[dict[str, Any]], bool]:
+    """Read trace objects while making malformed or non-object rows fail closed."""
+    if not path.is_file():
+        return [], False
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return [], False
+    rows: list[dict[str, Any]] = []
+    well_formed = True
+    for line in content.splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except (TypeError, ValueError):
+            well_formed = False
+            continue
+        if not isinstance(row, dict):
+            well_formed = False
+            continue
+        rows.append(row)
+    return rows, well_formed and bool(rows)
+
+
+def _trace_identity_accounting(rows: list[dict[str, Any]]) -> tuple[bool, bool]:
+    """Require unique nonblank request IDs and a valid attempt identity per row."""
+    request_ids = [row.get("request_id") for row in rows]
+    request_ids_unique = (
+        bool(rows)
+        and all(isinstance(value, str) and value.strip() for value in request_ids)
+        and len(set(request_ids)) == len(request_ids)
+    )
+    attempts = [(row.get("client_workflow_id"), row.get("client_attempt")) for row in rows]
+    attempts_wellformed = all(
+        isinstance(workflow_id, str)
+        and bool(workflow_id.strip())
+        and isinstance(attempt_number, int)
+        and not isinstance(attempt_number, bool)
+        and attempt_number > 0
+        for workflow_id, attempt_number in attempts
+    )
+    attempts_unique = (
+        bool(rows)
+        and attempts_wellformed
+        and len(set(attempts)) == len(attempts)
+    )
+    return request_ids_unique, attempts_unique
+
+
+def _trace_token_accounting_complete(
+    rows: list[dict[str, Any]], *, trace_jsonl_well_formed: bool
+) -> bool:
+    """Validate row identity and arithmetic before aggregating trace tokens."""
+    request_ids_unique, attempts_unique = _trace_identity_accounting(rows)
+    return bool(rows) and trace_jsonl_well_formed and request_ids_unique and attempts_unique and all(
+        isinstance(cost := row.get("cost_accounting"), dict)
+        and cost.get("schema") == "wrench.cost-accounting-receipt.v1"
+        and cost.get("token_usage_complete") is True
+        and all(
+            isinstance(cost.get(field), int)
+            and not isinstance(cost.get(field), bool)
+            and cost[field] >= 0
+            for field in (
+                "frontier_tokens",
+                "local_model_tokens",
+                "total_workflow_tokens",
+                "repair_passes",
+                "local_model_calls",
+                "frontier_model_calls",
+            )
+        )
+        and isinstance(row.get("client_workflow_id"), str)
+        and bool(row["client_workflow_id"].strip())
+        and isinstance(row.get("client_attempt"), int)
+        and not isinstance(row.get("client_attempt"), bool)
+        and row["client_attempt"] > 0
+        and isinstance(row.get("model_calls"), int)
+        and not isinstance(row.get("model_calls"), bool)
+        and row["model_calls"] == cost["local_model_calls"] + cost["frontier_model_calls"]
+        and cost["total_workflow_tokens"] == cost["local_model_tokens"] + cost["frontier_tokens"]
+        for row in rows
+    )
 
 
 def _iter_text_values(value: Any):
@@ -748,6 +839,8 @@ class _LoopbackAccountingProxy:
         )
         self._events: list[dict[str, Any]] = []
         self._lock = threading.Lock()
+        self._idle = threading.Condition(self._lock)
+        self._inflight = 0
         owner = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -776,6 +869,23 @@ class _LoopbackAccountingProxy:
         self._server.server_close()
         if self._thread is not None:
             self._thread.join(timeout=5)
+
+    def _send_downstream_response(
+        self,
+        handler: BaseHTTPRequestHandler,
+        *,
+        status: int,
+        headers: list[tuple[str, str]],
+        body: bytes,
+    ) -> None:
+        handler.send_response(status)
+        for key, value in headers:
+            if key.lower() not in {"connection", "content-length", "transfer-encoding", "content-encoding"}:
+                handler.send_header(key, value)
+        handler.send_header("Content-Length", str(len(body)))
+        handler.end_headers()
+        handler.wfile.write(body)
+        handler.wfile.flush()
 
     def _forward(self, handler: BaseHTTPRequestHandler) -> None:
         started = time.perf_counter()
@@ -840,7 +950,10 @@ class _LoopbackAccountingProxy:
             "request_id": None,
             "usage": None,
             "cost_usd": None,
+            "downstream_write_status": "not_attempted",
         }
+        with self._idle:
+            self._inflight += 1
         try:
             connection.request(handler.command, handler.path, body=request_body, headers=headers)
             response = connection.getresponse()
@@ -861,8 +974,13 @@ class _LoopbackAccountingProxy:
                 request_id = response_payload.get("id") if isinstance(response_payload, dict) else None
             cost_text = response_headers.get("x-litellm-response-cost") or response_headers.get("x-litellm-cost")
             try:
-                cost_usd = float(cost_text) if cost_text is not None else None
-            except ValueError:
+                parsed_cost = float(cost_text) if cost_text is not None else None
+                cost_usd = (
+                    parsed_cost
+                    if parsed_cost is not None and math.isfinite(parsed_cost) and parsed_cost >= 0
+                    else None
+                )
+            except (TypeError, ValueError):
                 cost_usd = None
             event.update({
                 "status": response.status,
@@ -872,25 +990,42 @@ class _LoopbackAccountingProxy:
                 "usage": usage,
                 "cost_usd": cost_usd,
             })
-            with self._lock:
-                self._events.append(event)
-            handler.send_response(response.status)
-            for key, value in response.getheaders():
-                if key.lower() not in {"connection", "content-length", "transfer-encoding", "content-encoding"}:
-                    handler.send_header(key, value)
-            handler.send_header("Content-Length", str(len(body)))
-            handler.end_headers()
-            handler.wfile.write(body)
+            try:
+                self._send_downstream_response(
+                    handler,
+                    status=response.status,
+                    headers=response.getheaders(),
+                    body=body,
+                )
+            except OSError as exc:
+                event["downstream_write_status"] = "interrupted"
+                event["downstream_write_error_type"] = type(exc).__name__
+            else:
+                event["downstream_write_status"] = "server_write_completed"
         except (OSError, http.client.HTTPException) as exc:
-            event.update({"status": "proxy_error", "error_type": type(exc).__name__})
-            with self._lock:
-                self._events.append(event)
-            handler.send_error(502, "accounting proxy upstream failure")
+            if event.get("status") is not None:
+                event["downstream_write_status"] = "interrupted"
+                event["downstream_write_error_type"] = type(exc).__name__
+            else:
+                event.update({"status": "proxy_error", "error_type": type(exc).__name__})
+                try:
+                    handler.send_error(502, "accounting proxy upstream failure")
+                    handler.wfile.flush()
+                except OSError as downstream_exc:
+                    event["downstream_write_status"] = "interrupted"
+                    event["downstream_write_error_type"] = type(downstream_exc).__name__
+                else:
+                    event["downstream_write_status"] = "server_write_completed"
         finally:
+            with self._idle:
+                self._events.append(event)
+                self._inflight -= 1
+                self._idle.notify_all()
             connection.close()
 
     def snapshot(self, client_results: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
-        with self._lock:
+        with self._idle:
+            snapshot_complete = self._idle.wait_for(lambda: self._inflight == 0, timeout=2.0)
             events = [dict(event) for event in self._events]
         events.sort(key=lambda event: event.get("request_started_at_unix_ns", 0))
         for request_index, event in enumerate(events, start=1):
@@ -902,10 +1037,25 @@ class _LoopbackAccountingProxy:
             event["client_attribution"] = client_name
             event["client_attribution_reason"] = attribution_reason
         usage_complete = bool(events) and all(isinstance(event.get("usage"), dict) and event.get("usage", {}).get("total_tokens") is not None for event in events)
-        request_ids_complete = bool(events) and all(bool(event.get("request_id")) for event in events)
-        costs_complete = bool(events) and all(isinstance(event.get("cost_usd"), (int, float)) for event in events)
+        request_ids = [event.get("request_id") for event in events]
+        request_ids_complete = (
+            bool(events)
+            and all(isinstance(value, str) and value.strip() for value in request_ids)
+            and len(set(request_ids)) == len(request_ids)
+        )
+        costs_complete = bool(events) and all(
+            isinstance(event.get("cost_usd"), (int, float))
+            and not isinstance(event.get("cost_usd"), bool)
+            and math.isfinite(float(event["cost_usd"]))
+            and event["cost_usd"] >= 0
+            for event in events
+        )
         client_attribution_complete = bool(events) and all(bool(event.get("client_attribution")) for event in events)
         purpose_attribution_complete = bool(events) and all(event.get("purpose") != "unknown" for event in events)
+        delivery_status_complete = bool(events) and all(
+            event.get("downstream_write_status") in {"server_write_completed", "interrupted"}
+            for event in events
+        )
         task_marker_counts = {
             client_name: sum(
                 event.get("client_attribution") == client_name
@@ -965,6 +1115,7 @@ class _LoopbackAccountingProxy:
         cost_usd = round(sum(float(event["cost_usd"]) for event in events), 12) if costs_complete else None
         return {
             "status": "captured",
+            "snapshot_complete": snapshot_complete,
             "endpoint": self._parsed.geturl(),
             "proxy_base_url": self.base_url,
             "calls": events,
@@ -974,6 +1125,7 @@ class _LoopbackAccountingProxy:
             "costs_complete": costs_complete,
             "client_attribution_complete": client_attribution_complete,
             "purpose_attribution_complete": purpose_attribution_complete,
+            "delivery_status_complete": delivery_status_complete,
             "task_marker_validation": task_marker_validation,
             "task_prompt_validation": task_prompt_validation,
             "route_attribution_complete": route_attribution_complete,
@@ -981,10 +1133,12 @@ class _LoopbackAccountingProxy:
             "cost_usd": cost_usd,
             "accounting_complete": (
                 request_ids_complete
+                and snapshot_complete
                 and usage_complete
                 and costs_complete
                 and client_attribution_complete
                 and purpose_attribution_complete
+                and delivery_status_complete
                 and (self._task_prompt is None or exact_two_prompt_task_states)
                 and route_attribution_complete
             ),
@@ -1318,11 +1472,55 @@ def _run_hybrid(package_dir: Path, output_dir: Path, port: int, *, prompt: str, 
         elapsed = receipt.get("clients", {}).get(client, {}).get("elapsed_ms")
         client_elapsed_ms[client] = elapsed if isinstance(elapsed, (int, float)) else None
     trace_path = output_dir / "wrench-client.trace.jsonl"
-    rows = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines() if line.strip()] if trace_path.is_file() else []
-    frontier_tokens = sum(int(row.get("frontier_tokens") or 0) for row in rows)
-    local_input_tokens = sum(int(row.get("raw_input_tokens_estimate") or 0) for row in rows)
-    local_model_tokens = sum(int(row.get("local_model_tokens") or 0) for row in rows)
-    repair_passes = sum(int(row.get("repair_pass_count") or 0) for row in rows)
+    rows, trace_jsonl_well_formed = _read_trace_jsonl(trace_path)
+    cost_rows = [row.get("cost_accounting") for row in rows]
+    trace_ids_unique, workflow_attempts_unique = _trace_identity_accounting(rows)
+    token_accounting_complete = _trace_token_accounting_complete(
+        rows, trace_jsonl_well_formed=trace_jsonl_well_formed
+    )
+    frontier_tokens = (
+        sum(cost["frontier_tokens"] for cost in cost_rows)
+        if token_accounting_complete
+        else None
+    )
+    local_model_tokens = (
+        sum(cost["local_model_tokens"] for cost in cost_rows)
+        if token_accounting_complete
+        else None
+    )
+    local_input_tokens = (
+        sum(row["raw_input_tokens_estimate"] for row in rows)
+        if trace_jsonl_well_formed
+        and rows
+        and all(
+            isinstance(row.get("raw_input_tokens_estimate"), int)
+            and not isinstance(row.get("raw_input_tokens_estimate"), bool)
+            and row["raw_input_tokens_estimate"] >= 0
+            for row in rows
+        )
+        else None
+    )
+    repair_passes = (
+        sum(cost["repair_passes"] for cost in cost_rows)
+        if token_accounting_complete
+        else None
+    )
+    frontier_calls = (
+        sum(cost["frontier_model_calls"] for cost in cost_rows)
+        if token_accounting_complete
+        else None
+    )
+    observed_model_calls = (
+        sum(row["model_calls"] for row in rows)
+        if rows
+        and all(
+            isinstance(row.get("model_calls"), int)
+            and not isinstance(row.get("model_calls"), bool)
+            and row["model_calls"] >= 0
+            for row in rows
+        )
+        else None
+    )
     abstentions = sum(row.get("status") == "abstain" for row in rows)
     final_answer_rows = sum(bool(row.get("final_answer")) for row in rows)
     local_elapsed = [float(row["elapsed_ms"]) for row in rows if isinstance(row.get("elapsed_ms"), (int, float))]
@@ -1337,13 +1535,13 @@ def _run_hybrid(package_dir: Path, output_dir: Path, port: int, *, prompt: str, 
         "elapsed_ms": result["elapsed_ms"],
         "tree_cleanup_complete": result.get("tree_cleanup_complete", True),
         "frontier_tokens": frontier_tokens,
-        "model_calls": sum(int(row.get("model_calls") or 0) for row in rows),
+        "model_calls": observed_model_calls,
         "trace_rows": len(rows),
         "trace_latency_ms": local_elapsed,
         "accounting": {
             "frontier_tokens": frontier_tokens,
-            "local_tokens": local_input_tokens + local_model_tokens,
-            "local_input_tokens": local_input_tokens,
+            "local_tokens": local_model_tokens,
+            "local_input_tokens_estimate": local_input_tokens,
             "local_model_tokens": local_model_tokens,
             "cost_usd": None,
             "cost_status": "not_priced_local_runtime",
@@ -1351,7 +1549,11 @@ def _run_hybrid(package_dir: Path, output_dir: Path, port: int, *, prompt: str, 
             "corrections": None,
             "final_answer_rows": final_answer_rows,
             "abstentions": abstentions,
-            "fallback_calls": sum(int(row.get("model_calls") or 0) for row in rows if row.get("backend", "").startswith("native-upstream")),
+            "fallback_calls": frontier_calls,
+            "trace_request_ids_unique": trace_ids_unique,
+            "workflow_attempts_unique": workflow_attempts_unique,
+            "trace_jsonl_well_formed": trace_jsonl_well_formed,
+            "token_accounting_complete": token_accounting_complete,
             "accounting_complete": False,
         },
         "receipt": receipt,
