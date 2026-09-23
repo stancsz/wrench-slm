@@ -356,23 +356,26 @@ def _literal_search(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
                 path = current_path / name
                 if path.suffix.lower() in SEARCH_PRUNED_SUFFIXES:
                     continue
-                try:
-                    if path.stat().st_size > MAX_SEARCH_FILE_BYTES:
-                        continue
-                except OSError:
-                    continue
                 paths.append(path)
     matches: list[dict[str, Any]] = []
     for path in paths:
-        if any(part.startswith(".") for part in path.relative_to(root).parts):
-            continue
         try:
-            text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+            if any(part.startswith(".") for part in path.relative_to(root).parts):
+                continue
+            # Confine the resolved target before any fallback stat or content read.
+            resolved_path = path.resolve(strict=True)
+            relative_to_root = resolved_path.relative_to(root)
+            resolved_path.relative_to(search_root)
+            if any(part.startswith(".") for part in relative_to_root.parts):
+                continue
+            if not resolved_path.is_file() or resolved_path.stat().st_size > MAX_SEARCH_FILE_BYTES:
+                continue
+            text = resolved_path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError, RuntimeError, ValueError):
             continue
         for line_number, line in enumerate(text.splitlines(), start=1):
             if literal in line:
-                matches.append({"path": str(path), "line": line_number, "text": line})
+                matches.append({"path": str(resolved_path), "line": line_number, "text": line})
                 if len(matches) >= limit:
                     return _accept("literal_search", {"root": str(search_root), "literal": literal, "matches": matches, "truncated": True})
     return _accept("literal_search", {"root": str(search_root), "literal": literal, "matches": matches, "truncated": False})
@@ -383,8 +386,19 @@ def _git_read_status(proposal: dict[str, Any], root: Path) -> dict[str, Any]:
     if repo is None or not repo.is_dir() or not (repo / ".git").exists():
         return _abstain("repository_root_invalid")
     try:
+        # Keep repository-defined FSMonitor hook commands out of this read-only action.
         completed = subprocess.run(
-            ["git", "-C", str(repo), "status", "--short", "--branch", "--untracked-files=no"],
+            [
+                "git",
+                "-C",
+                str(repo),
+                "-c",
+                "core.fsmonitor=",
+                "status",
+                "--short",
+                "--branch",
+                "--untracked-files=no",
+            ],
             check=False,
             capture_output=True,
             text=True,

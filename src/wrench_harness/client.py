@@ -33,6 +33,57 @@ def _abstain(reason: str, detail: str | None = None) -> dict[str, Any]:
     return result
 
 
+def _client_retry_accounting_receipt(attempts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Aggregate observed endpoint accounting without treating missing data as zero."""
+
+    cost_rows = [attempt.get("cost_accounting") for attempt in attempts]
+    required_fields = ("local_model_tokens", "frontier_tokens", "total_workflow_tokens")
+    complete = bool(attempts) and len(cost_rows) == len(attempts)
+    totals = {field: 0 for field in required_fields}
+    for attempt, cost in zip(attempts, cost_rows):
+        if not isinstance(cost, dict) or attempt.get("response_status") != "received":
+            complete = False
+            continue
+        for field in required_fields:
+            value = cost.get(field)
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                complete = False
+            else:
+                totals[field] += value
+        local_calls = cost.get("local_model_calls")
+        frontier_calls = cost.get("frontier_model_calls")
+        if (
+            isinstance(local_calls, int)
+            and not isinstance(local_calls, bool)
+            and local_calls > 0
+            and (
+                cost.get("local_usage_available") is not True
+                or cost.get("local_usage_missing_calls") != 0
+            )
+        ):
+            complete = False
+        if (
+            isinstance(frontier_calls, int)
+            and not isinstance(frontier_calls, bool)
+            and frontier_calls > 0
+            and cost.get("frontier_usage_missing_calls") != 0
+        ):
+            complete = False
+    return {
+        "schema": "wrench.client-retry-accounting.v1",
+        "attempt_count": len(attempts),
+        "client_retry_count": max(0, len(attempts) - 1),
+        "accounting_complete": complete,
+        "accounted_attempt_count": sum(
+            isinstance(attempt.get("cost_accounting"), dict)
+            and attempt.get("response_status") == "received"
+            for attempt in attempts
+        ),
+        **(totals if complete else {field: None for field in required_fields}),
+        "attempts": attempts,
+    }
+
+
 def _bounded_messages_from_context(
     messages: list[dict[str, str]],
     ledger: ContextLedger,
@@ -55,6 +106,8 @@ def _bounded_messages_from_context(
     request_query = query if query is not None else (user_messages[-1]["content"] if user_messages else None)
     if not isinstance(request_query, str) or not request_query:
         return _abstain("qwen_context_query_missing")
+    if not user_messages or not user_messages[-1]["content"].strip():
+        return _abstain("qwen_context_user_message_missing")
     try:
         assembly = ledger.assemble(
             request_query,

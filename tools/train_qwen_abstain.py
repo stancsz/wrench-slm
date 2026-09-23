@@ -106,7 +106,8 @@ def run(args):
                "provider_calls": 0, "base_weights_updated": False, "generated_tokens": 0,
                "production_enabled": False, "quality_claim": False, "final_split_read": False,
                "positive_class_weight": args.positive_class_weight,
-               "threshold_calibration_rule": "max held-out calibration negative probability plus epsilon"}
+               "threshold_calibration_rule": "max held-out original-style calibration negative probability plus epsilon",
+               "threshold_calibration_prompt_style": "original"}
     try:
         guard.check()
         rows, data_sha = read_rows(args.data / "calibration.jsonl", "calibration")
@@ -191,19 +192,55 @@ def run(args):
         head.eval()
         with torch.inference_mode():
             probabilities = head(x[cal_indexes]).softmax(-1)[:, 1]
-        negative = probabilities[labels[cal_indexes] == 0]
+        calibration_matrix = probabilities.reshape(len(calibration_ids), 2)
+        calibration_labels = labels[[row_index * 2 for row_index in calibration_ids]].to(torch.int64)
         # Pick the most coverage-preserving threshold that had no false
-        # continuations on the held-out calibration groups. The lower bound
-        # is zero rather than an arbitrary .5 floor; the learned probability
-        # need not be calibrated around the argmax boundary.
+        # continuations on the held-out calibration groups for the primary
+        # production prompt. Plain-prompt runs are diagnostics and must not
+        # raise the production threshold because their score distribution can
+        # differ substantially from the system-prompt path.
+        primary_scores = calibration_matrix[:, 0]
+        negative = primary_scores[~calibration_labels.bool()]
+        # The lower bound is zero rather than an arbitrary .5 floor; the
+        # learned probability need not be calibrated around the argmax boundary.
         threshold = max(0.0, float(negative.max()) + 1e-5)
         if threshold > 1:
             raise RuntimeError("no usable threshold on held-out calibration groups")
+        calibration_metrics = {}
+        for variant, style in enumerate(("original", "plain")):
+            scores = calibration_matrix[:, variant]
+            predicted = scores >= threshold
+            truth = calibration_labels.bool()
+            tp = int((predicted & truth).sum().item())
+            fn = int((~predicted & truth).sum().item())
+            fp = int((predicted & ~truth).sum().item())
+            tn = int((~predicted & ~truth).sum().item())
+            eligible = tp + fn
+            boundary = fp + tn
+            calibration_metrics[style] = {
+                "rows": len(calibration_ids),
+                "accuracy": (tp + tn) / max(1, len(calibration_ids)),
+                "eligible_coverage": tp / max(1, eligible),
+                "unsafe_continuations": fp,
+                "eligible_rows": eligible,
+                "boundary_rows": boundary,
+                "confusion": {"tp": tp, "fn": fn, "fp": fp, "tn": tn},
+                "positive_score_min": float(scores[truth].min().item()),
+                "negative_score_max": float(scores[~truth].max().item()),
+            }
+        receipt["calibration_holdout"] = {
+            "template_groups": len({rows[i]["template_id"] for i in calibration_ids}),
+            "threshold": threshold,
+            "threshold_rule": "max held-out original-style calibration negative probability plus epsilon",
+            "threshold_prompt_style": "original",
+            "metrics_by_prompt_style": calibration_metrics,
+        }
         artifact = args.output / "qwen-abstain-head.json"
         save_head(artifact, head, identity=identity, threshold=threshold, max_tokens=args.max_tokens,
-                  metadata={"base_weights_frozen": True, "training_split": "subset_of_calibration",
+            metadata={"base_weights_frozen": True, "training_split": "subset_of_calibration",
                             "positive_class_weight": args.positive_class_weight,
-                            "threshold_rule": "max held-out calibration negative probability plus epsilon",
+                            "threshold_rule": "max held-out original-style calibration negative probability plus epsilon",
+                            "threshold_prompt_style": "original",
                             "threshold_minimum": 0.0,
                             "data_sha256": data_sha, "real_workflow_validated": False})
         head_vram_before = torch.cuda.memory_allocated(0)

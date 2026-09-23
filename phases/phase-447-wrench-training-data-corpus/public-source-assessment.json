@@ -1,0 +1,82 @@
+{
+  "schema": "wrench.phase447.public-source-assessment.v1",
+  "verified_at_utc": "2026-09-23",
+  "job_id": "W447-PUBLIC-SOURCES-20260923",
+  "scope": "Official publisher and license pages only. No data downloaded. No local evaluation content accessed.",
+  "accepted_training_rows_added": 0,
+  "real_workflow_frequency_source_found": false,
+  "sources": [
+    {
+      "name": "TIGER-Lab/SWE-Next",
+      "url": "https://huggingface.co/datasets/TIGER-Lab/SWE-Next",
+      "publisher_license_claim": "MIT",
+      "reported_size": 2308,
+      "decision": "conditional_source_review_only",
+      "reason": "Potential issue/PR and patch/test material, but repository-level tasks are broader than Wrench's bounded action schema. Upstream repository/content rights still require row-level review. It is not a real-frequency source."
+    },
+    {
+      "name": "NVIDIA When2Call",
+      "url": "https://huggingface.co/datasets/nvidia/When2Call",
+      "publisher_license_claim": "CC-BY-4.0",
+      "decision": "no_go_current_corpus",
+      "reason": "Generic synthetic tool-call decisions; does not match Wrench's typed developer-tool actions or real usage frequency."
+    },
+    {
+      "name": "NVIDIA SWE-Hero OpenHands trajectories",
+      "url": "https://huggingface.co/datasets/nvidia/SWE-Hero-openhands-trajectories",
+      "publisher_license_claim": "CC-BY-4.0 with multiple repository-level licenses reported",
+      "decision": "no_go_current_corpus",
+      "reason": "Multi-step SWE trajectories with hybrid synthetic/automated provenance, not bounded Wrench actions or frequency data; per-repository license review required."
+    },
+    {
+      "name": "Salesforce xLAM function-calling-60k",
+      "url": "https://huggingface.co/datasets/Salesforce/xlam-function-calling-60k",
+      "publisher_license_claim": "CC-BY-4.0 reported, with research/access restrictions requiring review",
+      "decision": "no_go_current_corpus",
+      "reason": "Generic synthetic API examples with task and access restrictions; not Wrench usage frequency."
+    },
+    {
+      "name": "AgentAbstain",
+      "url": "https://huggingface.co/datasets/antiquality/agentabstain",
+      "publisher_license_claim": "CC-BY-4.0",
+      "decision": "taxonomy_reference_only",
+      "reason": "Published benchmark rows have direct evaluation contamination risk. Use only to inform independently authored abstention taxonomy, not as training or evaluation rows."
+    },
+    {
+      "name": "AbstentionBench",
+      "url": "https://huggingface.co/datasets/facebook/AbstentionBench",
+      "publisher_license_claim": "CC-BY-NC-4.0 reported; constituent datasets have separate terms",
+      "decision": "no_go_current_corpus",
+      "reason": "Non-commercial condition and broad QA abstention mismatch."
+    },
+    {
+      "name": "AgentHarm",
+      "url": "https://huggingface.co/datasets/ai-safety-institute/AgentHarm",
+      "publisher_license_claim": "MIT plus safety/security-only condition reported",
+      "decision": "evaluation_only_no_training",
+      "reason": "Publisher use restriction and harmful-agent benchmark scope."
+    },
+    {
+      "name": "InjecAgent",
+      "url": "https://github.com/uiuc-kang-lab/InjecAgent",
+      "publisher_license_claim": "Repository MIT claim; dataset component coverage unresolved",
+      "decision": "no_go_pending_component_license_review",
+      "reason": "Security benchmark rather than ordinary Wrench routing; dataset-level license coverage is unclear."
+    },
+    {
+      "name": "PyroMind agentic tool-call and Glaive function-calling",
+      "url": "https://huggingface.co/datasets/pyromind/agentic-tool-call",
+      "publisher_license_claim": "Insufficiently established for current use",
+      "decision": "excluded",
+      "reason": "The 5,000-row bundle was already quarantined for task mismatch and pending rights review."
+    },
+    {
+      "name": "sweinteract/sweinteract",
+      "url": "https://huggingface.co/datasets/sweinteract/sweinteract",
+      "publisher_license_claim": "No license identifier found in reviewed publisher card",
+      "decision": "no_go",
+      "reason": "Upstream rights unresolved and task is repository-level issue resolution."
+    }
+  ],
+  "conclusion": "No reviewed public candidate supports measured real Wrench workflow frequency. Do not add any source to train, dev/calibration, or sealed-final without compatible task labels, rights review, required provenance, deduplication, split isolation, and independent quality review. The 9,600-row observed-usage allocation remains unfilled."
+}

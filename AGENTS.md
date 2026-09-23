@@ -2,6 +2,10 @@
 
 Write naturally. Do not use em dashes.
 
+## Large File Storage
+
+Save large files, checkpoints, artifacts, logs, and model weights on the D: drive, not the C: drive. Use `D:\wrench-slm-data` as the default root, with separate `checkpoints`, `artifacts`, `logs`, and `weights` subdirectories as needed. Keep only small source files and manifests in the repository. If D: is unavailable or lacks space, stop and ask before writing these files to C:.
+
 ## Core Objective and Production Target
 
 The active delivery target of this repository is **measured productive value from one bounded Wrench worker**. The former 4.25B figure is archived context, not the objective. Keep the deterministic hybrid path safe, fast, useful on real workflows, and operationally reliable before expanding model or platform scope.

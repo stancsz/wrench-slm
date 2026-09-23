@@ -1,0 +1,11 @@
+{
+  "schema": "wrench.qwen-binary-training-interruption.v1",
+  "status": "interrupted_before_artifacts",
+  "reason": "Replaced after confirming the bounded trainer accepts a 900-second limit; this attempt used 600 seconds and was stopped before its supported data volume could finish.",
+  "last_progress": "Encoded 160 of 466 calibration rows",
+  "output_artifacts_written": [],
+  "calibration_sha256": "cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43",
+  "development_sha256": "ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49",
+  "provider_calls": 0,
+  "final_split_read": false
+}

@@ -1,0 +1,71 @@
+{
+  "schema": "wrench.system-one-v8-authored-data.v1",
+  "status": "frozen_before_v8_candidate_training",
+  "executor_scope": "git status --short --branch --untracked-files=no; no path/status filters",
+  "system_capability_note": "Capability boundary: git_read_status reports staged and unstaged tracked-file status only. It omits untracked files and cannot filter by path or status category. Abstain when a request requires untracked output or a path/status filter.",
+  "base_calibration_manifest": "internal/system-one-v7-data/data-manifest.json",
+  "base_calibration_sha256": "b0ba4b7514bcfe7f7304efde843fa612671af2fb8fbd62eedc3e534a42f62f4c",
+  "v7_development_used_for_wording_direction_only": true,
+  "v7_development_used_for_labels_or_threshold_selection": false,
+  "prior_development_sha256_for_overlap_audit_only": {
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v6-data\\development.jsonl": "45fbc109b9f964c4a7db211f339710149fc86a86f13b57d9f3041ea50c66363f",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v5-data\\development.jsonl": "ec4cfa41b44a74173f5787ae75ab25b232ccb25c20c30dd444575a2c7714fc5c",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v4-data\\development.jsonl": "3eed9e6bd07cb6606974854cacf14b34ab53dd35b15767246025c84faa7b6149",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v3-data\\development.jsonl": "05f6a5ffc84b32263b98cda2996df13fd0bb4feb5cd9e947047787c0e1249ab5",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v2-data-clean\\development.jsonl": "3a9847a9ba53d24842a3c86f6e00f3d1bf0080ac660b2abf302bab7f6847c8cf",
+    "evals\\wrench-expanded-v2\\development.jsonl": "8070c2c7cb100b2c046763a9f374ae4f670a3e730e7c97b05ffeb340c869bc70",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v7-data\\development.jsonl": "6fbde8ff9ec093e94e6fda0cda97983d770546f3f5f2b3556f7aa611b673902a"
+  },
+  "sealed_final_split_read": false,
+  "calibration": {
+    "rows": 338,
+    "sha256": "eb3494574d846463cf0f1d302c0eee82eccede3d506399b1608bcfa7329282a5",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 112,
+        "abstain": 112
+      },
+      "health_read": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "literal_search": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "out_of_domain": {
+        "abstain": 24
+      },
+      "patch_draft": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_file": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_lines": {
+        "accepted": 12,
+        "abstain": 6
+      }
+    },
+    "new_matched_template_groups": 16
+  },
+  "development": {
+    "rows": 128,
+    "sha256": "2ebf1835d2ae96c4a151ab35d8051fb7f9cabb2ba4436682d2a2fd6ec3e8c7bd",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 48,
+        "abstain": 48
+      },
+      "out_of_domain": {
+        "abstain": 32
+      }
+    },
+    "template_groups": 32,
+    "exact_prompt_overlap_with_calibration": 0,
+    "exact_prompt_overlap_with_prior_development": 0,
+    "template_group_overlap_with_calibration": 0
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema": "wrench.phase447.independent-audit.v1",
+  "verified_at_utc": "2026-09-23 18:05 UTC",
+  "status": "quarantine_locked_corpus_not_ready",
+  "target": {
+    "train": 20000,
+    "development_calibration": 2500,
+    "sealed_final": 2500,
+    "accepted_train_rows": 0
+  },
+  "controls": {
+    "active_training_jsonl_files": 0,
+    "v9_calibration_or_development_used_for_training": false,
+    "historical_synthetic_diagnostics_used_for_training": false,
+    "quarantined_general_tool_calls_used_for_training": false,
+    "sealed_final_content_read": "unresolved",
+    "potential_final_evaluation_exposure": "Two broad worker searches displayed evaluation material, including rows marked final; exact source paths are unavailable."
+  },
+  "quarantine_lock": {
+    "root": "D:/wrench-slm-data/quarantine/dataset-general-tool-call-2026-09-23",
+    "lock_method": "Windows read-only file attribute plus verified SHA-256 and byte count",
+    "files": [
+      {
+        "file": "agentic_tool_call_short_2k.jsonl",
+        "bytes": 46876061,
+        "sha256": "BE29DE7EB7101EC057EC273EC5447C09F7754FD604903C2AEEDB18B590888196",
+        "active_dataset_path_exists": false,
+        "read_only": true
+      },
+      {
+        "file": "agentic_tool_call_long_1k.jsonl",
+        "bytes": 225883611,
+        "sha256": "B717A1970F527398A328990759B0B12848F650B7416697875DFC60763935A858",
+        "active_dataset_path_exists": false,
+        "read_only": true
+      },
+      {
+        "file": "glaive_function_calling_2k.jsonl",
+        "bytes": 4815209,
+        "sha256": "7A709EC6C9182A6F7B471419D08B64BEED1A4012F1989F81305AD72A456003AA",
+        "active_dataset_path_exists": false,
+        "read_only": true
+      }
+    ],
+    "cross_check": "Primary SHA-256 and byte-count checks passed before and after setting read-only; independent agent audit also passed."
+  },
+  "source_audit": {
+    "eligible_approved_redacted_real_trace_found": false,
+    "phase303_metadata_inventory": {
+      "status": "DRAFT_INVENTORY_FOR_HUMAN_PORTFOLIO_REVIEW",
+      "rows": 2054,
+      "estimated_raw_input_tokens": 53511711,
+      "read_search_client_surface_rows": 2045,
+      "mutation_capable_surface_rows": 128,
+      "model_calls": 0,
+      "quality_claim": false,
+      "training_use": false,
+      "raw_phase238_observation_files_present": false
+    },
+    "wrench_authorized_capture_candidate": {
+      "path": "C:/Users/stanc/github/lean-router/logs/wrench-capture/wrench-authorized-capture.jsonl",
+      "bytes": 42327168,
+      "sha256": "3C6E1E549A57D8B02FF20F5DCC27D061766050FA862D542808D9B381387420FE",
+      "metadata_rows": 397,
+      "owner_authorization_to_inspect_in_conversation": true,
+      "training_use_receipt": "absent",
+      "capture_redaction_claim": {
+        "status": "complete",
+        "method": "deterministic-pattern-v1",
+        "replacement_count_zero_rows": 155,
+        "independent_full_file_pii_review": false,
+        "source_hash_bound_receipt": false
+      },
+      "email_shaped_string_review_flags": 199,
+      "phase448_event_correlation": "397 capture IDs joined to dated event logs with partial event coverage; see Phase 448 README for counts and limitations",
+      "accepted_for_training": false,
+      "reason": "Owner permission covers inspection in this conversation, not third-party rights or a row-bound training-use receipt. Capture rows contain prompt/context values; the declared redactor covers selected credential patterns, not arbitrary PII. No independent full-file PII review or current-source hash-bound redaction receipt exists. Event correlation supplies routing/provider accounting and request-handling outcomes for an incomplete join, but does not supply Wrench action-family labels, independent verifier results, final coding-task correctness, provider cost, or full retry/correction accounting. The historical five-row snapshot does not cover the current source."
+    },
+    "decision": "Do not treat the capture as training-ready or infer Wrench action-family frequencies. Preserve the original and keep all derived candidates out of train/dev/final until independent PII review, training-use rights, task labels, and independent correctness oracles are established."
+  },
+  "validator_audit": {
+    "compile": "pass",
+    "validator_sha256": "8B37B8A68E942A3F2FEA3D0996CEB6647C66302048FB760E3C2B80A173CAB21E",
+    "isolation_test_sha256": "63DBFF4264B29D8AA0580833258123F12190504436ABEE3DA3D5BE4230096998",
+    "focused_isolation_tests": "18 passed in root independent rerun",
+    "current_manifest_command": "py -3 phases/phase-447-wrench-training-data-corpus/validate_corpus.py --manifest dataset/manifest.json --structural-only",
+    "current_manifest_result": "FAIL; this is the external-bundle disposition manifest, not a wrench.corpus-manifest.v1 corpus manifest.",
+    "train_rows": 0,
+    "development_rows": 0,
+    "sealed_final_read": false,
+    "sealed_final_read_scope": "This validator invocation only; overall final-set exposure remains unresolved.",
+    "errors": 29,
+    "known_gaps": [
+      "Near-duplicate and repository/task-family split isolation checks were added, but the validator has not been independently run on an approved production corpus.",
+      "Path guards now check lexical and resolved sealed/final components before manifest and data reads; report collision checks cover lexical/resolved paths and detectable symlink/hardlink aliases. Filesystem race conditions and unsupported alias types are not independently proven absent.",
+      "Near-duplicate candidate work and diagnostics are bounded; the similarity threshold remains uncalibrated on an approved corpus.",
+      "Review receipts are not cryptographically bound to the row/model input being reviewed.",
+      "Consent, license, and redaction are manifest declarations; the validator does not verify independent evidence.",
+      "The validator never opens sealed_final, so it cannot detect final examples copied into train/dev under ordinary names; overall prior final-set exposure remains unresolved."
+    ]
+  },
+  "cross_validation": [
+    {
+      "scope": "quarantine hashes and active-path removal",
+      "result": "PASS"
+    },
+    {
+      "scope": "local source eligibility",
+      "result": "NO_APPROVED_SOURCE_FOUND"
+    },
+    {
+      "scope": "corpus readiness",
+      "result": "FAIL_CLOSED_ZERO_ACCEPTED_ROWS"
+    },
+    {
+      "scope": "supplemental 52-row authored batch shard hashes, counts, uniqueness, and semantic review",
+      "result": "STATIC_INTEGRITY_PASS_WITH_SEMANTIC_FINDINGS; 0 TRAINING_ACCEPTED"
+    },
+    {
+      "scope": "validator path isolation, report collision, bounded diagnostics, and compile checks",
+      "result": "ROOT_INDEPENDENT_RERUN_PASS; 18 TESTS; FINAL FILE HASHES MATCH"
+    }
+  ],
+  "required_next_input": "The known capture has owner permission for inspection and partial event joins, so a new path is not required yet. Required before any training use: a hash-bound independent PII review, training-use rights including third-party coverage where applicable, six-action labels, independent verifier and final-task correctness results, and complete per-request cost/retry/correction and observation-window evidence."
+}

@@ -146,10 +146,12 @@ general retrieval or end-to-end workflow win. The SWE-Explore and ContextBench
 runs loaded the pre-change source. ContextBench's first attempt collapsed
 three FasterXML modules to one dataset alias and stopped after 184 saved rows.
 The corrected runner maps each instance to its canonical module repository; it
-has saved 300/500 rows and is still active. SWE-Explore has 296 rows flushed
-and 312 scorer completions observed around 07:54 MDT. Neither full run
-measures the later BM25 candidate. Do not attribute either outside suite to
-the candidate.
+has saved 309/500 rows and is still active. SWE-Explore has 320 detail rows
+flushed (319 scored, one error) and resumed from those receipts after a
+resource-snapshot timeout; it was at case 330/848 on the latest snapshot.
+Several released snapshots also omit paths referenced by the trajectory and
+are recorded as case errors. Neither full run measures the later BM25
+candidate. Do not attribute either outside suite to the candidate.
 
 Published Qwen embedding rows in ARB and Qwen leaderboard rows in ContextBench
 are not paired Wrench-versus-model results. A direct retrieval comparison
@@ -309,7 +311,118 @@ are disjoint from calibration and prior development sets. Calibration
 SHA-256 is `fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d`;
 development SHA-256 is
 `a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087`.
-V7 training started after the matched Qwen3.5 27B V6 run released GPU headroom;
-the run receipt will determine whether the candidate can proceed to comparison.
-V7 must still meet the strict zero-prohibited-acceptance gate and recover
-eligible coverage before it can count as a utility improvement.
+V7 training completed with head SHA-256
+`570624eb8be2f5406bc414f354ebcc53c4d54377249cfdea8a29288b190821de` and
+threshold `0.9671169384`. On the fresh original-prompt split, Wrench scored
+58/80 (72.5%), accepted 10/32 eligible requests, and made zero unsafe
+continuations. Qwen3.5 9B scored 67/80 (83.75%), accepted 27/32, and made 8/48
+unsafe continuations. Its paired accuracy lead was 11.25 points with 95% CI
+[-6.25, +26.25]; its balanced-accuracy lead had CI [+5.95, +29.67]. Qwen3.5
+27B scored 80/80, accepted 32/32, and made zero unsafe continuations. Its
+paired accuracy lead was 27.5 points (95% CI [+18.75, +36.25]). Wrench's
+gate p50/p95 latency was 225/290 ms, compared with 253/314 ms for 9B and
+4,322/6,444 ms for 27B. This is a fast fail-closed result with a substantial
+eligible-coverage gap, not an accuracy or utility win. The secondary plain
+prompt results favor Wrench but remain robustness diagnostics. The V7 head
+does not meet the utility objective; do not enable it or tune against this
+development split.
+
+## V8 fresh holdout and matched baseline update
+
+V8's 338-row calibration split and fresh 128-row development split are
+frozen in `internal/system-one-v8-data/`. Calibration SHA-256 is
+`eb3494574d846463cf0f1d302c0eee82eccede3d506399b1608bcfa7329282a5`;
+development SHA-256 is
+`2ebf1835d2ae96c4a151ab35d8051fb7f9cabb2ba4436682d2a2fd6ec3e8c7bd`.
+Neither split reads the sealed final data. V7 development informs the wording
+direction only and is used for overlap auditing, never for V8 labels or
+threshold selection.
+
+The calibration-only comparison of positive class weights 1 and 2 selected
+weight 1. Both had zero unsafe continuations on held-out calibration templates.
+Weight 1 coverage was 42.1% with the system prompt and 60.5% in plain style;
+weight 2 was 42.1% and 57.9%. V8 weight-1 head SHA-256 is
+`2a07de87fc94159a6ada211587b15a9f2c46daea62fd7f2f50628b2af5844c22`.
+
+On fresh V8 development, Wrench with its system prompt scored 95/128 overall
+(74.2%), balanced accuracy 65.6%, 15/48 eligible coverage (31.3%), and zero
+unsafe continuations. Qwen3.5 9B scored 107/128 (83.6%), balanced accuracy
+81.0%, 34/48 eligible coverage (70.8%), and 7/80 unsafe continuations
+(8.75%). The paired template-cluster bootstrap gives Qwen an accuracy lead of
+9.4 points (95% CI +0.8 to +18.0) and a balanced-accuracy lead of 15.4 points
+(95% CI +5.5 to +25.6). Thus Qwen wins the primary system-prompt quality
+comparison, while Wrench retains zero unsafe continuations at lower coverage.
+
+On the plain-prompt diagnostic, Wrench scored 112/128 (87.5%), balanced
+accuracy 83.3%, 32/48 eligible coverage, and zero unsafe continuations. Qwen
+scored 53/128 (41.4%), balanced accuracy 51.9%, 45/48 eligible coverage, and
+72/80 unsafe continuations (90%). This establishes a Wrench robustness signal
+under removal of the capability prompt, not a deployment-condition win.
+Qwen3.5 27B on the same V8 cases scored 126/128 (98.4%) with the original
+system prompt, accepted 47/48 eligible requests, and made one unsafe
+continuation. On plain prompts it scored 74/128 (57.8%), accepted 3/48, and
+made 9/80 unsafe continuations. Its primary paired accuracy lead over Wrench
+was 24.2 points (95% CI [+16.4, +32.0]). The V8 Wrench latency sample
+overlapped GPU work from the external retrieval runs and is not an isolated
+speed result. Do not enable this head or claim overall superiority from the
+secondary prompt condition.
+
+### V8 calibration audit
+
+The selected W1 threshold was `0.9615127`, set by the maximum negative score
+across both prompt styles. The plain-style calibration negative maximum was
+`0.9615027`, while the original-style maximum was `0.5588244`. The production
+path uses the original system prompt; allowing a diagnostic plain-prompt score
+to determine its threshold unnecessarily suppressed eligible acceptance.
+Replaying the original-only calibration threshold against the already-scored
+V8 predictions yields 47/48 eligible accepts and 2/80 unsafe continuations.
+That is a calibration audit on an inspected split, not a fresh validation
+result and not a Gate B pass. It does show that the prior threshold rule
+confounded the primary and diagnostic conditions.
+
+`tools/train_qwen_abstain.py` now chooses the production threshold from
+original-style calibration negatives only. Plain-style calibration metrics
+remain in the receipt, but do not set the threshold. V8 development is retired
+from future evaluation and is reused only as training/calibration material in
+V9.
+
+### V9 fresh all-action evaluation
+
+`build_system_one_v9_data.py` froze 466 calibration rows and 224 fresh
+development rows under `internal/system-one-v9-data/`. The calibration combines
+the prior V8 calibration with retired V8 development. V9 development has eight
+template groups for each of the six allowlisted actions, each group pairing
+two eligible requests with two boundary abstentions, plus eight groups of
+out-of-domain requests. Calibration SHA-256 is
+`cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43`;
+development SHA-256 is
+`ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49`. The
+builder verifies exact prompt and template separation from the fresh split,
+the previous development prompts, and calibration. The sealed final split
+remains unread.
+
+The V9 head training run uses positive-class weight 1, the frozen Qwen
+backbone, and original-style-only threshold calibration. Its output is stored
+on D under `internal/system-one-v9/`. The head SHA-256 is
+`4ba61d3ffb419f8ca5c7e050bdaf11719f78a4d45fbfbbec3f4c3670464956dc`, with
+threshold `0.5464368327`. On fresh V9 development, Wrench scored 163/224
+(72.8%), accepted 44/96 eligible requests (45.8%), and passed 9/128 boundary
+requests unsafely (7.0%). This fails Gate B's zero-prohibited-accepts rule.
+
+Local Qwen3.5 9B was scored on the exact same cases with no provider calls. It
+scored 201/224 (89.7%), accepted 87/96 eligible requests (90.6%), and made
+14/128 unsafe passes (10.9%). Qwen's paired template-cluster accuracy lead is
+17.0 points (95% CI [+9.8, +24.1]); its balanced-accuracy lead is 20.4 points
+(95% CI [+12.6, +28.1]). Wrench is perfect on the `git_read_status` family
+(32/32, including 16/16 eligible requests) while Qwen scores 25/32, but that
+family result does not offset Wrench's aggregate loss or safety-gate failure.
+Local Qwen3.5 27B Q4_K_M was also scored on the same 224 primary-condition
+cases with ten GPU layers and no provider calls. It scored 202/224 (90.2%),
+accepted 82/96 eligible requests (85.4%), and made 8/128 unsafe passes
+(6.3%). Its paired template-cluster accuracy lead is 17.4 points (95% CI
+[+11.2, +23.7]); its balanced-accuracy lead is 20.2 points (95% CI
+[+13.6, +26.7]). Wrench scores 32/32 on `git_read_status`, one case above
+Qwen3.5 27B's 31/32, but loses the aggregate comparison and fails the strict
+zero-prohibited-accepts gate. The interrupted mixed-style run is retained
+separately; only the complete primary-condition comparison is used here. No
+candidate is enabled, and no final-split data was read.

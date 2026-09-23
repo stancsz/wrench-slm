@@ -70,7 +70,7 @@ def resource_sample() -> dict[str, int | str | None]:
     output = subprocess.check_output(
         ["nvidia-smi", "--query-gpu=memory.free,memory.total", "--format=csv,noheader,nounits"],
         text=True,
-        timeout=5,
+        timeout=20,
     )
     free_mib, total_mib = [int(part.strip()) for part in output.splitlines()[0].split(",", 1)]
     row["vram_free_bytes"] = free_mib * 1024 * 1024
@@ -386,13 +386,18 @@ def main() -> int:
     ).strip()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--full-suite", action="store_true", help="score all 848 official tasks sequentially")
+    parser.add_argument("--resume", action="store_true", help="resume a full-suite run from flushed per-case receipts")
     args = parser.parse_args()
+    if args.resume and not args.full_suite:
+        parser.error("--resume requires --full-suite")
     if args.full_suite:
         RUN_DIR = EXT / "runs" / "wrench-contextledger-full848-v1"
         SAMPLE_FILE = RUN_DIR / "sample-manifest.json"
         PREDICTIONS_FILE = RUN_DIR / "predictions.jsonl"
         DETAILS_FILE = RUN_DIR / "details.jsonl"
         SUMMARY_FILE = RUN_DIR / "summary.json"
+    if args.resume and not (SAMPLE_FILE.exists() and PREDICTIONS_FILE.exists() and DETAILS_FILE.exists()):
+        raise RuntimeError("Cannot resume: full-suite sample manifest or flushed receipts are missing")
     before = resource_sample()
     enforce_reserve(before)
     rows, issue_map = load_rows()
@@ -410,10 +415,41 @@ def main() -> int:
     metrics_by_case: dict[str, dict[str, dict[str, float]]] = defaultdict(dict)
     receipts: list[dict] = []
     errors: list[dict[str, str]] = []
+    completed_ids: set[str] = set()
+    if args.resume:
+        for line in DETAILS_FILE.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            detail = json.loads(line)
+            iid = str(detail.get("instance_id", ""))
+            wrench = detail.get("wrench")
+            if not iid or not isinstance(wrench, dict):
+                continue
+            completed_ids.add(iid)
+            wrench_metrics = wrench["metrics"]
+            metrics_by_method["wrench_contextledger_search"].append(wrench_metrics)
+            metrics_by_case[iid]["wrench_contextledger_search"] = wrench_metrics
+            issue = issue_map[iid]
+            receipts.append({
+                "instance_id": iid,
+                "status": "scored",
+                "repo": issue["repo"],
+                "base_commit": issue["base_commit"],
+                "elapsed_seconds": detail.get("elapsed_seconds", 0.0),
+                **detail.get("index", {}),
+            })
+            for model, outside in detail.get("outside_trajectories", {}).items():
+                method = f"trajectory:{model}"
+                outside_metrics = outside["metrics"]
+                metrics_by_method[method].append(outside_metrics)
+                metrics_by_case[iid][method] = outside_metrics
     started = time.perf_counter()
-    with PREDICTIONS_FILE.open("w", encoding="utf-8") as predictions_out, DETAILS_FILE.open("w", encoding="utf-8") as details_out, httpx.Client(follow_redirects=True, headers={"User-Agent": "Wrench-SWE-Explore-Evaluation/1.0"}) as client:
+    output_mode = "a" if args.resume else "w"
+    with PREDICTIONS_FILE.open(output_mode, encoding="utf-8") as predictions_out, DETAILS_FILE.open(output_mode, encoding="utf-8") as details_out, httpx.Client(follow_redirects=True, headers={"User-Agent": "Wrench-SWE-Explore-Evaluation/1.0"}) as client:
         for case_idx, selected in enumerate(sample, start=1):
             iid = selected["instance_id"]
+            if iid in completed_ids:
+                continue
             issue = issue_map[iid]
             bench_row = bench_by_id[iid]
             resources = resource_sample()
@@ -468,6 +504,7 @@ def main() -> int:
                     }
                     details_out.write(json.dumps(detail, ensure_ascii=False) + "\n")
                     receipts.append({"instance_id": iid, "status": "scored", "repo": issue["repo"], "base_commit": issue["base_commit"], "elapsed_seconds": detail["elapsed_seconds"], **index_receipt})
+                    completed_ids.add(iid)
             except Exception as exc:
                 errors.append({"instance_id": iid, "repo": issue["repo"], "base_commit": issue["base_commit"], "error": f"{type(exc).__name__}: {exc}"})
                 details_out.write(json.dumps({**selected, "status": "error", "error": errors[-1]["error"]}, ensure_ascii=False) + "\n")
@@ -484,6 +521,7 @@ def main() -> int:
         "official_suite_rows": len(rows),
         "pilot_rows": len(sample),
         "scored_rows": len(receipts),
+        "resumed_from_flushed_rows": len(completed_ids) if args.resume else 0,
         "failed_rows": len(errors),
         "sample_seed": None if args.full_suite else SEED,
         "sample_per_source": None if args.full_suite else PER_SOURCE,

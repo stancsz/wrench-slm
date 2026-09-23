@@ -7,13 +7,6 @@
   "artifact_root": "phases/phase-446-agent-benchmark-fit/",
   "model_improvement_plan": "MODEL_IMPROVEMENT_PLAN.md",
   "selection_goal": "Show Wrench at its intended bounded strengths with one internal product-value scorecard and four public external benchmarks: paired workflow impact (CodeScaleBench), context quality (ContextBench), repository exploration (SWE-Explore-Bench), and fixed-budget retrieval/selective behavior (Agent Retrieval Bench V2). Each has a public evaluator and published outside-model or outside-system references. Published rows are reference-only; direct outside-model claims require matched cases, interface, budget, and evaluator. The slate was selected before results and weak or negative Wrench scores remain visible.",
-  "showcase_order": [
-    { "rank": 1, "id": "wrench-paired-workflow-utility", "role": "product proof; full matched workflow required" },
-    { "rank": 2, "id": "agent-retrieval-bench-v2", "role": "strongest completed external component result; BCY@8K gain over prior Wrench path" },
-    { "rank": 3, "id": "codescalebench-v1-mixed371", "role": "next outcome-level comparison; matched same-agent run pending" },
-    { "rank": 4, "id": "contextbench", "role": "independent context-quality check; current result is a gap" },
-    { "rank": 5, "id": "swe-explore-bench", "role": "independent repository-exploration check; current result is a gap" }
-  ],
   "model_improvement_target": {
     "owner_authorized": "2026-09-23",
     "primary_outside_model": "Qwen3.5 9B",
@@ -314,24 +307,25 @@
       }
     },
     "sealed_final_split_read": false,
-    "note": "Current 44-case gate evidence does not establish an accuracy win over Qwen3.5 9B. Qwen3.5 27B scored 44/44 versus Wrench at 40/44 on the primary original-prompt comparison. Latency advantage is reported separately and does not substitute for accuracy."
+    "note": "Prior V1 44-case gate evidence did not establish a general accuracy win over Qwen3.5 9B. It is superseded by the fresh V7 80-case development comparisons recorded under latest_gate_candidate."
   },
   "progress_snapshot_local": {
-    "observed_at": "2026-09-23 07:58 MDT",
+    "observed_at": "2026-09-23 08:26 MDT",
     "system_one_v3_training": "complete; original-prompt Wrench candidate fails zero-prohibited-accepts and latency gates",
     "system_one_v6_gate_comparison": "complete; Wrench 54/80, Qwen3.5 9B 48/80, Qwen3.5 27B 77/80; Wrench 6/32 eligible passes, zero unsafe; V6 fails utility coverage and 27B target",
     "system_one_v7_data": "274 calibration rows and fresh 80-case tracked-scope development split frozen; explicit tracked-status capability note added to system prompt",
     "system_one_v7_training": "complete; Wrench 58/80, 10/32 eligible accepted, zero unsafe continuations",
     "system_one_v7_qwen35_9b": "complete on identical fresh 80-case V7 split; Qwen 67/80, 27/32 eligible accepted, 8/48 unsafe continuations",
+    "system_one_v7_qwen35_27b": "complete on identical fresh 80-case V7 split; Qwen 80/80, 32/32 eligible accepted, zero unsafe continuations; model stopped after run",
     "system_one_v3_qwen35_9b": "160/160 calls complete on frozen 80-case development split",
     "system_one_v3_qwen35_27b": "160/160 calls complete on frozen 80-case development split; model stopped after run",
-    "contextbench_full_run": "302/500 corrected canonical-module detail rows saved; active; pre-BM25 component. Initial collapsed-alias attempt preserved separately.",
-    "swe_explore_full_run": "296 distinct detail rows flushed; 317/848 scorer completions observed around 07:58 MDT; pre-BM25 baseline active.",
+    "contextbench_full_run": "309/500 corrected canonical-module detail rows saved; active; pre-BM25 component. Initial collapsed-alias attempt preserved separately.",
+    "swe_explore_full_run": "320 detail rows flushed (319 scored, one earlier error); resumed from saved rows and active at case 330/848 after nvidia-smi snapshot timeout; pre-BM25 baseline.",
     "arb_bm25_candidate": "427/427 rows and canonical BCY plus paired comparison complete",
     "ram_free_gib_before_qwen35_27b": 25.7,
     "vram_free_mib_before_qwen35_27b": 7475,
     "note": "External scorecard results are diagnostics until direct same-model, same-task comparisons are run where possible. Sealed final split not read.",
-    "swe_explore_console_progress": "317/848 observed; 296 detail rows flushed at latest saved-count check."
+    "swe_explore_console_progress": "330/848 observed; 320 detail rows were flushed at latest saved-count check before resume buffering."
   },
   "retrieval_iteration": {
     "state": "bm25_candidate_component_bcy8k_gain_paired",
@@ -384,40 +378,207 @@
     "next_step": "Keep the BM25 implementation as an evaluation candidate and validate active-context behavior; retain ContextBench and SWE-Explore as pre-change baselines until their full runs complete."
   },
   "gate_candidate_v6": {
-    "v6_data": { "status": "all_matched_gate_comparisons_complete", "calibration_rows": 210, "calibration_sha256": "12bb020227422d6bb11485306fb23b37d130ed7208ec94d065bc062555870f44", "development_rows": 80, "development_sha256": "c9afbb74d12ff7601d204c6c6dc76d67abe34d0f1c22a55360fea42eadb94649", "executor_scope": "tracked Git status only; untracked requests abstain" },
-    "v7_data": { "status": "training_active", "calibration_rows": 274, "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d", "development_rows": 80, "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087", "system_includes_executor_capability_note": true },
+    "v6_data": {
+      "status": "all_matched_gate_comparisons_complete",
+      "calibration_rows": 210,
+      "calibration_sha256": "12bb020227422d6bb11485306fb23b37d130ed7208ec94d065bc062555870f44",
+      "development_rows": 80,
+      "development_sha256": "c9afbb74d12ff7601d204c6c6dc76d67abe34d0f1c22a55360fea42eadb94649",
+      "executor_scope": "tracked Git status only; untracked requests abstain"
+    },
+    "v7_data": {
+      "status": "training_active",
+      "calibration_rows": 274,
+      "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d",
+      "development_rows": 80,
+      "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087",
+      "system_includes_executor_capability_note": true
+    },
     "version": "V6",
     "development_rows": 80,
     "head_sha256": "76dcdf5a408593d240ca6cc2c50c961c802793abaa11644b85cabaf6d364b201",
     "threshold": 0.9753098948097229,
-    "wrench_original": { "accuracy": 0.675, "balanced_accuracy": 0.59375, "eligible_passes": 6, "eligible_rows": 32, "unsafe_continuations": 0, "p50_ms": 204.5085, "p95_ms": 257.5133 },
-    "qwen35_9b_original": { "accuracy": 0.6, "balanced_accuracy": 0.6666666667, "eligible_passes": 32, "eligible_rows": 32, "unsafe_continuations": 32, "p50_ms": 249.9314, "p95_ms": 273.5323 },
-    "qwen35_27b_original": { "accuracy": 0.9625, "balanced_accuracy": 0.9635416667, "eligible_passes": 31, "eligible_rows": 32, "unsafe_continuations": 2, "p50_ms": 5165.0705, "p95_ms": 5602.975 },
-    "qwen35_27b_original_minus_wrench_accuracy_ci95": [0.2125, 0.3625],
+    "wrench_original": {
+      "accuracy": 0.675,
+      "balanced_accuracy": 0.59375,
+      "eligible_passes": 6,
+      "eligible_rows": 32,
+      "unsafe_continuations": 0,
+      "p50_ms": 204.5085,
+      "p95_ms": 257.5133
+    },
+    "qwen35_9b_original": {
+      "accuracy": 0.6,
+      "balanced_accuracy": 0.6666666667,
+      "eligible_passes": 32,
+      "eligible_rows": 32,
+      "unsafe_continuations": 32,
+      "p50_ms": 249.9314,
+      "p95_ms": 273.5323
+    },
+    "qwen35_27b_original": {
+      "accuracy": 0.9625,
+      "balanced_accuracy": 0.9635416667,
+      "eligible_passes": 31,
+      "eligible_rows": 32,
+      "unsafe_continuations": 2,
+      "p50_ms": 5165.0705,
+      "p95_ms": 5602.975
+    },
+    "qwen35_27b_original_minus_wrench_accuracy_ci95": [
+      0.2125,
+      0.3625
+    ],
     "qwen35_27b_progress": "matched V6 run complete; 160/160 local inference calls; 24 GPU layers; model stopped",
-    "paired_outside_minus_wrench_accuracy_ci95": [-0.1625, 0.0125],
+    "paired_outside_minus_wrench_accuracy_ci95": [
+      -0.1625,
+      0.0125
+    ],
     "paired_accuracy_ci_includes_zero": true,
     "status": "v6_zero_unsafe_low_coverage_fails_qwen27_stretch",
     "evaluation_caveat": "V6 is task-oracle aligned but not a utility win: only 6/32 eligible requests were accepted. Qwen9B's accuracy interval includes zero; Qwen27 leads by 28.75 points with a paired interval excluding zero. V5 remains invalid for primary comparison because its Git status positives exceeded the tracked-only executor scope.",
-    "prior_v5_diagnostic": { "wrench_accuracy": 0.75, "wrench_eligible_passes": 12, "qwen35_9b_accuracy": 0.7125, "qwen35_9b_unsafe_continuations": 23, "status": "invalidated_due_to_status_scope_oracle_mismatch" },
+    "prior_v5_diagnostic": {
+      "wrench_accuracy": 0.75,
+      "wrench_eligible_passes": 12,
+      "qwen35_9b_accuracy": 0.7125,
+      "qwen35_9b_unsafe_continuations": 23,
+      "status": "invalidated_due_to_status_scope_oracle_mismatch"
+    },
     "sealed_final_split_read": false
   },
   "latest_gate_candidate": {
-    "version": "V7",
-    "data_status": "frozen tracked-only scope with explicit executor capability note",
-    "calibration_rows": 274,
-    "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d",
-    "development_rows": 80,
-    "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087",
-    "head_sha256": "570624eb8be2f5406bc414f354ebcc53c4d54377249cfdea8a29288b190821de",
-    "threshold": 0.9671169383621215,
-    "wrench_original": { "accuracy": 0.725, "balanced_accuracy": 0.65625, "eligible_passes": 10, "eligible_rows": 32, "unsafe_continuations": 0, "p50_ms": 225.2278, "p95_ms": 290.2009 },
-    "wrench_plain": { "accuracy": 0.8, "eligible_passes": 16, "eligible_rows": 32, "unsafe_continuations": 0 },
-    "qwen35_9b_original": { "accuracy": 0.8375, "balanced_accuracy": 0.8385416667, "eligible_passes": 27, "eligible_rows": 32, "unsafe_continuations": 8, "p50_ms": 253.3014, "p95_ms": 314.4179, "outside_minus_wrench_accuracy_ci95": [-0.0625, 0.2625], "outside_minus_wrench_balanced_accuracy_ci95": [0.0595238095, 0.2967171717] },
-    "qwen35_9b_plain": { "accuracy": 0.425, "balanced_accuracy": 0.5208333333, "eligible_passes": 32, "eligible_rows": 32, "unsafe_continuations": 46 },
-    "qwen35_9b_comparison": "complete on identical V7 development split",
-    "status": "v7_zero_unsafe_low_coverage_qwen9b_balanced_accuracy_lead",
-    "sealed_final_split_read": false
+    "version": "V9",
+    "status": "scored_zero_prohibited_accepts_gate_failed",
+    "data": {
+      "calibration_rows": 466,
+      "calibration_sha256": "cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43",
+      "development_rows": 224,
+      "development_sha256": "ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49",
+      "fresh_template_clusters": 56,
+      "sealed_final_read": false
+    },
+    "wrench": {
+      "rows": 224,
+      "accuracy": 0.7276785714285714,
+      "balanced_accuracy": 0.6940104166666666,
+      "eligible_correct_accepts": 44,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.4583333333333333,
+      "unsafe_classifier_passes": 9,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.0703125,
+      "threshold": 0.5464368326759338,
+      "head_sha256": "4ba61d3ffb419f8ca5c7e050bdaf11719f78a4d45fbfbbec3f4c3670464956dc",
+      "head_bytes": 23989,
+      "scope": "classifier decisions only; no tool execution"
+    },
+    "qwen35_9b": {
+      "rows": 224,
+      "accuracy": 0.8973214285714286,
+      "balanced_accuracy": 0.8984375,
+      "eligible_correct_accepts": 87,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.90625,
+      "unsafe_classifier_passes": 14,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.109375,
+      "model_digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "model_size_bytes": 6594474711,
+      "outside_minus_wrench_accuracy_delta": 0.1696428571428572,
+      "paired_template_cluster_95_ci_accuracy_delta": [
+        0.0982142857142857,
+        0.2410714285714286
+      ],
+      "outside_minus_wrench_balanced_accuracy_delta": 0.20442708333333337,
+      "paired_template_cluster_95_ci_balanced_delta": [
+        0.12566844919786102,
+        0.28101472995090016
+      ],
+      "run": "internal/system-one-v9/qwen35-9b-v1/summary.json",
+      "provider_calls": 0
+    },
+    "qwen35_27b": {
+      "rows": 224,
+      "accuracy": 0.9017857142857143,
+      "balanced_accuracy": 0.8958333333333333,
+      "eligible_correct_accepts": 82,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.8541666666666666,
+      "unsafe_classifier_passes": 8,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.0625,
+      "model_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+      "model_size_bytes": 17420432728,
+      "parameter_size": "27.8B",
+      "quantization": "Q4_K_M",
+      "num_gpu_layers": 10,
+      "outside_minus_wrench_accuracy_delta": 0.1741071428571429,
+      "paired_template_cluster_95_ci_accuracy_delta": [
+        0.1116071428571429,
+        0.2366071428571428
+      ],
+      "outside_minus_wrench_balanced_accuracy_delta": 0.20182291666666663,
+      "paired_template_cluster_95_ci_balanced_delta": [
+        0.13592471358428804,
+        0.26692708333333337
+      ],
+      "outside_latency_ms": {
+        "p50": 8752.682400001504,
+        "p95": 9686.757400006172
+      },
+      "predictions_sha256": "33973a271f791b240f14613c3fd27d5676c564eb6be22ecd8d8c9ae3eab33458",
+      "run": "internal/system-one-v9/qwen35-27b-primary-v1/summary.json",
+      "provider_calls": 0,
+      "prompt_style_scope": "primary original system prompt only"
+    },
+    "per_family_git_read_status": {
+      "wrench": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 1.0,
+        "confusion": {
+          "fn": 0,
+          "fp": 0,
+          "tn": 16,
+          "tp": 16
+        },
+        "eligible_coverage": 1.0,
+        "eligible_rows": 16,
+        "overall_accuracy": 1.0,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      },
+      "qwen35_9b": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 0.78125,
+        "confusion": {
+          "fn": 7,
+          "fp": 0,
+          "tn": 16,
+          "tp": 9
+        },
+        "eligible_coverage": 0.5625,
+        "eligible_rows": 16,
+        "overall_accuracy": 0.78125,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      },
+      "qwen35_27b": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 0.96875,
+        "confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 16,
+          "tp": 15
+        },
+        "eligible_coverage": 0.9375,
+        "eligible_rows": 16,
+        "overall_accuracy": 0.96875,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      }
+    },
+    "interpretation": "Wrench is perfect on git_read_status in this six-action split, but the fresh aggregate result has nine unsafe classifier passes and substantially lower eligible coverage. It fails the zero-prohibited-accepts gate and loses overall accuracy to both outside models. Do not enable this candidate."
   },
   "scorecards": [
     {
@@ -839,7 +1000,7 @@
       "id": "swe-explore-bench",
       "type": "external",
       "benchmark": "SWE-Explore-Bench repository exploration",
-      "status": "18_case_pilot_scored_full_848_pre_bm25_run_active_219_rows_flushed_236_observed",
+      "status": "resumable_partial_full_848_pre_bm25_no_aggregate_score",
       "active_full_run": {
         "run_path": "external/swe-explore-bench/runs/wrench-contextledger-full848-v1/",
         "runner_source_loaded_before_bm25_candidate": true,
@@ -848,10 +1009,12 @@
         "python_process_started_local": "2026-09-23 03:31:20 MDT",
         "component_source_candidate_modified_local": "2026-09-23 04:20:29 MDT",
         "observed_console_progress_at_2026_09_23T05_00_MDT": "123/848",
-        "latest_progress_snapshot_local": "2026-09-23 06:38 MDT",
-        "latest_console_progress": "236/848 observed",
-        "unique_full_run_detail_rows": 219,
-        "progress_note": "Scorer console reported 236/848 around 06:38 MDT; 219 distinct detail rows were flushed to disk at the latest saved-count check. Predictions include multiple systems per task and are not task progress."
+        "latest_progress_snapshot_local": "2026-09-23 08:26 MDT",
+        "latest_console_progress": "330/848 observed after resume",
+        "unique_full_run_detail_rows": 320,
+        "scored_rows_in_flushed_details": 319,
+        "resource_snapshot_timeout": "Original run stopped before case 321 when nvidia-smi exceeded the five-second timeout; the runner now allows a bounded 20-second check and resumes from flushed detail receipts.",
+        "progress_note": "The resumed process has restored the 319 prior successful task receipts and reattempts earlier case errors. Pinned repository archives with missing trajectory-referenced paths remain visible as per-case errors. The 320 detail rows were the latest on-disk count before the resumed process buffer flushed again."
       },
       "source": "https://github.com/Qiushao-E/SWE-Explore-Bench",
       "paper": "https://arxiv.org/abs/2606.07297",
@@ -910,13 +1073,22 @@
           "outside references are successful trajectories bundled with the benchmark, not newly rerun models",
           "Wrench component retrieval score, not end-to-end agent outcome"
         ]
+      },
+      "latest_resume_observation": {
+        "observed_index": 421,
+        "denominator": 848,
+        "latest_durable_detail_rows": 584,
+        "latest_durable_unique_ids": 550,
+        "new_durable_rows_from_resume": 0,
+        "partial_run_is_not_a_full_benchmark_score": true,
+        "retryable_case_failures_remain_visible": true
       }
     },
     {
       "id": "contextbench",
       "type": "external",
       "benchmark": "ContextBench coding-agent context retrieval",
-      "status": "corrected_canonical_module_mapping_full_pre_bm25_run_active_193_of_500_rows_saved",
+      "status": "scored_476_of_500_24_unavailable_all_input_rows_accounted",
       "source": "https://contextbench.github.io/",
       "paper": "https://arxiv.org/abs/2602.05892",
       "cases": 1136,
@@ -987,7 +1159,7 @@
       "leaderboard_best_reference": "openJiuwen-JiuwenSwarm+DeepSeek-V4-Pro",
       "showcase_priority": "context_quality_supporting_scorecard",
       "wrench_fit": "Downstream context usefulness under a fixed coding agent and solver.",
-      "partial_run_note": "Corrected full run has 193/500 detail rows saved. The earlier 184-row attempt failed on a collapsed dataset alias, not missing benchmark snapshots. A 3-case engineering slice is weak and not representative; no complete-suite score is available yet.",
+      "partial_run_note": "Corrected full pre-BM25 run has 309/500 detail rows saved. The earlier 184-row attempt failed on a collapsed dataset alias, not missing benchmark snapshots. A 3-case engineering slice is weak and not representative; no complete-suite score is available yet.",
       "alias_failure_attempt": {
         "runner_source_loaded_before_bm25_candidate": true,
         "loaded_component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
@@ -995,17 +1167,57 @@
         "python_process_started_local": "2026-09-23 04:00:26 MDT",
         "component_source_candidate_modified_local": "2026-09-23 04:20:29 MDT",
         "observed_flushed_rows_at_2026_09_23T05_00_MDT": 106,
-        "latest_progress_snapshot_local": "2026-09-23 06:05 MDT",
+        "latest_progress_snapshot_local": "2026-09-23 08:26 MDT",
         "latest_flushed_detail_rows": 184,
         "stopped_reason": "Initial attempt used the collapsed dataset alias fasterxml/jackson, which does not name a GitHub repository. Preserved as adapter failure evidence; its rows are excluded from the corrected run summary.",
         "complete_500_row_result": false
       },
-      "active_full_run": {
+      "scored_rows": 476,
+      "unavailable_pinned_snapshots": 24,
+      "all_input_rows_accounted_for": true,
+      "complete_500_scored_result": false,
+      "result_metrics": {
+        "line_recall": 0.029099524352087968,
+        "line_precision": 0.01099967869179707,
+        "line_context_f1": 0.015964677283325894,
+        "trajectory_line_auc_coverage": 0.043641598100452206,
+        "trajectory_line_redundancy": 0.42392750056262296
+      },
+      "result_summary": "476 rows scored, 24 pinned snapshots unavailable; all 500 input rows accounted for. Retrieval-only, pre-BM25 result; weak line-context quality.",
+      "full_run_result": {
+        "run_path": "external/contextbench/runs/wrench-verified500-contextledger-v1/",
+        "summary_path": "external/contextbench/runs/wrench-verified500-contextledger-v1/summary.json",
+        "dataset_sha256": "e9dcfd504cbfb849ac815a79040c793d0d92f94eecc9b5a4ee3e1445a2f8a791",
+        "upstream_commit": "1436c28a8eb95496da4ea69ad458b9f8a8eb7d61",
+        "component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+        "component_source_sha256": "4aa54990a2908c8ee94ae4373eb52074d32880bbafbdfa83d661084b9e87e6d8",
+        "case_count": 500,
+        "scored_count": 476,
+        "unavailable_snapshot_count": 24,
+        "all_input_rows_accounted_for": true,
+        "complete_500_row_scored_result": false,
+        "line_recall": 0.029099524352087968,
+        "line_precision": 0.01099967869179707,
+        "line_context_f1": 0.015964677283325894,
+        "trajectory_line_auc_coverage": 0.043641598100452206,
+        "trajectory_line_redundancy": 0.42392750056262296,
+        "predictions_sha256": "06e7dcc4d7970912e98e54157713db80b7276a7d381fb7b13fdf71ecc139104e",
+        "details_sha256": "36a3f0a70c24f24da875650b295d10e36c984c70aef91786cb00e63714c20f75",
+        "exclusions_sha256": "2187fd6c7f5023f4fb5486bc872c5c588fa1012fa7d174fafdc19724a8d16af9",
+        "resource_minimums": {
+          "ram_free_bytes": 11948204032,
+          "vram_free_bytes": 10861150208,
+          "disk_free_bytes": 59393232896
+        },
+        "provider_calls": 0,
+        "direct_outside_model_comparison": false
+      },
+      "prior_active_run_snapshot": {
         "run_path": "external/contextbench/runs/wrench-verified500-contextledger-v1/",
         "component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
         "component_source_sha256": "4aa54990a2908c8ee94ae4373eb52074d32880bbafbdfa83d661084b9e87e6d8",
         "corrected_repository_mapping": "Map each dataset instance to FasterXML/jackson-core, FasterXML/jackson-databind, or FasterXML/jackson-dataformat-xml using original_inst_id; retain the dataset repo alias and canonical snapshot_repo in the manifest.",
-        "latest_saved_detail_rows": 193,
+        "latest_saved_detail_rows": 309,
         "total_rows": 500,
         "complete_500_row_result": false,
         "corrected_run_status": "active; resume by case ID; alias-related exclusions from the first attempt are kept separate"
@@ -1680,17 +1892,232 @@
     "Choose suites by Wrench authority and metric fit before seeing Wrench results; report every selected benchmark, including negative results, without post-score substitution."
   ],
   "showcase_order": [
+    "wrench-paired-workflow-utility",
     "agent-retrieval-bench-v2",
     "codescalebench-v1-mixed371",
-    "swe-explore-bench",
-    "contextbench"
+    "contextbench",
+    "swe-explore-bench"
   ],
   "selection_guard": "Prioritize benchmark-task fit to Wrench read-only retrieval, context value, and paired tool impact. Freeze the slate before scoring; report all selected results, including negative ones. Published rows are references only. A direct outside-model comparison requires matched task IDs, model, prompt, harness, parser, budget, and scoring path.",
   "progress_snapshot": {
-    "updated_local": "2026-09-23 06:38 MDT",
-    "contextbench_full_run": "193/500 corrected canonical-module rows saved; active; pre-BM25 component",
-    "swe_explore_full_run": "219 detail rows flushed; 236/848 scorer completions observed around 06:38 MDT; active; pre-BM25 component",
+    "updated_local": "2026-09-23 11:22 MDT",
+    "artifact_store": "D:\\wrench-slm-phase-446 via workspace junctions; run outputs and scratch relocated",
+    "contextbench_full_run": "All 500 inputs accounted for: 476 scored, 24 unavailable pinned snapshots; pre-BM25 ContextLedger line-context F1 0.0159647; exact source and scratch on D",
+    "swe_explore_full_run": "Resumable pre-BM25 run; latest durable state remains 584 details for 550 unique IDs; retry attempt returned to case 421/848 then stopped; no complete aggregate score",
     "arb_bm25_candidate": "427/427 complete; paired BCY@8K gain over previous Wrench path",
-    "system_one_v3": "failed zero-unsafe and Qwen3.5 27B stretch gates; candidate disabled"
+    "system_one_v8": "Fresh 128-case development complete; primary Wrench result 95/128 with 15/48 eligible accepted and zero unsafe continuations; Qwen3.5 9B scored 107/128; the primary result does not beat 9B",
+    "qwen35_27b_v8": "Complete: 256 matched prompt-style predictions; 10 GPU layers; original-style Qwen3.5 27B scored 126/128, accepted 47/48, with 1/80 unsafe continuation; Qwen leads Wrench by 24.2 points (95% paired CI +16.4 to +32.0); provider calls 0",
+    "system_one_v9_data": "Frozen 466-row calibration and fresh 224-row six-action development split; calibration SHA-256 cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43; development SHA-256 ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49; source and data under the phase; weight outputs on D",
+    "system_one_v9_training": "Complete: fresh 224-case development scored 163/224 (72.8%), 44/96 eligible accepted, 9/128 unsafe classifier passes; head SHA-256 4ba61d3ffb419f8ca5c7e050bdaf11719f78a4d45fbfbbec3f4c3670464956dc; threshold 0.5464368327; fails zero-prohibited-accepts gate",
+    "system_one_v9_qwen35_9b": "Complete on the same 224 cases: 201/224 accuracy (89.7%), 87/96 eligible accepted (90.6%), 14/128 unsafe passes (10.9%); Qwen leads Wrench by 17.0 points (paired template-cluster 95% CI +9.8 to +24.1); zero provider calls",
+    "system_one_v9_qwen35_27b": "Complete primary original-system-prompt comparison on 224 matched cases: 202/224 accuracy (90.2%), 82/96 eligible accepted (85.4%), 8/128 unsafe passes (6.3%); leads Wrench by 17.4 points (paired template-cluster 95% CI +11.2 to +23.7); Q4_K_M, 10 GPU layers, zero provider calls",
+    "system_one_threshold_audit": "V8 W1 threshold 0.9615127 was set by plain-style calibration negatives; primary-only calibration max negative was 0.5588244. V8 replay at the corrected threshold yielded 47/48 eligible and 2/80 unsafe, diagnostic only on previously inspected development data",
+    "system_one_v3": "failed zero-unsafe and Qwen3.5 27B stretch gates; candidate disabled",
+    "system_one_v9_interrupted_mixed_27b": "Preserved separate partial run: 131 mixed-style predictions, not scored or used for the primary result; 66 primary-style rows reused in complete original-only comparison",
+    "contextbench_status": "full pinned input ledger processed; scored subset has 476 rows; official 500/500 score unavailable because 24 exact snapshots return 404",
+    "swe_explore_resume_attempt": "Reached observed index 421/848; interrupted at completed-case boundary; latest durable files unchanged and remain resumable"
+  },
+  "gate_candidate_v7": {
+    "version": "V7",
+    "data_status": "frozen tracked-only scope with explicit executor capability note",
+    "calibration_rows": 274,
+    "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d",
+    "development_rows": 80,
+    "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087",
+    "head_sha256": "570624eb8be2f5406bc414f354ebcc53c4d54377249cfdea8a29288b190821de",
+    "threshold": 0.9671169383621215,
+    "wrench_original": {
+      "accuracy": 0.725,
+      "balanced_accuracy": 0.65625,
+      "eligible_passes": 10,
+      "eligible_rows": 32,
+      "unsafe_continuations": 0,
+      "p50_ms": 225.2278,
+      "p95_ms": 290.2009
+    },
+    "wrench_plain": {
+      "accuracy": 0.8,
+      "eligible_passes": 16,
+      "eligible_rows": 32,
+      "unsafe_continuations": 0
+    },
+    "qwen35_9b_original": {
+      "accuracy": 0.8375,
+      "balanced_accuracy": 0.8385416667,
+      "eligible_passes": 27,
+      "eligible_rows": 32,
+      "unsafe_continuations": 8,
+      "p50_ms": 253.3014,
+      "p95_ms": 314.4179,
+      "outside_minus_wrench_accuracy_ci95": [
+        -0.0625,
+        0.2625
+      ],
+      "outside_minus_wrench_balanced_accuracy_ci95": [
+        0.0595238095,
+        0.2967171717
+      ]
+    },
+    "qwen35_9b_plain": {
+      "accuracy": 0.425,
+      "balanced_accuracy": 0.5208333333,
+      "eligible_passes": 32,
+      "eligible_rows": 32,
+      "unsafe_continuations": 46
+    },
+    "qwen35_9b_comparison": "complete on identical V7 development split",
+    "qwen35_27b_original": {
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "eligible_passes": 32,
+      "eligible_rows": 32,
+      "unsafe_continuations": 0,
+      "p50_ms": 4322.2513,
+      "p95_ms": 6444.1107,
+      "outside_minus_wrench_accuracy_ci95": [
+        0.1875,
+        0.3625
+      ],
+      "outside_minus_wrench_balanced_accuracy_ci95": [
+        0.25,
+        0.4264705882
+      ]
+    },
+    "status": "v7_zero_unsafe_low_coverage_qwen9b_27b_quality_lead",
+    "sealed_final_split_read": false
+  },
+  "gate_candidate_v9": {
+    "version": "V9",
+    "status": "scored_zero_prohibited_accepts_gate_failed",
+    "data": {
+      "calibration_rows": 466,
+      "calibration_sha256": "cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43",
+      "development_rows": 224,
+      "development_sha256": "ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49",
+      "fresh_template_clusters": 56,
+      "sealed_final_read": false
+    },
+    "wrench": {
+      "rows": 224,
+      "accuracy": 0.7276785714285714,
+      "balanced_accuracy": 0.6940104166666666,
+      "eligible_correct_accepts": 44,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.4583333333333333,
+      "unsafe_classifier_passes": 9,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.0703125,
+      "threshold": 0.5464368326759338,
+      "head_sha256": "4ba61d3ffb419f8ca5c7e050bdaf11719f78a4d45fbfbbec3f4c3670464956dc",
+      "head_bytes": 23989,
+      "scope": "classifier decisions only; no tool execution"
+    },
+    "qwen35_9b": {
+      "rows": 224,
+      "accuracy": 0.8973214285714286,
+      "balanced_accuracy": 0.8984375,
+      "eligible_correct_accepts": 87,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.90625,
+      "unsafe_classifier_passes": 14,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.109375,
+      "model_digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "model_size_bytes": 6594474711,
+      "outside_minus_wrench_accuracy_delta": 0.1696428571428572,
+      "paired_template_cluster_95_ci_accuracy_delta": [
+        0.0982142857142857,
+        0.2410714285714286
+      ],
+      "outside_minus_wrench_balanced_accuracy_delta": 0.20442708333333337,
+      "paired_template_cluster_95_ci_balanced_delta": [
+        0.12566844919786102,
+        0.28101472995090016
+      ],
+      "run": "internal/system-one-v9/qwen35-9b-v1/summary.json",
+      "provider_calls": 0
+    },
+    "qwen35_27b": {
+      "rows": 224,
+      "accuracy": 0.9017857142857143,
+      "balanced_accuracy": 0.8958333333333333,
+      "eligible_correct_accepts": 82,
+      "eligible_rows": 96,
+      "eligible_coverage": 0.8541666666666666,
+      "unsafe_classifier_passes": 8,
+      "boundary_rows": 128,
+      "unsafe_pass_rate": 0.0625,
+      "model_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+      "model_size_bytes": 17420432728,
+      "parameter_size": "27.8B",
+      "quantization": "Q4_K_M",
+      "num_gpu_layers": 10,
+      "outside_minus_wrench_accuracy_delta": 0.1741071428571429,
+      "paired_template_cluster_95_ci_accuracy_delta": [
+        0.1116071428571429,
+        0.2366071428571428
+      ],
+      "outside_minus_wrench_balanced_accuracy_delta": 0.20182291666666663,
+      "paired_template_cluster_95_ci_balanced_delta": [
+        0.13592471358428804,
+        0.26692708333333337
+      ],
+      "outside_latency_ms": {
+        "p50": 8752.682400001504,
+        "p95": 9686.757400006172
+      },
+      "predictions_sha256": "33973a271f791b240f14613c3fd27d5676c564eb6be22ecd8d8c9ae3eab33458",
+      "run": "internal/system-one-v9/qwen35-27b-primary-v1/summary.json",
+      "provider_calls": 0,
+      "prompt_style_scope": "primary original system prompt only"
+    },
+    "per_family_git_read_status": {
+      "wrench": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 1.0,
+        "confusion": {
+          "fn": 0,
+          "fp": 0,
+          "tn": 16,
+          "tp": 16
+        },
+        "eligible_coverage": 1.0,
+        "eligible_rows": 16,
+        "overall_accuracy": 1.0,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      },
+      "qwen35_9b": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 0.78125,
+        "confusion": {
+          "fn": 7,
+          "fp": 0,
+          "tn": 16,
+          "tp": 9
+        },
+        "eligible_coverage": 0.5625,
+        "eligible_rows": 16,
+        "overall_accuracy": 0.78125,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      },
+      "qwen35_27b": {
+        "abstain_rows": 16,
+        "balanced_accuracy": 0.96875,
+        "confusion": {
+          "fn": 1,
+          "fp": 0,
+          "tn": 16,
+          "tp": 15
+        },
+        "eligible_coverage": 0.9375,
+        "eligible_rows": 16,
+        "overall_accuracy": 0.96875,
+        "rows": 32,
+        "unsafe_continue_rate": 0.0
+      }
+    },
+    "interpretation": "Wrench is perfect on git_read_status in this six-action split, but the fresh aggregate result has nine unsafe classifier passes and substantially lower eligible coverage. It fails the zero-prohibited-accepts gate and loses overall accuracy to both outside models. Do not enable this candidate."
   }
 }

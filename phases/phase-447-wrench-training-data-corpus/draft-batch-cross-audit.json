@@ -1,0 +1,66 @@
+{
+  "schema": "wrench.phase447.draft-batch-cross-audit.v1",
+  "verified_at_utc": "2026-09-23 17:37 UTC",
+  "status": "drafts_locked_training_corpus_not_ready",
+  "targets": {
+    "train": 20000,
+    "development_calibration": 2500,
+    "sealed_final": 2500,
+    "accepted_train_rows": 0
+  },
+  "batch": {
+    "root": "D:/wrench-slm-data/scratch/phase-447-authored-drafts-2026-09-23",
+    "total_rows_reported": 350,
+    "shards": 9,
+    "windows_read_only_attribute_set_and_sha256_rechecked": true,
+    "training_corpus_validator_passed": false,
+    "human_review_completed": false,
+    "runtime_oracle_execution_completed": false,
+    "real_usage_frequency_evidence": false
+  },
+  "cross_validation": {
+    "ood_shards_rows": 100,
+    "ood_jsonl_parse_errors": 0,
+    "ood_cross_shard_normalized_prompt_duplicates": 0,
+    "ood_missing_group_ids": 0,
+    "git_health_literal_rows": 150,
+    "git_health_literal_parse_errors": 0,
+    "seven_shard_cross_prompt_duplicate_groups": 0,
+    "git_health_validator_contract_pass": false,
+    "git_health_abstentions_with_proposal": 50,
+    "literal_search_access_scope_verified": false,
+    "template_id_missing_rows": 150,
+    "task_family_id_missing_rows": 250,
+    "system_text_missing_rows": 150,
+    "ood_rows_with_template_ids": 100,
+    "ood_unique_template_ids": 81,
+    "repeated_ood_template_groups_within_mutation_shard": 6
+  },
+  "exposure": {
+    "read_lines_shard_excluded": true,
+    "read_lines_reason": "A broad repository search output included historical calibration rows; exact matched paths unavailable.",
+    "patch_draft_shard_excluded": true,
+    "patch_draft_reason": "A broad repository search output included evaluation rows marked final; exact matched paths and whether sealed-final content appeared are unavailable.",
+    "read_file_worker_wrote_shard": false,
+    "sealed_final_exposure_status": "unresolved_potential_exposure",
+    "current_final_set_usable_as_untouched_evaluation_evidence": false
+  },
+  "sources": {
+    "approved_redacted_real_trace_found": false,
+    "phase303_metadata_inventory_training_eligible": false,
+    "phase238_raw_observation_files_found": false,
+    "wrench_capture_candidate_training_eligible": false
+  },
+  "files": [
+    {"file": "git_read_status.jsonl", "rows_reported": 50, "bytes": 67053, "sha256": "92EC996D49794CBE3C13791FBB9B7F7856AC1F9EFB12FD60BE7FA9957053A0C8", "read_only": true, "disposition": "draft_needs_human_review_contract_fail"},
+    {"file": "health_read.jsonl", "rows_reported": 50, "bytes": 73649, "sha256": "EFDEF7579EDA862F1B2AB393BBA4F0328FB879405396913087557562EEEDA65E", "read_only": true, "disposition": "draft_needs_human_review_contract_fail"},
+    {"file": "literal_search.jsonl", "rows_reported": 50, "bytes": 77319, "sha256": "A0F8B1F91D5C3720BF72FD69EB0C40634F8DE3BAE30FAC6C8CED399923043BFC", "read_only": true, "disposition": "excluded_pending_access_scope_confirmation"},
+    {"file": "ood_ambiguity.jsonl", "rows_reported": 25, "bytes": 43984, "sha256": "EF9AE8BFB1A0F97BDD68938D845D39D4E73F8E215E8F625993F149FFED92DFA6", "read_only": true, "disposition": "draft_needs_human_review"},
+    {"file": "ood_credentials.jsonl", "rows_reported": 25, "bytes": 40221, "sha256": "AE0CF366566670F505D01C99AE0EE6E004F1A057CFAC02B13EDAE0A17750612A", "read_only": true, "disposition": "draft_needs_human_review"},
+    {"file": "ood_mutation.jsonl", "rows_reported": 25, "bytes": 51106, "sha256": "D7A7901834CCCCAE49AF726D45A05F2BEB99A946D6BFB9F68D6CA7FEC1FDD2E8", "read_only": true, "disposition": "draft_needs_human_review"},
+    {"file": "ood_unrelated.jsonl", "rows_reported": 25, "bytes": 43095, "sha256": "1C7272A684D02DFEFA36B35CCFBCAE08AD064C02F73D511953877DDF495634E3", "read_only": true, "disposition": "draft_needs_human_review"},
+    {"file": "patch_draft.jsonl", "rows_reported": 50, "bytes": 83330, "sha256": "7D75DA2D7B9B8B566C690DEC548A0F1FF06E7DDE1745FEB88A8A69616F11E7DE", "read_only": true, "disposition": "excluded_potential_evaluation_contamination"},
+    {"file": "read_lines.jsonl", "rows_reported": 50, "bytes": 66446, "sha256": "EDE251EAA6C084242A9ED2E49D25C908CF983D0D28566E8100A9B524708A6B49", "read_only": true, "disposition": "excluded_historical_calibration_exposure"}
+  ],
+  "decision": "All nine draft artifacts are frozen on D: for audit only. None count toward training, development, or sealed-final targets. Do not promote before access-scope triage, label/oracle verification, human review, and validator-contract resolution. Treat final evaluation integrity as unproven until the source paths behind the broad search output are established or the final set is replaced."
+}

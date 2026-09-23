@@ -238,12 +238,138 @@ def _cost_accounting_receipt(
     """Expose token-flow facts without pretending they are dollar costs."""
 
     model_calls = result.get("model_calls", 0)
-    model_calls = model_calls if isinstance(model_calls, int) and model_calls >= 0 else 0
+    model_calls = (
+        model_calls
+        if isinstance(model_calls, int) and not isinstance(model_calls, bool) and model_calls >= 0
+        else 0
+    )
     frontier_usage = result.get("frontier_usage")
     has_frontier_usage = isinstance(frontier_usage, dict)
+    local_usage = result.get("local_model_usage")
+    has_local_usage = isinstance(local_usage, dict)
+    local_model_calls = result.get("local_model_calls")
+    local_model_calls = (
+        local_model_calls
+        if isinstance(local_model_calls, int)
+        and not isinstance(local_model_calls, bool)
+        and local_model_calls >= 0
+        else (
+            local_usage.get("attempt_count", 0)
+            if has_local_usage
+            and isinstance(local_usage.get("attempt_count", 0), int)
+            and not isinstance(local_usage.get("attempt_count", 0), bool)
+            and local_usage.get("attempt_count", 0) >= 0
+            else (0 if has_frontier_usage else model_calls)
+        )
+    )
+    frontier_model_calls = result.get("frontier_model_calls")
+    frontier_model_calls = (
+        frontier_model_calls
+        if isinstance(frontier_model_calls, int)
+        and not isinstance(frontier_model_calls, bool)
+        and frontier_model_calls >= 0
+        else (
+            frontier_usage.get("attempt_count", model_calls)
+            if has_frontier_usage
+            and isinstance(frontier_usage.get("attempt_count", model_calls), int)
+            and not isinstance(frontier_usage.get("attempt_count", model_calls), bool)
+            and frontier_usage.get("attempt_count", model_calls) >= 0
+            else (model_calls if has_frontier_usage else 0)
+        )
+    )
+    frontier_usage_attempts = frontier_usage.get("attempt_count", 0) if has_frontier_usage else 0
+    if (
+        not isinstance(frontier_usage_attempts, int)
+        or isinstance(frontier_usage_attempts, bool)
+        or frontier_usage_attempts < 0
+    ):
+        frontier_usage_attempts = 0
+    frontier_usage_missing_calls = max(0, frontier_model_calls - frontier_usage_attempts)
+    local_repair_passes = result.get("local_repair_pass_count")
+    local_repair_passes = (
+        local_repair_passes
+        if isinstance(local_repair_passes, int)
+        and not isinstance(local_repair_passes, bool)
+        and local_repair_passes >= 0
+        else (result.get("repair_pass_count", 0) if not has_frontier_usage else 0)
+    )
+    if (
+        not isinstance(local_repair_passes, int)
+        or isinstance(local_repair_passes, bool)
+        or local_repair_passes < 0
+    ):
+        local_repair_passes = 0
+    frontier_repair_passes = result.get("frontier_repair_pass_count")
+    if (
+        not isinstance(frontier_repair_passes, int)
+        or isinstance(frontier_repair_passes, bool)
+        or frontier_repair_passes < 0
+    ):
+        frontier_repair_passes = (
+            max(0, frontier_model_calls - 1) if has_frontier_usage else 0
+        )
     dynamic_prefill = result.get("dynamic_prefill")
     model_prompt_tokens = 0
-    if model_calls and not has_frontier_usage:
+    model_completion_tokens = 0
+    if has_local_usage:
+        prompt = local_usage.get("prompt_tokens")
+        completion = local_usage.get("completion_tokens")
+        attempts = local_usage.get("attempts")
+        attempt_count = local_usage.get("attempt_count")
+        attempts_valid = (
+            isinstance(attempts, list)
+            and isinstance(attempt_count, int)
+            and not isinstance(attempt_count, bool)
+        )
+        if attempts_valid:
+            attempt_prompt_total = 0
+            attempt_completion_total = 0
+            for index, attempt in enumerate(attempts, start=1):
+                if not isinstance(attempt, dict):
+                    attempts_valid = False
+                    break
+                attempt_id = attempt.get("attempt")
+                attempt_prompt = attempt.get("prompt_tokens")
+                attempt_completion = attempt.get("completion_tokens")
+                if (
+                    not isinstance(attempt_id, int)
+                    or isinstance(attempt_id, bool)
+                    or attempt_id != index
+                    or not isinstance(attempt_prompt, int)
+                    or isinstance(attempt_prompt, bool)
+                    or attempt_prompt < 0
+                    or not isinstance(attempt_completion, int)
+                    or isinstance(attempt_completion, bool)
+                    or attempt_completion < 0
+                ):
+                    attempts_valid = False
+                    break
+                attempt_prompt_total += attempt_prompt
+                attempt_completion_total += attempt_completion
+            total_tokens = local_usage.get("total_tokens")
+            attempts_valid = (
+                attempts_valid
+                and attempt_count == len(attempts)
+                and prompt == attempt_prompt_total
+                and completion == attempt_completion_total
+                and isinstance(total_tokens, int)
+                and not isinstance(total_tokens, bool)
+                and total_tokens == attempt_prompt_total + attempt_completion_total
+            )
+        if (
+            attempts_valid
+            and isinstance(prompt, int)
+            and not isinstance(prompt, bool)
+            and prompt >= 0
+            and isinstance(completion, int)
+            and not isinstance(completion, bool)
+            and completion >= 0
+        ):
+            model_prompt_tokens = prompt
+            model_completion_tokens = completion
+        else:
+            has_local_usage = False
+    if local_model_calls and not has_local_usage and not has_frontier_usage:
         if isinstance(dynamic_prefill, dict):
             native_prompt = dynamic_prefill.get("native_backend_prompt_tokens")
             staged_prompt = dynamic_prefill.get("model_prefill_token_count")
@@ -253,7 +379,7 @@ def _cost_accounting_receipt(
                 model_prompt_tokens = staged_prompt
         if model_prompt_tokens == 0:
             model_prompt_tokens = raw_tokens
-    model_completion_tokens = completion_tokens if model_calls and not has_frontier_usage else 0
+        model_completion_tokens = completion_tokens
     frontier_tokens = 0
     frontier_prompt_tokens = 0
     frontier_completion_tokens = 0
@@ -279,8 +405,21 @@ def _cost_accounting_receipt(
         "local_model_tokens": model_prompt_tokens + model_completion_tokens,
         "input_tokens_not_sent_to_model": max(0, raw_tokens - model_prompt_tokens),
         "model_calls": model_calls,
-        "local_model_calls": 0 if has_frontier_usage else model_calls,
-        "repair_passes": result.get("repair_pass_count", 0),
+        "local_model_calls": local_model_calls,
+        "frontier_model_calls": frontier_model_calls,
+        "frontier_usage_missing_calls": frontier_usage_missing_calls,
+        "local_usage_available": has_local_usage,
+        "local_usage_missing_calls": (
+            local_model_calls if local_model_calls and not has_local_usage else 0
+        ),
+        "local_usage_source": (
+            local_usage.get("source")
+            if has_local_usage and isinstance(local_usage, dict)
+            else ("estimated_fallback" if model_calls and not has_frontier_usage else None)
+        ),
+        "repair_passes": local_repair_passes + frontier_repair_passes,
+        "local_repair_passes": local_repair_passes,
+        "frontier_repair_passes": frontier_repair_passes,
         "frontier_tokens": frontier_tokens,
         "frontier_prompt_tokens": frontier_prompt_tokens,
         "frontier_completion_tokens": frontier_completion_tokens,
@@ -1462,6 +1601,24 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         accepted_final_answer = (
                             final_answer_round and verified.get("status") == "accepted"
                         )
+                        local_attempts = result.get("model_calls", 0)
+                        if (
+                            not isinstance(local_attempts, int)
+                            or isinstance(local_attempts, bool)
+                            or local_attempts < 0
+                        ):
+                            local_attempts = 0
+                        frontier_attempts = len(upstream_attempts)
+                        local_repairs = result.get("repair_pass_count", 0)
+                        if (
+                            not isinstance(local_repairs, int)
+                            or isinstance(local_repairs, bool)
+                            or local_repairs < 0
+                        ):
+                            local_repairs = 0
+                        frontier_repairs = (
+                            0 if final_answer_round else max(0, frontier_attempts - 1)
+                        )
                         verified.update(
                             {
                                 "backend": (
@@ -1479,10 +1636,13 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                     if accepted_final_answer
                                     else upstream_output
                                 ),
-                                "model_calls": len(upstream_attempts),
-                                "repair_pass_count": 0
-                                if final_answer_round
-                                else max(0, len(upstream_attempts) - 1),
+                                "model_calls": local_attempts + frontier_attempts,
+                                "local_model_calls": local_attempts,
+                                "frontier_model_calls": frontier_attempts,
+                                "local_model_usage": result.get("local_model_usage"),
+                                "local_repair_pass_count": local_repairs,
+                                "frontier_repair_pass_count": frontier_repairs,
+                                "repair_pass_count": local_repairs + frontier_repairs,
                                 "upstream_attempts": upstream_attempts,
                                 "frontier_usage": _frontier_usage_receipt(upstream_usages),
                                 "frontier_round": 2 if final_answer_round else 1,

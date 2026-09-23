@@ -67,6 +67,7 @@ def load_cases(data_path: Path, wrench_path: Path) -> list[dict[str, Any]]:
             messages.append({"role": "user", "content": row["prompt"]})
             cases.append({
                 "id": row["id"],
+                "family": row["family"],
                 "template_id": row["template_id"],
                 "style": style,
                 "expected": expected,
@@ -98,6 +99,23 @@ def metrics(rows: list[dict[str, Any]], decision_field: str) -> dict[str, Any]:
 
 def compare(rows: list[dict[str, Any]], style: str) -> dict[str, Any]:
     paired = [row for row in rows if row["style"] == style]
+    by_family: dict[str, Any] = {}
+    for family in sorted({row["family"] for row in paired}):
+        family_rows = [row for row in paired if row["family"] == family]
+        wrench_family = metrics(family_rows, "wrench_decision")
+        outside_family = metrics(family_rows, "outside_decision")
+        by_family[family] = {
+            "wrench": wrench_family,
+            "outside_model": outside_family,
+            "outside_minus_wrench_accuracy_delta": (
+                outside_family["overall_accuracy"] - wrench_family["overall_accuracy"]
+            ),
+            "outside_minus_wrench_balanced_accuracy_delta": (
+                outside_family["balanced_accuracy"] - wrench_family["balanced_accuracy"]
+                if outside_family["balanced_accuracy"] is not None
+                and wrench_family["balanced_accuracy"] is not None else None
+            ),
+        }
     templates: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in paired:
         templates[row["template_id"]].append(row)
@@ -123,6 +141,7 @@ def compare(rows: list[dict[str, Any]], style: str) -> dict[str, Any]:
         "template_clusters": len(keys),
         "wrench": wrench,
         "outside_model": outside,
+        "by_family": by_family,
         "outside_minus_wrench_accuracy_delta": outside["overall_accuracy"] - wrench["overall_accuracy"],
         "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [accuracy_draws[249], accuracy_draws[9749]],
         "outside_minus_wrench_balanced_accuracy_delta": outside["balanced_accuracy"] - wrench["balanced_accuracy"],
@@ -143,22 +162,64 @@ def main() -> int:
     parser.add_argument("--wrench-predictions", type=Path, default=WRENCH)
     parser.add_argument("--num-ctx", type=int, default=8192)
     parser.add_argument("--num-gpu", type=int, help="Ollama layers to offload to GPU, for reserve-safe large-model runs")
+    parser.add_argument("--prompt-style", choices=("both", "original"), default="both", help="score both diagnostic styles or only the primary original system-prompt condition")
+    parser.add_argument("--resume", action="store_true", help="resume from flushed predictions in the output directory")
     args = parser.parse_args()
     output_dir = args.output_dir.resolve()
     data_path = args.data.resolve()
     wrench_path = args.wrench_predictions.resolve()
-    if output_dir.exists():
+    if output_dir.exists() and not args.resume:
         parser.error(f"output directory already exists: {output_dir}")
+    if args.resume and not output_dir.is_dir():
+        parser.error("--resume requires an existing output directory")
     if not data_path.is_file() or not wrench_path.is_file():
         parser.error("development data and Wrench predictions must exist")
     cases = load_cases(data_path, wrench_path)
+    if args.prompt_style == "original":
+        cases = [case for case in cases if case["style"] == "original"]
+    family_by_id = {case["id"]: case["family"] for case in cases}
     case_count = len({case["id"] for case in cases})
     model_info = find_model(args.model)
     was_loaded = model_is_loaded(args.model)
     initial = resource_snapshot()
     enforce_reserve(initial)
-    output_dir.mkdir(parents=True)
-    run: dict[str, Any] = {
+    data_sha = sha256_file(data_path)
+    wrench_sha = sha256_file(wrench_path)
+    predictions_path = output_dir / "predictions.jsonl"
+    if args.resume:
+        run_path = output_dir / "run.json"
+        if not run_path.is_file() or not predictions_path.is_file():
+            parser.error("--resume requires run.json and predictions.jsonl")
+        run = json.loads(run_path.read_text(encoding="utf-8"))
+        identity = {
+            "model_name": args.model,
+            "model_digest": model_info.get("digest"),
+            "data_sha256": data_sha,
+            "wrench_development_predictions_sha256": wrench_sha,
+            "num_gpu_layers": args.num_gpu,
+            "prompt_style_scope": args.prompt_style,
+            "decoding": {"temperature": 0, "seed": 0, "top_k": 1, "num_ctx": args.num_ctx, "num_predict": 32, "think": False},
+        }
+        if any(run.get(key) != value for key, value in identity.items()):
+            parser.error("resume identity does not match the frozen model, data, Wrench predictions, or decoding")
+        rows = [json.loads(line) for line in predictions_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        # Older interrupted runs may predate the per-family reporting field.
+        # Restore it from the frozen case manifest before calculating metrics.
+        for row in rows:
+            row.setdefault("family", family_by_id[row["id"]])
+        expected = {(case["id"], case["style"]) for case in cases}
+        keys = [(row.get("id"), row.get("style")) for row in rows]
+        if len(keys) != len(set(keys)) or not set(keys) <= expected:
+            parser.error("resume predictions contain duplicates or unknown case/style keys")
+        run["status"] = "RUNNING"
+        run["resumed_utc"] = datetime.now(timezone.utc).isoformat()
+        run["resumed_from_rows"] = len(rows)
+        run["resources"].append(initial)
+        run["local_inference_calls"] = len(rows)
+    else:
+        output_dir.mkdir(parents=True)
+        rows = []
+        run = {
         "schema": "wrench.system-one-development-outside-model-comparison.v1",
         "benchmark": f"Wrench Binary System One {case_count}-case development split",
         "status": "RUNNING",
@@ -169,12 +230,13 @@ def main() -> int:
         "model_size_bytes": model_info.get("size"),
         "model_loaded_before_run": was_loaded,
         "data_path": str(data_path),
-        "data_sha256": sha256_file(data_path),
+        "data_sha256": data_sha,
         "wrench_development_predictions_path": str(wrench_path),
-        "wrench_development_predictions_sha256": sha256_file(wrench_path),
+        "wrench_development_predictions_sha256": wrench_sha,
         "prompt_adapter": "same-development-cases-and-labels; original Wrench system retained; strict JSON response instruction",
         "decoding": {"temperature": 0, "seed": 0, "top_k": 1, "num_ctx": args.num_ctx, "num_predict": 32, "think": False},
         "num_gpu_layers": args.num_gpu,
+        "prompt_style_scope": args.prompt_style,
         "endpoint": OLLAMA_URL,
         "provider_calls": 0,
         "external_api_calls": 0,
@@ -183,12 +245,14 @@ def main() -> int:
         "training_or_tuning": False,
         "sealed_final_read": False,
         "resources": [initial],
-    }
+        }
     write_json(output_dir / "run.json", run)
-    rows: list[dict[str, Any]] = []
+    completed = {(row["id"], row["style"]) for row in rows}
+    pending_cases = [case for case in cases if (case["id"], case["style"]) not in completed]
     try:
-        with (output_dir / "predictions.jsonl").open("x", encoding="utf-8") as stream:
-            for index, case in enumerate(cases, 1):
+        mode = "a" if args.resume else "x"
+        with predictions_path.open(mode, encoding="utf-8") as stream:
+            for index, case in enumerate(pending_cases, start=len(rows) + 1):
                 if (index - 1) % 10 == 0:
                     sample = resource_snapshot()
                     enforce_reserve(sample)
@@ -217,6 +281,7 @@ def main() -> int:
                 decision, reason = parse_decision(content if isinstance(content, str) else "")
                 row = {
                     "id": case["id"],
+                    "family": case["family"],
                     "template_id": case["template_id"],
                     "style": case["style"],
                     "expected": case["expected"],
@@ -233,7 +298,8 @@ def main() -> int:
                 run["local_inference_calls"] = index
                 if index % 10 == 0:
                     write_json(output_dir / "run.json", run)
-        run["metrics_by_prompt_style"] = {style: compare(rows, style) for style in ("original", "plain")}
+        styles = ("original",) if args.prompt_style == "original" else ("original", "plain")
+        run["metrics_by_prompt_style"] = {style: compare(rows, style) for style in styles}
         run["status"] = "COMPLETE"
         run["completed_utc"] = datetime.now(timezone.utc).isoformat()
         final = resource_snapshot()

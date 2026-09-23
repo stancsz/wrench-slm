@@ -1,55 +1,24 @@
-# Training Datasets for Wrench SLM
+# External tool-call data excluded from the Wrench corpus
 
-This directory contains curated datasets from Hugging Face specifically structured to train and specialize the **Wrench SLM (Sub-4B Parameter Model)** for high-speed local agentic tool execution, strict schema formatting, and token-absorbing triage.
+The three public tool-call bundles previously stored here are excluded from
+Wrench training. Their task mix does not match Wrench's six-action proposal
+contract, and source licensing is still pending. They have been moved out of
+the active dataset directory to:
 
----
+`D:/wrench-slm-data/quarantine/dataset-general-tool-call-2026-09-23/`
 
-## 1. Data Sources & Files
+The file-by-file sample counts, byte sizes, SHA-256 hashes, and disposition
+are recorded in
+[`quarantine-manifest.json`](../phases/phase-447-wrench-training-data-corpus/quarantine-manifest.json).
+The machine-readable source manifest below is marked as excluded. Do not load
+the archived data into the 20,000-row training corpus.
 
-### A. gentic_tool_call_short_2k.jsonl (2,000 Samples, ~46.8 MB)
-* **Source**: [pyromind/agentic-tool-call-dataset-12k](https://huggingface.co/datasets/pyromind/agentic-tool-call-dataset-12k) (Config: short)
-* **Focus**: Short-horizon, deterministic tool-calling trajectories.
-* **Why it is used for the Wrench**:
-  - Teaches the model immediate, single-step and two-step tool execution (grep, iew_file, cat, terminal checks).
-  - Enforces OpenAI-compatible 	ool_calls syntax.
-  - Eliminates conversational preamble and chit-chat so the model emits pure JSON/XML tool calls.
+| Source bundle | Rows | Disposition |
+| --- | ---: | --- |
+| pyromind short tool-call subset | 2,000 | Excluded. Sampled topics and tools include finance calls outside Wrench's allowlist. |
+| pyromind long tool-call subset | 1,000 | Excluded. Broad web research and multi-step workflows are outside the bounded worker contract. |
+| Glaive function-calling subset | 2,000 | Excluded. Generic function schemas do not teach Wrench's typed proposal and abstention protocol. |
 
-### B. gentic_tool_call_long_1k.jsonl (1,000 Samples, ~225.8 MB)
-* **Source**: [pyromind/agentic-tool-call-dataset-12k](https://huggingface.co/datasets/pyromind/agentic-tool-call-dataset-12k) (Config: long)
-* **Focus**: Long-context, multi-turn agentic trajectories.
-* **Why it is used for the Wrench**:
-  - Trains the model to follow multi-turn tool observations without losing coherence or hallucinating state.
-  - Teaches terminal error handling and self-correction when a tool call returns an error.
-  - Absorbs long tool-navigation loops locally so frontier models are never billed for exploratory turns.
-
-### C. glaive_function_calling_2k.jsonl (2,000 Samples, ~4.8 MB)
-* **Source**: [glaiveai/glaive-function-calling-v2](https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2)
-* **Focus**: High-precision schema mapping and structured function calling.
-* **Why it is used for the Wrench**:
-  - Eliminates syntax errors (unquoted keys, missing brackets, trailing commas) when outputting JSON/Pydantic schemas.
-  - Teaches the model when to call a function vs. when to respond directly.
-
----
-
-## 2. Intended Role in the 3-Tier Wrench Architecture
-
-These datasets directly specialize the small local student model to handle:
-1. **Local Discovery**: Running environment inspections (ls, grep, cat) locally at 0 paid tokens.
-2. **Context Compaction**: Summarizing noisy logs and error traces into minimal high-signal diffs.
-3. **Deterministic Repair**: Generating fast single-pass patches against local unit tests before escalating to the Tier 2/3 Teacher at :4000.
-
----
-
-## 3. Current status and audit
-
-These files are local, ignored inputs. They are not approved training data yet.
-Run the mechanical audit from the repository root with:
-
-```powershell
-py -3 tools/audit_dataset.py dataset `
-  --output phases/phase-2-dataset-audit/dataset-audit.json
-```
-
-The audit currently reports parseable JSONL but broad web/research and
-finance/crypto content. Source licensing, redaction, task-family fit, and
-filtering must be reviewed before any calibration or training run.
+This data may be reconsidered only after both task-fit and license review pass.
+The training target and quality gates are documented in
+[`Phase 447`](../phases/phase-447-wrench-training-data-corpus/README.md).

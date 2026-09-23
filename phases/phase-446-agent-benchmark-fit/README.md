@@ -16,13 +16,13 @@ Direct Wrench-versus-model claims require matched tasks, interface, budget,
 and evaluator.
 
 **Showcase order:** lead with the internal paired workflow scorecard as the
-product proof, then Agent Retrieval Bench V2 as the clearest external
-component-level result. Use CodeScaleBench next when its matched run can show
-whether Wrench changes the same outside agent's task reward, cost, or latency.
-ContextBench and SWE-Explore-Bench are independent quality checks on context
-and exploration; their current weak results belong in the report as gaps, not
-as Wrench wins. This order highlights measured strengths without hiding the
-hard comparisons.
+product proof, then Agent Retrieval Bench V2 for bounded repository retrieval.
+Use CodeScaleBench to test whether Wrench changes the same outside agent's
+task reward, cost, or latency. ContextBench and SWE-Explore-Bench add outside
+checks on context selection and repository exploration. Together, these four
+measure repository retrieval, context selection, localization, and tool
+impact, the areas Wrench is built to support. Lead with measured strengths
+and keep weak results visible as limits.
 
 **What currently looks strongest:** on 427 Agent Retrieval Bench V2 rows, the
 BM25 retrieval candidate raised Wrench's canonical BCY@8K from 0.067 to 0.119
@@ -30,18 +30,24 @@ with a paired 95% interval of +0.007 to +0.098. Recall@20 and MRR gains remain
 inconclusive, and the result is below published Qwen embedding references. It
 is a real component-level improvement, not proof of end-to-end utility.
 
-**The internal gate story is safer decisions, with useful coverage still the
-gap:** on V7's fresh, scope-correct 80-case development split, Wrench scored
-58/80 (72.5%), accepted 10/32 supported requests, and made zero unsafe
-continuations. Qwen3.5 9B scored 67/80 (83.75%), accepted 27/32, and made 8
-unsafe continuations among 48 boundary cases. The paired accuracy interval
-includes zero; Qwen's balanced-accuracy lead is statistically clear on this
-small split. In the secondary plain-prompt condition, Wrench scored 64/80 with
-zero unsafe continuations while Qwen scored 34/80 with 46 unsafe
-continuations. Keep the original system-prompt comparison primary. V6's
-scope-corrected result and the Qwen3.5 27B comparison remain separate prior
-receipts. No head is enabled. Report the safety/coverage tradeoff and every
-selected result, including negative or incomplete results.
+**Latest internal gate result:** V9's fresh 224-case, six-action split.
+Wrench with the primary system prompt scored 163/224 (72.8%), accepted 44/96
+eligible requests (45.8%), and made 9/128 unsafe classifier passes (7.0%).
+On the exact same cases, local Qwen3.5 9B scored 201/224 (89.7%), accepted
+87/96 (90.6%), and made 14/128 unsafe passes (10.9%). Qwen's paired accuracy
+lead is 17.0 points (95% CI [+9.8, +24.1]). Wrench is safer overall in this
+slice but has much lower coverage; it fails the strict zero-prohibited-accepts
+gate and does not win the aggregate comparison. It was perfect on the
+`git_read_status` family (32/32, including 16/16 eligible requests) while
+Qwen3.5 9B scored 25/32 there. On the same primary-prompt split, Qwen3.5 27B
+scored 202/224 (90.2%), accepted 82/96 (85.4%), and made 8/128 unsafe passes
+(6.3%). Its paired accuracy lead over Wrench is 17.4 points (95% CI [+11.2,
++23.7]); its balanced-accuracy lead is 20.2 points (95% CI [+13.6, +26.7]).
+The 27B had 10 GPU layers and made no provider calls. Wrench scored 32/32 on
+`git_read_status`, one point above 27B's 31/32, but loses the aggregate
+comparison and fails the zero-prohibited-accepts gate. V8 remains a separate
+historical comparison. No candidate head is enabled. Always report coverage,
+unsafe passes, and aggregate paired outcomes together.
 
 The internal scorecard also includes a bounded-gate head-to-head against
 Qwen3.5 9B and 27B on identical development cases, while its main result
@@ -81,11 +87,11 @@ model-quality claim.
 
 | # | Scorecard | Why it showcases Wrench | Public metrics | Outside-model reference | State |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Wrench paired workflow utility** | The product proof: whether a bounded Wrench worker improves task success, safety, speed, and frontier-token use against stronger-model-only and rules-plus-fallback workflows. | Final task success and safety, eligible correct acceptance, prohibited accepts, end-to-end p50/p95 latency, net frontier-token savings, plus gate accuracy and paired 95% confidence intervals. | Matched stronger-model-only teacher arm; local Qwen3.5 9B and 27B gate comparisons. | Latest V7 gate development comparison: Wrench 58/80 (72.5%), 10/32 eligible accepted, zero unsafe continuations. Qwen3.5 9B: 67/80 (83.75%), 27/32 eligible accepted, 8/48 unsafe continuations. The paired accuracy interval includes zero; the balanced-accuracy gap favors Qwen. Plain-prompt results favor Wrench (64/80 vs 34/80) but are secondary. V6 and Qwen3.5 27B receipts are prior candidate comparisons. Full three-arm workflow replay remains required. |
+| 1 | **Wrench paired workflow utility** | The product proof: whether a bounded Wrench worker improves task success, safety, speed, and frontier-token use against stronger-model-only and rules-plus-fallback workflows. | Final task success and safety, eligible correct acceptance, prohibited accepts, end-to-end p50/p95 latency, net frontier-token savings, plus gate accuracy and paired 95% confidence intervals. | Matched stronger-model-only teacher arm; local Qwen3.5 9B and 27B gate comparisons. | V9 primary condition: Wrench 163/224, 44/96 eligible accepted, 9/128 unsafe passes. Qwen3.5 9B: 201/224, 87/96 accepted, 14/128 unsafe passes; Qwen leads by 17.0 points (95% CI [+9.8, +24.1]). Qwen3.5 27B: 202/224, 82/96 accepted, 8/128 unsafe passes; leads by 17.4 points (95% CI [+11.2, +23.7]). Wrench scores 32/32 on `git_read_status` but fails the zero-prohibited-accepts gate overall. Full three-arm workflow replay remains required. |
 | 2 | [**Agent Retrieval Bench (ARB) V2**](https://github.com/eyuansu62/agent-retrieval-bench) | **Best current positive component story:** Wrench's retrieval candidate increased useful files in a fixed context budget, and the benchmark also includes natural no-gold cases for selective behavior. | Recall@20, MRR, canonical budgeted context yield (BCY@4K/8K/16K/32K), selective success and coverage. | Public Qwen3-Embedding-4B/8B, Jina code embeddings, RepoMap, lexical, and BM25 references; same-row outside-model reruns are the direct-comparison path. | On 427 identical rows, the BM25 candidate improved Wrench BCY@8K from 0.067 to 0.119, with paired repository-bootstrap 95% CI [+0.007, +0.098]. Recall@20 and MRR gains are inconclusive, and Wrench remains below the published Qwen embedding references. A component gain, not end-to-end proof. |
 | 3 | [**CodeScaleBench**](https://github.com/sourcegraph/CodeScaleBench) | **Outcome-level tool value:** its paired design isolates whether adding repository intelligence changes an outside coding agent's results. | Paired task-reward delta, retrieval Precision/Recall/F1@10, wall time, and cost. | Published Claude Code + Haiku 4.5 baseline with and without Sourcegraph MCP. A direct Wrench comparison must use the same agent and model on the paired tasks. | Frozen roster contains 370 matched reward tasks. Wrench adapter and matched run pending; the published MCP result is a design reference, not a Wrench result. |
-| 4 | [**ContextBench**](https://contextbench.github.io/) | **Context quality with a path to agent outcomes:** measures line-level retrieval now; a matched solver can later connect retrieval quality to task Pass@1. | Line precision, recall, Context F1; Pass@1 and cost only with a matched downstream coding agent. | Published openJiuwen + DeepSeek-V4-Pro, GPT-5, Claude Sonnet 4.5, Qwen3-8B, and Qwen2.5-32B. Same-case local Qwen reruns are required for direct model comparison. | Pinned 500-row verified subset. The corrected full pre-BM25 run is active with 302 detail rows saved. The earlier 184-row interruption came from a dataset alias that hid three distinct FasterXML module repositories; the adapter now maps each instance to its canonical module repo. The separate 3-case engineering slice was weak (line recall 0.0287, precision 0.0162, derived F1 0.0207), so do not present that pilot as a full-suite score. |
-| 5 | [**SWE-Explore-Bench**](https://github.com/Qiushao-E/SWE-Explore-Bench) | **Repository exploration quality:** scores whether Wrench can find the right files and line regions before a solver edits anything. | Line precision/recall/F1, hit-file and hit-region rate, noise, context efficiency, rank-aware quality at fixed region budget. | Published GPT-5.4-family, Claude Code, Codex, OpenHands, Mini-SWE-Agent, and specialist localizers. Direct comparison requires the same ranked-region interface and cases. | Official 848-row data and issue/base-commit mapping are pinned. Pilot F1 was 0.0243 against saved outside-trajectory references of 0.4722–0.8361. The full pre-BM25 run remains active: 296 detail rows are flushed, with 317 scorer completions observed on the latest poll. This is a baseline, not a Wrench win. |
+| 4 | [**ContextBench**](https://contextbench.github.io/) | **Context quality with a path to agent outcomes:** measures line-level retrieval now; a matched solver can later connect retrieval quality to task Pass@1. | Line precision, recall, Context F1; Pass@1 and cost only with a matched downstream coding agent. | Published openJiuwen + DeepSeek-V4-Pro, GPT-5, Claude Sonnet 4.5, Qwen3-8B, and Qwen2.5-32B. Same-case local Qwen reruns are required for direct model comparison. | The pinned 500-row subset is fully accounted: 476 scored and 24 unavailable snapshots. The pre-BM25 ContextLedger scored line-context F1 0.0160 (line recall 0.0291, precision 0.0110). This is a diagnostic gap, not a Wrench win. The earlier 184-row interruption came from a dataset alias that hid three distinct FasterXML module repositories; the adapter now maps each instance to its canonical module repo. The separate 3-case engineering slice is not used as the benchmark result. |
+| 5 | [**SWE-Explore-Bench**](https://github.com/Qiushao-E/SWE-Explore-Bench) | **Repository exploration quality:** scores whether Wrench can find the right files and line regions before a solver edits anything. | Line precision/recall/F1, hit-file and hit-region rate, noise, context efficiency, rank-aware quality at fixed region budget. | Published GPT-5.4-family, Claude Code, Codex, OpenHands, Mini-SWE-Agent, and specialist localizers. Direct comparison requires the same ranked-region interface and cases. | Official 848-row data and issue/base-commit mapping are pinned. Pilot F1 was 0.0243 against saved outside-trajectory references of 0.4722–0.8361. The resumable pre-BM25 run is paused after 584 detail rows for 550 unique IDs; last observed index was 421/848. Snapshot extraction failures remain visible per case. This remains a baseline, not a Wrench win. |
 
 ## Why these four external benchmarks
 
@@ -118,12 +124,14 @@ both the gate-level Qwen comparison and the complete matched workflow. Do not
 average the five scorecards into one score. Only the internal matched-workflow
 result can establish Wrench's release value.
 
-The active ContextBench and SWE-Explore runs loaded the pre-BM25 ContextLedger
-implementation. ContextBench has 300/500 saved rows after correcting its
-dataset-alias-to-module-repository map; the earlier 184-row stop was an
-adapter mapping problem, not a benchmark-data failure. SWE-Explore has 272
-flushed rows and a latest observed scorer count of 312/848. Neither measures
-the later BM25 candidate. On ARB V2,
+The ContextBench and SWE-Explore runs loaded the pre-BM25 ContextLedger
+implementation. ContextBench now accounts for all 500 inputs: 476 scored and
+24 unavailable pinned snapshots. Its line-context F1 is 0.0160. The earlier
+184-row stop was an adapter mapping problem; the corrected mapping separates
+three FasterXML repositories. SWE-Explore has 584 detail rows for 550 unique
+IDs, with the latest observed index at 421/848 before its resource-safe pause.
+Its case errors remain visible and will be retried where possible. Neither run
+measures the later BM25 candidate. On ARB V2,
 the BM25 candidate's canonical BCY@8K is 0.1193 against the pre-change 0.0669,
 with paired repository-cluster 95% CI for the gain [0.0071, 0.0978]. Recall@20
 and MRR improved by 0.0307 and 0.0044, but both intervals include zero. All
@@ -424,11 +432,12 @@ head, quantization, and harness hashes with every new comparison.
 ## Reproduction and artifacts
 
 - `benchmark-manifest.json` is the machine-readable five-scorecard decision.
-- SWE-Explore-Bench, ContextBench, and CodeScaleBench adapters and Wrench runs
-  remain pending. ARB Lexical reproduction and the Wrench ContextLedger ranked
-  retrieval component are scored; the Wrench result is substantially below
-  Lexical and is recorded as a stress-test gap. The separate binary-gate result
-  remains a component diagnostic, not an official ranking result.
+- ContextBench's pinned 500-row subset is scored for 476 available snapshots;
+  24 unavailable snapshots are recorded. Its line-context F1 is 0.0160. The
+  SWE-Explore run remains incomplete and CodeScaleBench's matched adapter/run
+  is pending. ARB V2's Wrench ContextLedger retrieval result is scored and the
+  BM25 candidate improved BCY@8K over the previous Wrench path. The separate
+  binary-gate result remains an internal component diagnostic.
   Benchmark code/data revisions and CodeScaleBench's frozen suite commit are
   pinned above and in the manifest.
 - Aider is an excluded challenge benchmark because it does not cleanly measure
@@ -449,3 +458,47 @@ head, quantization, and harness hashes with every new comparison.
   release is marked CC-BY-NC-ND.
 
 All run outputs and upstream checkouts stay inside this phase directory.
+
+## V8 abstention iteration update
+
+V8 adds a fresh tracked-status calibration family based on V7's eligible-miss
+pattern. Its 338-row calibration split and 128-row development split are
+frozen at `internal/system-one-v8-data/`. Development contains 48 eligible
+tracked-only requests, 48 matched path/status/untracked boundary requests, and
+32 out-of-scope requests. Its SHA-256 is
+`eb3494574d846463cf0f1d302c0eee82eccede3d506399b1608bcfa7329282a5` for
+calibration and `2ebf1835d2ae96c4a151ab35d8051fb7f9cabb2ba4436682d2a2fd6ec3e8c7bd`
+for development. There is no exact prompt or template overlap with prior
+development splits. The sealed final split was not read.
+
+Two head candidates were selected using calibration holdout only. Both had
+zero unsafe continuations. Weight 1 had 42.1% eligible coverage in the
+system-prompt calibration style and 60.5% in plain style, versus 42.1% and
+57.9% for weight 2, so weight 1 was frozen for the outside-model comparison.
+On the fresh development split, Wrench measured 74.2% overall accuracy,
+65.6% balanced accuracy, 31.3% eligible coverage, and zero unsafe continuations
+with the system prompt. In the plain diagnostic it scored 87.5% accuracy,
+83.3% balanced accuracy, 66.7% eligible coverage, and zero unsafe continuations.
+
+On those same 128 cases, local Qwen3.5 9B scored 83.6% overall and 81.0%
+balanced accuracy with the system prompt, with 70.8% eligible coverage and
+8.75% unsafe continuations. Its paired template-clustered accuracy lead was
+9.4 points (95% CI 0.8 to 18.0). Without the capability system prompt, Qwen
+scored 41.4% accuracy, 51.9% balanced accuracy, and continued on 90% of
+boundary cases; Wrench scored 87.5% with zero unsafe continuations. The plain
+condition is diagnostic, not the deployment condition. Qwen3.5 27B on V8
+scored 126/128 with the original prompt, 47/48 eligible accepted, and 1/80
+unsafe continuation. The Wrench latency sample was
+recorded while the long external retrieval evaluations shared the GPU, so do
+not use it as an isolated speed comparison.
+
+The V8 section above is historical. The current ContextBench run is complete
+for its pinned input ledger: 476/500 rows scored and 24 unavailable snapshots
+recorded. Its retrieval-only line-context F1 is 0.0160. SWE-Explore remains
+paused with per-case failures visible in its receipts. The five-scorecard slate
+is unchanged; Qwen comparisons are internal development diagnostics, not
+additional scorecards.
+
+Run outputs, Qwen receipts, and benchmark scratch directories are physically
+stored under `D:\wrench-slm-phase-446`. The corresponding phase paths are
+Windows junctions so existing scripts and receipts continue to resolve.

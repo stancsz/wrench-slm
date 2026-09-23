@@ -523,6 +523,7 @@ class WrenchWorker:
         patch_retry_count = 0
         repair_pass_count = 0
         model_calls = 0
+        local_usage_attempts: list[dict[str, int]] = []
         while True:
             prompt_text = self.tokenizer.apply_chat_template(
                 request_messages,
@@ -546,6 +547,13 @@ class WrenchWorker:
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
             )
             generated = output[0, batch["input_ids"].shape[-1] :]
+            local_usage_attempts.append(
+                {
+                    "attempt": model_calls,
+                    "prompt_tokens": int(batch["input_ids"].shape[-1]),
+                    "completion_tokens": int(generated.shape[-1]),
+                }
+            )
             content = self.tokenizer.decode(generated, skip_special_tokens=True).strip()
             result = execute_model_output(
                 content,
@@ -599,6 +607,18 @@ class WrenchWorker:
                 "mechanical_fast_path": False,
                 "raw_model_output": content,
                 "model_calls": model_calls,
+                "local_model_usage": {
+                    "schema": "wrench.local-model-usage-receipt.v1",
+                    "attempt_count": len(local_usage_attempts),
+                    "attempts": local_usage_attempts,
+                    "prompt_tokens": sum(item["prompt_tokens"] for item in local_usage_attempts),
+                    "completion_tokens": sum(item["completion_tokens"] for item in local_usage_attempts),
+                    "total_tokens": sum(
+                        item["prompt_tokens"] + item["completion_tokens"]
+                        for item in local_usage_attempts
+                    ),
+                    "source": "transformers_tokenizer_ids",
+                },
                 "model_device": str(next(self.model.parameters()).device),
             }
         )

@@ -1,0 +1,94 @@
+{
+  "schema": "wrench.system-one-v9-authored-data.v1",
+  "status": "frozen_before_v9_candidate_training",
+  "scope": "six allowlisted action families plus out-of-domain and authority-boundary abstentions",
+  "primary_prompt_style": "original",
+  "calibration_sources": [
+    {
+      "path": "internal/system-one-v8-data/calibration.jsonl",
+      "rows": 338,
+      "sha256": "eb3494574d846463cf0f1d302c0eee82eccede3d506399b1608bcfa7329282a5"
+    },
+    {
+      "path": "internal/system-one-v8-data/development.jsonl",
+      "rows": 128,
+      "sha256": "2ebf1835d2ae96c4a151ab35d8051fb7f9cabb2ba4436682d2a2fd6ec3e8c7bd",
+      "reuse_note": "retired as evaluation; may now train/calibrate future candidates"
+    }
+  ],
+  "prior_development_prompt_overlap": 0,
+  "calibration_development_exact_prompt_overlap": 0,
+  "calibration_development_template_group_overlap": 0,
+  "sealed_final_split_read": false,
+  "calibration": {
+    "rows": 466,
+    "sha256": "cf8dc950a1007933994ada6ca1687c8d95a89ca7405cb7de71b0fa7d15fbda43",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 160,
+        "abstain": 160
+      },
+      "health_read": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "literal_search": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "out_of_domain": {
+        "abstain": 56
+      },
+      "patch_draft": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_file": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_lines": {
+        "accepted": 12,
+        "abstain": 6
+      }
+    }
+  },
+  "development": {
+    "rows": 224,
+    "sha256": "ce3e53789e077fb4db6d6415fe9b20697a03998311dd142452686d206880ad49",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 16,
+        "abstain": 16
+      },
+      "health_read": {
+        "accepted": 16,
+        "abstain": 16
+      },
+      "literal_search": {
+        "accepted": 16,
+        "abstain": 16
+      },
+      "out_of_domain": {
+        "abstain": 32
+      },
+      "patch_draft": {
+        "accepted": 16,
+        "abstain": 16
+      },
+      "read_file": {
+        "accepted": 16,
+        "abstain": 16
+      },
+      "read_lines": {
+        "accepted": 16,
+        "abstain": 16
+      }
+    },
+    "template_groups": 56,
+    "exact_prompt_overlap_with_calibration": 0,
+    "exact_prompt_overlap_with_prior_development": 0,
+    "template_group_overlap_with_calibration": 0
+  },
+  "threshold_protocol": "choose max held-out calibration negative score using original system prompt only; plain prompt remains diagnostic"
+}

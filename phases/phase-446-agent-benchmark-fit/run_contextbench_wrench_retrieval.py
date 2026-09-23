@@ -55,7 +55,7 @@ def sample_resources() -> dict:
     free_vram, total_vram = subprocess.check_output(
         ["nvidia-smi", "--query-gpu=memory.free,memory.total", "--format=csv,noheader,nounits"],
         text=True,
-        timeout=5,
+        timeout=20,
     ).splitlines()[0].split(",", 1)
     return {
         "time_utc": datetime.now(timezone.utc).isoformat(),
@@ -345,6 +345,27 @@ def main() -> int:
                         excluded[result["instance_id"]] = result
                     print(f"[{len(completed) + len(excluded)}/{len(cases)}] excluded {len(pending)} row(s): pinned snapshot unavailable, {repo}@{commit}", flush=True)
                     continue
+                except (FileNotFoundError, tarfile.TarError, EOFError) as exc:
+                    # GitHub archives can omit an expected tracked asset or
+                    # arrive incomplete. Keep every affected case visible as
+                    # a failed input and continue with the remaining suite.
+                    for row in pending:
+                        result = {
+                            "instance_id": row["instance_id"],
+                            "dataset_repo": row["repo"],
+                            "snapshot_repo": repo,
+                            "commit": commit,
+                            "status": "failed_snapshot_extract",
+                            "error_type": type(exc).__name__,
+                            "error": str(exc)[:1000],
+                        }
+                        with exclusions_path.open("a", encoding="utf-8") as output:
+                            output.write(json.dumps(result, ensure_ascii=False) + "\n")
+                            output.flush()
+                            os.fsync(output.fileno())
+                        excluded[result["instance_id"]] = result
+                    print(f"[{len(completed) + len(excluded)}/{len(cases)}] failed {len(pending)} row(s): snapshot extraction failed, {repo}@{commit}", flush=True)
+                    continue
                 # The official evaluator stays intact; only checkout is redirected
                 # to the exact GitHub archive already fetched by this adapter.
                 evaluate.checkout = lambda _url, _commit, _cache: str(snapshot)
@@ -395,6 +416,8 @@ def main() -> int:
         "scored_count": len(completed),
         "excluded_count": len(excluded),
         "excluded_instances": list(excluded.values()),
+        "failed_snapshot_count": sum(row.get("status") == "failed_snapshot_extract" for row in excluded.values()),
+        "unavailable_snapshot_count": sum(row.get("status") == "excluded_unavailable_pinned_snapshot" for row in excluded.values()),
         "processed_input_count": len(completed) + len(excluded),
         "component": "src/wrench_harness/context.py::ContextLedger.search",
         "scope_limit": "retrieval component only; no solver, Pass@1, or provider model call; AST-symbol metrics omitted because tree-sitter grammars are unavailable on the host",

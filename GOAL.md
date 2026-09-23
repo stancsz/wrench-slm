@@ -192,6 +192,41 @@ authorized by the human product owner in this conversation on 2026-09-22.
    and changes to unrelated skipped workstreams are not authorized by this
    evaluation direction.
 
+12. **Owner-directed 20,000-row Wrench training corpus**
+
+   Human direction, 2026-09-23: prepare exactly 20,000 quality-screened
+   training records for the six allowlisted actions and their abstention or
+   fallback boundaries. Keep evaluation records outside this training count.
+   For a healthy 80/10/10 split, add 2,500 development/calibration and 2,500
+   sealed final evaluation records, for 25,000 total examples. Use a balanced
+   per-action floor, then allocate the traffic-weighted portion using
+   reviewed, redacted real workflow frequency and measured practical value,
+   including frontier-token mass, verifier success, and final task outcomes.
+   Do not invent production frequencies from synthetic examples. The initial
+   training design reserves 7,200 balanced action and matched-boundary
+   examples, 9,600 examples allocated from observed high-value workflow
+   traffic, and 3,200 out-of-scope or escalation examples across four boundary
+   families. If approved real traces do not support the traffic-weighted
+   allocation, record the shortfall rather than padding it with near-duplicate
+   prompts. Four thousand evaluation records outside 20,000 training records
+   would be 16.7% of the 24,000-row combined set, not 20%.
+
+   Every training row must have source and license or consent status, an
+   action family, a task/template group, a verifiable expected action or
+   abstention reason, label-review provenance, and duplicate-screening
+   results. Synthetic examples remain quarantined until human label review.
+   Do not train from `final.jsonl` or any sealed evaluation split. Do not use
+   the external general tool-call bundle, which has been removed from the
+   active corpus and archived on D: because task-fit failed and licensing is
+   still pending. Reconsider it only if both task-fit and licensing are
+   approved. Keep large corpus files under
+   `D:\\wrench-slm-data`; keep manifests, validators, and concise receipts in
+   the repository. Do not start a new fit until the corpus audit and split
+   separation pass. This data-preparation work does not authorize production
+   enablement or changes to Wrench's tool authority.
+   The current inventory and proposed quality gates are in
+   [the 20,000-row corpus plan](phases/phase-447-wrench-training-data-corpus/README.md).
+
 ## Explicitly skipped
 
 The following are archived or paused and must not become active work without a
@@ -437,17 +472,20 @@ Updated: 2026-09-23
   interval, while remaining below published Qwen embedding references. The
   latest V5 gate comparison is diagnostic, not valid primary evidence: the
   internal labels treated requests for untracked Git paths as eligible even
-  though the executor omits them. Corrected V6 trained and scored 54/80 versus
-  Qwen3.5 9B's 48/80 on the tracked-only split, with zero versus 32 unsafe
-  continuations. Its paired accuracy interval includes zero and it accepted
-  only 6/32 eligible requests, so utility remains unproven. Qwen3.5 27B scored
-  77/80 and beat Wrench's 54/80 by 28.75 points (paired 95% interval
-  [+21.25, +36.25]); it made two unsafe accepts versus Wrench's zero. The
-  V7 tracked-scope candidate is now training from a fresh 274-row calibration
-  and 80-row development split with explicit executor capability text. V5
-  does not count as primary evidence. SWE-Explore and ContextBench pre-BM25
-  runs remain in progress. See [Phase 446](phases/phase-446-agent-benchmark-fit/README.md)
-  for the oracle audit and current evidence.
+  though the executor omits them. Corrected V6 was low-coverage (54/80,
+  6/32 eligible accepted, zero unsafe). V7 trained from a fresh tracked-scope
+  calibration and development split with explicit executor capability text.
+  On the original system prompt, V7 scored 58/80 with 10/32 eligible accepted
+  and zero unsafe continuations. Qwen3.5 9B scored 67/80 with 27/32 eligible
+  accepted and 8 unsafe continuations; its paired accuracy interval versus
+  Wrench includes zero. Qwen3.5 27B scored 80/80, 32/32 eligible, and zero
+  unsafe; its paired accuracy lead over Wrench is 27.5 points (95% CI
+  [+18.75, +36.25]). Wrench is substantially faster but has a large coverage
+  gap, so this is not a quality or utility win. V5 does not count as primary
+  evidence. The selected external slate is fit-first and keeps weak results
+  visible. SWE-Explore and ContextBench pre-BM25 runs remain in progress. See
+  [Phase 446](phases/phase-446-agent-benchmark-fit/README.md) for the oracle
+  audit, selection rationale, and current evidence.
 
 - Latest full regression after Phase 441: 341 passed with 18 existing Windows
   asyncio deprecation warnings. Phase 439's focused validator and canary
@@ -479,6 +517,10 @@ Updated: 2026-09-23
 - [Phase 442 MiniMax/OpenRouter credential check](phases/phase-442-minimax-openrouter-credential-check/README.md) confirms both gateway aliases and read-only credential acceptance. It is not a model-completion, cost-export, or provider-cap test.
 - [Phase 443 parent-route binding review](phases/phase-443-parent-route-binding/README.md) records the synthetic route mismatch and Sol's guard recommendation. The active [Q4 parent contract](COLLABORATION_CONTRACT.json) records the human route choice and binds the one-canary scope to OpenRouter MiniMax M3. Local canary and paid-receipt validators reject missing or mismatched child routes. This is authorization evidence only; no provider call was made.
 - [Current client-output audit](phases/opencode-output-diagnosis-20260922/README.md) records the pinned OpenCode repair and remaining direct-baseline/accounting gaps.
+- [Phase 448 paired-canary trace-source audit](phases/phase-448-paired-canary-trace-source-audit/README.md) correlates all 397 capture IDs with event logs and recovers partial request/token/latency accounting. It still lacks consent provenance, independently reviewed redaction, task-verifier outcomes, complete joins, and provider costs, so it is only a candidate workload source and does not close Gates C or D.
+- [Phase 449 context-client abstention](phases/phase-449-context-client-abstention/README.md) records a narrow fix for a missing-user `IndexError` in context retrieval. It has not been exercised by tests and does not close Gate A or Gate E.
+- [Phase 450 Git status config isolation](phases/phase-450-git-status-config-isolation/README.md) disables repository-configured FSMonitor commands for the bounded `git_read_status` call. The change has not been regression-tested and does not establish Gate B.
+- [Phase 451 search fallback containment](phases/phase-451-search-fallback-symlink-containment/README.md) resolves and confines Python fallback search targets before reading. Static symlink escapes are addressed in source, but race resistance and runtime behavior remain unverified, so Gate B stays open.
 
 ### Next decision and stop condition
 
@@ -544,3 +586,12 @@ matched three-arm replay. Stop on missing accounting, provider spend without a
 valid contract, verifier failure, unexpected mutation, prohibited acceptance,
 unbounded retry, or a breached resource reserve. Do not place credentials in
 the repository, packet, or receipt.
+
+Phase 452 adds tokenizer-ID totals for completed local Transformers generation
+attempts, including bounded repair attempts, to the workflow accounting
+receipt. When the native upstream path adds frontier calls after local
+inference, the receipt now retains and reports both sources separately before
+summing workflow tokens. Upstream attempts without usage, client-level
+corrective HTTP retries, raised generation calls, durable replay-trace
+serialization, complete workflow outcomes, dollar costs, and the matched Gate
+D replay still require separate evidence before making a net-savings claim.
