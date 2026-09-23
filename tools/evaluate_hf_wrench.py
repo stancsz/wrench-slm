@@ -10,6 +10,7 @@ explicitly supplies that path, and its receipt remains a diagnostic artifact.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -24,6 +25,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from wrench_harness.core import execute_model_output  # noqa: E402
+try:
+    from tools.score_hf_wrench_receipt import score_result  # type: ignore  # noqa: E402
+except ModuleNotFoundError:
+    from score_hf_wrench_receipt import score_result  # type: ignore  # noqa: E402
 try:
     from tools.calibrate_qwen_router import LoRALinear, _attach_attention_lora  # type: ignore  # noqa: E402
 except ModuleNotFoundError:
@@ -187,27 +192,22 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         text = tokenizer.decode(generated, skip_special_tokens=True).strip()
         verified = execute_model_output(text, args.allowed_root, request_prompt=prompt)
         expected_status = row.get("expected_status")
-        expected_target = row.get("target")
-        exact = False
-        if isinstance(expected_target, str):
-            try:
-                exact = json.loads(text) == json.loads(expected_target)
-            except json.JSONDecodeError:
-                exact = False
-        outcome_match = (
-            verified.get("status") == expected_status
-            and (expected_status != "accepted" or exact)
+        scoring = score_result(
+            row,
+            text,
+            verified.get("status"),
+            verified.get("fallback_reason"),
         )
         results.append(
             {
                 "id": row.get("id"),
                 "family": row.get("family"),
                 "expected_status": expected_status,
+                "expected_fallback_reason": row.get("expected_fallback_reason"),
                 "model_output": text,
                 "verified_status": verified.get("status"),
                 "fallback_reason": verified.get("fallback_reason"),
-                "exact_target_match": exact,
-                "outcome_match": outcome_match,
+                **scoring,
                 "latency_ms": elapsed_ms,
                 "prompt_tokens": int(batch["input_ids"].shape[-1]),
             }
@@ -215,16 +215,30 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     accepted = sum(item["verified_status"] == "accepted" for item in results)
     exact = sum(item["exact_target_match"] for item in results)
     matched = sum(item["outcome_match"] for item in results)
+    eligible = [item for item in results if item["expected_status"] == "accepted"]
+    expected_abstains = [item for item in results if item["expected_status"] == "abstain"]
     receipt = {
         "schema": "wrench.hf-generation-development-eval.v1",
         "status": "PASS_DEVELOPMENT_DIAGNOSTIC" if matched == len(results) else "DEVELOPMENT_GAPS",
         "model": str(args.model.resolve()),
         "cases": str(args.cases.resolve()),
+        "cases_bytes_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest().upper(),
         "case_count": len(results),
         "max_cases": args.max_cases,
+        "max_new_tokens": args.max_new_tokens,
+        "do_sample": False,
         "verified_accepted": accepted,
         "exact_target_matches": exact,
         "outcome_matches": matched,
+        "eligible_case_count": len(eligible),
+        "eligible_exact_accepts": sum(item["outcome_match"] for item in eligible),
+        "expected_abstain_count": len(expected_abstains),
+        "exact_abstention_matches": sum(item["outcome_match"] for item in expected_abstains),
+        "prohibited_accepts": sum(
+            item["expected_status"] == "abstain" and item["verified_status"] == "accepted"
+            for item in results
+        ),
+        "invalid_json_outputs": sum(not item["model_json_valid"] for item in results),
         "median_latency_ms": _percentile([item["latency_ms"] for item in results], 50),
         "p95_latency_ms": _percentile([item["latency_ms"] for item in results], 95),
         "device": str(device),
@@ -269,7 +283,9 @@ def main() -> int:
     receipt = evaluate(args)
     print(json.dumps({key: receipt[key] for key in (
         "status", "case_count", "verified_accepted", "exact_target_matches",
-        "outcome_matches", "median_latency_ms", "p95_latency_ms", "device",
+        "outcome_matches", "eligible_exact_accepts", "exact_abstention_matches",
+        "prohibited_accepts", "invalid_json_outputs", "median_latency_ms",
+        "p95_latency_ms", "device",
     )}, indent=2))
     return 0
 
