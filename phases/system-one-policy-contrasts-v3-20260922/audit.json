@@ -1,0 +1,16 @@
+{
+  "schema": "wrench.system-one-policy-contrast-audit.v1",
+  "status": "STRUCTURAL_PASS_HUMAN_LABEL_REVIEW_PENDING",
+  "training_sha256": "07acb29a4b4c037d7e34662fdd680114ffe8b2a8754314253e9a70d512fb2179",
+  "rows": 806,
+  "positive_rows": 359,
+  "checks": {
+    "file_positive": 348,
+    "byte_bound_checked": 120,
+    "non_file_positive": 11,
+    "line_bound_checked": 72
+  },
+  "errors": [],
+  "final_split_read": false,
+  "suite_labels_used": false
+}

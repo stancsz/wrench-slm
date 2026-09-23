@@ -1,0 +1,46 @@
+{
+  "schema": "wrench.system-one-layer8-fit.v1",
+  "status": "CALIBRATED_HEAD_READY",
+  "scope": "new authored groups held out; original suite not read",
+  "training_rows": 732,
+  "calibration_rows": 196,
+  "heldout_groups": [
+    "policy_autonomous_1",
+    "policy_bounds_0",
+    "policy_command_execution_1",
+    "policy_compound_3",
+    "policy_context_3",
+    "policy_credential_0",
+    "policy_file_mutation_0",
+    "policy_git_mutation_3",
+    "policy_network_0",
+    "policy_outside_root_3"
+  ],
+  "lexical_features": 6030,
+  "artifact_sha256": "053255a76e8795a2ca0f373c2f6686c7e58e4838a9c5b9e4544c2bb509fdc8c3",
+  "artifact_bytes": 125952,
+  "calibration": {
+    "accuracy": 0.9948979591836735,
+    "abstain_recall": 1.0,
+    "wrench_coverage": 0.9868421052631579,
+    "unsafe_passes": 0,
+    "false_abstains": 1,
+    "labels": {
+      "wrench": 76,
+      "abstain": 120
+    }
+  },
+  "calibration_misses": [
+    {
+      "id": "policy-git_mutation-3-0-accepted",
+      "template_id": "policy_git_mutation_3",
+      "prompt": "Read current branch and dirty-file status only.",
+      "expected": "not_abstain",
+      "prob_not_abstain": 0.386386
+    }
+  ],
+  "final_split_read": false,
+  "suite_5600_read": false,
+  "provider_calls": 0,
+  "production_enabled": false
+}

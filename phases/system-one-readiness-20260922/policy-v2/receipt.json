@@ -1,0 +1,3058 @@
+{
+  "schema": "wrench.system-one-readiness.v1",
+  "status": "LOCAL_CLASSIFIER_EXPERIMENT_COMPLETE",
+  "provider_calls": 0,
+  "generated_tokens": 0,
+  "base_weights_updated": false,
+  "final_split_read": false,
+  "production_enabled": false,
+  "quality_claim": false,
+  "environment": {
+    "torch": "2.9.1+cu128",
+    "transformers": "5.17.0",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti"
+  },
+  "source_sha256": {
+    "tools\\run_system_one_readiness.py": "a3e3927bb016ffba6cea39d78fc801c1d436da64693aaab3e60cc1cbf7e39188",
+    "tools\\train_qwen_abstain.py": "d4f0912816af7d18b0e9b80744f35e53d1637094f66edbf50e54d0945937bb72",
+    "src\\wrench_harness\\qwen_abstain.py": "3403545713f1685f11a6e1f7a25d58a96b998f6cf81b93579a6ec7dc0dfb1081",
+    "src\\wrench_harness\\worker.py": "898c0b5b7a9d4b9aea958c85a081f2ae2f7d8a15901319618a1e8821758eb824"
+  },
+  "training_rows": 190,
+  "calibration_rows": 50,
+  "train_ids": [
+    "extra-023-0",
+    "extra-023-1",
+    "contrast-118-0",
+    "contrast-118-1",
+    "extra-043-0",
+    "extra-043-1",
+    "extra-007-0",
+    "extra-007-1",
+    "contrast-102-0",
+    "contrast-102-1",
+    "extra-018-0",
+    "extra-018-1",
+    "contrast-115-0",
+    "contrast-115-1",
+    "extra-010-0",
+    "extra-010-1",
+    "extra-019-0",
+    "extra-019-1",
+    "contrast-104-0",
+    "contrast-104-1",
+    "extra-038-0",
+    "contrast-116-0",
+    "contrast-116-1",
+    "extra-011-0",
+    "extra-011-1",
+    "extra-017-0",
+    "extra-017-1",
+    "contrast-103-0",
+    "contrast-103-1",
+    "contrast-108-0",
+    "contrast-108-1",
+    "extra-028-0",
+    "extra-028-1",
+    "extra-022-0",
+    "extra-022-1",
+    "contrast-111-0",
+    "contrast-111-1",
+    "extra-033-0",
+    "extra-015-0",
+    "extra-015-1",
+    "extra-014-0",
+    "extra-014-1",
+    "contrast-117-0",
+    "contrast-117-1",
+    "contrast-114-0",
+    "contrast-114-1",
+    "extra-020-0",
+    "extra-020-1",
+    "contrast-119-0",
+    "contrast-119-1",
+    "extra-034-0",
+    "extra-030-0",
+    "contrast-112-0",
+    "contrast-112-1",
+    "extra-000-0",
+    "extra-000-1",
+    "extra-006-0",
+    "extra-006-1",
+    "extra-001-0",
+    "extra-001-1",
+    "extra-042-0",
+    "extra-042-1",
+    "extra-026-0",
+    "extra-026-1",
+    "contrast-106-0",
+    "contrast-106-1",
+    "extra-002-0",
+    "extra-002-1",
+    "extra-039-0",
+    "extra-025-0",
+    "extra-025-1",
+    "extra-024-0",
+    "extra-024-1",
+    "extra-032-0",
+    "extra-016-0",
+    "extra-016-1",
+    "extra-021-0",
+    "extra-021-1",
+    "extra-036-0",
+    "extra-029-0",
+    "extra-029-1",
+    "extra-035-0",
+    "extra-027-0",
+    "extra-027-1",
+    "extra-004-0",
+    "extra-004-1",
+    "contrast-101-0",
+    "contrast-101-1",
+    "eval59_git_read_status_01_02",
+    "eval59_git_read_status_05_02",
+    "eval59_git_read_status_03_02",
+    "eval59_git_read_status_00_00",
+    "eval59_git_read_status_00_01",
+    "eval59_git_read_status_00_02",
+    "eval59_git_read_status_02_02",
+    "eval59_health_read_01_00",
+    "eval59_health_read_01_01",
+    "eval59_health_read_01_02",
+    "eval59_health_read_05_00",
+    "eval59_health_read_05_01",
+    "eval59_health_read_05_02",
+    "eval59_health_read_03_00",
+    "eval59_health_read_03_01",
+    "eval59_health_read_03_02",
+    "eval59_health_read_00_00",
+    "eval59_health_read_00_01",
+    "eval59_health_read_00_02",
+    "eval59_health_read_02_00",
+    "eval59_health_read_02_01",
+    "eval59_health_read_02_02",
+    "eval59_literal_search_01_00",
+    "eval59_literal_search_01_01",
+    "eval59_literal_search_01_02",
+    "eval59_literal_search_05_00",
+    "eval59_literal_search_05_01",
+    "eval59_literal_search_05_02",
+    "eval59_literal_search_03_00",
+    "eval59_literal_search_03_01",
+    "eval59_literal_search_03_02",
+    "eval59_literal_search_00_00",
+    "eval59_literal_search_00_01",
+    "eval59_literal_search_00_02",
+    "eval59_literal_search_02_00",
+    "eval59_literal_search_02_01",
+    "eval59_literal_search_02_02",
+    "eval59_out_of_domain_01_00",
+    "eval59_out_of_domain_01_01",
+    "eval59_out_of_domain_01_02",
+    "eval59_out_of_domain_01_03",
+    "eval59_out_of_domain_05_00",
+    "eval59_out_of_domain_05_01",
+    "eval59_out_of_domain_05_02",
+    "eval59_out_of_domain_05_03",
+    "eval59_out_of_domain_03_00",
+    "eval59_out_of_domain_03_01",
+    "eval59_out_of_domain_03_02",
+    "eval59_out_of_domain_03_03",
+    "eval59_out_of_domain_00_00",
+    "eval59_out_of_domain_00_01",
+    "eval59_out_of_domain_00_02",
+    "eval59_out_of_domain_00_03",
+    "eval59_out_of_domain_02_00",
+    "eval59_out_of_domain_02_01",
+    "eval59_out_of_domain_02_02",
+    "eval59_out_of_domain_02_03",
+    "eval59_patch_draft_01_00",
+    "eval59_patch_draft_01_01",
+    "eval59_patch_draft_01_02",
+    "eval59_patch_draft_05_00",
+    "eval59_patch_draft_05_01",
+    "eval59_patch_draft_05_02",
+    "eval59_patch_draft_03_00",
+    "eval59_patch_draft_03_01",
+    "eval59_patch_draft_03_02",
+    "eval59_patch_draft_00_00",
+    "eval59_patch_draft_00_01",
+    "eval59_patch_draft_00_02",
+    "eval59_patch_draft_02_00",
+    "eval59_patch_draft_02_01",
+    "eval59_patch_draft_02_02",
+    "eval59_read_file_01_00",
+    "eval59_read_file_01_01",
+    "eval59_read_file_01_02",
+    "eval59_read_file_05_00",
+    "eval59_read_file_05_01",
+    "eval59_read_file_05_02",
+    "eval59_read_file_03_00",
+    "eval59_read_file_03_01",
+    "eval59_read_file_03_02",
+    "eval59_read_file_00_00",
+    "eval59_read_file_00_01",
+    "eval59_read_file_00_02",
+    "eval59_read_file_02_00",
+    "eval59_read_file_02_01",
+    "eval59_read_file_02_02",
+    "eval59_read_lines_01_00",
+    "eval59_read_lines_01_01",
+    "eval59_read_lines_01_02",
+    "eval59_read_lines_05_00",
+    "eval59_read_lines_05_01",
+    "eval59_read_lines_05_02",
+    "eval59_read_lines_03_00",
+    "eval59_read_lines_03_01",
+    "eval59_read_lines_03_02",
+    "eval59_read_lines_00_00",
+    "eval59_read_lines_00_01",
+    "eval59_read_lines_00_02",
+    "eval59_read_lines_02_00",
+    "eval59_read_lines_02_01",
+    "eval59_read_lines_02_02"
+  ],
+  "calibration_ids": [
+    "extra-013-0",
+    "extra-013-1",
+    "extra-041-0",
+    "extra-041-1",
+    "extra-012-0",
+    "extra-012-1",
+    "contrast-110-0",
+    "contrast-110-1",
+    "contrast-100-0",
+    "contrast-100-1",
+    "contrast-107-0",
+    "contrast-107-1",
+    "extra-037-0",
+    "extra-031-0",
+    "contrast-113-0",
+    "contrast-113-1",
+    "contrast-105-0",
+    "contrast-105-1",
+    "contrast-109-0",
+    "contrast-109-1",
+    "extra-008-0",
+    "extra-008-1",
+    "extra-040-0",
+    "extra-040-1",
+    "extra-009-0",
+    "extra-009-1",
+    "extra-005-0",
+    "extra-005-1",
+    "extra-003-0",
+    "extra-003-1",
+    "eval59_git_read_status_04_02",
+    "eval59_health_read_04_00",
+    "eval59_health_read_04_01",
+    "eval59_health_read_04_02",
+    "eval59_literal_search_04_00",
+    "eval59_literal_search_04_01",
+    "eval59_literal_search_04_02",
+    "eval59_out_of_domain_04_00",
+    "eval59_out_of_domain_04_01",
+    "eval59_out_of_domain_04_02",
+    "eval59_out_of_domain_04_03",
+    "eval59_patch_draft_04_00",
+    "eval59_patch_draft_04_01",
+    "eval59_patch_draft_04_02",
+    "eval59_read_file_04_00",
+    "eval59_read_file_04_01",
+    "eval59_read_file_04_02",
+    "eval59_read_lines_04_00",
+    "eval59_read_lines_04_01",
+    "eval59_read_lines_04_02"
+  ],
+  "training_sha256": {
+    "base_calibration": "36818832f1c2dfdac3380852595e79e5f46d74192f1efcbc20c29aa9ff1df52e",
+    "contrast": "4476a159a0d0d0ad9090b404da2d9a079bc9848292bac3f2ef806b435376597d"
+  },
+  "policy_sha256": "549860ca1890647dec8d0e1890f602383ac5f59e59f586b5709f568d7f885fb8",
+  "checkpoint_sha256": {
+    "config.json": "175927b6167ad84b1958b9aa406568ffcb9df66c9940387abebb40b510132642",
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "5186f0defcd7f232382c7f0aebcd2252d073bb921ab240e407b7ae8745d2b29b",
+    "model.safetensors.index.json": "f9728ec38926fbd0f69a4637126c16382603ccd2b0cd8cab93b607050067b436",
+    "model-00001-of-00009.safetensors": "ab0aae1ef5fa64e1557eac07ce6d92e4f8d866fe5708ac1591fe234e1930cc39",
+    "model-00002-of-00009.safetensors": "3a124c8b97b37d3c8f9460dc555d79c8984995a75a08f3e8dc09a73b4fddb695",
+    "model-00003-of-00009.safetensors": "aef830184d3925332126f043a10b26cefd6232ac97a26737d9d4cda228008242",
+    "model-00004-of-00009.safetensors": "2f1c0cae7e5ffeee1044a3da0ce29fd20c6672b342e8253044b624e3d0792a08",
+    "model-00005-of-00009.safetensors": "4fda838c7156114608ddaacf4de4131cfa4334aff298dd346e461a6425c1ee0a",
+    "model-00006-of-00009.safetensors": "c9c000df3d524911cdcf534442273f1011ce924aa426210196f3195dc29770bf",
+    "model-00007-of-00009.safetensors": "772349de19a5ff159189ba4144aab44677c69b417191ca9f17df114de763e2d4",
+    "model-00008-of-00009.safetensors": "ccc66ec81746f956ef275e178406ad9c7b166c82b28be9b9f08e527e1bc74359",
+    "model-00009-of-00009.safetensors": "ade84ac5655ae45708afd998ad8718b9bd327628566b7ceb733e59e242fda431",
+    "chat_template.jinja": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259"
+  },
+  "backbone_parameter_bytes": 7762488032,
+  "backbone_allocated_vram_bytes": 7773971456,
+  "decision_rule": "fixed binary argmax (p_not_abstain >= 0.5)",
+  "calibration_accuracy": 0.7900000214576721,
+  "artifact_sha256": "8d53531fb72b8970d60923f205c09c36d00972ca8b8f57f7ed0c4400a4d223f3",
+  "artifact_bytes": 23995,
+  "head_parameters": 4098,
+  "head_raw_bytes": 16392,
+  "threshold": 0.5,
+  "candidate_frozen_before_evaluation": true,
+  "evaluation_sha256": "96c08a6fe3e2284c0bb55e4454d0b504675a0a50f2ddc859ced5c6b06503c622",
+  "baseline_artifact_sha256": "e33e28af544be5eaf156ff42dbe47d2098a36939bb4b0cfd0222d378d4ee3b0b",
+  "baseline": {
+    "rows": 60,
+    "eligible": 30,
+    "ineligible": 30,
+    "eligible_passes": 20,
+    "eligible_coverage": 0.6666666666666666,
+    "unsafe_classifier_passes": 13,
+    "unsafe_miss_rate": 0.43333333333333335,
+    "scope": "classifier decisions only; no tool execution",
+    "eligible_coverage_wilson95": [
+      0.4878005164454384,
+      0.8076950191632386
+    ],
+    "unsafe_miss_rate_wilson95": [
+      0.2737748557646652,
+      0.6080269299918639
+    ],
+    "correct": 37,
+    "accuracy": 0.6166666666666667,
+    "accuracy_wilson95": [
+      0.49017595824099924,
+      0.7291172762591798
+    ],
+    "latency_ms": {
+      "p50": 186.6029052734375,
+      "p95": 219.8577880859375,
+      "max": 271.18438720703125,
+      "samples": 60
+    }
+  },
+  "candidate": {
+    "rows": 60,
+    "eligible": 30,
+    "ineligible": 30,
+    "eligible_passes": 13,
+    "eligible_coverage": 0.43333333333333335,
+    "unsafe_classifier_passes": 7,
+    "unsafe_miss_rate": 0.23333333333333334,
+    "scope": "classifier decisions only; no tool execution",
+    "eligible_coverage_wilson95": [
+      0.2737748557646652,
+      0.6080269299918639
+    ],
+    "unsafe_miss_rate_wilson95": [
+      0.11792388144489496,
+      0.40928326158122164
+    ],
+    "correct": 36,
+    "accuracy": 0.6,
+    "accuracy_wilson95": [
+      0.4736605349204075,
+      0.7143050946511744
+    ],
+    "latency_ms": {
+      "p50": 180.5944061279297,
+      "p95": 210.08486938476562,
+      "max": 226.3397979736328,
+      "samples": 60
+    }
+  },
+  "classifier_experiment_pass": false,
+  "resource_samples": [
+    {
+      "elapsed_s": 0.0940000000045984,
+      "ram_free": 28410576896,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.20300000000133878,
+      "ram_free": 28410466304,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.28100000000267755,
+      "ram_free": 28409589760,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.39100000000325963,
+      "ram_free": 28411768832,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.5,
+      "ram_free": 28414459904,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.5940000000045984,
+      "ram_free": 28412059648,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 1.75,
+      "ram_free": 28414763008,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14398.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 2.922000000005937,
+      "ram_free": 28412465152,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14398.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 4.094000000004598,
+      "ram_free": 28409925632,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14410.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 5.26600000000326,
+      "ram_free": 28418727936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14398.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 6.453000000001339,
+      "ram_free": 28406403072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14330.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 7.687000000005355,
+      "ram_free": 28220039168,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14301.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 8.078000000001339,
+      "ram_free": 28233551872,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14289.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 9.219000000004598,
+      "ram_free": 28234076160,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14273.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 9.453000000001339,
+      "ram_free": 28235223040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14273.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 9.578000000001339,
+      "ram_free": 28247089152,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14284.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 24.5,
+      "ram_free": 26604310528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6503.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 24.937000000005355,
+      "ram_free": 26607628288,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6492.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 25.437000000005355,
+      "ram_free": 26591027200,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6494.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 25.859000000004016,
+      "ram_free": 26596421632,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6494.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 26.297000000005937,
+      "ram_free": 26602139648,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6494.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 26.734000000004016,
+      "ram_free": 26616684544,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6494.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 27.187000000005355,
+      "ram_free": 26621300736,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6509.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 27.609000000004016,
+      "ram_free": 26597134336,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6504.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 28.14100000000326,
+      "ram_free": 26577440768,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6502.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 28.672000000005937,
+      "ram_free": 26551959552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 29.156000000002678,
+      "ram_free": 26523209728,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6466.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 29.64100000000326,
+      "ram_free": 26516938752,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 32.67200000000594,
+      "ram_free": 26520256512,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6468.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 33.26600000000326,
+      "ram_free": 26439421952,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 33.734000000004016,
+      "ram_free": 26449760256,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6508.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 34.17200000000594,
+      "ram_free": 26457911296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6495.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 34.5940000000046,
+      "ram_free": 26463772672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6476.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 35.109000000004016,
+      "ram_free": 26441965568,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6485.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 35.57800000000134,
+      "ram_free": 26431885312,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6495.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 36.01600000000326,
+      "ram_free": 26429591552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6491.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 36.42200000000594,
+      "ram_free": 26435129344,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6494.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 36.859000000004016,
+      "ram_free": 26436136960,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6472.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 37.3440000000046,
+      "ram_free": 26459676672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6471.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 37.812000000005355,
+      "ram_free": 26463571968,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6471.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 38.234000000004016,
+      "ram_free": 26470936576,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6466.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 38.67200000000594,
+      "ram_free": 26470793216,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6461.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 39.07800000000134,
+      "ram_free": 26465693696,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6459.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 39.5,
+      "ram_free": 26471723008,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 39.95300000000134,
+      "ram_free": 26511695872,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6464.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 40.40600000000268,
+      "ram_free": 26492809216,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 40.859000000004016,
+      "ram_free": 26496425984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6455.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 41.29700000000594,
+      "ram_free": 26491310080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6456.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 41.76600000000326,
+      "ram_free": 26495819776,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6462.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 42.14100000000326,
+      "ram_free": 26498445312,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6473.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 42.54700000000594,
+      "ram_free": 26519003136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6473.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 43.01600000000326,
+      "ram_free": 26500722688,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6473.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 43.45300000000134,
+      "ram_free": 26526416896,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6483.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 43.92200000000594,
+      "ram_free": 26524536832,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6532.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 44.32800000000134,
+      "ram_free": 26520121344,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 44.75,
+      "ram_free": 26541285376,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6530.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 45.25,
+      "ram_free": 26527592448,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6519.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 45.67200000000594,
+      "ram_free": 26531131392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6519.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 46.109000000004016,
+      "ram_free": 26519035904,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6522.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 46.53100000000268,
+      "ram_free": 26542338048,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6522.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 46.937000000005355,
+      "ram_free": 26552942592,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6522.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 47.3440000000046,
+      "ram_free": 26552324096,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6532.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 47.79700000000594,
+      "ram_free": 26492088320,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6508.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 48.359000000004016,
+      "ram_free": 26336743424,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6430.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 48.95300000000134,
+      "ram_free": 26290544640,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6406.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 49.54700000000594,
+      "ram_free": 26220326912,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6380.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 50.03100000000268,
+      "ram_free": 26235146240,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6372.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 50.51600000000326,
+      "ram_free": 26226278400,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6372.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 51.03100000000268,
+      "ram_free": 26221174784,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6365.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 51.484000000004016,
+      "ram_free": 26219859968,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6365.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 51.937000000005355,
+      "ram_free": 26220195840,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6365.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 52.51600000000326,
+      "ram_free": 26217897984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6368.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 52.9690000000046,
+      "ram_free": 26206945280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6391.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 53.42200000000594,
+      "ram_free": 26198278144,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6396.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 53.82800000000134,
+      "ram_free": 26207715328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6414.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 54.3440000000046,
+      "ram_free": 26213982208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6420.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 54.79700000000594,
+      "ram_free": 26263613440,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6428.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 55.28100000000268,
+      "ram_free": 26254938112,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6419.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 55.75,
+      "ram_free": 26222870528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6370.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 56.234000000004016,
+      "ram_free": 26211135488,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6371.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 56.7190000000046,
+      "ram_free": 26221711360,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6369.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 57.2190000000046,
+      "ram_free": 26212827136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6354.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 57.70300000000134,
+      "ram_free": 26220707840,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6352.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 58.2190000000046,
+      "ram_free": 26157879296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6358.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 58.7190000000046,
+      "ram_free": 26147348480,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6358.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 59.2190000000046,
+      "ram_free": 26135486464,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6408.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 59.625,
+      "ram_free": 26139561984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6445.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 60.04700000000594,
+      "ram_free": 26129833984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6455.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 60.484000000004016,
+      "ram_free": 26112954368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6455.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 60.89100000000326,
+      "ram_free": 26120491008,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6458.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 61.3440000000046,
+      "ram_free": 26113536000,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 61.75,
+      "ram_free": 26117017600,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 62.15600000000268,
+      "ram_free": 26120351744,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6484.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 62.5940000000046,
+      "ram_free": 26142711808,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6506.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 63.01600000000326,
+      "ram_free": 26132295680,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6508.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 63.45300000000134,
+      "ram_free": 26129293312,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 63.89100000000326,
+      "ram_free": 26122407936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6491.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 64.32800000000134,
+      "ram_free": 26157031424,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6496.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 64.78100000000268,
+      "ram_free": 26180087808,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 65.25,
+      "ram_free": 26177339392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 65.67200000000594,
+      "ram_free": 26181947392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 66.10900000000402,
+      "ram_free": 26176200704,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6507.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 66.56200000000536,
+      "ram_free": 26190016512,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6510.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 67.01600000000326,
+      "ram_free": 26197528576,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6500.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 67.40600000000268,
+      "ram_free": 26214133760,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6489.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 67.82800000000134,
+      "ram_free": 26216542208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6489.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 68.28100000000268,
+      "ram_free": 26208956416,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6489.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 68.7190000000046,
+      "ram_free": 26205556736,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6489.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 69.18700000000536,
+      "ram_free": 26207801344,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 69.60900000000402,
+      "ram_free": 26226233344,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6467.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 70.01600000000326,
+      "ram_free": 26228121600,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6470.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 70.48400000000402,
+      "ram_free": 26219290624,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6471.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 70.92200000000594,
+      "ram_free": 26224295936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6470.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 71.375,
+      "ram_free": 26220294144,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 71.82800000000134,
+      "ram_free": 26221854720,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 72.25,
+      "ram_free": 26214731776,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 72.70300000000134,
+      "ram_free": 26226262016,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 73.14100000000326,
+      "ram_free": 26212835328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 73.54700000000594,
+      "ram_free": 26213163008,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 73.9690000000046,
+      "ram_free": 26218385408,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6424.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 74.51600000000326,
+      "ram_free": 26202595328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6416.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 75.10900000000402,
+      "ram_free": 26112684032,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6399.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 75.625,
+      "ram_free": 26100592640,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6382.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 76.04700000000594,
+      "ram_free": 26094882816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6382.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 76.4690000000046,
+      "ram_free": 26091261952,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6380.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 76.93700000000536,
+      "ram_free": 26090577920,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6376.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 77.39100000000326,
+      "ram_free": 26089742336,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6377.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 77.79700000000594,
+      "ram_free": 26091331584,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6377.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 78.18700000000536,
+      "ram_free": 26119479296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6387.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 78.5940000000046,
+      "ram_free": 26101342208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6387.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 78.98400000000402,
+      "ram_free": 26115002368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6493.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 79.42200000000594,
+      "ram_free": 26121093120,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6483.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 79.8440000000046,
+      "ram_free": 26118258688,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6483.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 80.25,
+      "ram_free": 26134355968,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6483.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 80.68700000000536,
+      "ram_free": 26121564160,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6483.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 81.15600000000268,
+      "ram_free": 26122117120,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6468.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 81.54700000000594,
+      "ram_free": 26111361024,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 81.95300000000134,
+      "ram_free": 26118766592,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 82.35900000000402,
+      "ram_free": 26133590016,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 82.79700000000594,
+      "ram_free": 26173845504,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 83.17200000000594,
+      "ram_free": 26176983040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6512.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 83.5940000000046,
+      "ram_free": 26172547072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6512.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 83.98400000000402,
+      "ram_free": 26188066816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6512.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 84.375,
+      "ram_free": 26189918208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6524.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 84.78100000000268,
+      "ram_free": 26209931264,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6524.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 85.23400000000402,
+      "ram_free": 26202939392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6517.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 85.65600000000268,
+      "ram_free": 26201190400,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6517.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 86.07800000000134,
+      "ram_free": 26208636928,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6502.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 86.51600000000326,
+      "ram_free": 26210942976,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6496.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 86.93700000000536,
+      "ram_free": 26255278080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6496.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 87.35900000000402,
+      "ram_free": 26250276864,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 87.78100000000268,
+      "ram_free": 26257244160,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6499.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 88.17200000000594,
+      "ram_free": 26265022464,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6509.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 88.57800000000134,
+      "ram_free": 26261086208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6541.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 88.9690000000046,
+      "ram_free": 26265915392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6538.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 89.375,
+      "ram_free": 26269597696,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6541.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 89.81200000000536,
+      "ram_free": 26272993280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6541.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 90.25,
+      "ram_free": 26268200960,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6519.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 90.7190000000046,
+      "ram_free": 26245181440,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6481.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 91.125,
+      "ram_free": 26242867200,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6482.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 91.60900000000402,
+      "ram_free": 26240311296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6422.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 92.04700000000594,
+      "ram_free": 26248081408,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6432.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 92.51600000000326,
+      "ram_free": 26252251136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6443.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 92.9690000000046,
+      "ram_free": 26243280896,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6453.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 93.39100000000326,
+      "ram_free": 26234642432,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6455.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 93.81200000000536,
+      "ram_free": 26239930368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6455.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 94.25,
+      "ram_free": 26247905280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6440.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 94.68700000000536,
+      "ram_free": 26264064000,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6436.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 95.23400000000402,
+      "ram_free": 26248249344,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6437.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 95.68700000000536,
+      "ram_free": 26263556096,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6437.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 96.14100000000326,
+      "ram_free": 26276823040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6437.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 96.64100000000326,
+      "ram_free": 26271895552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6466.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 97.0940000000046,
+      "ram_free": 26288340992,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6453.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 97.54700000000594,
+      "ram_free": 26280067072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6454.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 98.0,
+      "ram_free": 26288115712,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6462.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 98.40600000000268,
+      "ram_free": 26281721856,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6459.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 98.82800000000134,
+      "ram_free": 26288807936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6459.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 99.2190000000046,
+      "ram_free": 26293723136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6473.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 99.68700000000536,
+      "ram_free": 26283233280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6485.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 100.18700000000536,
+      "ram_free": 26285961216,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 100.75,
+      "ram_free": 26161184768,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6460.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 101.23400000000402,
+      "ram_free": 26120810496,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6436.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 101.67200000000594,
+      "ram_free": 26189221888,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6430.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 102.07800000000134,
+      "ram_free": 26199728128,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6432.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 102.54700000000594,
+      "ram_free": 26211893248,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6500.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 103.0,
+      "ram_free": 26206502912,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6500.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 103.42200000000594,
+      "ram_free": 26198519808,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6521.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 103.85900000000402,
+      "ram_free": 26173181952,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6521.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 104.39100000000326,
+      "ram_free": 26152873984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6558.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 104.82800000000134,
+      "ram_free": 26202009600,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6558.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 105.28100000000268,
+      "ram_free": 26235187200,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6549.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 105.68700000000536,
+      "ram_free": 26242879488,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6549.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 106.14100000000326,
+      "ram_free": 26249728000,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6560.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 106.56200000000536,
+      "ram_free": 26265186304,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6577.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 106.95300000000134,
+      "ram_free": 26279489536,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6577.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 107.3440000000046,
+      "ram_free": 26273062912,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6581.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 107.75,
+      "ram_free": 26272657408,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6581.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 108.17200000000594,
+      "ram_free": 26298519552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6581.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 108.57800000000134,
+      "ram_free": 26291752960,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6581.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 108.9690000000046,
+      "ram_free": 26308222976,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6578.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 109.375,
+      "ram_free": 26340622336,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6578.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 109.79700000000594,
+      "ram_free": 26339336192,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6536.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 110.20300000000134,
+      "ram_free": 26347069440,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6536.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 110.68700000000536,
+      "ram_free": 26324103168,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6536.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 111.07800000000134,
+      "ram_free": 26328551424,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 111.5,
+      "ram_free": 26321207296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6548.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 111.93700000000536,
+      "ram_free": 26320908288,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6546.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 112.48400000000402,
+      "ram_free": 26323140608,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 112.98400000000402,
+      "ram_free": 26311598080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 113.42200000000594,
+      "ram_free": 26297794560,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6548.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 113.85900000000402,
+      "ram_free": 26296336384,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 114.32800000000134,
+      "ram_free": 26298556416,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6548.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 114.78100000000268,
+      "ram_free": 26319458304,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 115.2190000000046,
+      "ram_free": 26313699328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 115.65600000000268,
+      "ram_free": 26301972480,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 116.14100000000326,
+      "ram_free": 26309406720,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 116.60900000000402,
+      "ram_free": 26343813120,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6563.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 117.01600000000326,
+      "ram_free": 26347638784,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 117.40600000000268,
+      "ram_free": 26349244416,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 117.92200000000594,
+      "ram_free": 26347687936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 118.375,
+      "ram_free": 26337923072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 118.82800000000134,
+      "ram_free": 26339717120,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 119.25,
+      "ram_free": 26342236160,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 119.67200000000594,
+      "ram_free": 26367885312,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 120.06200000000536,
+      "ram_free": 26371571712,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 120.51600000000326,
+      "ram_free": 26360999936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 120.93700000000536,
+      "ram_free": 26359529472,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 121.32800000000134,
+      "ram_free": 26365771776,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 121.7190000000046,
+      "ram_free": 26376237056,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 122.125,
+      "ram_free": 26351312896,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 122.53100000000268,
+      "ram_free": 26375094272,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 123.0,
+      "ram_free": 26361372672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6543.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 123.45300000000134,
+      "ram_free": 26365607936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6528.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 123.89100000000326,
+      "ram_free": 26345398272,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6528.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 124.42200000000594,
+      "ram_free": 26307993600,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6546.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 124.89100000000326,
+      "ram_free": 26319966208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6546.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 125.29700000000594,
+      "ram_free": 26355171328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6555.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 125.7190000000046,
+      "ram_free": 26357993472,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 126.125,
+      "ram_free": 26365718528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 126.53100000000268,
+      "ram_free": 26386907136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 126.93700000000536,
+      "ram_free": 26378801152,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 127.32800000000134,
+      "ram_free": 26388922368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6562.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 127.75,
+      "ram_free": 26383998976,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6562.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 128.14100000000326,
+      "ram_free": 26388381696,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6563.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 128.53100000000268,
+      "ram_free": 26385944576,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 128.9690000000046,
+      "ram_free": 26387648512,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 129.375,
+      "ram_free": 26395742208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 129.75,
+      "ram_free": 26385891328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 130.15600000000268,
+      "ram_free": 26384343040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 130.60900000000402,
+      "ram_free": 26381082624,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 131.07800000000134,
+      "ram_free": 26366103552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 131.48400000000402,
+      "ram_free": 26371031040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 131.89100000000326,
+      "ram_free": 26362339328,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6569.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 132.31200000000536,
+      "ram_free": 26346196992,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6569.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 132.78100000000268,
+      "ram_free": 26333347840,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.23400000000402,
+      "ram_free": 26319818752,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.29700000000594,
+      "ram_free": 26299437056,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.43700000000536,
+      "ram_free": 26282459136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.54700000000594,
+      "ram_free": 26273333248,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.64100000000326,
+      "ram_free": 26270142464,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.75,
+      "ram_free": 26264100864,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.85900000000402,
+      "ram_free": 26275127296,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 133.9690000000046,
+      "ram_free": 26314309632,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 134.07800000000134,
+      "ram_free": 26318626816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6567.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 134.5940000000046,
+      "ram_free": 26322903040,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6569.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 134.85900000000402,
+      "ram_free": 26321223680,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 135.18700000000536,
+      "ram_free": 26301861888,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 135.45300000000134,
+      "ram_free": 26292744192,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 135.68700000000536,
+      "ram_free": 26303643648,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 135.95300000000134,
+      "ram_free": 26310991872,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 136.2190000000046,
+      "ram_free": 26301526016,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 136.4690000000046,
+      "ram_free": 26308177920,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6565.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 136.70300000000134,
+      "ram_free": 26321526784,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 136.93700000000536,
+      "ram_free": 26328760320,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 137.18700000000536,
+      "ram_free": 26333704192,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6570.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 137.42200000000594,
+      "ram_free": 26328027136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 137.64100000000326,
+      "ram_free": 26331455488,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 137.85900000000402,
+      "ram_free": 26327113728,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 138.0940000000046,
+      "ram_free": 26329026560,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 138.32800000000134,
+      "ram_free": 26330562560,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 138.57800000000134,
+      "ram_free": 26297421824,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 138.81200000000536,
+      "ram_free": 26317107200,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 139.03100000000268,
+      "ram_free": 26320814080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 139.28100000000268,
+      "ram_free": 26317869056,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 139.51600000000326,
+      "ram_free": 26327375872,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 139.78100000000268,
+      "ram_free": 26322460672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6573.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 140.01600000000326,
+      "ram_free": 26324848640,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6572.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 140.25,
+      "ram_free": 26336509952,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6572.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 140.5,
+      "ram_free": 26312998912,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6572.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 140.7190000000046,
+      "ram_free": 26316845056,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6572.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 140.9690000000046,
+      "ram_free": 26294161408,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 141.18700000000536,
+      "ram_free": 26301984768,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 141.45300000000134,
+      "ram_free": 26307444736,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 141.70300000000134,
+      "ram_free": 26310447104,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 141.92200000000594,
+      "ram_free": 26299260928,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6562.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 142.15600000000268,
+      "ram_free": 26310107136,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6562.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 142.39100000000326,
+      "ram_free": 26317545472,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 142.64100000000326,
+      "ram_free": 26338689024,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 142.875,
+      "ram_free": 26318143488,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 143.10900000000402,
+      "ram_free": 26320674816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 143.375,
+      "ram_free": 26293579776,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 143.65600000000268,
+      "ram_free": 26302922752,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6564.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 143.93700000000536,
+      "ram_free": 26254786560,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 144.18700000000536,
+      "ram_free": 26246836224,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 144.42200000000594,
+      "ram_free": 26291625984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 144.67200000000594,
+      "ram_free": 26309500928,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 144.875,
+      "ram_free": 26316939264,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 145.125,
+      "ram_free": 26314133504,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6559.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 145.35900000000402,
+      "ram_free": 26300186624,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6559.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 145.60900000000402,
+      "ram_free": 26307002368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6559.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 145.8440000000046,
+      "ram_free": 26303918080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6559.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 146.07800000000134,
+      "ram_free": 26306334720,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 146.31200000000536,
+      "ram_free": 26310733824,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 146.56200000000536,
+      "ram_free": 26328612864,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 146.79700000000594,
+      "ram_free": 26317217792,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 147.03100000000268,
+      "ram_free": 26320150528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 147.26600000000326,
+      "ram_free": 26322739200,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 147.51600000000326,
+      "ram_free": 26324738048,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 147.75,
+      "ram_free": 26322513920,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 147.9690000000046,
+      "ram_free": 26319859712,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 148.20300000000134,
+      "ram_free": 26310606848,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 148.42200000000594,
+      "ram_free": 26314346496,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 148.64100000000326,
+      "ram_free": 26317479936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 148.89100000000326,
+      "ram_free": 26316931072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 149.29700000000594,
+      "ram_free": 26335997952,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 149.53100000000268,
+      "ram_free": 26340646912,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 149.81200000000536,
+      "ram_free": 26344038400,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 150.06200000000536,
+      "ram_free": 26339131392,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 150.29700000000594,
+      "ram_free": 26339495936,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 150.54700000000594,
+      "ram_free": 26326945792,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 150.81200000000536,
+      "ram_free": 26318802944,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 151.03100000000268,
+      "ram_free": 26311716864,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 151.25,
+      "ram_free": 26313707520,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 151.5,
+      "ram_free": 26315714560,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 151.73400000000402,
+      "ram_free": 26311299072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 151.95300000000134,
+      "ram_free": 26310946816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 152.18700000000536,
+      "ram_free": 26313584640,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 152.40600000000268,
+      "ram_free": 26288054272,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 152.625,
+      "ram_free": 26308747264,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 152.85900000000402,
+      "ram_free": 26287845376,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6557.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 153.0940000000046,
+      "ram_free": 26298634240,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 153.31200000000536,
+      "ram_free": 26316537856,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 153.53100000000268,
+      "ram_free": 26317602816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 153.76600000000326,
+      "ram_free": 26308214784,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 154.01600000000326,
+      "ram_free": 26304925696,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 154.23400000000402,
+      "ram_free": 26308399104,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 154.45300000000134,
+      "ram_free": 26313056256,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6547.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 154.68700000000536,
+      "ram_free": 26284675072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6551.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 154.93700000000536,
+      "ram_free": 26308227072,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6544.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 155.17200000000594,
+      "ram_free": 26309660672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 155.40600000000268,
+      "ram_free": 26296004608,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 155.65600000000268,
+      "ram_free": 26294038528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 155.89100000000326,
+      "ram_free": 26298957824,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6535.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 156.125,
+      "ram_free": 26307416064,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6542.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 156.3440000000046,
+      "ram_free": 26310811648,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 156.57800000000134,
+      "ram_free": 26330124288,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 156.81200000000536,
+      "ram_free": 26326450176,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6553.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 157.04700000000594,
+      "ram_free": 26328367104,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6556.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 157.28100000000268,
+      "ram_free": 26319511552,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 157.51600000000326,
+      "ram_free": 26329452544,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6561.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 157.73400000000402,
+      "ram_free": 26330488832,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6560.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 157.95300000000134,
+      "ram_free": 26329681920,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 158.15600000000268,
+      "ram_free": 26322206720,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 158.39100000000326,
+      "ram_free": 26321436672,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 158.60900000000402,
+      "ram_free": 26332602368,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 158.82800000000134,
+      "ram_free": 26335657984,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 159.04700000000594,
+      "ram_free": 26328285184,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 159.26600000000326,
+      "ram_free": 26331766784,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 159.48400000000402,
+      "ram_free": 26332209152,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 159.7190000000046,
+      "ram_free": 26334728192,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 159.93700000000536,
+      "ram_free": 26338631680,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 160.17200000000594,
+      "ram_free": 26327961600,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 160.43700000000536,
+      "ram_free": 26322317312,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 160.65600000000268,
+      "ram_free": 26316824576,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 160.89100000000326,
+      "ram_free": 26309500928,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 161.10900000000402,
+      "ram_free": 26317066240,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 161.3440000000046,
+      "ram_free": 26294833152,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 161.56200000000536,
+      "ram_free": 26278735872,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 161.78100000000268,
+      "ram_free": 26281885696,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 162.01600000000326,
+      "ram_free": 26311110656,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 162.23400000000402,
+      "ram_free": 26316513280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 162.4690000000046,
+      "ram_free": 26337058816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 162.73400000000402,
+      "ram_free": 26331582464,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6568.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 162.93700000000536,
+      "ram_free": 26311905280,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 163.0,
+      "ram_free": 26307452928,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6571.0,
+      "vram_total_mib": 16303.0
+    }
+  ]
+}

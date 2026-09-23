@@ -1,0 +1,22 @@
+{
+  "schema": "wrench.system-one-cached-calibration.v1",
+  "scope": "unsealed template-held-out, post-selection, no suite/test data",
+  "model": {
+    "rows": 196,
+    "correct": 187,
+    "abstain_rows": 120,
+    "wrench_rows": 76,
+    "unsafe_passes": 8,
+    "false_abstains": 1
+  },
+  "model_plus_preflight": {
+    "rows": 196,
+    "correct": 195,
+    "abstain_rows": 120,
+    "wrench_rows": 76,
+    "unsafe_passes": 0,
+    "false_abstains": 1
+  },
+  "model_forwards_for_preflight_rejections": 0,
+  "production_enabled": false
+}

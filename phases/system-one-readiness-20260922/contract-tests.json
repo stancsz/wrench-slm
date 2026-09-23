@@ -1,0 +1,54 @@
+{
+  "schema": "wrench.qwen-system-one-contract-tests.v1",
+  "status": "PASS",
+  "scope": "CPU-only implementation contracts using a tiny fake Qwen backbone; no learned quality, real-checkpoint performance, Jev parity or production acceptance claim",
+  "worktree": "C:/Users/stanc/.codex/worktrees/qwen-system-one-readiness/wrench-slm",
+  "command": "$env:CUDA_VISIBLE_DEVICES=''; $env:PYTHONDONTWRITEBYTECODE='1'; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; py -3 -m pytest -q -p no:cacheprovider tests/test_qwen_system_one_contract.py",
+  "exit_code": 0,
+  "pytest_output": ".....................................................................    [100%]\r\n69 passed in 5.80s\r\n",
+  "passed": 69,
+  "failed": 0,
+  "pytest_elapsed_seconds": 5.8,
+  "real_model_loads": 0,
+  "provider_calls": 0,
+  "gpu_jobs": 0,
+  "sealed_evaluation_read": false,
+  "source_sha256_at_completion": {
+    "tests/test_qwen_system_one_contract.py": "d24a2b66dac7afc546e19a7d7e7d1036de9e4b8dec2d8b6f6198a9d54c3dbd09",
+    "src/wrench_harness/qwen_abstain.py": "3403545713f1685f11a6e1f7a25d58a96b998f6cf81b93579a6ec7dc0dfb1081",
+    "src/wrench_harness/worker.py": "898c0b5b7a9d4b9aea958c85a081f2ae2f7d8a15901319618a1e8821758eb824"
+  },
+  "resource_samples": {
+    "before": {
+      "ram_total_kib": 50166352,
+      "ram_free_kib": 26757796,
+      "ram_free_fraction": 0.5333813389500596,
+      "gpu_memory_mib": "16303, 6700"
+    },
+    "after": {
+      "ram_total_kib": 50166352,
+      "ram_free_kib": 26800752,
+      "ram_free_fraction": 0.5342376101016872,
+      "gpu_memory_mib": "16303, 6755"
+    }
+  },
+  "resource_scope": "Before/after host samples, CPU fake-model workload only; sampled RAM and VRAM reserves exceeded 10%. Other parent work may use the GPU concurrently.",
+  "coverage": [
+    "one direct text-backbone forward with inference mode, no cache, no vocabulary projection or generation",
+    "last-token L2-normalized readout, binary softmax, threshold decisions and equality",
+    "policy serialization preserves supplied messages as quoted data",
+    "whole-message characters, serialized-token limits, no truncation, media rejection",
+    "malformed inputs and unresolved multi-turn context fail closed",
+    "artifact size, schema, labels, dimensions, checksums, finite parameters and actual checkpoint identity",
+    "POLICY_FEATURE policy hash and unquantized BF16 inference profile",
+    "worker malformed-receipt and forward-error abstentions",
+    "gate rejection occurs before routing or executor access",
+    "not_abstain still subject to existing verifier rejection",
+    "binary receipt retained through early fallback returns"
+  ],
+  "limitations": [
+    "fake backbone is not semantic model evaluation",
+    "no real GPU kernels, deployment, serving concurrency or sustained operational test",
+    "no mutations beyond pytest temporary fixtures and the two authorized repository files"
+  ]
+}

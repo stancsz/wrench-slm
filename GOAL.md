@@ -122,6 +122,49 @@ authorized by the human product owner in this conversation on 2026-09-22.
    real-workflow usefulness and the existing release gates remain required.
    Keep the existing final evaluation split out of training and tuning.
    Implementation status: [Qwen binary System One](phases/qwen-system-one-20260922/README.md).
+   The user subsequently prioritized binary decision **speed and accuracy**,
+   compared with Jev/OpenJev's published metrics. Report actual classifier
+   latency and correct abstain/not_abstain labels, with denominators and
+   hardware. Keep published cross-dataset comparisons distinct from parity.
+   New work and source references are in
+   [System One classifier readiness](phases/system-one-readiness-20260922/README.md).
+   The fixed-policy candidate scored 36/60 on a fresh independent binary set,
+   with seven unsafe classifier continuations; the original head scored 37/60
+   with thirteen. Both failed the local accuracy target. Its binary rule was
+   fixed at 0.5 before evaluation. 90 CPU implementation contracts pass,
+   including the small MLP and sparse readouts. The owner then requested at least
+   5,000 realistic abstain cases and continued training until the Wrench-or-
+   abstain classifier achieves high accuracy. A generated, repository-grounded
+   diagnostic suite now contains 5,000 abstain cases and 600 eligible Wrench
+   controls, kept out of training. A later audit found incorrect positive
+   file-size labels in the training expansion, so its MLP and sparse-head
+   calibration figures are superseded. The first frozen
+   5,600-case suite run with a Qwen plus sparse readout scored 72.39% overall,
+   73.76% balanced, with 1,399 false Wrench decisions. Warm p50/p95 was
+   175.86/228.54 ms on RTX 5070 Ti. Its predeclared diagnostic target failed.
+   A second sparse candidate's training data contained invalid positive file
+   bounds, so its calibration result is superseded. A corrected training set
+   has passed structural file and bounds checks, with human label review pending.
+   Its head scored 78.80% overall and 75.30% balanced accuracy on a replay of
+   the consumed 5,600-case suite, with 1,012 false Wrench decisions. An optional
+   preflight improved abstain recall to 91.02% but still left 449 false Wrench
+   decisions and 175 missed Wrench controls in a posthoc same-suite analysis.
+   A layer-8 readout improved balanced accuracy to 79.18% at 148.62/185.13 ms
+   warm p50/p95 on the consumed suite; a posthoc preflight overlay reached
+   84.89% balanced accuracy, with 469 false Wrench decisions. It also failed
+   the diagnostic target. Further synthetic template fitting is not adequate
+   evidence for production; real labeled Wrench requests are the next input.
+   Production and Jev parity remain unproven.
+   The owner subsequently approved using the original 5,000-abstain authored
+   suite for training. It is now retired as evaluation for new heads. A
+   layer-8 head was fitted on 6,528 rows and scored once on a fresh authored
+   5,000-abstain plus 600-control replacement. First-pass accuracy was 98.04%
+   overall, 96.70% balanced, with 80 unsafe continuations and 30 false
+   abstentions at 170.33/223.15 ms warm median/p95. The target failed.
+   A revised abstain-only preflight removes those 80 in a posthoc regression
+   of the consumed suite; that is not a fresh pass. Human label review and
+   real-workflow validation are still absent. The evidence and frozen head
+   are in [owner-approved training](phases/system-one-authorized-training-20260923/README.md).
 
 ## Explicitly skipped
 

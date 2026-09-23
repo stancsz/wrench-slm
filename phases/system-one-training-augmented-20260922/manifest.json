@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.system-one-training-expansion.v1",
+  "source_sha256": "4476a159a0d0d0ad9090b404da2d9a079bc9848292bac3f2ef806b435376597d",
+  "expanded_sha256": "38ad9dc697cbc66399b2e96ef586281fa47b28744fcad2a552601c2e581c6ff4",
+  "rows": 1030,
+  "labels": {
+    "accepted": 534,
+    "abstain": 496
+  },
+  "groups": 64,
+  "substitution_paths": [
+    "tests/test_search_bounds.py",
+    "tests/test_workflow_arms.py",
+    "tests/test_gate_e_soak_runner.py",
+    "tests/test_policy.py",
+    "tests/test_calibrate_lora.py",
+    "tests/test_hf_cross_host_receipt.py",
+    "tests/test_embedded_worker.py",
+    "tests/test_package_manifest.py",
+    "tests/test_harness.py",
+    "src/wrench_harness/ttc.py",
+    "tests/test_gate_e_serving_path.py",
+    "tests/test_package_replay_suite_guard.py"
+  ],
+  "test_prompts_read": false,
+  "final_split_read": false,
+  "generator_sha256": "21d8e3390657fbd46cb0dd4b636a261ae1919c1a71e5528f9895a0a5cf77df04"
+}

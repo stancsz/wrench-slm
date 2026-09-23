@@ -1,0 +1,40 @@
+{
+  "retrieved_date": "2026-09-22",
+  "scope": "published reference numbers; different tasks and hardware; not a parity result",
+  "sources": [
+    {
+      "url": "https://typesafe.ai/blog/introducing-system-one-models-and-jev",
+      "publisher": "TypeSafe",
+      "model": "hosted Jev",
+      "latency_ms_range": [
+        70,
+        500
+      ],
+      "latency_scope": "vendor-reported end-to-end, generally measured from West Coast laptops",
+      "accuracy": "No aggregate named-dataset accuracy identified in this launch post"
+    },
+    {
+      "url": "https://huggingface.co/openjev/openjev",
+      "publisher": "OpenJev authors",
+      "model": "OpenJev",
+      "hardware": "one H100; FP8 serving",
+      "short_text_ms_approximately": 80,
+      "short_text_samples": 3347,
+      "text_accuracy": {
+        "correct": 8403,
+        "total": 10000,
+        "reported_percent": 84.0
+      },
+      "intent_routing_topic": {
+        "total": 1218,
+        "reported_percent": 92.8
+      },
+      "hosted_jev_in_same_report": {
+        "correct": 8540,
+        "total": 10000,
+        "reported_percent": 85.4
+      },
+      "publication_limit": "6922 fresh items plus 3078 previously used in development; tasks are not Wrench binary abstention"
+    }
+  ]
+}

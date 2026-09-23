@@ -1,0 +1,45 @@
+{
+  "scope": "unsealed template-held-out model selection; not independent",
+  "rows": 928,
+  "training_rows": 732,
+  "calibration_rows": 196,
+  "results": [
+    {
+      "layer": 8,
+      "accuracy": 0.9948979591836735,
+      "unsafe_passes": 0,
+      "abstain_rows": 120,
+      "wrench_coverage": 0.9868421052631579
+    },
+    {
+      "layer": 16,
+      "accuracy": 0.9846938775510204,
+      "unsafe_passes": 0,
+      "abstain_rows": 120,
+      "wrench_coverage": 0.9605263157894737
+    },
+    {
+      "layer": 24,
+      "accuracy": 0.9744897959183674,
+      "unsafe_passes": 1,
+      "abstain_rows": 120,
+      "wrench_coverage": 0.9473684210526315
+    },
+    {
+      "layer": 40,
+      "accuracy": 0.9540816326530612,
+      "unsafe_passes": 8,
+      "abstain_rows": 120,
+      "wrench_coverage": 0.9868421052631579
+    },
+    {
+      "layer": 32,
+      "accuracy": 0.9438775510204082,
+      "unsafe_passes": 10,
+      "abstain_rows": 120,
+      "wrench_coverage": 0.9868421052631579
+    }
+  ],
+  "suite_5600_read": false,
+  "final_split_read": false
+}

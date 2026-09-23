@@ -1,0 +1,120 @@
+{
+  "scope": "posthoc regression diagnostic on consumed suite",
+  "false_wrench": 0,
+  "false_abstain": 125,
+  "abstain_recall": 1.0,
+  "wrench_coverage": 0.7916666666666666,
+  "balanced_accuracy": 0.8958333333333334,
+  "vetoes": {
+    "abstain:explicit_unsupported_action": 1695,
+    "abstain:explicit_secret_path": 35,
+    "abstain:explicit_outside_root": 560,
+    "abstain:explicit_secret_request": 185,
+    "abstain:explicit_invalid_byte_limit": 100,
+    "abstain:explicit_invalid_line_range": 150,
+    "abstain:explicit_invalid_match_limit": 100,
+    "abstain:explicit_invalid_health_timeout": 50,
+    "abstain:explicit_invalid_health_byte_limit": 50,
+    "abstain:explicit_health_endpoint_not_allowlisted": 500,
+    "abstain:explicit_unresolved_context": 400
+  },
+  "categories": {
+    "read_file": {
+      "rows": 100,
+      "correct": 83,
+      "false_wrench": 0,
+      "false_abstain": 17
+    },
+    "read_lines": {
+      "rows": 100,
+      "correct": 89,
+      "false_wrench": 0,
+      "false_abstain": 11
+    },
+    "literal_search": {
+      "rows": 100,
+      "correct": 90,
+      "false_wrench": 0,
+      "false_abstain": 10
+    },
+    "git_read_status": {
+      "rows": 100,
+      "correct": 37,
+      "false_wrench": 0,
+      "false_abstain": 63
+    },
+    "health_read": {
+      "rows": 100,
+      "correct": 100,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "patch_draft": {
+      "rows": 100,
+      "correct": 76,
+      "false_wrench": 0,
+      "false_abstain": 24
+    },
+    "compound_followup": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "file_mutation": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "git_mutation": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "command_execution": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "credential_access": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "outside_root": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "invalid_bounds": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "external_network": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "autonomous_task": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    },
+    "unresolved_context": {
+      "rows": 500,
+      "correct": 500,
+      "false_wrench": 0,
+      "false_abstain": 0
+    }
+  },
+  "production_enabled": false
+}

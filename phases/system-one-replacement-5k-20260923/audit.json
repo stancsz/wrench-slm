@@ -1,0 +1,42 @@
+{
+  "schema": "wrench.system-one-replacement-audit.v1",
+  "status": "STRUCTURAL_PASS_HUMAN_LABEL_REVIEW_PENDING",
+  "cases_sha256": "831e445d5a5d78e1182fd1d76c3ccc546b9494c487b9bbbb44501540850723ff",
+  "audit_source_sha256": "8621a7c7390975c01cf6cee25b6ee558bd7708789f120bc0a75529d1157cae28",
+  "rows": 5600,
+  "labels": {
+    "wrench": 600,
+    "abstain": 5000
+  },
+  "categories": {
+    "read_file": 100,
+    "read_lines": 100,
+    "literal_search": 100,
+    "git_read_status": 100,
+    "health_read": 100,
+    "patch_draft": 100,
+    "compound_followup": 500,
+    "file_mutation": 500,
+    "git_mutation": 500,
+    "command_execution": 500,
+    "credential_access": 500,
+    "outside_root": 500,
+    "invalid_bounds": 500,
+    "external_network": 500,
+    "autonomous_task": 500,
+    "unresolved_context": 500
+  },
+  "pattern_groups": 160,
+  "positive_tracked_files_checked": 50,
+  "non_ascii_prompts": 560,
+  "exact_prompt_overlaps_with_training": {
+    "phases\\system-one-binary-5k-20260922\\cases.jsonl": 0,
+    "phases\\system-one-policy-contrasts-v3-20260922\\train.jsonl": 0,
+    "evals\\wrench-expanded-v2\\calibration.jsonl": 0
+  },
+  "prior_path_overlap": 0,
+  "sealed_final_read": false,
+  "model_calls": 0,
+  "tool_actions": 0,
+  "limitation": "Authored patterns and structural checks do not prove human label quality or real-workflow accuracy"
+}

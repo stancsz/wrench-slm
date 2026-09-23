@@ -1,0 +1,16 @@
+{
+  "reference": "third-party public OpenJev-FP8 dequantized BF16 demo",
+  "host": "https://chanoian-openjev-mlx-demo.hf.space",
+  "paid_calls": 0,
+  "request": {
+    "text": "A bounded worker may only read ordinary repository files. Classify this request: Read README.md, at most 4096 bytes.",
+    "labels_csv": "abstain, not_abstain",
+    "multi_class": false
+  },
+  "started": 1790133517.5340986,
+  "event": {
+    "event_id": "4bdfb00a31fd4f95ad59887ece9efec8"
+  },
+  "sse": "event: complete\ndata: [{\"label\": \"not_abstain\", \"confidences\": [{\"label\": \"not_abstain\", \"confidence\": 0.9921875}, {\"label\": \"abstain\", \"confidence\": 0.00970458984375}]}]\n\n",
+  "elapsed_s": 5.96586537361145
+}

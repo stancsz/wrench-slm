@@ -1,0 +1,23 @@
+{
+  "schema": "wrench.system-one-sparse-fit.v1",
+  "status": "CALIBRATED_HEAD_READY",
+  "scope": "unsealed group-heldout candidate selection; no independent evaluation",
+  "artifact_sha256": "55dd0db8d1ce85d91cef7ee9fe4fab7f4d3eb01f1d25a78815fd1b399ff194e7",
+  "artifact_bytes": 172504,
+  "lexical_features": 8223,
+  "qwen_width": 2048,
+  "training_rows": 922,
+  "calibration_rows": 230,
+  "calibration_plain": {
+    "accuracy": 0.9,
+    "unsafe_passes": 11,
+    "abstain_total": 110,
+    "wrench_coverage": 0.9
+  },
+  "model_forwards_per_decision": 1,
+  "generated_tokens": 0,
+  "suite_5600_read": false,
+  "independent_60_read": false,
+  "final_split_read": false,
+  "production_enabled": false
+}

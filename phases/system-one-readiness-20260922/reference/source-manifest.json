@@ -1,0 +1,13 @@
+{
+  "research_only": true,
+  "source_urls": [
+    "https://huggingface.co/openjev/openjev",
+    "https://huggingface.co/spaces/chanoian/openjev-mlx-demo"
+  ],
+  "observed_demo_revision": "037a94430fdeda9956e97b8c0f30aea0652bced6",
+  "read_source_sha256": {
+    "openjev-shim.py.txt": "81a22f1b1b8912a465059207ef9f60b7c6c16b4de6372305d867efbe38a1987a",
+    "demo-app.py.txt": "d9e55dd69abe4838ae57e006090d3c6b7f5695d5e1e6bc2cd82cf0408cfc3e0f",
+    "demo-README.md.txt": "b9e8010c0ebbf4f4ba1c588f434c909f7d1ece986625023cf18a00bf24a96ef8"
+  }
+}

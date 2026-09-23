@@ -1,0 +1,11 @@
+{
+  "schema": "wrench.system-one-contract-tests.v1",
+  "status": "PASS",
+  "command": "py -3 -m pytest -q tests/test_qwen_system_one_contract.py",
+  "output": "........................................................................ [ 80%]\r\n..................                                                       [100%]\r\n90 passed in 4.98s",
+  "test_sha256": "7a43ad78861d9d6885de3b40ae2fd3f773c00dbe2dae1fa2455ffcc51f3253dc",
+  "gate_sha256": "6be1250840d99af44c2a85d2c9a0a0f6b7d39a3fd9bb47014a098a663ea4bbfd",
+  "preflight_sha256": "839c64d274ad271d3cd97948833dbf230373e1ec3b37b755888c23d731f1031a",
+  "worker_sha256": "81d8678336a7f0b78d023b3e9575928c32a215a5ce24ed65f137730466e9bf9f",
+  "generated_at_utc": "2026-09-23T05:29:07Z"
+}

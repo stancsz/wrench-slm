@@ -280,6 +280,7 @@ class WrenchWorker:
         load_model: bool = True,
         prefill_cache_bytes: int | None = None,
         binary_abstain_artifact: str | Path | None = None,
+        binary_abstain_preflight: bool = False,
         **model_kwargs: Any,
     ) -> "WrenchWorker":
         model_path = Path(model_dir)
@@ -326,6 +327,9 @@ class WrenchWorker:
                     binary_abstain_artifact, model=model, tokenizer=tokenizer,
                     model_dir=model_path,
                 )
+                if binary_abstain_preflight:
+                    from .system_one_preflight import WrenchBinaryRouter
+                    binary_abstain_gate = WrenchBinaryRouter(binary_abstain_gate)
             if os.environ.get("WRENCH_INTENT_SAFETY_GATE", "0").casefold() in {"1", "true", "on", "yes"}:
                 artifact = Path(
                     os.environ.get(

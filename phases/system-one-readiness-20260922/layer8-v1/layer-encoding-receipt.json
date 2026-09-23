@@ -1,0 +1,216 @@
+{
+  "schema": "wrench.system-one-layer-probe-encoding.v1",
+  "status": "ENCODED",
+  "layers": [
+    8,
+    16,
+    24,
+    32,
+    40
+  ],
+  "base_weights_updated": false,
+  "suite_cases_read": false,
+  "final_split_read": false,
+  "provider_calls": 0,
+  "production_enabled": false,
+  "sources": {
+    "evals\\wrench-expanded-v2\\calibration.jsonl": "36818832f1c2dfdac3380852595e79e5f46d74192f1efcbc20c29aa9ff1df52e",
+    "phases\\system-one-policy-contrasts-v3-20260922\\train.jsonl": "07acb29a4b4c037d7e34662fdd680114ffe8b2a8754314253e9a70d512fb2179"
+  },
+  "rows": 928,
+  "checkpoint_sha256": {
+    "config.json": "175927b6167ad84b1958b9aa406568ffcb9df66c9940387abebb40b510132642",
+    "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+    "tokenizer_config.json": "5186f0defcd7f232382c7f0aebcd2252d073bb921ab240e407b7ae8745d2b29b",
+    "model.safetensors.index.json": "f9728ec38926fbd0f69a4637126c16382603ccd2b0cd8cab93b607050067b436",
+    "model-00001-of-00009.safetensors": "ab0aae1ef5fa64e1557eac07ce6d92e4f8d866fe5708ac1591fe234e1930cc39",
+    "model-00002-of-00009.safetensors": "3a124c8b97b37d3c8f9460dc555d79c8984995a75a08f3e8dc09a73b4fddb695",
+    "model-00003-of-00009.safetensors": "aef830184d3925332126f043a10b26cefd6232ac97a26737d9d4cda228008242",
+    "model-00004-of-00009.safetensors": "2f1c0cae7e5ffeee1044a3da0ce29fd20c6672b342e8253044b624e3d0792a08",
+    "model-00005-of-00009.safetensors": "4fda838c7156114608ddaacf4de4131cfa4334aff298dd346e461a6425c1ee0a",
+    "model-00006-of-00009.safetensors": "c9c000df3d524911cdcf534442273f1011ce924aa426210196f3195dc29770bf",
+    "model-00007-of-00009.safetensors": "772349de19a5ff159189ba4144aab44677c69b417191ca9f17df114de763e2d4",
+    "model-00008-of-00009.safetensors": "ccc66ec81746f956ef275e178406ad9c7b166c82b28be9b9f08e527e1bc74359",
+    "model-00009-of-00009.safetensors": "ade84ac5655ae45708afd998ad8718b9bd327628566b7ceb733e59e242fda431",
+    "chat_template.jinja": "e84f32a23fdda27689f868aa4a1a5621f41133e51a48d7f3efcbea2839574259"
+  },
+  "features_sha256": "841f826b2eb8d2d1e805648ca0b1f5618deb62575137424f479fc57404f88217",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "resource_samples": [
+    {
+      "elapsed_s": 0.062000000005355105,
+      "ram_free": 27567656960,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14478.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.10900000000401633,
+      "ram_free": 27569401856,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14478.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.17200000000593718,
+      "ram_free": 27573321728,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.2190000000045984,
+      "ram_free": 27569954816,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 0.28100000000267755,
+      "ram_free": 27584000000,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 1.3280000000013388,
+      "ram_free": 27564101632,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 2.4060000000026776,
+      "ram_free": 27589910528,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 3.4690000000045984,
+      "ram_free": 27586506752,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 4.5310000000026776,
+      "ram_free": 27592597504,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 5.609000000004016,
+      "ram_free": 27586478080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 6.6560000000026776,
+      "ram_free": 27582275584,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 7.0,
+      "ram_free": 27556446208,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 8.047000000005937,
+      "ram_free": 27598798848,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14475.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 8.219000000004598,
+      "ram_free": 27594256384,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 8.281000000002678,
+      "ram_free": 27580903424,
+      "ram_total": 51370344448,
+      "vram_free_mib": 14465.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 37.609000000004016,
+      "ram_free": 25970413568,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6583.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 55.25,
+      "ram_free": 26047918080,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6583.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 72.65600000000268,
+      "ram_free": 25978556416,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6578.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 89.45300000000134,
+      "ram_free": 25963876352,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6601.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 106.25,
+      "ram_free": 26014420992,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6605.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 122.06200000000536,
+      "ram_free": 26681454592,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6588.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 137.75,
+      "ram_free": 26624512000,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6578.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 153.57800000000134,
+      "ram_free": 26650079232,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6586.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 169.06200000000536,
+      "ram_free": 26619527168,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6586.0,
+      "vram_total_mib": 16303.0
+    },
+    {
+      "elapsed_s": 173.3440000000046,
+      "ram_free": 26588831744,
+      "ram_total": 51370344448,
+      "vram_free_mib": 6586.0,
+      "vram_total_mib": 16303.0
+    }
+  ]
+}

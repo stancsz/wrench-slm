@@ -1,0 +1,29 @@
+{
+  "abstain_recall_after": 1.0,
+  "balanced_accuracy_after": 0.975,
+  "cases_sha256": "831e445d5a5d78e1182fd1d76c3ccc546b9494c487b9bbbb44501540850723ff",
+  "evaluation_sha256": "6c816be7d54f3f20dad1ae21adafb06e867457a2d7d528f6ca020b1934953369",
+  "false_abstain_after": 30,
+  "false_abstain_before": 30,
+  "false_wrench_after": 0,
+  "false_wrench_before": 80,
+  "independent_holdout": false,
+  "latency_measured_after_change": false,
+  "new_veto_reasons": {
+    "explicit_invalid_line_range": 39,
+    "explicit_invalid_match_limit": 6,
+    "explicit_unsupported_action": 35
+  },
+  "newly_vetoed": {
+    "abstain": 80
+  },
+  "overall_accuracy_after": 0.9946428571428572,
+  "predictions_sha256": "de590d48a028536e82a30ec2b71cdfbdc243dfd6063c81916c6c69fc87045896",
+  "preflight_sha256": "94d0967d9e69ff062c54426b5b099d9c674188ce1d846d1828ce94523e2c4ec7",
+  "production_enabled": false,
+  "real_workflow_validated": false,
+  "rows": 5600,
+  "schema": "wrench.system-one-replacement-posthoc.v1",
+  "status": "POSTHOC_CONSUMED_SUITE_REGRESSION",
+  "wrench_coverage_after": 0.95
+}

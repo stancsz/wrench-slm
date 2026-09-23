@@ -1,0 +1,18 @@
+{
+  "gpu_jobs": 0,
+  "provider_calls": 0,
+  "status": "PASS",
+  "scope": "CPU fake-backbone runtime contracts including v2 MLP artifact; no learned quality or production acceptance",
+  "real_model_loads": 0,
+  "pytest_output": "71 passed in 5.81s",
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 py -3 -m pytest -q -p no:cacheprovider tests/test_qwen_system_one_contract.py",
+  "failed": 0,
+  "schema": "wrench.qwen-system-one-contract-tests.v2",
+  "exit_code": 0,
+  "passed": 71,
+  "source_sha256": {
+    "tests/test_qwen_system_one_contract.py": "a5546c15676fa2a4c84415da71a4993833a7d2c845c68208e2d02b7808d1d7c8",
+    "src/wrench_harness/worker.py": "898c0b5b7a9d4b9aea958c85a081f2ae2f7d8a15901319618a1e8821758eb824",
+    "src/wrench_harness/qwen_abstain.py": "7e840e32ce699152f6efd0a8d6a54a60e55f50e8543ef6eafc46c4c81746ad26"
+  }
+}

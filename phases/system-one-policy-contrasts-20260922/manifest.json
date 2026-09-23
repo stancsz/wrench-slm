@@ -1,0 +1,14 @@
+{
+  "schema": "wrench.system-one-policy-contrasts.v1",
+  "rows": 806,
+  "labels": {
+    "accepted": 359,
+    "abstain": 447
+  },
+  "template_groups": 40,
+  "sha256": "752ae967e75cfc8d768613e5c269e4331a4b45ba1675beabffb90b0a75a7e5de",
+  "frozen_suite_sha256_overlap_check_only": "26fafa2e008ed3b6ee1fefd11293802f47dcdd35b44a295cece1c2a301433ec1",
+  "exact_suite_overlap": 0,
+  "final_split_read": false,
+  "limitations": "Authored pattern variations, not captured real requests"
+}

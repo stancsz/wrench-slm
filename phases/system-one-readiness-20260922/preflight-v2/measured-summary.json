@@ -1,0 +1,43 @@
+{
+  "schema": "wrench.system-one-hybrid-timing-summary.v1",
+  "status": "MEASURED_CONSUMED_SUITE_REGRESSION_NOT_RELEASE_EVIDENCE",
+  "measured_receipt_sha256": "f0495b5081329979940d8b017792d7c2a99c5a77567d89e4fc6c6d39a13ee976",
+  "predictions_sha256": "df261f65c1ebccdadbc02961e38da7065c456c7e736fa9678659867a480133d7",
+  "preflight_source_sha256": "93ccadebebf4a516538fc5024bbca6eebed64496aefb0d023f9a43dac77a4b28",
+  "evaluator_sha256": "9c1dcf31e0c0c31c9f9435ebed370fe7fc3170758a719206d2713204dfc72539",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "accuracy": 0.9776785714285714,
+  "balanced_accuracy": 0.8958333333333333,
+  "false_wrench": 0,
+  "false_abstain": 125,
+  "all_decisions": {
+    "count": 5600,
+    "p50_ms": 0.03789999755099416,
+    "p95_ms": 197.33802500268212
+  },
+  "eligible_decisions": {
+    "count": 600,
+    "p50_ms": 171.62514999654377,
+    "p95_ms": 213.76656499378439
+  },
+  "correct_eligible_decisions": {
+    "count": 475,
+    "p50_ms": 172.92779999843333,
+    "p95_ms": 217.3063099995488
+  },
+  "model_forward_decisions": {
+    "count": 1775,
+    "p50_ms": 177.86090000299737,
+    "p95_ms": 213.89706999761984
+  },
+  "preflight_veto_decisions": {
+    "count": 3825,
+    "p50_ms": 0.027499998395796865,
+    "p95_ms": 0.05867999716429037
+  },
+  "resource_samples": 192,
+  "minimum_ram_free_fraction": 0.4944741447414793,
+  "minimum_vram_free_fraction": 0.4030546525179415,
+  "diagnostic_target_pass": false,
+  "production_enabled": false
+}
