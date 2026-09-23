@@ -93,3 +93,11 @@ licensed distribution, which this documentation task does not manufacture.
 First-use success means an authorized collaborator reproduces all three
 example outcomes. No analytics or tracking is installed. Website visits or
 stars should not be reported as successful use or savings.
+
+## Open release commitment
+
+The product owner has committed to open source, open weights, and open datasets.
+Lead public copy with that commitment. Downloads and specific licenses are still
+pending; do not describe them as already available. The local-only website
+preference remains in force. This wording change does not publish the repository,
+weights, datasets, or website.

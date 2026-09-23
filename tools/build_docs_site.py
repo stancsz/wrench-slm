@@ -11,11 +11,13 @@ PAGES = {
     "index": ("Wrench | Affordable AI for the rest of us", "Home"),
     "getting-started": ("Getting started | Wrench", "Getting started"),
     "how-it-works": ("How it works | Wrench", "How it works"),
+    "model-story": ("How Wrench was built | Wrench", "How we built it"),
     "integrations": ("Coding clients | Wrench", "Coding clients"),
     "evidence": ("Evidence and progress | Wrench", "Evidence & progress"),
     "roadmap": ("Mission and hardware roadmap | Wrench", "Mission & roadmap"),
     "faq": ("Practical questions | Wrench", "FAQ"),
     "brand": ("Brand assets | Wrench", "Brand assets"),
+    "author": ("A note from the author | Wrench", "From the author"),
 }
 
 ASSETS = ("site.css", "brand.css", "site.js", "demo-receipt.json", "wrench-mark.svg", "wrench-mark-ink.svg", "wrench-avatar.svg", "hardware-garden.svg")
@@ -24,11 +26,13 @@ ZH_PAGES = {
     "index": ("Wrench | AI，也得用得起", "首页"),
     "getting-started": ("先跑起来 | Wrench", "先跑起来"),
     "how-it-works": ("它怎么干活 | Wrench", "它怎么干活"),
+    "model-story": ("这把扳手怎么造的 | Wrench", "这把扳手怎么造的"),
     "integrations": ("和谁搭伙 | Wrench", "和谁搭伙"),
     "evidence": ("进展与证据 | Wrench", "进展与证据"),
     "roadmap": ("我们想怎么走 | Wrench", "我们想怎么走"),
     "faq": ("你大概会问 | Wrench", "你大概会问"),
     "brand": ("品牌素材 | Wrench", "品牌素材"),
+    "author": ("作者留言 | Wrench", "作者留言"),
 }
 
 
@@ -69,7 +73,7 @@ def build_language(output: Path, language: str, page_map: dict):
     destination.mkdir(parents=True, exist_ok=True)
     description = ("让普通人也用得起 AI。Wrench 想让你手头的硬件多干点实事，从有边界的本地开发任务开始。" if chinese else "Affordable AI for the rest of us. Wrench is building useful local AI workflows for the hardware you already own. Explore the developer preview and hardware roadmap.")
     main_links = [("getting-started", "文档"), ("roadmap", "路线图"), ("evidence", "进展")] if chinese else [("getting-started", "Docs"), ("roadmap", "Roadmap"), ("evidence", "Evidence")]
-    footer_links = [("getting-started", "使用文档"), ("roadmap", "我们的想法"), ("evidence", "进展与证据"), ("faq", "常见问题"), ("brand", "品牌素材")] if chinese else [("getting-started", "Documentation"), ("roadmap", "Our mission"), ("evidence", "Evidence"), ("faq", "FAQ"), ("brand", "Brand")]
+    footer_links = [("getting-started", "使用文档"), ("roadmap", "我们的想法"), ("author", "作者留言"), ("evidence", "进展与证据"), ("faq", "常见问题"), ("brand", "品牌素材")] if chinese else [("getting-started", "Documentation"), ("roadmap", "Our mission"), ("author", "From the author"), ("evidence", "Evidence"), ("faq", "FAQ"), ("brand", "Brand")]
     for slug, (title, label) in page_map.items():
         content = (source / f"{slug}.html").read_text(encoding="utf-8")
         if chinese:
@@ -84,7 +88,9 @@ def build_language(output: Path, language: str, page_map: dict):
         home_label = "Wrench 首页" if chinese else "Wrench home"
         cta = "认识一下 Wrench ↗" if chinese else "Explore Wrench ↗"
         footer_note = "AI，也得让咱用得起。开发者预览版，认真打磨中。" if chinese else "Affordable AI for the rest of us. Developer preview, built with care."
-        if slug != "index":
+        if slug == "author":
+            content = f'<div class="wrap letter-layout"><article class="article author-letter">{content}</article></div>'
+        elif slug != "index":
             sidebar = "".join(link(s, v[1], slug) for s, v in page_map.items() if s not in ("index", "brand"))
             guide_title = "Wrench 上手小册子" if chinese else "The Wrench field guide"
             review = "开发者预览版<br>更新于 2026-09-22" if chinese else "DEVELOPER PREVIEW<br>Reviewed 2026-09-22"

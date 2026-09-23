@@ -6,10 +6,21 @@
     <p class="hero-description">搬砖、查文件、拧螺丝，让小模型和本地工具来扛。真正需要动脑的地方，再请大模型出场。这就是 Wrench 想做的：让你的硬件多出点力，让你的预算花得值。</p>
     <div class="buttons"><a class="button" href="getting-started.html">看看现在能做什么 ↗</a><a class="button secondary" href="roadmap.html">聊聊更大的想法 →</a></div>
     <p class="hero-footnote">目标是免费给大家用。目前还在开发者预览阶段。</p>
+    <p class="hero-story-links"><a href="author.html">作者留言：写给和我一样的普通人 ↗</a><a href="model-story.html">这把扳手怎么造的 →</a></p>
     <figure class="hardware-scene"><img src="assets/hardware-garden-zh.svg" width="1120" height="340" alt="旧笔记本、小显卡和旧手机通过虚线连在一起。这是我们想去的方向，设备支持还需要实测。"></figure>
     <p class="hardware-caption">画的是我们想去的地方。哪些设备能跑，还得一台台验证。</p>
   </section>
   <div class="mission-strip"><div><strong>&lt; 8 GB</strong><span>先照顾小显存的朋友</span></div><div><strong>&lt; 2 GB</strong><span>下一站，再小一点</span></div><div><strong>有算力，一起用</strong><span>未来想做的朋友间互助</span></div></div>
+  <section class="section" id="with-coders">
+    <div class="section-intro"><div><div class="eyebrow">和大模型搭伙，把成本打下来</div><h2>让本地多扛点事，<br>让大模型少操点心。</h2></div><p>查资料、翻长历史、定位原文、读配置、查状态，这些事情攒起来，也能吃掉不少时间和 token。Wrench 的目标是把其中能验证的工作接到本地，整理好证据再交给大模型，让它集中精力理解需求、判断原因、设计修改。<strong>为配合大模型而生，为把 AI 成本打下来而做。</strong></p></div>
+    <div class="cards">
+      <article class="card"><span class="number">01 / 接得准</span><h3>能确定的，就别反复猜。</h3><p>路径、行号、搜索词已经明确，就由本地规则构造操作。把重复小活交给确定性的工具，减少让模型反复生成参数的需要。</p></article>
+      <article class="card"><span class="number">02 / 查得清</span><h3>干完了，还得交得出凭据。</h3><p>独立验证器先检查权限和参数，再由受限执行器完成允许的操作。返回实际结果和出处，补丁只出草稿给你审。</p></article>
+      <article class="card"><span class="number">03 / 退得稳</span><h3>扛不住，就交棒。</h3><p>超出范围或没通过检查，就返回 abstain，由调用方保留原任务、安排兜底。不给小错误一路滚成大返工的机会，是这套设计的目标。</p></article>
+    </div>
+    <p><strong>比如修登录超时：</strong>大模型判断要查什么 → Wrench 读取允许范围内的配置并返回证据 → 大模型继续诊断和提出修改。</p>
+    <p class="small">“更能扛事情”，是我们想通过这种分工实现的目标：本地多分担可验证的工作，整个流程少绕路、少返工。Coder 也能调用工具、接入验证；我们还没有证明 Wrench 比它们普遍更强、更快或更便宜。当前主线是规则、检索与验证，学习式自由路由关闭。<a href="how-it-works.html#coder-difference">分工、abstain 和怎么验收，展开讲 →</a></p>
+  </section>
   <section class="section ambition-section" id="ambition">
     <div class="section-intro"><div><div class="eyebrow">目标可以猛，标签得贴清楚</div><h2>大模型动脑，<br>小家伙出力。</h2></div><p>我们的远期愿景：同样的活儿干完，把云端模型花费压到原来的 0.5% 以下，让留下的每一分预算都花在好 token 上。眼下先靠本地规则工具把小事做稳；整笔账到底能省多少，还得实测。</p></div>
     <div class="ambition-grid">
@@ -49,5 +60,6 @@
     <div><article class="roadmap-step"><span class="step-num">01</span><div><h3>先从不到 8 GB 开始。</h3><p>在小显存设备上，把一条范围明确的开发流程做出实际价值。正确率、内存、延迟和总成本，都要算。</p><span class="step-status">起步人群 · 硬件支持待实测</span></div></article><article class="roadmap-step"><span class="step-num">02</span><div><h3>再挤挤，给小设备留个位。</h3><p>下一站是不到 2 GB 显存的有用流程，也探索旧手机。装得下只是第一步，还得真能帮上忙。</p><span class="step-status">下一阶段的硬件目标</span></div></article><article class="roadmap-step"><span class="step-num">03</span><div><h3>借点算力给朋友。</h3><p>以后，也许能把闲着的计算能力分享给信得过的人。你这边歇一会儿，他那边往前走一步。</p><span class="step-status">长远想法 · 还没实现</span></div></article></div>
   </section>
   <aside class="evidence-banner"><p><strong>想法可以大，成绩得按实数报。</strong>Wrench 目前还是开发者预览版。到底省多少钱、哪些小设备能用、能不能放心上生产，都还要拿证据说话。</p><a class="text-link" href="evidence.html">看看已经验证了什么 ↗</a></aside>
+  <aside class="author-invitation"><div><div class="eyebrow">作者留言</div><p>“让普通人的好奇心，不用每次都先查余额。”</p></div><a class="text-link" href="author.html">聊聊为什么做 Wrench ↗</a></aside>
   <div class="cta"><h2>电脑小一点，<br>也能是个好起点。</h2><a class="button" href="getting-started.html">从一个小例子开始 ↗</a></div>
 </div>

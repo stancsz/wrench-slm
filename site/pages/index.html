@@ -6,10 +6,21 @@
     <p class="hero-description">Let small local workers turn the screws. Bring in the big model when judgment matters. We’re building Wrench to make the hardware you own, and the AI budget you have, go further.</p>
     <div class="buttons"><a class="button" href="getting-started.html">Explore Wrench <span aria-hidden="true">↗</span></a><a class="button secondary" href="roadmap.html">The bigger idea <span aria-hidden="true">→</span></a></div>
     <p class="hero-footnote">Free-to-use software is the mission. Developer preview today.</p>
+    <p class="hero-story-links"><a href="author.html">From the author: for people like me ↗</a><a href="model-story.html">How we built it →</a></p>
     <figure class="hardware-scene"><img src="assets/hardware-garden.svg" width="1120" height="340" alt="A laptop, a compact graphics card, and an older phone connected by dotted paths: our vision for making existing hardware useful."></figure>
     <p class="hardware-caption">An illustration of where we’re headed. Device support is still to be verified.</p>
   </section>
   <div class="mission-strip"><div><strong>&lt; 8 GB</strong><span>Our starting audience</span></div><div><strong>&lt; 2 GB</strong><span>The next hardware milestone</span></div><div><strong>Better together</strong><span>A future of shared compute</span></div></div>
+  <section class="section" id="with-coders">
+    <div class="section-intro"><div><div class="eyebrow">A teammate for your big model</div><h2>Let local tools carry more.<br>Give the big model less to juggle.</h2></div><p>Searching material, digging through long histories, locating exact text, reading configuration, and checking status all add up. Wrench aims to take the verifiable work locally and return useful evidence, leaving the larger model to interpret requirements, diagnose causes, and design changes. <strong>Built to work with big models. Built to bring AI costs down.</strong></p></div>
+    <div class="cards">
+      <article class="card"><span class="number">01 / PRECISE INPUTS</span><h3>Known arguments need less guesswork.</h3><p>When paths, line ranges, and search terms are explicit, local rules construct the action. Deterministic tools handle the repetitive steps without asking a model to regenerate every argument.</p></article>
+      <article class="card"><span class="number">02 / CHECKABLE OUTPUTS</span><h3>Bring back evidence of the work.</h3><p>An independent verifier checks authority and arguments before a restricted executor acts. Return actual results and their sources. Patches remain drafts for review.</p></article>
+      <article class="card"><span class="number">03 / CLEAN HANDOFFS</span><h3>Know when to hand it back.</h3><p>Out-of-scope or failed checks produce an abstention. The caller preserves the original request and handles fallback. The design aims to keep a small mistake from turning into expensive rework.</p></article>
+    </div>
+    <p><strong>For a login timeout:</strong> the big model decides what to inspect → Wrench reads permitted configuration and returns evidence → the big model continues the diagnosis and proposes a fix.</p>
+    <p class="small">These are design choices for routine work, not proof that Wrench is universally stronger, faster, or cheaper than coding models. Coders can use tools and verification too. The current path uses rules, retrieval, and checks; learned free-form routing is disabled. <a href="how-it-works.html#coder-difference">Explore the division of work, abstention, and evaluation →</a></p>
+  </section>
   <section class="section ambition-section" id="ambition">
     <div class="section-intro"><div><div class="eyebrow">The ambition, with the labels left on</div><h2>Big models for judgment.<br>Small workers for the legwork.</h2></div><p>Our long-term ambition: spend less than 0.5% of the cloud-model baseline on the same completed work, and make those remaining paid tokens count. Today’s worker starts with deterministic local tools. The full savings story still needs measurement.</p></div>
     <div class="ambition-grid">
@@ -49,5 +60,6 @@
     <div><article class="roadmap-step"><span class="step-num">01</span><div><h3>Start below 8 GB.</h3><p>Make a bounded developer workflow useful on modest GPUs. Measure correctness, memory, latency, and the full cost.</p><span class="step-status">Initial audience · hardware proof pending</span></div></article><article class="roadmap-step"><span class="step-num">02</span><div><h3>Make room for smaller devices.</h3><p>Next: a useful workflow below 2 GB, with older phones as a related target. Small enough to fit. Good enough to help.</p><span class="step-status">Next hardware milestone</span></div></article><article class="roadmap-step"><span class="step-num">03</span><div><h3>Lend your FLOPs to a friend.</h3><p>One day, choose to share spare computing power with people you trust. A little help can go a long way.</p><span class="step-status">Longer-term vision · not implemented</span></div></article></div>
   </section>
   <aside class="evidence-banner"><p><strong>Ambitious about the future. Clear about today.</strong>Wrench is a developer preview. General cost savings, small-device support, and production readiness still need evidence.</p><a class="text-link" href="evidence.html">What’s verified ↗</a></aside>
+  <aside class="author-invitation"><div><div class="eyebrow">A note from the author</div><p>“Curiosity shouldn’t have to check its balance every time.”</p></div><a class="text-link" href="author.html">Why I started Wrench ↗</a></aside>
   <div class="cta"><h2>Good things can start<br>on a small machine.</h2><a class="button" href="getting-started.html">Get to know Wrench ↗</a></div>
 </div>
