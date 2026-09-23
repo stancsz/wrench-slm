@@ -104,7 +104,9 @@ def run(args):
     guard = Guard(args.max_seconds)
     receipt = {"schema": "wrench.qwen-binary-training.v1", "status": "RUNNING",
                "provider_calls": 0, "base_weights_updated": False, "generated_tokens": 0,
-               "production_enabled": False, "quality_claim": False, "final_split_read": False}
+               "production_enabled": False, "quality_claim": False, "final_split_read": False,
+               "positive_class_weight": args.positive_class_weight,
+               "threshold_calibration_rule": "max held-out calibration negative probability plus epsilon"}
     try:
         guard.check()
         rows, data_sha = read_rows(args.data / "calibration.jsonl", "calibration")
@@ -178,8 +180,9 @@ def run(args):
         cal_indexes = [i * 2 + variant for i in calibration_ids for variant in (0, 1)]
         head = torch.nn.Linear(x.shape[-1], 2)
         optimizer = torch.optim.AdamW(head.parameters(), lr=.03, weight_decay=.01)
+        loss_weights = torch.tensor([1.0, args.positive_class_weight], dtype=torch.float32)
         for step in range(300):
-            loss = torch.nn.functional.cross_entropy(head(x[train_indexes]), labels[train_indexes])
+            loss = torch.nn.functional.cross_entropy(head(x[train_indexes]), labels[train_indexes], weight=loss_weights)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
@@ -189,12 +192,19 @@ def run(args):
         with torch.inference_mode():
             probabilities = head(x[cal_indexes]).softmax(-1)[:, 1]
         negative = probabilities[labels[cal_indexes] == 0]
-        threshold = max(.5, float(negative.max()) + 1e-5)
+        # Pick the most coverage-preserving threshold that had no false
+        # continuations on the held-out calibration groups. The lower bound
+        # is zero rather than an arbitrary .5 floor; the learned probability
+        # need not be calibrated around the argmax boundary.
+        threshold = max(0.0, float(negative.max()) + 1e-5)
         if threshold > 1:
             raise RuntimeError("no usable threshold on held-out calibration groups")
         artifact = args.output / "qwen-abstain-head.json"
         save_head(artifact, head, identity=identity, threshold=threshold, max_tokens=args.max_tokens,
                   metadata={"base_weights_frozen": True, "training_split": "subset_of_calibration",
+                            "positive_class_weight": args.positive_class_weight,
+                            "threshold_rule": "max held-out calibration negative probability plus epsilon",
+                            "threshold_minimum": 0.0,
                             "data_sha256": data_sha, "real_workflow_validated": False})
         head_vram_before = torch.cuda.memory_allocated(0)
         gate = QwenAbstainGate.from_artifact(artifact, model=model, tokenizer=tokenizer,
@@ -258,10 +268,12 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-tokens", type=int, default=512)
     parser.add_argument("--max-seconds", type=int, default=600)
+    parser.add_argument("--positive-class-weight", type=float, default=1.0)
     args = parser.parse_args()
     if not args.run:
         parser.print_help()
-    elif not 64 <= args.max_tokens <= 1024 or not 30 <= args.max_seconds <= 900:
+    elif (not 64 <= args.max_tokens <= 1024 or not 30 <= args.max_seconds <= 900
+          or not 0.5 <= args.positive_class_weight <= 5.0):
         parser.error("invalid resource bounds")
     else:
         run(args)

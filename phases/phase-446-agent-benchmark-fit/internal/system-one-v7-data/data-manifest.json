@@ -1,0 +1,69 @@
+{
+  "schema": "wrench.system-one-v7-authored-data.v1",
+  "status": "frozen_before_candidate_training",
+  "executor_scope": "git status --short --branch --untracked-files=no; no path/status filters",
+  "system_capability_note": "Capability boundary: git_read_status reports staged and unstaged tracked-file status only. It omits untracked files and cannot filter by path or status category. Abstain when a request requires untracked output or a path/status filter.",
+  "base_calibration_manifest": "internal/system-one-v6-data/data-manifest.json",
+  "base_calibration_sha256": "12bb020227422d6bb11485306fb23b37d130ed7208ec94d065bc062555870f44",
+  "previous_development_used_for_labels": false,
+  "previous_development_sha256_for_overlap_audit_only": {
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v6-data\\development.jsonl": "c9afbb74d12ff7601d204c6c6dc76d67abe34d0f1c22a55360fea42eadb94649",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v5-data\\development.jsonl": "067b4daa7774fd808a3264024e9b7a6508a585a2dce2c32bc45dc05b1b37215e",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v4-data\\development.jsonl": "7b63d4befda475a35d051ec484d903ee93980ba721d4dddc3940e96ae2d60d70",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v3-data\\development.jsonl": "df9e79c520e2176b89cf1193efbe5b5d6cbb6e97bfc190596d0530373d64805d",
+    "phases\\phase-446-agent-benchmark-fit\\internal\\system-one-v2-data-clean\\development.jsonl": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+    "evals\\wrench-expanded-v2\\development.jsonl": "8070c2c7cb100b2c046763a9f374ae4f670a3e730e7c97b05ffeb340c869bc70"
+  },
+  "sealed_final_split_read": false,
+  "calibration": {
+    "rows": 274,
+    "sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 80,
+        "abstain": 80
+      },
+      "health_read": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "literal_search": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "out_of_domain": {
+        "abstain": 24
+      },
+      "patch_draft": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_file": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_lines": {
+        "accepted": 12,
+        "abstain": 6
+      }
+    },
+    "new_path_filter_template_groups": 16
+  },
+  "development": {
+    "rows": 80,
+    "sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 32,
+        "abstain": 32
+      },
+      "out_of_domain": {
+        "abstain": 16
+      }
+    },
+    "template_groups": 20,
+    "exact_prompt_overlap_with_calibration": 0,
+    "exact_prompt_overlap_with_previous_development": 0,
+    "template_group_overlap_with_calibration": 0
+  }
+}

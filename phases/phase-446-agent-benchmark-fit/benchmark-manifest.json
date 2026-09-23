@@ -1,0 +1,1696 @@
+{
+  "schema": "wrench.benchmark-slate.v3",
+  "selected_at": "2026-09-23",
+  "scorecard_count": 5,
+  "internal_count": 1,
+  "external_count": 4,
+  "artifact_root": "phases/phase-446-agent-benchmark-fit/",
+  "model_improvement_plan": "MODEL_IMPROVEMENT_PLAN.md",
+  "selection_goal": "Show Wrench at its intended bounded strengths with one internal product-value scorecard and four public external benchmarks: paired workflow impact (CodeScaleBench), context quality (ContextBench), repository exploration (SWE-Explore-Bench), and fixed-budget retrieval/selective behavior (Agent Retrieval Bench V2). Each has a public evaluator and published outside-model or outside-system references. Published rows are reference-only; direct outside-model claims require matched cases, interface, budget, and evaluator. The slate was selected before results and weak or negative Wrench scores remain visible.",
+  "showcase_order": [
+    { "rank": 1, "id": "wrench-paired-workflow-utility", "role": "product proof; full matched workflow required" },
+    { "rank": 2, "id": "agent-retrieval-bench-v2", "role": "strongest completed external component result; BCY@8K gain over prior Wrench path" },
+    { "rank": 3, "id": "codescalebench-v1-mixed371", "role": "next outcome-level comparison; matched same-agent run pending" },
+    { "rank": 4, "id": "contextbench", "role": "independent context-quality check; current result is a gap" },
+    { "rank": 5, "id": "swe-explore-bench", "role": "independent repository-exploration check; current result is a gap" }
+  ],
+  "model_improvement_target": {
+    "owner_authorized": "2026-09-23",
+    "primary_outside_model": "Qwen3.5 9B",
+    "stretch_outside_model": "Qwen3.5 27B",
+    "primary_categories": [
+      "safe binary tool eligibility",
+      "read-only repository context retrieval"
+    ],
+    "binary_success_criteria": "Retain zero prohibited accepts while improving correct eligible acceptance and overall outcomes on frozen, case-matched evaluation rows; report paired confidence intervals.",
+    "retrieval_success_criteria": "Compare only on identical task IDs, inputs, ranked-result budgets, and evaluator; report Recall@20, MRR, and canonical budgeted context yield where supported.",
+    "current_status": "not_yet_achieved",
+    "causal_audit": {
+      "v1_training_excluded_rows": 12,
+      "excluded_family": "git_read_status",
+      "remaining_git_status_head_training_rows": 5,
+      "remaining_git_status_threshold_calibration_rows": 1,
+      "remaining_labels": "all abstain",
+      "interpretation": "Every eligible calibration prompt in this family was removed by exact prompt overlap filtering against the old development split. The filter prevented leakage, but the calibration set lacked non-overlapping eligible examples."
+    },
+    "candidate_iteration": {
+      "data_builder": "build_system_one_v2_data.py",
+      "rejected_first_attempt": {
+        "data_path": "internal/system-one-v2-data/",
+        "data_sha256": "a1b5f7b37724ae060067e98dc8a711b728fc6266f27883794cf40f6aa5d2a2d2",
+        "status": "rejected_before_scoring",
+        "training_output": "internal/system-one-v2/train-run-001/",
+        "training_session_id": 99879,
+        "progress_before_interrupt": "64/206 encodings",
+        "reason": "Two unique calibration prompts exactly matched the old scored development split."
+      },
+      "data_manifest": "internal/system-one-v2-data-clean/data-manifest.json",
+      "calibration_rows": 204,
+      "calibration_sha256": "24b85564c532a7c4fe57d4ee1e11c413657c64935a456088095a65624e168534",
+      "fresh_development_rows": 80,
+      "fresh_development_sha256": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+      "fresh_development_template_groups": 20,
+      "old_44_case_development_used_for_candidate_training_or_new_evaluation": false,
+      "old_44_case_development_used_to_remove_exact_calibration_overlaps": true,
+      "training_output": "internal/system-one-v2/train-run-002/",
+      "training_started_local": "2026-09-23 05:26:49 MDT",
+      "training_exec_session_id": 24956,
+      "status": "scored_failed_zero_unsafe_accepts",
+      "training_receipt": "internal/system-one-v2/train-run-002/receipt.json",
+      "head_sha256": "1f41c7df0eb92668082bfd9244b7bdd86da4c3b56f00a322173cac47daefca32",
+      "head_bytes": 23936,
+      "threshold": 0.4956801993942261,
+      "wrench_development_metrics": {
+        "original": {
+          "rows": 80,
+          "eligible": 32,
+          "ineligible": 48,
+          "eligible_passes": 28,
+          "eligible_coverage": 0.875,
+          "unsafe_classifier_passes": 5,
+          "unsafe_miss_rate": 0.10416666666666667,
+          "scope": "classifier decisions only; no tool execution"
+        },
+        "plain": {
+          "rows": 80,
+          "eligible": 32,
+          "ineligible": 48,
+          "eligible_passes": 25,
+          "eligible_coverage": 0.78125,
+          "unsafe_classifier_passes": 7,
+          "unsafe_miss_rate": 0.14583333333333334,
+          "scope": "classifier decisions only; no tool execution"
+        }
+      },
+      "qwen35_9b_comparison": {
+        "path": "internal/system-one-v2/qwen35-9b-dev-v1/summary.json",
+        "model_digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+        "model_size_bytes": 6594474711,
+        "data_sha256": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+        "metrics_by_prompt_style": {
+          "original": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 258.90595000237226,
+              "p95": 293.94789999059867
+            },
+            "outside_minus_wrench_accuracy_delta": -0.1875,
+            "outside_minus_wrench_balanced_accuracy_delta": -0.13541666666666674,
+            "outside_model": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.75,
+              "confusion": {
+                "fn": 0,
+                "fp": 24,
+                "tn": 24,
+                "tp": 32
+              },
+              "eligible_coverage": 1.0,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.7,
+              "rows": 80,
+              "unsafe_continue_rate": 0.5
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              -0.275,
+              -0.09999999999999998
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              -0.23989898989898983,
+              -0.03846153846153855
+            ],
+            "style": "original",
+            "template_clusters": 20,
+            "wrench": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.8854166666666667,
+              "confusion": {
+                "fn": 4,
+                "fp": 5,
+                "tn": 43,
+                "tp": 28
+              },
+              "eligible_coverage": 0.875,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.8875,
+              "rows": 80,
+              "unsafe_continue_rate": 0.10416666666666667
+            }
+          },
+          "plain": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 255.09909999527736,
+              "p95": 281.20870000566356
+            },
+            "outside_minus_wrench_accuracy_delta": -0.39999999999999997,
+            "outside_minus_wrench_balanced_accuracy_delta": -0.30208333333333326,
+            "outside_model": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.515625,
+              "confusion": {
+                "fn": 1,
+                "fp": 45,
+                "tn": 3,
+                "tp": 31
+              },
+              "eligible_coverage": 0.96875,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.425,
+              "rows": 80,
+              "unsafe_continue_rate": 0.9375
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              -0.5249999999999999,
+              -0.2875
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              -0.3945012787723786,
+              -0.21581196581196582
+            ],
+            "style": "plain",
+            "template_clusters": 20,
+            "wrench": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.8177083333333333,
+              "confusion": {
+                "fn": 7,
+                "fp": 7,
+                "tn": 41,
+                "tp": 25
+              },
+              "eligible_coverage": 0.78125,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.825,
+              "rows": 80,
+              "unsafe_continue_rate": 0.14583333333333334
+            }
+          }
+        }
+      },
+      "qwen35_27b_comparison": {
+        "path": "internal/system-one-v2/qwen35-27b-dev-v1/summary.json",
+        "model_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+        "model_size_bytes": 17420432728,
+        "num_gpu_layers": 24,
+        "num_ctx": 8192,
+        "data_sha256": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+        "metrics_by_prompt_style": {
+          "original": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 5262.354399994365,
+              "p95": 5731.6061000019545
+            },
+            "outside_minus_wrench_accuracy_delta": 0.10000000000000009,
+            "outside_minus_wrench_balanced_accuracy_delta": 0.10416666666666652,
+            "outside_model": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.9895833333333333,
+              "confusion": {
+                "fn": 0,
+                "fp": 1,
+                "tn": 47,
+                "tp": 32
+              },
+              "eligible_coverage": 1.0,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.9875,
+              "rows": 80,
+              "unsafe_continue_rate": 0.020833333333333332
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              0.025000000000000022,
+              0.1875
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              0.0267857142857143,
+              0.18543956043956045
+            ],
+            "style": "original",
+            "template_clusters": 20,
+            "wrench": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.8854166666666667,
+              "confusion": {
+                "fn": 4,
+                "fp": 5,
+                "tn": 43,
+                "tp": 28
+              },
+              "eligible_coverage": 0.875,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.8875,
+              "rows": 80,
+              "unsafe_continue_rate": 0.10416666666666667
+            }
+          },
+          "plain": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 5225.283049992868,
+              "p95": 5630.753100005677
+            },
+            "outside_minus_wrench_accuracy_delta": -0.16249999999999998,
+            "outside_minus_wrench_balanced_accuracy_delta": -0.21354166666666652,
+            "outside_model": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.6041666666666667,
+              "confusion": {
+                "fn": 22,
+                "fp": 5,
+                "tn": 43,
+                "tp": 10
+              },
+              "eligible_coverage": 0.3125,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.6625,
+              "rows": 80,
+              "unsafe_continue_rate": 0.10416666666666667
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              -0.26250000000000007,
+              -0.0625
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              -0.3076923076923077,
+              -0.12
+            ],
+            "style": "plain",
+            "template_clusters": 20,
+            "wrench": {
+              "abstain_rows": 48,
+              "balanced_accuracy": 0.8177083333333333,
+              "confusion": {
+                "fn": 7,
+                "fp": 7,
+                "tn": 41,
+                "tp": 25
+              },
+              "eligible_coverage": 0.78125,
+              "eligible_rows": 32,
+              "overall_accuracy": 0.825,
+              "rows": 80,
+              "unsafe_continue_rate": 0.14583333333333334
+            }
+          }
+        }
+      }
+    },
+    "sealed_final_split_read": false,
+    "note": "Current 44-case gate evidence does not establish an accuracy win over Qwen3.5 9B. Qwen3.5 27B scored 44/44 versus Wrench at 40/44 on the primary original-prompt comparison. Latency advantage is reported separately and does not substitute for accuracy."
+  },
+  "progress_snapshot_local": {
+    "observed_at": "2026-09-23 07:58 MDT",
+    "system_one_v3_training": "complete; original-prompt Wrench candidate fails zero-prohibited-accepts and latency gates",
+    "system_one_v6_gate_comparison": "complete; Wrench 54/80, Qwen3.5 9B 48/80, Qwen3.5 27B 77/80; Wrench 6/32 eligible passes, zero unsafe; V6 fails utility coverage and 27B target",
+    "system_one_v7_data": "274 calibration rows and fresh 80-case tracked-scope development split frozen; explicit tracked-status capability note added to system prompt",
+    "system_one_v7_training": "complete; Wrench 58/80, 10/32 eligible accepted, zero unsafe continuations",
+    "system_one_v7_qwen35_9b": "complete on identical fresh 80-case V7 split; Qwen 67/80, 27/32 eligible accepted, 8/48 unsafe continuations",
+    "system_one_v3_qwen35_9b": "160/160 calls complete on frozen 80-case development split",
+    "system_one_v3_qwen35_27b": "160/160 calls complete on frozen 80-case development split; model stopped after run",
+    "contextbench_full_run": "302/500 corrected canonical-module detail rows saved; active; pre-BM25 component. Initial collapsed-alias attempt preserved separately.",
+    "swe_explore_full_run": "296 distinct detail rows flushed; 317/848 scorer completions observed around 07:58 MDT; pre-BM25 baseline active.",
+    "arb_bm25_candidate": "427/427 rows and canonical BCY plus paired comparison complete",
+    "ram_free_gib_before_qwen35_27b": 25.7,
+    "vram_free_mib_before_qwen35_27b": 7475,
+    "note": "External scorecard results are diagnostics until direct same-model, same-task comparisons are run where possible. Sealed final split not read.",
+    "swe_explore_console_progress": "317/848 observed; 296 detail rows flushed at latest saved-count check."
+  },
+  "retrieval_iteration": {
+    "state": "bm25_candidate_component_bcy8k_gain_paired",
+    "production_component": "src/wrench_harness/context.py::ContextLedger.search",
+    "baseline_source_git_blob": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+    "candidate_source_git_blob": "cb5b4ab0767094e2411a1be720c6e63b01e8b22a",
+    "baseline_arb_recall_at_20": 0.23381642512077294,
+    "baseline_arb_mrr": 0.0811979562605619,
+    "baseline_arb_bcy_at_8k": 0.06690821256038647,
+    "candidate_run": {
+      "path": "external/agent-retrieval-bench/runs/wrench-context-ledger-bm25-v1/",
+      "process_started_local": "2026-09-23 05:13:26 MDT",
+      "exec_session_id": 74922,
+      "observed_console_progress_at_2026_09_23T05_23_MDT": "114/271 corpus chunk groups",
+      "candidate_result": "complete",
+      "rows": 427,
+      "positive_rows": 345,
+      "ranker": "bm25_k1_1.2_b_0.75",
+      "summary_path": "external/agent-retrieval-bench/runs/wrench-context-ledger-bm25-v1/summary.json",
+      "canonical_bcy_path": "external/agent-retrieval-bench/runs/wrench-context-ledger-bm25-v1/canonical-bcy-summary.json",
+      "comparison_path": "external/agent-retrieval-bench/runs/wrench-context-ledger-bm25-v1/iteration-comparison.json",
+      "recall_at_20": 0.2644927536231884,
+      "mrr": 0.08561925460995817,
+      "canonical_bcy_at_8k": 0.11932367149758454,
+      "paired_delta_vs_baseline": {
+        "Recall@20": {
+          "mean": 0.03067632850241546,
+          "ci95": [
+            -0.03982597054886212,
+            0.13446969696969696
+          ]
+        },
+        "MRR": {
+          "mean": 0.00442129834939629,
+          "ci95": [
+            -0.01864821649097869,
+            0.030295006316871764
+          ]
+        },
+        "BCY@8K": {
+          "mean": 0.05241545893719807,
+          "ci95": [
+            0.007132132132132132,
+            0.09781576448243115
+          ]
+        }
+      },
+      "interpretation": "Paired component-level BCY@8K gain; Recall@20 and MRR intervals include zero. Still below published outside embedding references; not an end-to-end claim."
+    },
+    "next_step": "Keep the BM25 implementation as an evaluation candidate and validate active-context behavior; retain ContextBench and SWE-Explore as pre-change baselines until their full runs complete."
+  },
+  "gate_candidate_v6": {
+    "v6_data": { "status": "all_matched_gate_comparisons_complete", "calibration_rows": 210, "calibration_sha256": "12bb020227422d6bb11485306fb23b37d130ed7208ec94d065bc062555870f44", "development_rows": 80, "development_sha256": "c9afbb74d12ff7601d204c6c6dc76d67abe34d0f1c22a55360fea42eadb94649", "executor_scope": "tracked Git status only; untracked requests abstain" },
+    "v7_data": { "status": "training_active", "calibration_rows": 274, "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d", "development_rows": 80, "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087", "system_includes_executor_capability_note": true },
+    "version": "V6",
+    "development_rows": 80,
+    "head_sha256": "76dcdf5a408593d240ca6cc2c50c961c802793abaa11644b85cabaf6d364b201",
+    "threshold": 0.9753098948097229,
+    "wrench_original": { "accuracy": 0.675, "balanced_accuracy": 0.59375, "eligible_passes": 6, "eligible_rows": 32, "unsafe_continuations": 0, "p50_ms": 204.5085, "p95_ms": 257.5133 },
+    "qwen35_9b_original": { "accuracy": 0.6, "balanced_accuracy": 0.6666666667, "eligible_passes": 32, "eligible_rows": 32, "unsafe_continuations": 32, "p50_ms": 249.9314, "p95_ms": 273.5323 },
+    "qwen35_27b_original": { "accuracy": 0.9625, "balanced_accuracy": 0.9635416667, "eligible_passes": 31, "eligible_rows": 32, "unsafe_continuations": 2, "p50_ms": 5165.0705, "p95_ms": 5602.975 },
+    "qwen35_27b_original_minus_wrench_accuracy_ci95": [0.2125, 0.3625],
+    "qwen35_27b_progress": "matched V6 run complete; 160/160 local inference calls; 24 GPU layers; model stopped",
+    "paired_outside_minus_wrench_accuracy_ci95": [-0.1625, 0.0125],
+    "paired_accuracy_ci_includes_zero": true,
+    "status": "v6_zero_unsafe_low_coverage_fails_qwen27_stretch",
+    "evaluation_caveat": "V6 is task-oracle aligned but not a utility win: only 6/32 eligible requests were accepted. Qwen9B's accuracy interval includes zero; Qwen27 leads by 28.75 points with a paired interval excluding zero. V5 remains invalid for primary comparison because its Git status positives exceeded the tracked-only executor scope.",
+    "prior_v5_diagnostic": { "wrench_accuracy": 0.75, "wrench_eligible_passes": 12, "qwen35_9b_accuracy": 0.7125, "qwen35_9b_unsafe_continuations": 23, "status": "invalidated_due_to_status_scope_oracle_mismatch" },
+    "sealed_final_split_read": false
+  },
+  "latest_gate_candidate": {
+    "version": "V7",
+    "data_status": "frozen tracked-only scope with explicit executor capability note",
+    "calibration_rows": 274,
+    "calibration_sha256": "fbe92dfc191303e2d59065a264e4c6bd98b470235e490313229a8ce6afbeb57d",
+    "development_rows": 80,
+    "development_sha256": "a050f6adb64dd0be6168921386fa8c2b1aedfb41f9d496df70415b90df7d0087",
+    "head_sha256": "570624eb8be2f5406bc414f354ebcc53c4d54377249cfdea8a29288b190821de",
+    "threshold": 0.9671169383621215,
+    "wrench_original": { "accuracy": 0.725, "balanced_accuracy": 0.65625, "eligible_passes": 10, "eligible_rows": 32, "unsafe_continuations": 0, "p50_ms": 225.2278, "p95_ms": 290.2009 },
+    "wrench_plain": { "accuracy": 0.8, "eligible_passes": 16, "eligible_rows": 32, "unsafe_continuations": 0 },
+    "qwen35_9b_original": { "accuracy": 0.8375, "balanced_accuracy": 0.8385416667, "eligible_passes": 27, "eligible_rows": 32, "unsafe_continuations": 8, "p50_ms": 253.3014, "p95_ms": 314.4179, "outside_minus_wrench_accuracy_ci95": [-0.0625, 0.2625], "outside_minus_wrench_balanced_accuracy_ci95": [0.0595238095, 0.2967171717] },
+    "qwen35_9b_plain": { "accuracy": 0.425, "balanced_accuracy": 0.5208333333, "eligible_passes": 32, "eligible_rows": 32, "unsafe_continuations": 46 },
+    "qwen35_9b_comparison": "complete on identical V7 development split",
+    "status": "v7_zero_unsafe_low_coverage_qwen9b_balanced_accuracy_lead",
+    "sealed_final_split_read": false
+  },
+  "scorecards": [
+    {
+      "id": "wrench-paired-workflow-utility",
+      "type": "internal",
+      "status": "active_product_scorecard_replay_required",
+      "metric_contract": "GOAL.md and docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md",
+      "input": "evals/wrench-expanded-v2/",
+      "arms": [
+        "stronger-model-only",
+        "rules-plus-fallback",
+        "wrench-plus-fallback"
+      ],
+      "metrics": [
+        "final task success and safety",
+        "eligible correct acceptance and coverage",
+        "prohibited accepts",
+        "end-to-end latency p50 and p95",
+        "net frontier-token savings including retries, verification, compaction, corrections, and fallback",
+        "paired 95% confidence intervals"
+      ],
+      "outside_reference": "Matched stronger-model-only teacher arm",
+      "result_status": "No completed three-arm release replay in this phase",
+      "bounded_gate_outside_model_comparison": {
+        "status": "qwen35_9b_and_27b_development_comparisons_complete",
+        "dataset": "evals/wrench-expanded-v2/development.jsonl",
+        "rows": 44,
+        "eligible_cases": 24,
+        "labeled_abstention_cases": 20,
+        "sealed_final_split_read": false,
+        "wrench": {
+          "accuracy": 0.9090909090909091,
+          "eligible_coverage": 0.8333333333333334,
+          "unsafe_continuations": 0,
+          "unsafe_continuation_rate": 0.0,
+          "run": "internal/qwen-system-one-run-v1/"
+        },
+        "qwen35_9b_original_prompt": {
+          "accuracy": 0.7954545454545454,
+          "eligible_coverage": 1.0,
+          "unsafe_continuations": 9,
+          "unsafe_continuation_rate": 0.45,
+          "balanced_accuracy": 0.775,
+          "run": "internal/qwen-system-one-qwen35-9b-dev-v2/summary.json",
+          "wrench_minus_outside_accuracy_delta": 0.11363636363636365,
+          "wrench_minus_outside_accuracy_paired_template_cluster_bootstrap_95_ci": [
+            0.0,
+            0.2325581395348838
+          ],
+          "wrench_minus_outside_balanced_accuracy_delta": 0.14166666666666672,
+          "wrench_minus_outside_balanced_accuracy_paired_template_cluster_bootstrap_95_ci": [
+            -0.015384615384615441,
+            0.3571428571428571
+          ]
+        },
+        "qwen35_9b_plain_prompt": {
+          "accuracy": 0.5,
+          "eligible_coverage": 0.9166666666666666,
+          "unsafe_continuations": 20,
+          "unsafe_continuation_rate": 1.0,
+          "balanced_accuracy": 0.4583333333333333,
+          "run": "internal/qwen-system-one-qwen35-9b-dev-v2/summary.json"
+        },
+        "qwen35_27b": {
+          "model": "qwen3.5:27b",
+          "parameter_size": "27.8B",
+          "quantization": "Q4_K_M",
+          "ollama_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+          "local_inference_calls": 88,
+          "rows_per_prompt_style": 44,
+          "prompt_styles": [
+            "original",
+            "plain"
+          ],
+          "num_gpu_layers": 24,
+          "num_ctx": 8192,
+          "run": "internal/qwen-system-one-qwen35-27b-dev-v1/summary.json",
+          "sealed_final_split_read": false,
+          "original_prompt": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 4926.525100003346,
+              "p95": 5288.738499999454
+            },
+            "outside_minus_wrench_accuracy_delta": 0.09090909090909094,
+            "outside_minus_wrench_balanced_accuracy_delta": 0.08333333333333326,
+            "outside_model": {
+              "abstain_rows": 20,
+              "balanced_accuracy": 1.0,
+              "confusion": {
+                "fn": 0,
+                "fp": 0,
+                "tn": 20,
+                "tp": 24
+              },
+              "eligible_coverage": 1.0,
+              "eligible_rows": 24,
+              "overall_accuracy": 1.0,
+              "rows": 44,
+              "unsafe_continue_rate": 0.0
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              0.0,
+              0.2325581395348837
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              0.0,
+              0.20833333333333326
+            ],
+            "style": "original",
+            "template_clusters": 14,
+            "wrench": {
+              "abstain_rows": 20,
+              "balanced_accuracy": 0.9166666666666667,
+              "confusion": {
+                "fn": 4,
+                "fp": 0,
+                "tn": 20,
+                "tp": 20
+              },
+              "eligible_coverage": 0.8333333333333334,
+              "eligible_rows": 24,
+              "overall_accuracy": 0.9090909090909091,
+              "rows": 44,
+              "unsafe_continue_rate": 0.0
+            }
+          },
+          "plain_prompt": {
+            "bootstrap": {
+              "method": "paired template-cluster bootstrap",
+              "resamples": 10000,
+              "seed": 20260923
+            },
+            "outside_latency_ms": {
+              "p50": 4667.301850000513,
+              "p95": 4900.665799999842
+            },
+            "outside_minus_wrench_accuracy_delta": -0.2954545454545454,
+            "outside_minus_wrench_balanced_accuracy_delta": -0.27083333333333337,
+            "outside_model": {
+              "abstain_rows": 20,
+              "balanced_accuracy": 0.6458333333333334,
+              "confusion": {
+                "fn": 17,
+                "fp": 0,
+                "tn": 20,
+                "tp": 7
+              },
+              "eligible_coverage": 0.2916666666666667,
+              "eligible_rows": 24,
+              "overall_accuracy": 0.6136363636363636,
+              "rows": 44,
+              "unsafe_continue_rate": 0.0
+            },
+            "paired_template_cluster_bootstrap_95_ci_accuracy_delta": [
+              -0.5116279069767442,
+              -0.045454545454545414
+            ],
+            "paired_template_cluster_bootstrap_95_ci_balanced_delta": [
+              -0.4545454545454546,
+              -0.04166666666666674
+            ],
+            "style": "plain",
+            "template_clusters": 14,
+            "wrench": {
+              "abstain_rows": 20,
+              "balanced_accuracy": 0.9166666666666667,
+              "confusion": {
+                "fn": 4,
+                "fp": 0,
+                "tn": 20,
+                "tp": 20
+              },
+              "eligible_coverage": 0.8333333333333334,
+              "eligible_rows": 24,
+              "overall_accuracy": 0.9090909090909091,
+              "rows": 44,
+              "unsafe_continue_rate": 0.0
+            }
+          },
+          "minimum_free_ram_gib": 15.07,
+          "minimum_free_vram_mib": 7775,
+          "interpretation": "Original-prompt Qwen3.5 27B scored 44/44 with zero unsafe continuations and 100% eligible coverage; Wrench scored 40/44, zero unsafe continuations, and 83.3% coverage. Wrench was substantially faster locally. The sample is small and both paired score intervals include zero. Plain-prompt result favors Wrench but is secondary."
+        },
+        "interpretation": "Small unsealed development comparison. Point estimates favor Wrench accuracy and zero unsafe continuations, but paired template-clustered 95% intervals include zero; treat as promising but inconclusive. Not an external leaderboard result or product-value proof.",
+        "calibration_only_coverage_candidates": [
+          {
+            "run": "internal/qwen-system-one-run-v2/",
+            "positive_class_weight": 1.0,
+            "threshold": 0.3314573628997803,
+            "head_sha256": "c8ddcfa9372be754c8d60288f3fcf828c7813e1497c1d84b7297ace8b61d9b20",
+            "development": {
+              "rows": 44,
+              "eligible": 24,
+              "ineligible": 20,
+              "eligible_passes": 20,
+              "eligible_coverage": 0.8333333333333334,
+              "unsafe_classifier_passes": 0,
+              "unsafe_miss_rate": 0.0,
+              "scope": "classifier decisions only; no tool execution"
+            },
+            "warm_classification_ms": {
+              "samples": 88,
+              "p50": 342.3929138183594,
+              "p95": 407.8663330078125,
+              "max": 474.08441162109375,
+              "includes": "tokenization, Qwen text forward, head and worker receipt"
+            },
+            "threshold_rule": "max held-out calibration negative probability plus epsilon",
+            "interpretation": "No improvement over baseline 20/24 eligible coverage, 20/20 correct abstentions, 40/44 accuracy."
+          },
+          {
+            "run": "internal/qwen-system-one-run-v3/",
+            "positive_class_weight": 2.0,
+            "threshold": 0.42500715089797975,
+            "head_sha256": "334459917ae5359d2c5e07500a097dad030e115ecf85662abc187f9ec4404203",
+            "development": {
+              "rows": 44,
+              "eligible": 24,
+              "ineligible": 20,
+              "eligible_passes": 20,
+              "eligible_coverage": 0.8333333333333334,
+              "unsafe_classifier_passes": 0,
+              "unsafe_miss_rate": 0.0,
+              "scope": "classifier decisions only; no tool execution"
+            },
+            "warm_classification_ms": {
+              "samples": 88,
+              "p50": 337.7500915527344,
+              "p95": 390.1354064941406,
+              "max": 427.79949951171875,
+              "includes": "tokenization, Qwen text forward, head and worker receipt"
+            },
+            "threshold_rule": "max held-out calibration negative probability plus epsilon",
+            "interpretation": "No improvement over baseline 20/24 eligible coverage, 20/20 correct abstentions, 40/44 accuracy."
+          },
+          {
+            "run": "internal/qwen-system-one-run-v4/",
+            "positive_class_weight": 5.0,
+            "threshold": 0.5562834007835388,
+            "head_sha256": "0fb020dfe22184fd8c39ab9f78f350376d216b413c392b7d8868837264cfa249",
+            "development": {
+              "rows": 44,
+              "eligible": 24,
+              "ineligible": 20,
+              "eligible_passes": 20,
+              "eligible_coverage": 0.8333333333333334,
+              "unsafe_classifier_passes": 0,
+              "unsafe_miss_rate": 0.0,
+              "scope": "classifier decisions only; no tool execution"
+            },
+            "warm_classification_ms": {
+              "samples": 88,
+              "p50": 338.97979736328125,
+              "p95": 385.3526611328125,
+              "max": 412.29290771484375,
+              "includes": "tokenization, Qwen text forward, head and worker receipt"
+            },
+            "threshold_rule": "max held-out calibration negative probability plus epsilon",
+            "interpretation": "No improvement over baseline 20/24 eligible coverage, 20/20 correct abstentions, 40/44 accuracy."
+          }
+        ],
+        "fresh_80_case_v2_candidate_comparison": {
+          "status": "complete_candidate_fails_zero_unsafe_gate",
+          "dataset": "internal/system-one-v2-data-clean/development.jsonl",
+          "data_sha256": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+          "candidate_receipt": "internal/system-one-v2/train-run-002/receipt.json",
+          "qwen35_9b_summary": "internal/system-one-v2/qwen35-9b-dev-v1/summary.json",
+          "qwen35_27b_summary": "internal/system-one-v2/qwen35-27b-dev-v1/summary.json",
+          "sealed_final_split_read": false,
+          "interpretation": "On original prompt candidate Wrench scored 71/80 with 5 unsafe continuations, Qwen3.5 9B scored 56/80 with 24, and Qwen3.5 27B scored 79/80 with 1. Wrench fails zero-tolerance safety and its latency target."
+        },
+        "v3_development_comparison": {
+          "status": "qwen35_9b_and_qwen35_27b_complete",
+          "data_path": "internal/system-one-v3-data/development.jsonl",
+          "data_sha256": "df9e79c520e2176b89cf1193efbe5b5d6cbb6e97bfc190596d0530373d64805d",
+          "rows": 80,
+          "template_clusters": 20,
+          "calibration_rows": 252,
+          "calibration_sha256": "7d14dcdc783df0753c2e086fcdb84339aea0c69c205e8a2a529a471bcfb3146f",
+          "sealed_final_split_read": false,
+          "wrench_head_sha256": "6d8f21f439a286d3ea372b0ba9c8e089663c8867c78b08cb18bbd66d55c823b7",
+          "wrench_original": {
+            "accuracy": 0.8375,
+            "eligible_correct_acceptance": "26/32",
+            "unsafe_continuations": 7,
+            "p50_latency_ms": 403.04,
+            "p95_latency_ms": 495.12
+          },
+          "qwen35_9b_original": {
+            "accuracy": 0.675,
+            "unsafe_continuations": 26,
+            "p50_latency_ms": 250.14,
+            "p95_latency_ms": 262.08,
+            "wrench_minus_qwen_accuracy_delta": 0.1625,
+            "paired_template_cluster_95_ci": [
+              0.075,
+              0.25
+            ],
+            "run": "internal/system-one-v3/qwen35-9b-dev-v1/summary.json"
+          },
+          "wrench_plain": {
+            "accuracy": 0.875,
+            "unsafe_continuations": 3
+          },
+          "qwen35_9b_plain": {
+            "accuracy": 0.425,
+            "unsafe_continuations": 44
+          },
+          "qwen35_27b_run": "internal/system-one-v3/qwen35-27b-dev-v1/",
+          "gate_result": "failed_zero_prohibited_accepts_and_27b_quality_target; Wrench is substantially faster",
+          "qwen35_27b_original": {
+            "model": "qwen3.5:27b",
+            "parameter_size": "27.8B",
+            "quantization": "Q4_K_M",
+            "model_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+            "accuracy": 0.975,
+            "unsafe_continuations": 1,
+            "eligible_coverage": 0.96875,
+            "p50_latency_ms": 5041.6054,
+            "p95_latency_ms": 5531.6882,
+            "wrench_minus_qwen_accuracy_delta": -0.1375,
+            "paired_template_cluster_95_ci": [
+              -0.2375,
+              -0.05
+            ],
+            "run": "internal/system-one-v3/qwen35-27b-dev-v1/summary.json"
+          },
+          "qwen35_27b_plain": {
+            "accuracy": 0.6875,
+            "unsafe_continuations": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "codescalebench-v1-mixed371",
+      "type": "external",
+      "benchmark": "CodeScaleBench",
+      "status": "frozen_suite_pinned_wrench_adapter_and_matched_run_pending",
+      "source": "https://github.com/sourcegraph/CodeScaleBench",
+      "suite_id": "csb-v1-mixed371",
+      "source_tag": "v1-mixed371",
+      "source_revision": "cac154c9384a78702092aaad76d29b1ac50d2982",
+      "pinned_eval_kit_runnable": false,
+      "eval_kit_readiness_note": "The pinned tree has Dockerfile.eval but lacks configs/csb_quick.json, which that Dockerfile copies. RUNBOOK.md records the exact source-tree mismatch. The full same-agent/model rerun still needs a complete adapter and solver execution.",
+      "suite_rows": 372,
+      "published_matched_task_count": 370,
+      "primary_metrics": [
+        "paired per-task verifier reward delta",
+        "task success and safety",
+        "retrieval Precision@10, Recall@10, and F1@10",
+        "mean wall time and agent-execution time",
+        "mean model cost per task"
+      ],
+      "published_outside_model_reference": {
+        "agent": "Claude Code",
+        "model": "Claude Haiku 4.5",
+        "comparison": "baseline-local-direct vs Sourcegraph MCP",
+        "snapshot_aggregate_n_per_arm": 371,
+        "snapshot_mean_reward_baseline": 0.5357,
+        "snapshot_mean_reward_sourcegraph_mcp": 0.5647,
+        "snapshot_mean_agent_seconds_baseline": 267.7,
+        "snapshot_mean_agent_seconds_sourcegraph_mcp": 158.1,
+        "technical_report_matched_reward_pairs": 370,
+        "technical_report_paired_reward_delta": 0.0349,
+        "technical_report_paired_reward_delta_95ci": [
+          0.013,
+          0.0579
+        ],
+        "technical_report_cost_pairs": 392,
+        "technical_report_average_cost_usd_baseline": 0.7333,
+        "technical_report_average_cost_usd_sourcegraph_mcp": 0.5121,
+        "technical_report_cost_delta_percent": -30.16,
+        "curated_retrieval_ir_rows": 329,
+        "retrieval_metrics_curated_329_tasks": {
+          "Precision@10": {
+            "baseline": 0.095,
+            "sourcegraph_mcp": 0.313
+          },
+          "Recall@10": {
+            "baseline": 0.12,
+            "sourcegraph_mcp": 0.272
+          },
+          "F1@10": {
+            "baseline": 0.091,
+            "sourcegraph_mcp": 0.24
+          }
+        },
+        "artifact_lineage_note": "Snapshot aggregate reward values and technical-report paired reward/cost statistics come from different artifact views and denominators. Do not combine them into a single paired estimate."
+      },
+      "comparability": "For a direct Wrench result, hold the outside agent/model, prompt, task IDs, sandbox, and verifier constant and compare local baseline vs Wrench retrieval. Published Sourcegraph MCP values are reference-only, not Wrench results. Frozen roster has 372 rows; each configuration has 371 result rows; the official paired reward analysis has 370 matched rows.",
+      "authority_boundary": "Wrench is integrated as a read-only context tool. The benchmark's separate downstream agent retains its existing edit and test permissions inside disposable task sandboxes.",
+      "run_constraints": [
+        "No paid provider call without explicit authorization",
+        "Record local model digest and keep local-model results separate from published Claude Haiku 4.5 results",
+        "Do not grant Wrench arbitrary shell or file-write authority"
+      ],
+      "active_rows": 251,
+      "backup_rows": 120,
+      "missing_rows": 1,
+      "baseline_rows": 371,
+      "mcp_rows": 371,
+      "matched_rows": 370,
+      "suite_sha256": "81f372bf5180de364a0411adfa25844ca35240e76a54bcfc4f351d2af0fc8db0",
+      "pinned_snapshot": {
+        "path": "external/codescalebench/upstream/runs/snapshots/csb-v1-mixed371--haiku45--030326/SNAPSHOT.json",
+        "sha256": "e658484d51df88af722945a0b9fc926a8bd0b618cd0d91960edb560c52edd5da",
+        "note": "Tracked snapshot path is present in the pinned upstream Git tree; local sparse checkout contains suite and evaluator source."
+      },
+      "showcase_priority": "primary",
+      "wrench_fit": "Paired tool impact using the same outside coding agent and model."
+    },
+    {
+      "id": "swe-explore-bench",
+      "type": "external",
+      "benchmark": "SWE-Explore-Bench repository exploration",
+      "status": "18_case_pilot_scored_full_848_pre_bm25_run_active_219_rows_flushed_236_observed",
+      "active_full_run": {
+        "run_path": "external/swe-explore-bench/runs/wrench-contextledger-full848-v1/",
+        "runner_source_loaded_before_bm25_candidate": true,
+        "loaded_component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+        "loaded_component_source_sha256": "4aa54990a2908c8ee94ae4373eb52074d32880bbafbdfa83d661084b9e87e6d8",
+        "python_process_started_local": "2026-09-23 03:31:20 MDT",
+        "component_source_candidate_modified_local": "2026-09-23 04:20:29 MDT",
+        "observed_console_progress_at_2026_09_23T05_00_MDT": "123/848",
+        "latest_progress_snapshot_local": "2026-09-23 06:38 MDT",
+        "latest_console_progress": "236/848 observed",
+        "unique_full_run_detail_rows": 219,
+        "progress_note": "Scorer console reported 236/848 around 06:38 MDT; 219 distinct detail rows were flushed to disk at the latest saved-count check. Predictions include multiple systems per task and are not task progress."
+      },
+      "source": "https://github.com/Qiushao-E/SWE-Explore-Bench",
+      "paper": "https://arxiv.org/abs/2606.07297",
+      "dataset_id": "SWE-Explore-Bench/SWE-Explore-Bench",
+      "cases": 848,
+      "repositories": 203,
+      "languages": 10,
+      "primary_metrics": [
+        "line precision",
+        "line recall",
+        "line F1",
+        "hit-file rate",
+        "hit-region rate",
+        "noise rate",
+        "context efficiency",
+        "rank-aware quality at fixed region budget"
+      ],
+      "secondary_metric": "restricted-context downstream patch success",
+      "published_outside_explorer_references": [
+        "Mini-SWE-Agent",
+        "OpenHands",
+        "Claude Code",
+        "Codex",
+        "CoSIL",
+        "LocAgent",
+        "AutoCodeRover",
+        "OrcaLoca"
+      ],
+      "comparability": "Use the official metric implementation and fixed ranked-region budget. Published model and explorer scores are references; run the outside explorer through the same Wrench adapter for a direct comparison.",
+      "authority_boundary": "Wrench only reads and returns ranked file/line evidence; no shell execution, writes, or patch application.",
+      "pin_required_before_run": true,
+      "showcase_priority": "retrieval_diagnostic",
+      "wrench_fit": "Read-only ranked repository exploration with file and line evidence; current pilot is a gap signal, not a positive claim.",
+      "source_manifest": "external/swe-explore-bench/data/issue-source-manifest.json",
+      "runbook": "external/swe-explore-bench/RUNBOOK.md",
+      "pilot_result": {
+        "run": "external/swe-explore-bench/runs/wrench-contextledger-pilot-18-final/summary.json",
+        "sample_cases": 18,
+        "seed": 446,
+        "wrench_component": "src/wrench_harness/context.py::ContextLedger.search",
+        "wrench_line_f1": 0.024311598995043704,
+        "wrench_hit_file_rate": 0.225,
+        "wrench_ndcg_at_500": 0.07562688419065094,
+        "wrench_context_efficiency": 0.06490509287541864,
+        "outside_trajectory_line_f1": {
+          "GLM-5.1": 0.4722380025643677,
+          "GPT-5.4": 0.5688437799380359,
+          "Claude Sonnet 4.6": 0.6882247260659785,
+          "Kimi K2.6": 0.49615269597909256,
+          "Claude 4.5": 0.6432640039631206,
+          "Gemini 3 Pro": 0.8360934981577156,
+          "GLM-4.6": 0.7961569036596369
+        },
+        "limitations": [
+          "18-case development pilot, not official full-suite result",
+          "outside references are successful trajectories bundled with the benchmark, not newly rerun models",
+          "Wrench component retrieval score, not end-to-end agent outcome"
+        ]
+      }
+    },
+    {
+      "id": "contextbench",
+      "type": "external",
+      "benchmark": "ContextBench coding-agent context retrieval",
+      "status": "corrected_canonical_module_mapping_full_pre_bm25_run_active_193_of_500_rows_saved",
+      "source": "https://contextbench.github.io/",
+      "paper": "https://arxiv.org/abs/2602.05892",
+      "cases": 1136,
+      "run_subset": {
+        "dataset": "external/contextbench/data/data/contextbench_verified.parquet",
+        "rows": 500,
+        "sha256": "e9dcfd504cbfb849ac815a79040c793d0d92f94eecc9b5a4ee3e1445a2f8a791",
+        "hf_revision": "c2855792b006af41c67202d33883fb9d46362853"
+      },
+      "upstream_commit": "1436c28a8eb95496da4ea69ad458b9f8a8eb7d61",
+      "runner": "run_contextbench_wrench_retrieval.py",
+      "run_path": "external/contextbench/runs/wrench-verified500-contextledger-v1/",
+      "component_pilot": {
+        "status": "3_case_engineering_slice_scored_not_representative",
+        "scored_cases": 3,
+        "line_recall": 0.02865329512893983,
+        "line_precision": 0.016233766233766232,
+        "derived_line_context_f1": 0.020725388601036267,
+        "complete_500_row_result": false,
+        "direct_same_case_outside_model_comparison": false,
+        "summary": "external/contextbench/runs/wrench-verified500-contextledger-v1/pilot-3-engineering-slice/summary.json"
+      },
+      "repositories": 66,
+      "languages": 8,
+      "leaderboard_updated": "2026-09-14",
+      "primary_metrics": [
+        "line-level context recall",
+        "Context F1",
+        "Pass@1",
+        "efficiency",
+        "average cost"
+      ],
+      "published_outside_model_references": {
+        "openJiuwen-JiuwenSwarm+DeepSeek-V4-Pro": {
+          "recall": 0.753,
+          "Pass@1": 60.4,
+          "Context F1": 0.257,
+          "efficiency": 0.642,
+          "average_cost_usd": 0.57
+        },
+        "mini-SWE-agent+GPT-5": {
+          "recall": 0.606,
+          "Pass@1": 47.2,
+          "Context F1": 0.312,
+          "efficiency": 0.591,
+          "average_cost_usd": 0.45
+        },
+        "mini-SWE-agent+Claude-Sonnet-4.5": {
+          "recall": 0.588,
+          "Pass@1": 53.0,
+          "Context F1": 0.344,
+          "efficiency": 0.658,
+          "average_cost_usd": 0.76
+        },
+        "mini-SWE-agent+Qwen3-8B": {
+          "recall": 0.048,
+          "Context F1": 0.076
+        },
+        "mini-SWE-agent+Qwen2.5-32B": {
+          "recall": 0.076,
+          "Context F1": 0.108
+        }
+      },
+      "comparability": "Run Wrench retrieval and no-Wrench control through the same fixed downstream solver with matched task IDs and token/cost accounting. Public agent-model leaderboard rows are reference-only until the exact harness and task coverage match.",
+      "authority_boundary": "Wrench is a read-only context provider. The fixed downstream solver retains patch and test authority.",
+      "pin_required_before_run": true,
+      "published_leaderboard_system_count": 15,
+      "leaderboard_best_reference": "openJiuwen-JiuwenSwarm+DeepSeek-V4-Pro",
+      "showcase_priority": "context_quality_supporting_scorecard",
+      "wrench_fit": "Downstream context usefulness under a fixed coding agent and solver.",
+      "partial_run_note": "Corrected full run has 193/500 detail rows saved. The earlier 184-row attempt failed on a collapsed dataset alias, not missing benchmark snapshots. A 3-case engineering slice is weak and not representative; no complete-suite score is available yet.",
+      "alias_failure_attempt": {
+        "runner_source_loaded_before_bm25_candidate": true,
+        "loaded_component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+        "loaded_component_source_sha256": "4aa54990a2908c8ee94ae4373eb52074d32880bbafbdfa83d661084b9e87e6d8",
+        "python_process_started_local": "2026-09-23 04:00:26 MDT",
+        "component_source_candidate_modified_local": "2026-09-23 04:20:29 MDT",
+        "observed_flushed_rows_at_2026_09_23T05_00_MDT": 106,
+        "latest_progress_snapshot_local": "2026-09-23 06:05 MDT",
+        "latest_flushed_detail_rows": 184,
+        "stopped_reason": "Initial attempt used the collapsed dataset alias fasterxml/jackson, which does not name a GitHub repository. Preserved as adapter failure evidence; its rows are excluded from the corrected run summary.",
+        "complete_500_row_result": false
+      },
+      "active_full_run": {
+        "run_path": "external/contextbench/runs/wrench-verified500-contextledger-v1/",
+        "component_source_git_blob_sha1": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+        "component_source_sha256": "4aa54990a2908c8ee94ae4373eb52074d32880bbafbdfa83d661084b9e87e6d8",
+        "corrected_repository_mapping": "Map each dataset instance to FasterXML/jackson-core, FasterXML/jackson-databind, or FasterXML/jackson-dataformat-xml using original_inst_id; retain the dataset repo alias and canonical snapshot_repo in the manifest.",
+        "latest_saved_detail_rows": 193,
+        "total_rows": 500,
+        "complete_500_row_result": false,
+        "corrected_run_status": "active; resume by case ID; alias-related exclusions from the first attempt are kept separate"
+      }
+    },
+    {
+      "id": "agent-retrieval-bench-v2",
+      "type": "external",
+      "benchmark": "Agent Retrieval Bench V2",
+      "status": "bm25_component_bcy8k_gain_paired_below_published_embedding_references",
+      "source": "https://github.com/eyuansu62/agent-retrieval-bench",
+      "paper": "https://arxiv.org/abs/2607.24882",
+      "dataset_release": "V2",
+      "cases": 427,
+      "positive_cases": 345,
+      "natural_no_gold_cases": 50,
+      "counterfactual_no_gold_cases": 32,
+      "primary_metrics": [
+        "Recall@20",
+        "MRR",
+        "budgeted context yield at 4K/8K/16K/32K"
+      ],
+      "selective_retrieval_metrics": [
+        "selective success",
+        "retrieval coverage",
+        "abstention performance on natural no-gold cases"
+      ],
+      "published_outside_references": {
+        "Qwen3-Embedding-4B": {
+          "Recall@20": 0.6306,
+          "MRR": 0.2379,
+          "BCY@8K": 0.3409
+        },
+        "Qwen3-Embedding-8B": {
+          "Recall@20": 0.7029,
+          "MRR": 0.2336,
+          "BCY@8K": 0.3732
+        },
+        "RepoMap": {
+          "Recall@20": 0.6333,
+          "MRR": 0.2158,
+          "BCY@8K": 0.3788
+        },
+        "Jina-code-embeddings-0.5B": {
+          "Recall@20": 0.4823,
+          "MRR": 0.1914,
+          "BCY@8K": 0.2783
+        },
+        "BM25": {
+          "Recall@20": 0.4452,
+          "MRR": 0.152,
+          "BCY@8K": 0.2051
+        },
+        "Lexical": {
+          "Recall@20": 0.494,
+          "MRR": 0.1574,
+          "BCY@8K": 0.265
+        }
+      },
+      "reproduced_reference_run": {
+        "system": "official Lexical baseline",
+        "dataset_split": "v2_selective_retrieval_natural positive cases",
+        "ranker": "lexical",
+        "candidate_filter": "all_files",
+        "keep_list": null,
+        "positive_cases_scored": 345,
+        "no_gold_cases_skipped": 82,
+        "runtime_seconds": 801.4651593999952,
+        "metrics": {
+          "Recall@20": 0.4939613526570048,
+          "MRR": 0.15741480361234275,
+          "BCY@4K": 0.14879227053140098,
+          "BCY@8K": 0.264975845410628,
+          "BCY@16K": 0.3886473429951691,
+          "BCY@32K": 0.48816425120772944
+        },
+        "matches_published_lexical_after_rounding": true,
+        "baseline_summary": {
+          "path": "external/agent-retrieval-bench/data/eval/arb-v2/natural-lexical-summary.json",
+          "sha256": "81ba96dc6de88ef76594abc30b2589a63caaaf5b73f91f123ba0cb62d31c18b8"
+        },
+        "baseline_details": {
+          "path": "external/agent-retrieval-bench/data/eval/arb-v2/natural-lexical-details.jsonl",
+          "sha256": "a09865c5a471c6bbd8d34cc749250b203efa6ba278a0f00953bae0413453ece9"
+        },
+        "canonical_bcy_summary": {
+          "path": "external/agent-retrieval-bench/data/eval/arb-v2/natural-lexical-canonical-bcy-summary.json",
+          "sha256": "0a2476c344d074236de17409cfca76fca50af5aa8c20781aa8d0ca3a0fd79c50"
+        },
+        "canonical_bcy_details": {
+          "path": "external/agent-retrieval-bench/data/eval/arb-v2/natural-lexical-canonical-bcy-details.jsonl",
+          "sha256": "6b9579db8ba84c27e89ff1718e1bf6bb77415e272914d7b9214b9e91fcc808a4"
+        },
+        "corpus_manifest_sha256": "f7bc6131f40b9527911adc0d7f974b3c2329a37fc2d823b0379daa301b0aa28b",
+        "bcy_runner": "run_arb_v2_bcy.py",
+        "bcy_runner_sha256": "d252fc4bbecbea9ed0a35ce9444b28c94e68ff48df38dd08f38a1e73b21b38a9",
+        "minimum_free_ram_gib": 27.79146957397461,
+        "minimum_free_vram_gib": 13.6923828125,
+        "paid_provider_calls": 0
+      },
+      "wrench_direct_run": {
+        "official_ranking_status": "component_scored_not_end_to_end_client",
+        "result_source_git_blob": "0dc7e14e6e1e3f656c7b340e18c5c620d2e89476",
+        "result_is_prechange_baseline": true,
+        "scope": "Actual src/wrench_harness/context.py::ContextLedger.search ranked-file component, evaluated on all released rows; separate from binary gate and full client workflow.",
+        "rows": 427,
+        "positive_rows": 345,
+        "natural_no_gold_rows": 50,
+        "counterfactual_no_gold_rows": 32,
+        "candidate_filter": "all_files",
+        "metrics": {
+          "Recall@20": 0.23381642512077294,
+          "MRR": 0.0811979562605619,
+          "BCY@4K": 0.050724637681159424,
+          "BCY@8K": 0.06690821256038647,
+          "BCY@16K": 0.12367149758454106,
+          "BCY@32K": 0.2099033816425121
+        },
+        "paired_vs_official_lexical": {
+          "BCY@16000": {
+            "mean_delta": -0.264975845410628,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.3622565864833906,
+              -0.1569611780455154
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "BCY@32000": {
+            "mean_delta": -0.2782608695652174,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.3298771121351767,
+              -0.19909208819714655
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "BCY@4000": {
+            "mean_delta": -0.09806763285024155,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.14985994397759103,
+              -0.038869257950530034
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "BCY@8000": {
+            "mean_delta": -0.19806763285024154,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.30340038314176243,
+              -0.07934131736526946
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "MRR": {
+            "mean_delta": -0.07621684735178089,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.11141740424468079,
+              -0.03483051699340849
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "Precision@20": {
+            "mean_delta": -0.01710144927536232,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.019873417721518988,
+              -0.014570858283433135
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "Recall@10": {
+            "mean_delta": -0.22777777777777777,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.3147590361445783,
+              -0.13341346153846154
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "Recall@20": {
+            "mean_delta": -0.26014492753623186,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.30855263157894736,
+              -0.18755739210284664
+            ],
+            "n": 345,
+            "clusters": 25
+          },
+          "Recall@5": {
+            "mean_delta": -0.16280193236714977,
+            "repository_cluster_bootstrap_95_ci": [
+              -0.24351381838691483,
+              -0.07200647249190939
+            ],
+            "n": 345,
+            "clusters": 25
+          }
+        },
+        "comparison_to_published_outside_models": "Qwen3-Embedding-4B/8B and other report rows are same-release published references, not paired per-case Wrench model reruns.",
+        "latency_ms": {
+          "query_p50": 14.285500001278706,
+          "query_p95": 325.06049999938114
+        },
+        "index_build_seconds_total": 292.13553550001234,
+        "wall_seconds": 396.2900922999979,
+        "paths": {
+          "summary": "external/agent-retrieval-bench/runs/wrench-context-ledger-ranked-v1/summary.json",
+          "details": "external/agent-retrieval-bench/runs/wrench-context-ledger-ranked-v1/details.jsonl",
+          "canonical_bcy": "external/agent-retrieval-bench/runs/wrench-context-ledger-ranked-v1/canonical-bcy-summary.json",
+          "matched_comparison": "external/agent-retrieval-bench/runs/wrench-context-ledger-ranked-v1/matched-comparison.json"
+        },
+        "details_sha256": "35981bedcd647b76ff47c60277c4b768499e663b12a4993d8e20999e92864946",
+        "interpretation": "Substantially below the paired Lexical reference on retrieval quality; retained as a stress-test result and not a Wrench showcase win.",
+        "summary_sha256": "22A878D76AD6B7DC5870DE21407BED9F3D312F4A2C4514DBFD8C1C1164B796DF",
+        "canonical_bcy_sha256": "FE6E27074D8DFCCE540A6513F855E43DC393D74DA0A39E0BA087554828BC2E58",
+        "matched_comparison_sha256": "088B0ECB8FC3608F844D2D1747C85A49FBBB46741E4465B70E7F3063049589E4"
+      },
+      "comparability": "Use the same V2 rows, frozen repository snapshots, all_files candidate set, context budgets, and official formulas. Keep the 50 natural no-gold cases separate from positive retrieval; counterfactual controls are not a substitute for natural abstention.",
+      "authority_boundary": "Wrench emits bounded read/search proposals or abstains; it does not execute arbitrary shell commands or modify repositories.",
+      "pin_required_before_run": true,
+      "dataset_revision": "5901e1ee3aff048290db72edf9c63bc498b79ea3",
+      "source_revision": "07014c986f3deadb1548c62b32c0ffbe6a81465d",
+      "source_pin": {
+        "upstream_git_commit": "07014c986f3deadb1548c62b32c0ffbe6a81465d",
+        "dataset_repository": "eyuansu71/agent_retrieval_bench",
+        "dataset_git_revision": "5901e1ee3aff048290db72edf9c63bc498b79ea3"
+      },
+      "fit_tier": "stretch_validation_not_current_showcase_candidate",
+      "showcase_eligibility_gate": "Wrench must beat the reproduced Lexical reference on paired public retrieval metrics to qualify as a positive showcase result. Current ContextLedger.search score does not meet this gate.",
+      "showcase_priority": "stress_test",
+      "wrench_fit": "Ranked retrieval and selective abstention stress test; current Wrench ContextLedger result is a measured gap, not a strength claim.",
+      "wrench_bm25_candidate": {
+        "path": "external/agent-retrieval-bench/runs/wrench-context-ledger-bm25-v1/",
+        "Recall@20": 0.2644927536231884,
+        "MRR": 0.08561925460995817,
+        "BCY@8K": 0.11932367149758454,
+        "paired_delta_ci95": {
+          "Recall@20": [
+            -0.03982597054886212,
+            0.13446969696969696
+          ],
+          "MRR": [
+            -0.01864821649097869,
+            0.030295006316871764
+          ],
+          "BCY@8K": [
+            0.007132132132132132,
+            0.09781576448243115
+          ]
+        },
+        "interpretation": "BCY@8K improves over pre-change Wrench; other paired ranking-metric intervals include zero. Still below reproduced Lexical and published embedding references."
+      }
+    }
+  ],
+  "supplemental_diagnostics": [
+    {
+      "id": "nvidia-when2call",
+      "reason_not_in_selected_five": "The full run is retained for failure analysis, but its tool-call targets are all outside Wrench allowlist and 65.2 percent of rows exceed the Wrench 8192-character limit. Its adapted three-way score is not comparable with the official metric.",
+      "source": "https://github.com/NVIDIA/When2Call",
+      "source_revision": "ecc8d42388e91ab37e7e737d48e16e8ecea3d1dc",
+      "data_sha256": "8c3694e583eeeb8dbc297e6cd90da70efc68efa4b6adb7227523e828c6b7b14c",
+      "rows": 3652,
+      "run_path": "external/when2call/runs/wrench-qwen-head-v2/",
+      "result_metrics": {
+        "no_tools_cases": 258,
+        "no_tools_false_continue_rate": 0.20930232558139536,
+        "over_limit_rows": 2381,
+        "over_limit_rate": 0.6519715224534501,
+        "all_row_binary_macro_f1": 0.44292516341400745,
+        "wrench_eligible_tool_call_rows": 0
+      },
+      "comparability": "Binary Wrench projection only; do not compare adapted binary macro-F1 with the official three-way score."
+    },
+    {
+      "id": "bfcl-v4-irrelevance-detection",
+      "reason_not_in_selected_five": "Prior diagnostic only. The selected 240 rows all have no-call gold labels and offer no Wrench-allowlisted functions; always-abstain scores 100 percent while Wrench scored 61.7 percent.",
+      "prior_result": {
+        "id": "bfcl-v4-irrelevance-detection",
+        "type": "external",
+        "benchmark": "Berkeley Function Calling Leaderboard V4, non-live irrelevance component",
+        "status": "frozen_binary_gate_component_run_complete_weak_result",
+        "source": "https://gorilla.cs.berkeley.edu/leaderboard",
+        "reproduction_package": "bfcl-eval==2025.12.17",
+        "source_revision": "f7cf7359b7ac615a0b294831c5ba2bc95ee4a000",
+        "data_file": "external/bfcl-v4/upstream/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_irrelevance.json",
+        "data_sha256": "9c1fa6596922c78b7817aa94e5eb94c14ed18d87a1b564b974fbd113b213121e",
+        "data_rows": 240,
+        "primary_metrics": [
+          "abstention accuracy",
+          "false-continue rate",
+          "input-limit rate"
+        ],
+        "run_path": "external/bfcl-v4/runs/wrench-qwen-head-v1/",
+        "wrench_model_dir": "D:\\models\\Wrench-Qwen3.6-8expert-BF16",
+        "wrench_head_sha256": "e33e28af544be5eaf156ff42dbe47d2098a36939bb4b0cfd0222d378d4ee3b0b",
+        "wrench_head_threshold": 0.5,
+        "wrench_exact_action_name_matches": 0,
+        "result_metrics": {
+          "abstention_accuracy": 0.6166666666666667,
+          "always_abstain_control_accuracy": 1.0,
+          "false_continue_rate": 0.38333333333333336,
+          "over_limit_rows": 0,
+          "model_decision_latency_p50_ms": 196.11580000491813,
+          "model_decision_latency_p95_ms": 270.44640000531217
+        },
+        "published_outside_model_references": {
+          "xLAM-2-1B-FC-R": 64.47,
+          "xLAM-2-3B-FC-R": 63.45,
+          "Qwen3-4B-Instruct-2507-FC": 84.93
+        },
+        "comparability": "Wrench is scored on the 240 non-live rows; published BFCL V4 irrelevance category combines live and non-live rows. Every selected row is a no-call and every function name is outside Wrench's allowlist, so an always-abstain control is 100 percent. Keep this as a boundary diagnostic, not a showcase score. Published values are reference-only.",
+        "predictions_sha256": "eb8b927f4103656e6e650fe40504dd93269ab299e1fe42454feccf1e15c5208e"
+      }
+    },
+    {
+      "id": "toolbehonest-level-1",
+      "reason_not_in_selected_five": "Prior diagnostic only. All 700 menus are outside Wrench allowlist, so generic solvability labels do not equal operational acceptance. Direct Qwen comparisons are retained in this receipt.",
+      "qwen35_27b_adapted_comparison": {
+        "status": "complete_not_selected_diagnostic",
+        "run_path": "external/toolbehonest/runs/qwen35-27b-ollama-v1/",
+        "model_digest": "7653528ba5cba4dd8e19da24aaddc7f4d0b5ecd93571c0825dfd4137958ec06e",
+        "paired_cases": 700,
+        "source_record_clusters": 350,
+        "wrench_accuracy": 0.5357142857142857,
+        "qwen35_27b_accuracy": 0.7414285714285714,
+        "qwen_minus_wrench_accuracy_delta": 0.2057142857142857,
+        "paired_cluster_bootstrap_95_ci": [
+          0.17142857142857143,
+          0.24
+        ],
+        "qwen_solvable_continuation_rate": 0.9514285714285714,
+        "qwen_unsolvable_false_continuation_rate": 0.4685714285714286,
+        "qwen_latency_ms_p50_p95": [
+          5574.732099994435,
+          6017.889499999001
+        ],
+        "wrench_predictions_sha256": "237aff498536ae47282e091e1ebe7d2f1d3fbcc5b8780d7323c29213fee9368d",
+        "comparability_limit": "All 700 benchmark tool menus are outside Wrench's six-action allowlist; generic solvability accuracy is not operational tool success or safety."
+      },
+      "prior_result": {
+        "id": "toolbehonest-level-1",
+        "type": "external",
+        "benchmark": "ToolBeHonest Level-1 solvability decision",
+        "status": "frozen_binary_gate_and_two_local_outside_baselines_complete_adapted",
+        "source": "https://github.com/ToolBeHonest/ToolBeHonest",
+        "paper": "https://aclanthology.org/2024.emnlp-main.637/",
+        "dataset_revision": "524ef5422f63899e7c1a97c791197c37ace0e051",
+        "repository_revision": "22da2533bd8471576043279e3f8134d7e31c11c1",
+        "data_file": "external/toolbehonest/data/test_en.json",
+        "data_sha256": "51495dc14e5403ccc56d7430253cf41a1e5aa30ce7e35ae9b207fce667ea7a2a",
+        "source_records": 350,
+        "paired_task_variants": 700,
+        "primary_metrics": [
+          "Level-1 exact match by scenario",
+          "false-solvable rate",
+          "unsupported-tool false-continue rate"
+        ],
+        "run_path": "external/toolbehonest/runs/wrench-qwen-head-v1/",
+        "wrench_model_dir": "D:\\models\\Wrench-Qwen3.6-8expert-BF16",
+        "wrench_head_sha256": "e33e28af544be5eaf156ff42dbe47d2098a36939bb4b0cfd0222d378d4ee3b0b",
+        "result_metrics": {
+          "abstract_level1_binary_accuracy": 0.5357142857142857,
+          "solvable_continue_rate": 0.16,
+          "unsolvable_false_continue_rate": 0.08857142857142856,
+          "paired_exact_rate": 0.11714285714285715,
+          "wrench_allowlist_unsupported_continue_rate": 0.12428571428571429,
+          "model_decision_latency_p50_ms": 203.9665000011155,
+          "model_decision_latency_p95_ms": 274.1655999998329
+        },
+        "published_outside_model_references": {
+          "GPT-4o-2024-05-13": {
+            "missing_tools_level1_exact_match": 53.3,
+            "potential_tools_level1_exact_match": 47.0,
+            "limited_functionality_level1_exact_match": 56.0
+          },
+          "Llama-3-8B": {
+            "missing_tools_level1_exact_match": 13.3,
+            "potential_tools_level1_exact_match": 7.0,
+            "limited_functionality_level1_exact_match": 45.0
+          }
+        },
+        "comparability": "Wrench and two local outside models use the same 700 case IDs and gold labels, but Wrench uses a binary head and outside models generate JSON. All 700 menus are outside Wrench's six-action allowlist, so generic solvability labels do not equal Wrench operational accept labels. Treat results as a conservatism diagnostic, not task success. Published ToolBeHonest scores use a different response protocol and remain reference-only.",
+        "local_outside_model_baseline": {
+          "status": "complete",
+          "runtime": "Ollama local service",
+          "data_rows": 700,
+          "runner": "run_ollama_toolbehonest_baseline.py",
+          "response_mode": "JSON schema output with Ollama think=false",
+          "paired_statistics": "source-record cluster bootstrap accuracy delta with 95 percent interval; 10000 resamples; seed 20260922",
+          "spend": 0,
+          "models": [
+            {
+              "model": "qwen3.5:0.8b",
+              "model_digest": "f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4",
+              "parameter_size": "873.44M",
+              "quantization": "Q8_0",
+              "model_loaded_before_run": true,
+              "run_path": "external/toolbehonest/runs/qwen35-0.8b-ollama-v2/",
+              "rows": 700,
+              "valid_json_decisions": 700,
+              "abstract_binary_accuracy": 0.5728571428571428,
+              "solvable_continue_rate": 0.98,
+              "unsolvable_false_continue_rate": 0.8342857142857143,
+              "abstract_call_precision": 0.5401574803149606,
+              "outside_minus_wrench_accuracy_delta": 0.0371428571428571,
+              "paired_cluster_bootstrap_95_ci": [
+                0.01,
+                0.0657142857142857
+              ],
+              "decision_agreement_with_wrench": 0.208571428571429,
+              "warm_latency_p50_ms": 139.53760000003967,
+              "warm_latency_p95_ms": 182.84850000054576,
+              "first_request_in_run_ms": 306.736799997452,
+              "predictions_sha256": "dc4e0bbcd7de609ceff003ba4e6c1cdd4f3938cc02813610e4d1fe6e48fda22e"
+            },
+            {
+              "model": "qwen3.5:9b",
+              "model_digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+              "parameter_size": "9.7B",
+              "quantization": "Q4_K_M",
+              "model_loaded_before_run": false,
+              "run_path": "external/toolbehonest/runs/qwen35-9b-ollama-v1/",
+              "rows": 700,
+              "valid_json_decisions": 700,
+              "abstract_binary_accuracy": 0.6157142857142858,
+              "solvable_continue_rate": 0.9657142857142857,
+              "unsolvable_false_continue_rate": 0.7342857142857143,
+              "abstract_call_precision": 0.5680672268907563,
+              "outside_minus_wrench_accuracy_delta": 0.08,
+              "paired_cluster_bootstrap_95_ci": [
+                0.0471428571428571,
+                0.112857142857143
+              ],
+              "decision_agreement_with_wrench": 0.222857142857143,
+              "warm_latency_p50_ms": 285.4650000008405,
+              "warm_latency_p95_ms": 312.60679999832064,
+              "first_request_in_run_ms": 30112.0127999966,
+              "predictions_sha256": "b8f8642819c5bf707e98ba9cf79682b2228428292e5ba3691944b400c98ba573"
+            }
+          ],
+          "invalid_attempts": [
+            {
+              "run_path": "external/toolbehonest/runs/qwen35-0.8b-ollama-v1/",
+              "status": "INVALID_RUN",
+              "reason": "thinking channel consumed generation budget and message.content was empty for all 700 cases; no model score was counted"
+            }
+          ]
+        },
+        "predictions_sha256": "237aff498536ae47282e091e1ebe7d2f1d3fbcc5b8780d7323c29213fee9368d"
+      }
+    },
+    {
+      "id": "repobench-r",
+      "reason_not_in_selected_five": "Prior diagnostic only. The client route does not call ContextLedger.search, and ContextLedger trails official Jaccard on most metrics. The complete run remains preserved.",
+      "prior_result": {
+        "id": "repobench-r",
+        "type": "external",
+        "benchmark": "RepoBench-R retrieval",
+        "status": "component_run_complete_below_jaccard_on_most_metrics",
+        "paper": "https://proceedings.iclr.cc/paper_files/paper/2024/file/d191ba4c8923ed8fd8935b7c98658b5f-Paper-Conference.pdf",
+        "upstream_repository": "https://github.com/Leolty/repobench",
+        "upstream_repository_revision": "ccacd12a68783ca27e9997c3b754d3e9e0d958da",
+        "dataset_id": "tianyang/repobench-r",
+        "dataset_revision": "b631bd4ce1215cd604c78eb095babebcba6e22de",
+        "dataset_license": "cc-by-nc-nd-4.0",
+        "test_only": true,
+        "data_files": [
+          {
+            "path": "external/repobench-r/data/java_cff/test_easy/0000.parquet",
+            "sha256": "52ccb4ecc489bc65dfd46ec3614ec765edc37c714562799628634d43be937ee6"
+          },
+          {
+            "path": "external/repobench-r/data/java_cff/test_hard/0000.parquet",
+            "sha256": "2876fe5274940fac36f83eb7bdff9f7d31dffb954ea01ca2b14d4ca4e42738b9"
+          },
+          {
+            "path": "external/repobench-r/data/java_cff/test_hard/0001.parquet",
+            "sha256": "34d96c4d5f0ea637e3d84309e20f2f00954a23c64724ac740a1f77def32137d8"
+          },
+          {
+            "path": "external/repobench-r/data/java_cfr/test_easy/0000.parquet",
+            "sha256": "0591901f01aff6c94666248560de9d56144e5602f276ba76b3da384648197473"
+          },
+          {
+            "path": "external/repobench-r/data/java_cfr/test_hard/0000.parquet",
+            "sha256": "b8c197e5445750753fc8b36f632c1858842d9722b31a81cde31b23ee63fcf51d"
+          },
+          {
+            "path": "external/repobench-r/data/python_cff/test_easy/0000.parquet",
+            "sha256": "3d4355754a5e7e623f02250e7b36a58a4c1c8588c0cafc111328ee0d474597db"
+          },
+          {
+            "path": "external/repobench-r/data/python_cff/test_hard/0000.parquet",
+            "sha256": "2ff17e8143927e939c042c78a3dc5bcea516d697218490ae0626986474027fd9"
+          },
+          {
+            "path": "external/repobench-r/data/python_cfr/test_easy/0000.parquet",
+            "sha256": "2806c025fd1a778b033d36183f059b2426bdc2f0b89504fb16a6b2ff2067ecde"
+          },
+          {
+            "path": "external/repobench-r/data/python_cfr/test_hard/0000.parquet",
+            "sha256": "294922b28435e1d01fbc4e08aa3063174e4d2e581336c699d31a6342916fc3a1"
+          }
+        ],
+        "expected_cases": 48000,
+        "raw_case_count": 48000,
+        "scored_case_count": 47998,
+        "invalid_case_count": 2,
+        "invalid_cases": [
+          {
+            "case_id": "python_cff/test_easy/0000.parquet#5522",
+            "reason": "gold_index_out_of_range",
+            "candidate_count": 5,
+            "gold_index": 6
+          },
+          {
+            "case_id": "python_cff/test_easy/0000.parquet#7591",
+            "reason": "gold_index_out_of_range",
+            "candidate_count": 5,
+            "gold_index": 5
+          }
+        ],
+        "wrench_component": "src/wrench_harness/context.py::ContextLedger.search",
+        "direct_external_baseline": {
+          "name": "RepoBench official Jaccard baseline",
+          "tokenizer_id": "Salesforce/codegen-350M-multi",
+          "tokenizer_revision": "b25de779e2044ed5e7707505dea0e5a9bb08556a"
+        },
+        "published_outside_model_references": {
+          "UniXcoder-125M": {
+            "python_easy_acc_at_1": 27.09,
+            "python_easy_acc_at_3": 60.42,
+            "python_hard_acc_at_1": 18.48,
+            "python_hard_acc_at_3": 39.69,
+            "python_hard_acc_at_5": 54.0,
+            "java_easy_acc_at_1": 19.61,
+            "java_easy_acc_at_3": 52.96,
+            "java_hard_acc_at_1": 12.23,
+            "java_hard_acc_at_3": 28.74,
+            "java_hard_acc_at_5": 41.88
+          },
+          "InstructOR-1.5B": {
+            "python_easy_acc_at_1": 28.22,
+            "python_easy_acc_at_3": 62.77,
+            "python_hard_acc_at_1": 19.1,
+            "python_hard_acc_at_3": 39.91,
+            "python_hard_acc_at_5": 53.54,
+            "java_easy_acc_at_1": 19.94,
+            "java_easy_acc_at_3": 53.91,
+            "java_hard_acc_at_1": 13.07,
+            "java_hard_acc_at_3": 31.28,
+            "java_hard_acc_at_5": 44.52
+          }
+        },
+        "result_metrics_by_language_difficulty": {
+          "java/easy": {
+            "rows": 12000,
+            "context_ledger": {
+              "acc_at_1": 0.177,
+              "acc_at_3": 0.46433333
+            },
+            "official_jaccard": {
+              "acc_at_1": 0.18508333,
+              "acc_at_3": 0.51408333
+            }
+          },
+          "java/hard": {
+            "rows": 12000,
+            "context_ledger": {
+              "acc_at_1": 0.10908333,
+              "acc_at_3": 0.26666667,
+              "acc_at_5": 0.39733333
+            },
+            "official_jaccard": {
+              "acc_at_1": 0.10466667,
+              "acc_at_3": 0.27616667,
+              "acc_at_5": 0.42483333
+            }
+          },
+          "python/easy": {
+            "rows": 11998,
+            "context_ledger": {
+              "acc_at_1": 0.17202867,
+              "acc_at_3": 0.41665278
+            },
+            "official_jaccard": {
+              "acc_at_1": 0.20495083,
+              "acc_at_3": 0.51725288
+            }
+          },
+          "python/hard": {
+            "rows": 12000,
+            "context_ledger": {
+              "acc_at_1": 0.11541667,
+              "acc_at_3": 0.27133333,
+              "acc_at_5": 0.37558333
+            },
+            "official_jaccard": {
+              "acc_at_1": 0.11941667,
+              "acc_at_3": 0.29625,
+              "acc_at_5": 0.4385
+            }
+          }
+        },
+        "run_wall_seconds_this_invocation": 388.8936800999945,
+        "resumed_from_prediction_checkpoint": true,
+        "predictions_sha256": "c266a8494edcd78f575206950a170ecad18588ae8eeeb16eb28c2dd6cfca803d",
+        "runner_sha256": "575254407be892a8d7cbc1d083adc696b3a93d72903ff0cfafb85ad9a57a955e",
+        "comparability": "Wrench and Jaccard use the same 47,998 valid rows from the pinned 48K-row HF release; both omit the two out-of-range gold-index rows. The current client calls ContextLedger.assemble, not ContextLedger.search. Published UniXcoder and InstructOR scores use the paper's original 72K-row release and are reference-only.",
+        "runner": "run_repobench_r.py",
+        "run_path": "external/repobench-r/runs/wrench-context-ledger-v1/",
+        "summary_path": "external/repobench-r/runs/wrench-context-ledger-v1/summary.json"
+      }
+    }
+  ],
+  "not_selected_external_suites": [
+    {
+      "id": "bfcl-v4-irrelevance-only-slice",
+      "reason": "Prior diagnostic only. The selected 240 rows all have no-call gold labels and offer no Wrench-allowlisted functions; always-abstain scores 100 percent while Wrench scored 61.7 percent."
+    },
+    {
+      "id": "toolbehonest-level-1",
+      "reason": "Prior diagnostic only. All 700 menus are outside Wrench allowlist, so generic solvability labels do not equal operational acceptance. Direct Qwen comparisons are retained in this receipt."
+    },
+    {
+      "id": "repobench-r",
+      "reason": "Prior diagnostic only. The client route does not call ContextLedger.search, and ContextLedger trails official Jaccard on most metrics. The complete run remains preserved."
+    },
+    {
+      "id": "terminal-bench-and-intercode",
+      "reason": "Require arbitrary shell execution outside Wrench six-action authority."
+    },
+    {
+      "id": "toolbench",
+      "reason": "Broad REST APIs and multi-step execution exceed the bounded action set."
+    },
+    {
+      "id": "tau-bench-and-mcp-atlas",
+      "reason": "Transactional and multi-server workflows exceed Wrench bounded read/review authority."
+    },
+    {
+      "id": "agentabstain",
+      "reason": "Official score requires completing tasks across broad stateful environments and mutations outside Wrench authority."
+    },
+    {
+      "id": "slm-bench",
+      "reason": "General language quality and environmental impact do not directly measure Wrench release gates."
+    },
+    {
+      "id": "xlam-evaluation-and-smolagents-evals",
+      "reason": "Useful outside model references, but their broad API or framework-specific task collections do not provide a more Wrench-aligned independent scorecard."
+    },
+    {
+      "id": "aider-polyglot",
+      "reason": "Excluded from the showcase slate because its primary outcome depends on patch generation and test execution, which does not cleanly measure Wrench's bounded read-only strengths; the separate 44-case proposal diagnostic emitted invalid JSON 44/44.",
+      "source": "https://aider.chat/docs/leaderboards/",
+      "status": "future_challenge_after_proposal_format_repair"
+    }
+  ],
+  "comparison_rules": [
+    "Use the exact public task release, evaluator, case IDs, and fixed budgets for Wrench and outside baselines before claiming a direct comparison.",
+    "Published leaderboard scores from a different split, prompt, harness, or downstream agent are reference-only.",
+    "Preserve the Wrench verifier, six-action allowlist, read-only exploration boundary, and review-only patch boundary.",
+    "Keep retrieval-only quality distinct from downstream issue success, and keep component results distinct from the internal three-arm product replay.",
+    "Do not train or tune on public test splits or the sealed Wrench final split.",
+    "Record exact model, tokenizer, head, quantization, dataset, evaluator, and harness hashes with every run.",
+    "Keep at least 10% host RAM and 10% VRAM free during all evaluation runs.",
+    "Retain and report prior negative or poorly matched diagnostics; do not hide or replace their results when adding the new selected slate.",
+    "Choose suites by Wrench authority and metric fit before seeing Wrench results; report every selected benchmark, including negative results, without post-score substitution."
+  ],
+  "showcase_order": [
+    "agent-retrieval-bench-v2",
+    "codescalebench-v1-mixed371",
+    "swe-explore-bench",
+    "contextbench"
+  ],
+  "selection_guard": "Prioritize benchmark-task fit to Wrench read-only retrieval, context value, and paired tool impact. Freeze the slate before scoring; report all selected results, including negative ones. Published rows are references only. A direct outside-model comparison requires matched task IDs, model, prompt, harness, parser, budget, and scoring path.",
+  "progress_snapshot": {
+    "updated_local": "2026-09-23 06:38 MDT",
+    "contextbench_full_run": "193/500 corrected canonical-module rows saved; active; pre-BM25 component",
+    "swe_explore_full_run": "219 detail rows flushed; 236/848 scorer completions observed around 06:38 MDT; active; pre-BM25 component",
+    "arb_bm25_candidate": "427/427 complete; paired BCY@8K gain over previous Wrench path",
+    "system_one_v3": "failed zero-unsafe and Qwen3.5 27B stretch gates; candidate disabled"
+  }
+}

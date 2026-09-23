@@ -1,7 +1,7 @@
 # Goal: Wrench productive value
 
 Status: active
-Updated: 2026-09-22
+Updated: 2026-09-23
 Owner: repository agent, under human product authority
 
 ## Product mission and hardware direction
@@ -165,6 +165,32 @@ authorized by the human product owner in this conversation on 2026-09-22.
    of the consumed suite; that is not a fresh pass. Human label review and
    real-workflow validation are still absent. The evidence and frozen head
    are in [owner-approved training](phases/system-one-authorized-training-20260923/README.md).
+
+11. **Benchmark-led model improvement against outside models**
+
+   Human direction, 2026-09-23: build a dedicated evaluation phase with five
+   scorecards, one internal and four external, and use the measured gaps to
+   improve Wrench in its bounded read-only developer-tool categories. The
+   primary comparison target is Qwen3.5 9B on frozen, case-matched tasks;
+   Qwen3.5 27B is a stretch target. The selected external suites are Agent
+   Retrieval Bench V2 (fixed-budget repository retrieval), CodeScaleBench
+   (paired downstream workflow impact), SWE-Explore-Bench (ranked file/line
+   exploration), and ContextBench (coding-agent context quality). These four
+   have clear public metrics and outside-model/system references while staying
+   closest to Wrench's read-only authority. Keep every dataset pin, adapter,
+   run, metric, and comparison receipt in
+   [the dedicated benchmark phase](phases/phase-446-agent-benchmark-fit/README.md).
+   The current model-gap evidence and next candidate protocol are in
+   [the model improvement plan](phases/phase-446-agent-benchmark-fit/MODEL_IMPROVEMENT_PLAN.md).
+   Make the target falsifiable by predeclaring primary metrics and reporting
+   paired uncertainty. A published leaderboard result is a reference only
+   until Wrench and the outside model use the same tasks, prompts, harness,
+   budgets, and scoring path. Report every selected result, including negative
+   results. Do not tune against the sealed final split or claim superiority
+   from mismatched published numbers. Preserve the Wrench verifier and
+   read-only authority boundary. Paid provider calls, production enablement,
+   and changes to unrelated skipped workstreams are not authorized by this
+   evaluation direction.
 
 ## Explicitly skipped
 
@@ -396,9 +422,32 @@ escalates to the human.
 
 ## Builder execution record
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
 ### Progress and validation
+
+- Phase 446 benchmark slate has five total scorecards: one internal paired
+  workflow-utility scorecard and four external suites selected for fixed-budget
+  repository retrieval (ARB V2), paired workflow impact (CodeScaleBench),
+  ranked file/line exploration (SWE-Explore-Bench), and coding-agent context
+  quality (ContextBench). The external evaluators publish clear metrics and
+  outside-model/system references; published rows remain reference-only until
+  same-task, same-interface reruns. ARB V2 is the strongest current external
+  result: the Wrench BM25 component gained BCY@8K with a paired positive
+  interval, while remaining below published Qwen embedding references. The
+  latest V5 gate comparison is diagnostic, not valid primary evidence: the
+  internal labels treated requests for untracked Git paths as eligible even
+  though the executor omits them. Corrected V6 trained and scored 54/80 versus
+  Qwen3.5 9B's 48/80 on the tracked-only split, with zero versus 32 unsafe
+  continuations. Its paired accuracy interval includes zero and it accepted
+  only 6/32 eligible requests, so utility remains unproven. Qwen3.5 27B scored
+  77/80 and beat Wrench's 54/80 by 28.75 points (paired 95% interval
+  [+21.25, +36.25]); it made two unsafe accepts versus Wrench's zero. The
+  V7 tracked-scope candidate is now training from a fresh 274-row calibration
+  and 80-row development split with explicit executor capability text. V5
+  does not count as primary evidence. SWE-Explore and ContextBench pre-BM25
+  runs remain in progress. See [Phase 446](phases/phase-446-agent-benchmark-fit/README.md)
+  for the oracle audit and current evidence.
 
 - Latest full regression after Phase 441: 341 passed with 18 existing Windows
   asyncio deprecation warnings. Phase 439's focused validator and canary

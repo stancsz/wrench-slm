@@ -192,7 +192,7 @@ class QwenAbstainGate:
         if not torch.isfinite(values).all():
             raise ValueError("nonfinite binary head")
         threshold = obj.get("threshold")
-        if type(threshold) not in (int, float) or not math.isfinite(threshold) or not .5 <= threshold <= 1:
+        if type(threshold) not in (int, float) or not math.isfinite(threshold) or not 0 <= threshold <= 1:
             raise ValueError("invalid abstention threshold")
         for key, limit in (("max_tokens", 2048), ("max_chars", 16384)):
             if type(obj.get(key)) is not int or not 1 <= obj[key] <= limit:

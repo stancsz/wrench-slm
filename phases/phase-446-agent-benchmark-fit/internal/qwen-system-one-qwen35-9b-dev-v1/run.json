@@ -1,0 +1,146 @@
+{
+  "benchmark": "Wrench Binary System One 44-case development split",
+  "completed_rows": 88,
+  "completed_utc": "2026-09-23T07:57:27.909731+00:00",
+  "data_sha256": "8070c2c7cb100b2c046763a9f374ae4f670a3e730e7c97b05ffeb340c869bc70",
+  "decoding": {
+    "num_ctx": 8192,
+    "num_predict": 32,
+    "seed": 0,
+    "temperature": 0,
+    "think": false,
+    "top_k": 1
+  },
+  "endpoint": "http://127.0.0.1:11434",
+  "error": "'outside_latency_ms'",
+  "error_type": "KeyError",
+  "external_api_calls": 0,
+  "local_inference_calls": 88,
+  "model_details": {
+    "context_length": 262144,
+    "embedding_length": 4096,
+    "families": [
+      "qwen35"
+    ],
+    "family": "qwen35",
+    "format": "gguf",
+    "parameter_size": "9.7B",
+    "parent_model": "",
+    "quantization_level": "Q4_K_M"
+  },
+  "model_digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+  "model_loaded_before_run": true,
+  "model_name": "qwen3.5:9b",
+  "model_size_bytes": 6594474711,
+  "prompt_adapter": "same-development-cases-and-labels; original Wrench system retained; strict JSON response instruction",
+  "provider_calls": 0,
+  "resources": [
+    {
+      "gpu": {
+        "free_mib": 7468,
+        "total_mib": 16303,
+        "used_mib": 8528
+      },
+      "ram_available_bytes": 18088849408,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:05.166871+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7468,
+        "total_mib": 16303,
+        "used_mib": 8528
+      },
+      "ram_available_bytes": 18096308224,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:05.225047+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7468,
+        "total_mib": 16303,
+        "used_mib": 8528
+      },
+      "ram_available_bytes": 18090733568,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:07.859311+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7468,
+        "total_mib": 16303,
+        "used_mib": 8528
+      },
+      "ram_available_bytes": 18084495360,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:10.440470+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7468,
+        "total_mib": 16303,
+        "used_mib": 8528
+      },
+      "ram_available_bytes": 18118995968,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:13.065633+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7453,
+        "total_mib": 16303,
+        "used_mib": 8543
+      },
+      "ram_available_bytes": 18112782336,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:15.669677+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7450,
+        "total_mib": 16303,
+        "used_mib": 8546
+      },
+      "ram_available_bytes": 18149744640,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:18.240127+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7463,
+        "total_mib": 16303,
+        "used_mib": 8533
+      },
+      "ram_available_bytes": 18136788992,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:20.728614+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7481,
+        "total_mib": 16303,
+        "used_mib": 8515
+      },
+      "ram_available_bytes": 18157330432,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:23.448583+00:00"
+    },
+    {
+      "gpu": {
+        "free_mib": 7478,
+        "total_mib": 16303,
+        "used_mib": 8518
+      },
+      "ram_available_bytes": 18161315840,
+      "ram_total_bytes": 51370344448,
+      "time_utc": "2026-09-23T07:57:25.808796+00:00"
+    }
+  ],
+  "schema": "wrench.system-one-development-outside-model-comparison.v1",
+  "sealed_final_read": false,
+  "started_utc": "2026-09-23T07:57:05.219851+00:00",
+  "status": "FAILED",
+  "tool_execution": false,
+  "training_or_tuning": false,
+  "wrench_development_predictions_sha256": "363405d95c8cde9927d544e1bdbc0e3096f63d79ef9cc9f39ee3be80172ecf60"
+}

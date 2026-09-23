@@ -1,0 +1,18 @@
+{
+  "schema": "wrench.system-one-candidate-attempt.v1",
+  "status": "REJECTED_BEFORE_SCORING",
+  "candidate": "system-one-v2",
+  "data_path": "internal/system-one-v2-data/",
+  "data_manifest_status": "rejected_exact_overlap_with_old_development",
+  "training_process_session": 99879,
+  "observed_progress": "64/206 training/calibration feature encodings",
+  "reason": "Two unique positive Git status prompts in the trainer input had exact matches in the previously scored 44-case development set. This overlap was discovered before candidate scoring.",
+  "sealed_final_split_read": false,
+  "candidate_scored": false,
+  "outside_model_compared": false,
+  "head_artifact_created": false,
+  "base_model_weights_modified": false,
+  "production_enabled": false,
+  "corrected_data_path": "internal/system-one-v2-data-clean/",
+  "next_run_output": "internal/system-one-v2/train-run-002/"
+}

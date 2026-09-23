@@ -1,0 +1,68 @@
+{
+  "schema": "wrench.system-one-v2-authored-data.v1",
+  "status": "rejected_exact_overlap_with_old_development",
+  "rejection_reason": "The initial calibration pool retained two unique positive Git status prompts that had already appeared in the scored 44-case development set. The first head-training attempt was interrupted before scoring. Do not use this dataset for candidate claims.",
+  "source_calibration": "evals\\wrench-expanded-v2\\calibration.jsonl",
+  "source_calibration_sha256": "36818832f1c2dfdac3380852595e79e5f46d74192f1efcbc20c29aa9ff1df52e",
+  "source_old_development_sha256_for_overlap_audit_only": "8070c2c7cb100b2c046763a9f374ae4f670a3e730e7c97b05ffeb340c869bc70",
+  "source_old_development_used_for_training_or_labels": false,
+  "sealed_final_split_read": false,
+  "authoring_method": "Deterministic authored prompts with explicit typed eligibility labels. No provider or public test data used.",
+  "calibration": {
+    "rows": 216,
+    "sha256": "a1b5f7b37724ae060067e98dc8a711b728fc6266f27883794cf40f6aa5d2a2d2",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 72,
+        "abstain": 30
+      },
+      "health_read": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "literal_search": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "out_of_domain": {
+        "abstain": 24
+      },
+      "patch_draft": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_file": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_lines": {
+        "accepted": 12,
+        "abstain": 6
+      }
+    },
+    "new_git_status_template_groups": 18,
+    "new_git_status_accepted_prompts": 60,
+    "new_git_status_abstention_prompts": 24,
+    "all_git_status_calibration_groups_have_both_labels": true
+  },
+  "development": {
+    "rows": 80,
+    "sha256": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 32,
+        "abstain": 32
+      },
+      "out_of_domain": {
+        "abstain": 16
+      }
+    },
+    "template_groups": 20,
+    "git_status_template_groups": 16,
+    "out_of_domain_template_groups": 4,
+    "exact_prompt_overlap_with_calibration": 0,
+    "exact_prompt_overlap_with_scored_44_case_development": 0,
+    "template_group_overlap_with_calibration": 0
+  },
+  "base_system_prompt_sha256": "a3e81e8bbea0b15635738ffdac112e57255e52bccd9c7b8bbfa43176e485cc5b"
+}

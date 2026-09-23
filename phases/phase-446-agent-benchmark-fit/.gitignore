@@ -1,0 +1,12 @@
+external/**/.cache/
+external/**/_scratch/
+external/**/data/
+external/**/upstream/
+external/**/upstream-code/
+external/**/runs/
+**/__pycache__/
+.venv/
+_swe_tmp/
+internal/system-one-v4/runtime/
+# This comparison is still running. Keep its partial output out of commits.
+internal/system-one-v7/qwen35-27b-dev-v1/

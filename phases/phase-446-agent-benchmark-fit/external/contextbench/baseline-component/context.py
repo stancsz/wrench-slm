@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -103,12 +102,10 @@ class ContextLedger:
         self._segments: dict[str, ContextSegment] = {}
         self._source_orders: dict[int, str] = {}
         self._units: dict[str, list[str]] = defaultdict(list)
-        self._inverted_index: dict[str, dict[str, int]] = defaultdict(dict)
+        self._inverted_index: dict[str, set[str]] = defaultdict(set)
         self._logical_token_count = 0
         self._token_count_modes: set[str] = set()
         self._session_hash: str | None = None
-        self._indexed_token_total = 0
-        self._indexed_lengths: dict[str, int] = {}
 
     @property
     def logical_token_count(self) -> int:
@@ -213,12 +210,8 @@ class ContextLedger:
         self._session_hash = None
         unit_key = unit_id or f"segment:{segment_id}"
         self._units[unit_key].append(segment_id)
-        tokens = _tokens(text)
-        term_frequencies = Counter(tokens)
-        self._indexed_token_total += len(tokens)
-        self._indexed_lengths[segment_id] = len(tokens)
-        for term, frequency in term_frequencies.items():
-            self._inverted_index[term][segment_id] = frequency
+        for term in set(_tokens(text)):
+            self._inverted_index[term].add(segment_id)
         return segment
 
     def add_summary(
@@ -260,35 +253,17 @@ class ContextLedger:
         return sorted((self._segments[item] for item in self._units[unit_id]), key=lambda item: item.source_order)
 
     def search(self, query: str, *, limit: int = 32) -> list[ContextSegment]:
-        """Return BM25-ranked indexed lexical matches without rescanning text."""
+        """Return indexed lexical matches without rescanning every segment."""
 
         if not isinstance(query, str):
             raise ContextSelectionError("query must be a string")
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 10_000:
             raise ContextSelectionError("invalid search limit")
         terms = Counter(_tokens(query))
-        if not terms:
-            return []
-        document_count = len(self._segments)
-        average_length = self._indexed_token_total / max(1, document_count)
-        k1 = 1.2
-        b = 0.75
-        scores: dict[str, float] = defaultdict(float)
-        for term, query_frequency in terms.items():
-            posting = self._inverted_index.get(term, {})
-            document_frequency = len(posting)
-            if not document_frequency:
-                continue
-            inverse_document_frequency = math.log1p(
-                (document_count - document_frequency + 0.5) / (document_frequency + 0.5)
-            )
-            for segment_id, term_frequency in posting.items():
-                document_length = self._indexed_lengths[segment_id]
-                normalization = k1 * (1.0 - b + b * document_length / max(1.0, average_length))
-                term_score = inverse_document_frequency * (
-                    term_frequency * (k1 + 1.0) / (term_frequency + normalization)
-                )
-                scores[segment_id] += query_frequency * term_score
+        scores: Counter[str] = Counter()
+        for term, weight in terms.items():
+            for segment_id in self._inverted_index.get(term, ()):
+                scores[segment_id] += weight
         return sorted(
             (self._segments[segment_id] for segment_id in scores),
             key=lambda item: (-scores[item.segment_id], -item.source_order, item.segment_id),

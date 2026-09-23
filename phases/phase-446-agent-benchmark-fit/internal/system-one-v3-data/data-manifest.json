@@ -1,0 +1,67 @@
+{
+  "schema": "wrench.system-one-v3-authored-data.v1",
+  "status": "frozen_before_candidate_training",
+  "base_v2_calibration_manifest": "internal/system-one-v2-data-clean/data-manifest.json",
+  "base_v2_calibration_sha256": "24b85564c532a7c4fe57d4ee1e11c413657c64935a456088095a65624e168534",
+  "previous_v2_development_used_for_labels": false,
+  "previous_v2_development_sha256_for_overlap_audit_only": "ce0a279fec1c8105201e6ec84f7bd7bc623e629a58b792c0ffeaffd5e9c5e855",
+  "sealed_final_split_read": false,
+  "authoring_method": "Authored, explicit typed eligibility labels targeting boundary confusions, plus new independent development prompts; no provider or public test data.",
+  "calibration": {
+    "rows": 252,
+    "sha256": "7d14dcdc783df0753c2e086fcdb84339aea0c69c205e8a2a529a471bcfb3146f",
+    "family_label_counts": {
+      "git_read_status": {
+        "abstain": 54,
+        "accepted": 84
+      },
+      "health_read": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "literal_search": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "out_of_domain": {
+        "abstain": 24
+      },
+      "patch_draft": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_file": {
+        "accepted": 12,
+        "abstain": 6
+      },
+      "read_lines": {
+        "accepted": 12,
+        "abstain": 6
+      }
+    },
+    "new_boundary_templates": 24,
+    "new_boundary_positive_rows": 24,
+    "new_boundary_abstain_rows": 24
+  },
+  "development": {
+    "rows": 80,
+    "sha256": "df9e79c520e2176b89cf1193efbe5b5d6cbb6e97bfc190596d0530373d64805d",
+    "family_label_counts": {
+      "git_read_status": {
+        "accepted": 32,
+        "abstain": 32
+      },
+      "out_of_domain": {
+        "abstain": 16
+      }
+    },
+    "template_groups": 20,
+    "exact_prompt_overlap_with_calibration": 0,
+    "exact_prompt_overlap_with_v2_development": 0,
+    "template_group_overlap_with_calibration": 0
+  },
+  "old_44_case_development_used_for_labels": false,
+  "old_44_case_exact_prompt_overlap_with_calibration_and_development": 0,
+  "old_44_case_development_used_for_overlap_audit_only": true,
+  "old_44_case_development_sha256_for_overlap_audit_only": "8070c2c7cb100b2c046763a9f374ae4f670a3e730e7c97b05ffeb340c869bc70"
+}
