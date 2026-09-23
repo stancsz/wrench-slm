@@ -1,0 +1,92 @@
+{
+  "attempt": 3,
+  "authorization": "Human approved this exact test-only local soak in the active task.",
+  "elapsed_seconds": 54.527,
+  "failure": null,
+  "finished_at_utc": "2026-09-22T23:40:18.499461+00:00",
+  "identity": {
+    "git": {
+      "head": "b383306771e7d434397c539711f30e4e678455e9",
+      "tracked_worktree_dirty": true
+    },
+    "independent_model_verifier": "not invoked; local HTTP response fields checked by this runner",
+    "model": "not loaded; WrenchWorker receives tokenizer=None and model=None",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.0",
+    "source_sha256": {
+      "focused_test_sha256": "bbf6263ab92e53f0062f530d6383eef07d5426c12d4f99f6f8fdeeddb5fd9647",
+      "q4_contract_sha256": "e954023bb077c0507fd9a53fed1d2e3dcb71aa0f2ccceb667d5edf23b6564d71",
+      "runner_sha256": "07c2694c311af141a0774c8d35c0cdaa6fedb01f74f4051babbf89317fe341e5",
+      "server_sha256": "b10e4513db5210528d147181cf2672a331a0bd4cec3042eeb69e57a35f74d41b"
+    }
+  },
+  "isolation": {
+    "bind": "127.0.0.1",
+    "credentials_accessed": false,
+    "ephemeral_port": 52172,
+    "model_calls": 0,
+    "provider_requests": 0,
+    "request_payloads_or_prompts_persisted": false,
+    "test_only_callback_injection": true,
+    "upstream_url_configured": false
+  },
+  "limits": {
+    "concurrency": 8,
+    "duration_seconds": 300.0,
+    "minimum_ram_and_vram_reserve_fraction": 0.1,
+    "requests": 200
+  },
+  "phase": 435,
+  "resources": {
+    "final_snapshot": {
+      "gpus": [
+        {
+          "free_bytes": 15313403904,
+          "free_fraction": 0.8957860516469361,
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 5070 Ti",
+          "total_bytes": 17094934528
+        }
+      ],
+      "ram": {
+        "free_bytes": 27776454656,
+        "free_fraction": 0.5407099164794761,
+        "total_bytes": 51370344448
+      }
+    },
+    "minimum_observed_gpu_free_fraction_by_name": {
+      "NVIDIA GeForce RTX 5070 Ti": 0.8954
+    },
+    "minimum_observed_ram_free_fraction": 0.5381,
+    "sampling_interval_seconds": 2.0
+  },
+  "results": {
+    "active_children_after_server_close": [],
+    "active_children_before_server_close": [],
+    "callback_child_launches": 200,
+    "failure_observations": [],
+    "latency_ms": {
+      "max": 10523.871,
+      "median": 1277.622,
+      "min": 377.625,
+      "p95": 6656.763
+    },
+    "requests_cancelled": 0,
+    "requests_failed": 0,
+    "requests_started": 200,
+    "requests_succeeded": 200,
+    "router_status": {
+      "attempts": 200,
+      "bypass_reason": null,
+      "circuit_open": false,
+      "config_hash": "c227827033156cfcc8d6011990a6b8a7ce095e274a3ee1979ebce8688e9ba921",
+      "enabled": true,
+      "failure_threshold": 2,
+      "failures": 0,
+      "max_attempts": 200
+    }
+  },
+  "schema": "wrench.gate-e-router-soak.v1",
+  "started_at_utc": "2026-09-22T23:39:23.969809+00:00",
+  "status": "PASS"
+}

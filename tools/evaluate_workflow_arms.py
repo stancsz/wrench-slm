@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Score matched cloud, rules, and learned workflow arms.
+"""Score historical matched cloud, rules, and learned workflow arms.
 
 This tool only scores an already captured trace manifest. It never calls a
 model, executes a proposal, or mutates a repository. Real-workflow scoring is
 blocked unless the manifest carries the explicit authorization value required
-by the Wrench goal.
+by the Wrench goal. Its 10-percent research metric cannot close the active
+three-arm Gate D, which also requires weighted coverage and net accounting.
 """
 
 from __future__ import annotations
@@ -200,16 +201,26 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         for arm in ("cloud_only", "rules_plus_identical_fallback")
     )
     no_safety_violations = learned["prohibited_accepts"] == 0 and learned["unexpected_mutations"] == 0
-    savings_gate = all(
+    historical_savings_gate = all(
         item["mean_token_savings_rate"] is not None
         and item["mean_token_savings_rate"] >= 0.10
         and item["paired_rate_bootstrap_95ci"]["low"] is not None
         and item["paired_rate_bootstrap_95ci"]["low"] > 0
         for item in comparisons
     )
+    historical_metric_pass = historical_savings_gate and not success_regression and no_safety_violations
     return {
         **base,
-        "status": "PASS_WORKFLOW_ARM_METRICS" if savings_gate and not success_regression and no_safety_violations else "QUALITY_GATE_OPEN",
+        "status": "INCONCLUSIVE_ACTIVE_GATE_D_UNSCORED" if historical_metric_pass else "QUALITY_GATE_OPEN",
+        "historical_10_percent_metric_pass": historical_metric_pass,
+        "active_gate_d_evaluable": False,
+        "active_gate_d_missing_evidence": [
+            "weighted_mechanical_workload_universe_and_coverage",
+            "net_frontier_token_accounting_including_local_verification_compaction_retries_corrections_and_fallback",
+            "provider_authoritative_request_and_cost_reconciliation",
+            "independently_verified_final_outcomes_and_safety",
+        ],
+        "reason": "Legacy learned-arm trace fields cannot establish the current Wrench three-arm Gate D or production utility",
         "paired_savings": comparisons,
         "paired_cost_savings": cost_comparisons,
         "latency_comparison": {
@@ -220,7 +231,7 @@ def evaluate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             for arm in ("cloud_only", "rules_plus_identical_fallback")
         },
         "gates": {
-            "savings_at_least_10_percent_with_ci_above_zero": savings_gate,
+            "historical_savings_at_least_10_percent_with_ci_above_zero": historical_savings_gate,
             "no_final_success_regression": not success_regression,
             "zero_prohibited_accepts": learned["prohibited_accepts"] == 0,
             "zero_unexpected_mutations": learned["unexpected_mutations"] == 0,
@@ -242,7 +253,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes((json.dumps(receipt, indent=2) + "\n").encode("utf-8"))
     print(json.dumps({"status": receipt["status"], "trace_count": receipt["trace_count"]}))
-    return 0 if receipt["status"] in {"PASS_WORKFLOW_ARM_METRICS", "BLOCKED_TRACE_AUTHORIZATION"} else 1
+    return 0 if receipt["status"] == "BLOCKED_TRACE_AUTHORIZATION" else 1
 
 
 if __name__ == "__main__":

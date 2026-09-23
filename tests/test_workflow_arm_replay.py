@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
 
-from tools.run_workflow_arm_replay import assemble
+from tools.run_workflow_arm_replay import assemble, main
 
 
 def _row(identifier: str, family: str, *, tokens: int, cost: float, latency: int, retries: int = 0) -> dict:
@@ -62,7 +63,9 @@ def test_replay_assembler_scores_authorized_matched_receipts(tmp_path: Path):
         source_scope="test-fixture",
     )
 
-    assert evaluation["status"] == "PASS_WORKFLOW_ARM_METRICS"
+    assert evaluation["status"] == "INCONCLUSIVE_ACTIVE_GATE_D_UNSCORED"
+    assert evaluation["historical_10_percent_metric_pass"] is True
+    assert evaluation["active_gate_d_evaluable"] is False
     assert evaluation["paired_cost_savings"][0]["mean_cost_savings_rate"] == pytest.approx(0.4)
     assert evaluation["latency_comparison"]["cloud_only"]["learned_p95_ms"] == 500.0
 
@@ -74,3 +77,26 @@ def test_replay_assembler_rejects_unmatched_ids(tmp_path: Path):
 
     with pytest.raises(ValueError, match="matched trace IDs differ"):
         assemble(cloud, rules, learned)
+
+
+def test_replay_cli_cannot_exit_success_for_legacy_metric_pass(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    cloud = _write(tmp_path / "cloud.jsonl", [_row("one", "read_file", tokens=100, cost=0.02, latency=1000)])
+    rules = _write(tmp_path / "rules.jsonl", [_row("one", "read_file", tokens=90, cost=0.018, latency=800)])
+    learned = _write(tmp_path / "learned.jsonl", [_row("one", "read_file", tokens=0, cost=0.0, latency=500)])
+    output_dir = tmp_path / "output"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_workflow_arm_replay.py", "--cloud", str(cloud), "--rules", str(rules),
+            "--learned", str(learned), "--output-dir", str(output_dir),
+            "--authorization", "approved_real_workflow", "--capture-id", "fixture",
+            "--captured-at", "2026-09-22T00:00:00Z", "--reviewer", "fixture",
+            "--source-scope", "test-only fixture",
+        ],
+    )
+    assert main() == 1
+    receipt = json.loads((output_dir / "evaluation.json").read_text(encoding="utf-8"))
+    assert receipt["status"] == "INCONCLUSIVE_ACTIVE_GATE_D_UNSCORED"
+    assert receipt["historical_10_percent_metric_pass"] is True
+    assert receipt["quality_claim"] is False

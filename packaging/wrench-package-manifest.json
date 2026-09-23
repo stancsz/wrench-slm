@@ -29,6 +29,7 @@
     "wrench_runtime/core.py",
     "wrench_runtime/mechanical.py",
     "wrench_runtime/patching.py",
+    "wrench_runtime/handoff.py",
     "wrench_runtime/worker.py",
     "wrench_runtime/sitecustomize.py",
     "wrench_worker.py",

@@ -1,0 +1,18 @@
+{
+  "template": true,
+  "schema": "wrench.paid-canary-child-contract.v2",
+  "parent_contract_id": "wrench-slm-productive-value-2026-09-22",
+  "parent_contract_sha256": "replace-with-current-parent-contract-sha256",
+  "decision": "human.approve_commit",
+  "status": "PENDING",
+  "approved_by": "replace-with-human-approver",
+  "approval_reference": "replace-with-human-decision-reference",
+  "workload_sha256": "a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce",
+  "endpoint": "http://localhost:4000/v1",
+  "model": "replace-with-verified-gateway-alias",
+  "expected_provider_model": "replace-with-verified-provider-model-identity",
+  "repetitions": 1,
+  "max_spend_usd": 500.0,
+  "spend_cap_kind": "provider_hard_cap",
+  "spend_cap_reference": "replace-with-verifiable-provider-cap-reference"
+}

@@ -61,7 +61,21 @@
       }
     ],
     "bounds": {
-      "scope": "Develop and verify the deterministic hybrid Wrench worker, its independent verifier, two-state client protocol, three named client surfaces, paired productive-value canary, targeted fallback handlers, and sustained local operational behavior.",
+      "scope": "Develop and verify the deterministic hybrid Wrench worker, its independent verifier, two-state client protocol, three named client surfaces, paired productive-value canary, targeted fallback handlers, and sustained local operational behavior. Human approval covers exactly one paid paired canary with one repetition using workload SHA-256 a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce through http://localhost:4000/v1 using the OpenRouter MiniMax M3 comparison route, capped at USD 500, only after a provider-enforced cap with explicit headroom for delayed enforcement, the exact gateway alias, separate expected provider-model identity, authoritative cost-export retrieval path, and a hash-bound schema-v3 child contract are verified. If the provider cost source is daily aggregate only, its child contract must bind a dedicated project and exclusive API key for every complete included billing bucket, with separately captured request IDs and usage, a complete daily response with has_more false and no remaining page cursor, and human-reviewed isolation and spend-headroom evidence. The aggregate export must not be represented as request-level cost or model evidence.",
+      "paid_canary_route_allowance": {
+        "schema": "wrench.paid-canary-route-allowance.v1",
+        "decision": "human.approve_commit",
+        "status": "APPROVED",
+        "approved_by": "human",
+        "approval_reference": "Q4 human route choice on 2026-09-22: use MiniMax as comparison via OpenRouter MiniMax M3",
+        "routes": [
+          {
+            "endpoint": "http://localhost:4000/v1",
+            "gateway_model_alias": "openrouter",
+            "expected_provider_model": "openrouter/minimax/minimax-m3"
+          }
+        ]
+      },
       "permissions": [
         "read the repository and approved redacted evaluation inputs",
         "make reversible changes inside the repository",
@@ -86,7 +100,7 @@
         "client receipts that contain no credentials or unrestricted private data"
       ],
       "token_budget": 0,
-      "monetary_budget": 0,
+      "monetary_budget": 500,
       "max_retries": 2
     },
     "evidence_required": [
@@ -94,11 +108,16 @@
       "git diff --check",
       "relevant automated tests",
       "hash-bound source, artifact, tokenizer, runtime, and verifier identities",
-      "paired baseline and Wrench workflow receipts",
-      "frontier-token, local-token, cost, latency, retry, correction, abstention, and fallback accounting",
-      "zero prohibited accepts",
-      "zero unexpected mutations",
-      "sustained concurrency, cancellation, timeout, recovery, and circuit-breaker receipts",
+      "Gate A receipt: zero schema errors, typed-oracle matches for eligible cases, and exact abstention reasons for out-of-boundary cases",
+      "Gate B receipt: zero prohibited accepts, unexpected side effects, or unverified boundary escapes",
+      "Gate C teacher-only comparison: final success and safety outcomes, eligible correct acceptance and overall correct outcomes with paired 95% confidence intervals, and median and p95 successful eligible-task latency improvements of at least 50%",
+      "Gate D matched three-arm replay across stronger-model-only, rules-plus-fallback, and Wrench-plus-fallback, covering at least 90% of weighted mechanical-workload frontier-token mass and at least 95% net frontier-token savings after all overhead, with zero material final-success regression",
+      "Gate E ProposalRouter operational receipts for concurrency, cancellation, timeout, and circuit breaking",
+      "bounded two-state protocol receipts for OpenCode, DeepSeek Harness, and Claude Code",
+      "per-request purpose and route attribution for auxiliary model traffic, including automatic title generation",
+      "complete frontier-token, local-token, cost, latency, retry, correction, abstention, verifier, compaction, mutation, and fallback accounting",
+      "paid-cost evidence matching the approved child accounting mode: either exact provider request rows, or a complete official OpenAI daily Costs response with has_more false, buckets filtered and grouped by the child-bound project and API key, exclusive-use evidence, aggregate cost reconciled to the paid receipt through that isolated scope, and request IDs and usage preserved separately",
+      "real-trace evidence for any targeted fallback expansion, with typed scope and independent verification",
       "human decision receipt before promotion, publication, deployment, or spend"
     ],
     "human_checkpoint": {

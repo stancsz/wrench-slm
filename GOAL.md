@@ -4,11 +4,33 @@ Status: active
 Updated: 2026-09-22
 Owner: repository agent, under human product authority
 
+## Product mission and hardware direction
+
+Human product direction, clarified 2026-09-22: **affordable AI for the rest
+of us**, using hardware people already own and aiming to make the software
+free to use.
+
+- Initial audience: people with less than 8 GB of GPU memory.
+- Next hardware milestone: make a useful bounded workflow work well with
+  less than 2 GB of GPU memory, and investigate older phones as a related
+  device target. Phone shared memory is not equivalent to discrete GPU VRAM.
+- Longer-term vision: let friends voluntarily lend one another spare compute.
+
+These are product targets, not verified compatibility or shipped features.
+The current bounded developer-tool worker is the first delivery slice. Its
+paired workflow and safety gates remain in force. Hardware claims must name
+the actual device, available memory, workload, correctness, latency, and
+resource use. Phone feasibility must also account for sustained operation,
+battery, and thermal limits. Shared compute needs its own consent, data-access,
+and revocation design before implementation or promotion as an available tool.
+This direction does not automatically restart the archived model, adapter,
+remote-worker, or packaging experiments listed below.
+
 ## Product outcome
 
 Deliver a trustworthy, bounded Wrench worker that creates measurable value on
-routine developer-tool work. The active goal is productive workflow value,
-not broad model research, hardware portability, or feature completeness.
+routine developer-tool work. The immediate delivery gate is productive
+workflow value; broader hardware milestones follow from that useful slice.
 
 Wrench handles fast, repetitive, verifiable mechanical work. It proposes
 structured read-only or review-only actions, or abstains. An independent
@@ -26,6 +48,10 @@ The North Star is one paired real-workflow canary:
 3. reconcile final success, safety, latency, frontier tokens, local tokens,
    cost, retries, corrections, abstentions, and fallback overhead.
 
+The paired canary is necessary but not sufficient. Final acceptance must also
+meet all five release gates in the active utility contract, including the
+three-arm replay and weighted-workload coverage requirements.
+
 The canary must show no material final-success or safety regression, zero
 prohibited accepts, zero unexpected mutations, meaningful end-to-end latency
 improvement on successful eligible tasks, and at least 95% net frontier-token
@@ -36,7 +62,8 @@ lower teacher-call count is not North Star evidence by itself.
 
 ## Keep and continue
 
-These are the only active workstreams:
+These are the active workstreams. The scoped binary-model addition below was
+authorized by the human product owner in this conversation on 2026-09-22.
 
 1. **Deterministic mechanical worker**
 
@@ -70,6 +97,23 @@ These are the only active workstreams:
 
    Exercise concurrency, cancellation, timeouts, recovery, circuit breaking,
    accounting, and no-mutation behavior over sustained local operation.
+10. **Tiny binary System One model**
+
+   Human direction: "we want a super light weight abstain or not abstain"
+   and "system 1 model". This supersedes the preceding broad OpenJev parity
+   request. Develop and train a local, embedded, single-pass binary classifier.
+   Its only decisions are `abstain` and `not_abstain`; the latter merely
+   continues to the existing proposal/verifier path. It grants no execution
+   authority. Training and local evaluation for this bounded model are now
+   authorized, with the existing 10% RAM/VRAM reserves. No OpenJev weights,
+   paid model calls, remote worker work, or production enablement are included.
+   Use an artifact under 1 MiB and target <=5 ms warm p95 for a bounded short
+   instruction on this host. Record held-out eligibility coverage, unsafe
+   misses, artifact identity, exact input limits, and end-to-end verification.
+   Authored examples establish an experimental checkpoint only; independent
+   real-workflow usefulness and the existing release gates remain required.
+   Keep the existing final evaluation split out of training and tuning.
+   Evidence: [binary System One](phases/binary-system-one-20260922/README.md).
 
 ## Explicitly skipped
 
@@ -78,7 +122,8 @@ new human product decision:
 
 - RTX 5060 Ti verification;
 - private release packaging as a separate workstream;
-- learned free-form routing and LoRA optimization;
+- learned free-form routing and LoRA optimization beyond the explicitly
+  authorized tiny binary classifier above;
 - dense-native 4M attention;
 - stock Ollama, vLLM, and GGUF adapter work;
 - additional synthetic replay work as a primary milestone;
@@ -106,19 +151,31 @@ of dense-native 2M or 4M decoder quality.
 
 ## Active acceptance gates
 
-- **Mechanical correctness:** eligible proposals match typed oracles, and
-  out-of-boundary requests abstain with the correct reason.
-- **Safety:** zero prohibited accepts and zero unexpected mutations.
-- **Client protocol:** OpenCode, DeepSeek Harness, and Claude Code complete a
-  bounded proposal and final-answer flow without free-form execution or loops.
-- **Matched value:** the paired canary reconciles correctness, safety,
-  latency, frontier tokens, local overhead, cost, retries, corrections, and
-  fallback.
-- **Operations:** sustained tests show no silent loss, state leakage,
-  unbounded retry, orphaned worker, fallback loss, or failed cancellation
-  recovery.
-- **Targeted expansion:** new handlers are admitted only when real traces show
-  material fallback value and an independent verifier can bound them.
+- **Gate A, Proposal Semantics:** zero schema errors; eligible cases match
+  typed oracles; out-of-boundary cases match exact expected abstention reasons.
+- **Gate B, Verifier and Authority Bounds:** zero prohibited accepts. Any
+  unexpected side effect or unverified boundary escape is an immediate
+  `FAIL_WRENCH`.
+- **Gate C, Model Comparison versus Full-Expert Teacher:** final task success
+  and safety must not materially regress against teacher-only execution.
+  Report eligible-task correct acceptance and overall correct outcomes with
+  paired 95% confidence intervals. Median and p95 end-to-end latency must
+  improve by at least 50% on successful eligible tasks. Fast refusals do not
+  count as fast completion.
+- **Gate D, Matched Real-Workflow Utility:** replay matched traces across
+  stronger-model-only, rules-plus-fallback, and Wrench-plus-fallback arms.
+  Cover at least 90% of weighted mechanical-workload frontier-token mass and
+  achieve at least 95% net frontier-token savings after local inference,
+  verification, compaction, retries, corrections, and fallback overhead, with
+  zero material final-success regression.
+- **Gate E, Operational and Operational Shadow:** demonstrate robustness under
+  concurrency, cancellation, timeout, and circuit breaking through
+  `ProposalRouter`.
+- **Client protocol:** OpenCode, DeepSeek Harness, and Claude Code each complete
+  the bounded two-state proposal, verification, and hash-bound final-answer
+  flow without free-form execution or repeated proposal loops.
+- **Targeted expansion:** add a handler only when real traces show material
+  fallback value and an independent verifier can bound its authority.
 
 Missing evidence is inconclusive, not a pass. Final acceptance, promotion,
 publication, deployment, and spending remain human decisions.
@@ -132,8 +189,9 @@ publication, deployment, and spending remain human decisions.
   is the active productive-value evidence contract.
 - [WRENCH_LONG_CONTEXT_SERVING_CONTRACT.md](docs/WRENCH_LONG_CONTEXT_SERVING_CONTRACT.md)
   records the active hybrid serving boundary.
-- [AGENTS.md](AGENTS.md) and [AGENTS.local.md](AGENTS.local.md) provide
-  repository and host safety rules.
+- [AGENTS.md](AGENTS.md) provides repository and host safety rules. The
+  ignored `AGENTS.local.md` file contains historical worker-queue procedures
+  and is not part of the active contract.
 - [docs/evidence/GOAL_HISTORY_2026-09-22.md](docs/evidence/GOAL_HISTORY_2026-09-22.md)
   and [docs/archive/2026-09-22/](docs/archive/2026-09-22/) preserve superseded
   plans and historical evidence. They are not active instructions.
@@ -141,10 +199,120 @@ publication, deployment, and spending remain human decisions.
 ## Current status
 
 The deterministic worker, independent verifier, hybrid intake, bounded
-two-state client protocol, and three named client surfaces have current local
-evidence. Local operational tests also exist. The remaining active proof is
-the paired real-workflow canary, latency and timeout repair, targeted fallback
-selection, and sustained operational testing.
+two-state protocol, and three named clients have local evidence. The `200/200`
+operational shadow covers the portable server's mechanical-only path, not
+`ProposalRouter` in the serving lifecycle. Phase 428 contains Windows client
+subprocesses on timeout, but this does not establish serving-path resilience or
+latency improvement.
+
+The paired client runner now checks the saved final answer on both arms. A
+re-audit of the older Phase 389 capture found that OpenCode exited zero without
+the expected heading. The isolated pinned 1.18.32 follow-up returned the
+expected direct answers and all three hybrid client answers. These local
+fixture checks do not establish real-workflow parity or latency. See the
+[saved-answer audit](phases/canary-answer-audit-20260922/README.md) and the
+[pinned-client follow-up](phases/opencode-output-diagnosis-20260922/README.md).
+
+**Release state: not ready.** Gates C and D remain open: there is no adequate
+matched teacher comparison with paired confidence intervals and latency
+distributions, and no complete three-arm replay with weighted coverage and
+verified net savings. The approved test-only `ProposalRouter` path now runs
+through the actual HTTP handler with deterministic child callbacks. Its focused
+and combined server/router tests pass, including concurrent successes and
+failures, exact circuit-threshold enforcement, invocation failure, abrupt
+fake-child exit and router reset, cancellation, deadline termination, trace
+accounting, and worker cleanup.
+This bounded fixture does not establish sustained or
+production-path resilience, so Gate E remains open. Gates A and B have local
+implementation and test evidence, but this active record does not claim their
+release acceptance. Phase 438 hardens schema-v1 router-state restoration and
+tests open-circuit and operator-bypass preservation across router
+reconstruction. This validates the persistence helper only, not model-worker
+process restart or serving-state persistence. Phase 439 adds explicit support
+for OpenAI daily aggregate cost evidence while retaining provider request-row
+evidence, and upgrades paid-canary preflight to schema-v3 child contracts that
+bind the accounting source and required isolation/headroom evidence. Local
+tests do not establish a live project, cap, export, or route identity. The
+Phase 440 inspection confirms router-state recovery is helper-level only. Its
+proposed loopback test-server persistence change awaits a separate Q4 decision
+and has not been implemented. The bounded `minimax-guided`
+experiment passed its one-case answer oracles and captured `63,354` frontier
+tokens, but returned no provider cost. The `$0.0191988` configured-rate
+estimate is not a paid-cost receipt. Session-title calls are auxiliary traffic
+and must be counted in any paired comparison. The approved test-only Gate E implementation and its
+limits are in [Phase 434](phases/phase-434-router-serving-path/README.md).
+Shutdown regression coverage also confirms handler and server cleanup cannot
+double-join or double-close an in-flight fake child.
+Phase 441 adds fail-closed validation for malformed results from the injected
+test-only callback: unknown statuses and abstentions without a reason are
+normalized to a canonical abstention, counted as router failures, and tested
+to open the circuit. Its focused server/router regression passes 43 tests with
+Ruff clean. This closes the malformed-callback defect only; it does not close
+Gate E or change production readiness. See
+[Phase 441](phases/phase-441-router-malformed-callback/README.md).
+Phase 443 reproduced a separate canary authorization gap: a synthetic MiniMax
+child passed under the then-active GPT-6 parent because child route identity
+was not compared with a structured parent allowance. On 2026-09-22 the human
+approved the fail-closed guard and selected OpenRouter MiniMax M3 as the
+comparison route. Phase 444 records the route-bound parent contract and
+validator tests. This closes only the authorization mismatch, not the
+remaining paid-canary prerequisites or any release gate. No provider request
+was made. See [Phase 443](phases/phase-443-parent-route-binding/README.md) and
+the active [Q4 route allowance](COLLABORATION_CONTRACT.json).
+Phase 435 attempt 01 stopped after one nonaccepted response: 28 of 29 started
+requests passed, with no surviving child and safe RAM/VRAM reserves. Attempt
+02 captured 27 accepted responses and two `router_queue_timeout` failures,
+again with no child leak and safe reserves. The one approved retry was run
+with the old five-second proposal and 12-second HTTP timeouts because the
+runner ignored `--help` and started immediately. It therefore did not test the
+approved 20/30-second settings, and that approval was consumed. The runner now
+uses those settings and requires `--run`; help/default invocation are
+non-running. Six focused tests cover metadata capture, receipt preservation,
+and the no-implicit-run guard. On 2026-09-22 the human gave fresh Q4 approval
+for exactly one corrected loopback fake-callback run. Attempt 03 passed all
+200 requests in 54.527 seconds using the approved 20/30-second settings, with
+no callback failures, child leaks, or reserve breaches. It made no
+provider/model calls. This bounded fixture evidence does not close Gate E or
+authorize production routing or another soak. See
+[Phase 435](phases/phase-435-router-soak/README.md).
+
+Phase 433 closed the configured-loopback authorization bypass and recorded a
+fresh local three-client regression, still inconclusive for accounting. This
+turn's full suite passed `324` tests with `18` existing Windows asyncio
+deprecation warnings. Q4 contract validation returned `VALID`. The human
+approved exactly one paid paired canary, one repetition, with a `$500` maximum,
+and clarified that the current loopback gateway route is GPT-6. The active Q4
+parent now records that ceiling and the one-canary scope. This is not itself a
+provider-enforced cap. Phase 436 binds child approval to the active parent hash
+and rejects a child cap above the parent budget before output or network
+activity. Phase 437 also requires a child-bound expected provider model and
+rejects paid-cost receipts whose reported model or charge differs from the
+approved child. Read-only gateway metadata confirms the registered alias
+`current` maps to `openai/current` and reports OpenAI ownership, but does not
+resolve that alias to GPT-6. The user's clarification specifies the GPT-6
+family, but not the Sol, Astra, or Luna variant.
+The provider-enforced cap reference and authenticated cost-export access
+remain unverified.
+The official OpenAI Costs endpoint is now identified, but its daily aggregate
+shape does not contain request IDs, request token usage, or provider-model
+identity. No paid request was made. See
+[Phase 433](phases/phase-433-paid-loopback-child-guard/README.md) and
+[Phase 436](phases/phase-436-parent-budget-and-route-binding/README.md) and
+[Phase 437](phases/phase-437-paid-cost-cap-validation/README.md) and
+[Phase 439](phases/phase-439-openai-cost-export-compatibility/README.md). The next
+release evidence must come from the correctly identified paired canary, the
+broader operational Gate E evidence, and the required three-arm replay, not
+another synthetic score. The human clarified that the intended service on port
+4000 is GPT-6, not MiniMax. Phase 439's read-only API receipt identifies three
+configured GPT-6 aliases, Sol, Astra, and Luna, while `current` remains
+`openai/current` with display name `Current model`. The intended variant awaits
+human selection; no model completion request was made. Phase 403 remains
+historical MiniMax evidence.
+
+Phases 419-432 hardened request attribution, two-state validation, canary
+accounting, and workload coverage. Their deterministic local receipts do not
+establish provider cost or close Gates C and D. Detailed findings remain in
+the per-phase reports and historical archive.
 
 Learned routing remains disabled. The project is active and evidence-gated,
 not approved for production enablement.
@@ -174,3 +342,105 @@ prompt, workload, resource, accounting, failure, and rollback identity. Any
 verifier failure, scope expansion, permission expansion, budget overrun,
 security or privacy concern, unbounded retry, or unresolved disagreement
 escalates to the human.
+
+## Builder execution record
+
+Updated: 2026-09-22
+
+### Progress and validation
+
+- Latest full regression after Phase 441: 341 passed with 18 existing Windows
+  asyncio deprecation warnings. Phase 439's focused validator and canary
+  preflight suites pass 66 tests. Phase 441's focused server/router regression
+  passes 43 tests, and Ruff passes on its changed Python files.
+- Phases 419-432 improved client attribution, two-state answer checks, accounting provenance, and workload coverage. These local and diagnostic receipts do not establish provider cost or close Gates C and D.
+- Phases 391-392 passed the mechanical-only 200-request shadow. Phase 434 added test-only `ProposalRouter` serving-path coverage; Phase 435 attempt 03 passed its bounded fake-callback soak, without closing Gate E.
+- Phase reports preserve the details and failed attempts. Historical turn-by-turn evidence remains in [the evidence archive](docs/evidence/README.md).
+
+### Current evidence
+
+- [Phase 391-392 operational shadow](phases/phase-391-sustained-operational-shadow/README.md) records 200/200 mechanical-only requests. It does not exercise `ProposalRouter`.
+- [Phase 411 routing review](phases/phase-411-router-gate-advisor/README.md) identifies the serving-path gap; the approved test-only integration is in [Phase 434](phases/phase-434-router-serving-path/README.md).
+- [Phases 419-424 client attribution and protocol](phases/phase-419-direct-call-attribution/README.md) preserve local client-window, task-state, and exact-answer evidence. They do not establish paid route accounting.
+- [Phases 425-432 canary and coverage guards](phases/phase-425-canary-status-semantics/README.md) keep incomplete comparisons inconclusive and reject missing workload mass.
+- [Phases 427-429 Windows process containment](phases/phase-427-subprocess-tree-timeout/README.md) record client cleanup evidence, not server-worker resilience.
+- [Phase 433 paid-loopback guard](phases/phase-433-paid-loopback-child-guard/README.md) preserves the pre-approval zero-spend guard; Phase 437 records the later one-canary `$500` Q4 ceiling and its remaining prerequisites.
+- [Phase 435 router soak](phases/phase-435-router-soak/README.md) records two failed attempts and one corrected 200/200 loopback fake-callback pass. The fresh one-run Q4 approval is consumed; no provider/model calls or further soak are authorized.
+- [Phase 438 router-state recovery](phases/phase-438-router-state-recovery/README.md)
+  rejects inconsistent persisted counters, circuit flags, and bypass state,
+  and verifies open-circuit and operator-bypass preservation across helper
+  reconstruction. It does not establish model-worker or serving-process
+  restart recovery.
+- [Phase 436 parent-budget guard](phases/phase-436-parent-budget-and-route-binding/README.md) requires a child approval to bind the exact parent contract hash, rejects spend caps beyond the active Q4 budget, and records parent authorization in receipts. The $500 ceiling remains; the active Q4 parent contract records the later MiniMax route choice and exact binding. Provider dispatch and cost accounting remain unverified.
+- [Phase 437 paid-cost cap and provider-model binding](phases/phase-437-paid-cost-cap-validation/README.md) binds the gateway alias and expected provider model separately in the child contract, enforces the child cap, and requires export rows to match the receipt. It does not prove alias dispatch or export authenticity.
+- [Phase 439 OpenAI aggregate-cost compatibility](phases/phase-439-openai-cost-export-compatibility/README.md) adds native daily aggregate evidence with exact project/key, bucket, isolation, and spend-headroom bindings. It does not prove API access, source authenticity, provider dispatch, or hard-cap enforcement.
+- [Phase 440 router restart-state decision](phases/phase-440-router-server-restart-state/README.md) confirms 24 focused helper/serving tests pass, but server-process state recovery is unproven. A test-only loopback persistence design is awaiting Q4 human choice; no server lifecycle changes have been made.
+- [Phase 441 malformed callback regression](phases/phase-441-router-malformed-callback/README.md) verifies invalid test-only callback results fail closed through the router circuit. It does not exercise the model worker or close Gate E.
+- [Phase 442 MiniMax/OpenRouter credential check](phases/phase-442-minimax-openrouter-credential-check/README.md) confirms both gateway aliases and read-only credential acceptance. It is not a model-completion, cost-export, or provider-cap test.
+- [Phase 443 parent-route binding review](phases/phase-443-parent-route-binding/README.md) records the synthetic route mismatch and Sol's guard recommendation. The active [Q4 parent contract](COLLABORATION_CONTRACT.json) records the human route choice and binds the one-canary scope to OpenRouter MiniMax M3. Local canary and paid-receipt validators reject missing or mismatched child routes. This is authorization evidence only; no provider call was made.
+- [Current client-output audit](phases/opencode-output-diagnosis-20260922/README.md) records the pinned OpenCode repair and remaining direct-baseline/accounting gaps.
+
+### Next decision and stop condition
+
+**Paid canary: approved with prerequisites, not runnable yet.** The human
+approved exactly one paired canary, one repetition, with a maximum spend of
+`$500`, and subsequently selected OpenRouter MiniMax M3 as the comparison
+route. The parent contract now binds the exact tuple `http://localhost:4000/v1`,
+gateway alias `openrouter`, and provider model
+`openrouter/minimax/minimax-m3`. The fail-closed child guard and receipt
+validator require this tuple and the child hash to match the active parent.
+This route decision does not itself start a provider request.
+
+Remain stopped until a provider-enforced cap reference with explicit headroom
+for delayed enforcement and authenticated retrieval of an authoritative
+OpenRouter/MiniMax cost export are verified, and a schema-v3 child contract
+binds the current parent hash, approved workload hash, route tuple, accounting
+mode, one repetition, and maximum spend. The `$500` parent ceiling is not a
+provider-enforced cap. Phase 442's metadata checks establish configured alias
+mapping and credential acceptance only; they do not establish model inference,
+provider cap enforcement, or cost-export availability. If only aggregate costs
+are available, do not represent them as request-level cost or model evidence;
+the child must meet the applicable isolation, complete-bucket, usage, and
+headroom requirements in the Q4 contract. Stop if export coverage is
+incomplete or the hard-limit reserve cannot be justified. Preserve the accepted
+workload, prompt, oracle, and pinned client versions. Phase 436 rejects child
+caps above the parent ceiling, and Phase 437 binds provider-reported costs to
+the child. Phase 440's server-process persistence choice remains a separate
+open decision.
+
+**Gate E: continue only within the approved test boundary.** Phase 434 verifies
+the loopback request handler with deterministic isolated callbacks,
+concurrency, cancellation, timeout, circuit behavior, and cleanup. Phase 435
+attempt 01 failed after 28 accepted requests with no captured fallback reason.
+Attempt 02 failed after 27 accepted requests and captured two
+`router_queue_timeout` responses. No child survived either run and resource
+reserves remained safe. Attempt 02 used the old 5-second proposal and
+12-second HTTP timeouts, not the approved 20/30-second retry settings. The
+runner has since been corrected to those values and now requires `--run` to
+start; help or a bare invocation cannot launch it. The human then gave fresh
+Q4 approval for one corrected loopback fake-callback run. Attempt 03 passed
+200/200 requests with zero failures and safe reserves. The approval is
+consumed. No provider/model call, production route, or further soak is
+authorized. The soak did not exercise the model worker or establish sustained
+production-path operation. Phase 438 verifies only schema-bound router-state
+helper recovery across object reconstruction. Gate E remains open for
+model-worker restart and serving-process recovery, full accounting,
+no-mutation behavior, and sustained operational shadow through the required
+serving lifecycle. Phase 441 closes a malformed-result gap in the test-only
+callback boundary, but does not add restart persistence or production-path
+evidence. Phase 440's recommended opt-in server-state persistence change
+requires a separate Q4 `human.choose_option` decision before editing the
+server lifecycle; its advisor recommendation is not authorization. Keep
+production routing disabled.
+
+**Canary and utility gates.** Preserve and count auxiliary title requests in
+all future comparisons. They are real model traffic and need per-request
+client, purpose, and route attribution plus latency, token, cost, retry,
+correction, abstention, and fallback accounting. A local stub or a single
+paired case cannot establish teacher parity, Gate C confidence intervals, or
+Gate D's weighted coverage and net-savings thresholds. When authorization
+prerequisites are satisfied, evaluate the unchanged real workload and then the
+matched three-arm replay. Stop on missing accounting, provider spend without a
+valid contract, verifier failure, unexpected mutation, prohibited acceptance,
+unbounded retry, or a breached resource reserve. Do not place credentials in
+the repository, packet, or receipt.

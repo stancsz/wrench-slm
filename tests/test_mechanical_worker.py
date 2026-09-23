@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import copy
+
+import pytest
+
 from tools.score_mechanical_worker import evaluate_manifest
 from wrench_harness import execute_model_output
 from wrench_harness.core import json_result
@@ -33,8 +37,11 @@ def _arm(*, frontier_tokens: int, success: bool = True, fallback: bool = False, 
     }
 
 
-def _manifest(traces: list[dict]) -> dict:
-    return {"schema": "wrench.mechanical-worker-traces.v1", "traces": traces}
+def _manifest(traces: list[dict], *, universe: dict | None = None) -> dict:
+    manifest = {"schema": "wrench.mechanical-worker-traces.v1", "traces": traces}
+    if universe is not None:
+        manifest["eligible_workload_universe"] = universe
+    return manifest
 
 
 def test_mechanical_worker_uses_weighted_frontier_mass_not_case_count():
@@ -65,8 +72,55 @@ def test_mechanical_worker_uses_weighted_frontier_mass_not_case_count():
         },
     ]
     receipt = evaluate_manifest(_manifest(traces))
-    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] == 1.0
-    assert receipt["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is True
+    assert receipt["metrics"]["diagnostic_observed_subset_coverage"] == 1.0
+    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] is None
+    assert receipt["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is False
+    assert receipt["status"] == "INCONCLUSIVE_WORKLOAD_UNIVERSE_MISSING"
+
+
+def test_mechanical_worker_counts_missing_universe_cases_against_weighted_coverage():
+    observed = {
+        "id": "case-0",
+        "family": "read_file",
+        "category": "eligible",
+        "model_input_tokens": 100,
+        "workload_weight": 1,
+        "arms": {
+            "minimax_teacher_only": _arm(frontier_tokens=100),
+            "rules_plus_minimax_fallback": _arm(frontier_tokens=100),
+            "wrench_plus_identical_minimax_fallback": _arm(frontier_tokens=0),
+            "wrench_only_diagnostic": _arm(frontier_tokens=0),
+        },
+    }
+    universe = {
+        "schema": "wrench.eligible-workload-universe.v1",
+        "source_sha256": "a" * 64,
+        "source_scope": "test-only complete mechanical population",
+        "cases": [
+            {"id": f"case-{index}", "workload_weight": 1, "teacher_frontier_tokens": 100}
+            for index in range(10)
+        ],
+    }
+    receipt = evaluate_manifest(_manifest([observed], universe=universe))
+    assert receipt["metrics"]["diagnostic_observed_subset_coverage"] == 1.0
+    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] == 0.1
+    assert receipt["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is False
+    assert receipt["status"] == "QUALITY_GATE_OPEN"
+
+    nine_observed = []
+    for index in range(9):
+        row = copy.deepcopy(observed)
+        row["id"] = f"case-{index}"
+        nine_observed.append(row)
+    at_threshold = evaluate_manifest(_manifest(nine_observed, universe=universe))
+    assert at_threshold["metrics"]["weighted_frontier_token_mass_coverage"] == 0.9
+    assert at_threshold["gates"]["weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent"] is True
+    assert at_threshold["metrics"]["net_frontier_token_savings"] is None
+    assert at_threshold["status"] == "INCONCLUSIVE_NET_UTILITY_UNVERIFIED"
+
+    universe["cases"][0]["workload_weight"] = 2
+    with pytest.raises(ValueError, match="weight mismatch"):
+        evaluate_manifest(_manifest([observed], universe=universe))
 
 
 def test_mechanical_worker_reports_deterministic_paired_success_confidence_intervals():
@@ -124,7 +178,8 @@ def test_mechanical_worker_scopes_coverage_to_eligible_traces_but_keeps_safety_g
     receipt = evaluate_manifest(_manifest([eligible, boundary]))
     assert receipt["mechanical_scope"] == "eligible_category"
     assert receipt["mechanical_trace_count"] == 1
-    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] == 1.0
+    assert receipt["metrics"]["diagnostic_observed_subset_coverage"] == 1.0
+    assert receipt["metrics"]["weighted_frontier_token_mass_coverage"] is None
     assert receipt["gates"]["zero_prohibited_accepts"] is False
 
 

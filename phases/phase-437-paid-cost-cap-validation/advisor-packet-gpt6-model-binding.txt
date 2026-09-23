@@ -1,0 +1,12 @@
+Decision: Should the v2 paid-cost validator remain MiniMax-pinned, or can it safely validate the approved future GPT-6 canary by binding provider identity separately from the gateway alias?
+
+Observed facts:
+- `tools/validate_paid_cost_receipt.py` binds `requested_model` to a schema-v2 child contract and the current parent hash, workload, endpoint, one repetition, and spend cap.
+- The receipt's provider `model` is currently hard-coded to `minimax-guided`; provider export records must match that receipt model, request IDs, usage, cost, and currency.
+- The human approved exactly one canary for workload SHA-256 `a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce`, endpoint `http://localhost:4000/v1`, one repetition, and a $500 ceiling, and identified the current gateway route as GPT-6. The parent contract records this narrow scope. No child contract or provider request exists.
+- Live `/v1/models` lists `current`, `openai`, and `codex-subscription`, but no literal `gpt-6`. Read-only model-info calls did not establish dispatch identity. Budget endpoints returned HTTP 500 and 403 without credentials. No cap or cost-export path is verified.
+- Current tests pass: 55 focused cases and 318 repository cases. No completion request or spend occurred.
+
+Constraints: do not infer the alias-to-provider mapping, access credentials, or issue a provider request. The $500 ceiling is not a provider-enforced cap.
+
+Question: What is the smallest safe validator change, if any, that allows a future approved child to bind a gateway alias and a distinct expected provider-model identity, while keeping export matching, hard-cap enforcement, and source review fail-closed? Give a verdict, required schema/tests, and a stop condition.

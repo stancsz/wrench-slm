@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 
@@ -127,6 +128,7 @@ def test_freetoken_native_backend_verifier_is_explicit_about_scope():
 def test_materializer_embeds_worker_runtime():
     script = Path("tools/materialize_wrench_portable_package.py").read_text(encoding="utf-8")
     assert "wrench_runtime/worker.py" in script
+    assert "handoff.py" in script
     assert "wrench_runtime/intent_safety_gate.py" in script
     assert "wrench_runtime/patching.py" in script
     assert "WrenchWorker" in script
@@ -169,6 +171,8 @@ def test_materializer_includes_isolated_claude_launcher():
     assert '"--allowed-tools"' in launcher
     assert '$claudeArguments += ($AllowedTools -join ",")' in launcher
     assert 'if ($Prompt) { $claudeArguments += $Prompt }' in launcher
+    assert 'UpstreamUrl' in launcher
+    assert 'DisableMechanicalRoute' in launcher
     assert 'The external traffic blocker exited' in launcher
     assert 'serve_forever' in blocker
     assert '403 Forbidden' in blocker
@@ -207,6 +211,88 @@ def test_portable_client_smoke_runner_has_fail_closed_receipt_contract():
     assert "dsh-isolated" in runner
     assert "XDG_CONFIG_HOME" in runner
     assert "Stop-Process -Id $serverProcess.Id" in runner
+    assert "UpstreamUrl" in runner
+    assert "DisableMechanicalRoute" in runner
+    assert "upstream_enabled" in runner
+    assert "claudeArguments" in runner
+    assert "$opencodeTimer = [Diagnostics.Stopwatch]::StartNew()" in runner
+    assert "$dshTimer = [Diagnostics.Stopwatch]::StartNew()" in runner
+    assert "$claudeTimer = [Diagnostics.Stopwatch]::StartNew()" in runner
+    assert "elapsed_ms = $opencodeElapsedMs" in runner
+    assert "started_at_unix_ms = $opencodeStartedAtUnixMs" in runner
+    assert "finished_at_unix_ms = $opencodeFinishedAtUnixMs" in runner
+    assert "started_at_unix_ms = $dshStartedAtUnixMs" in runner
+    assert "finished_at_unix_ms = $claudeFinishedAtUnixMs" in runner
+    assert "executable_sha256 = $dshExecutableSha256" in runner
+    assert "package_version = $dshPackageVersion" in runner
+    assert "$dshHashAlgorithm.ComputeHash($dshHashStream)" in runner
+
+
+def test_local_upstream_client_probe_can_pin_compatible_opencode():
+    probe = Path("tools/probe_portable_clients_upstream.py").read_text(encoding="utf-8")
+    assert 'parser.add_argument("--opencode-executable", type=Path)' in probe
+    assert 'parser.add_argument("--dsh-executable", type=Path)' in probe
+    assert '"-OpenCodeExecutable", str(opencode_executable)' in probe
+    assert '"-DshExecutable", str(dsh_executable)' in probe
+    assert '"upstream_request_summaries": calls' in probe
+    assert '"request_payload_sha256"' in probe
+    assert '"request_attribution"' in probe
+
+
+def test_local_upstream_request_summary_is_hash_only_for_message_content():
+    from tools.probe_portable_clients_upstream import _summarize_upstream_request
+
+    payload = {
+        "model": "wrench-local",
+        "stream": True,
+        "messages": [
+            {"role": "user", "content": "private prompt sentinel"},
+            {"role": "tool", "content": "verified local tool output"},
+        ],
+    }
+    summary = _summarize_upstream_request(
+        {"User-Agent": "test-client/1.0"},
+        payload,
+        "verified local tool output",
+        timestamp_unix=123.5,
+    )
+
+    assert summary["user_agent"] == "test-client/1.0"
+    assert summary["message_roles"] == ["user", "tool"]
+    assert len(summary["message_shapes"]) == 2
+    assert all(shape["content_bytes"] > 0 for shape in summary["message_shapes"])
+    assert all(len(shape["content_sha256"]) == 64 for shape in summary["message_shapes"])
+    assert summary["tool_result_present"] is True
+    assert summary["timestamp_unix"] == 123.5
+    assert "private prompt sentinel" not in json.dumps(summary)
+    assert "verified local tool output" not in json.dumps(summary)
+
+
+def test_local_upstream_summary_hashes_tool_definitions_without_retaining_them():
+    from tools.probe_portable_clients_upstream import _summarize_upstream_request
+
+    private_tool_name = "private-tool-name-sentinel"
+    summary = _summarize_upstream_request(
+        {},
+        {"messages": [], "tools": [{"type": "function", "function": {"name": private_tool_name}}]},
+        None,
+    )
+
+    assert summary["tool_definitions_present"] is True
+    assert summary["tool_definition_count"] == 1
+    assert len(summary["tool_definitions_sha256"]) == 64
+    assert private_tool_name not in json.dumps(summary)
+
+
+def test_local_upstream_request_attribution_requires_one_valid_time_window():
+    from tools.probe_portable_clients_upstream import _client_for_timestamp
+
+    windows = {"opencode": (10.0, 20.0), "deepseek_harness": (21.0, 30.0)}
+    assert _client_for_timestamp(15.0, windows) == "opencode"
+    assert _client_for_timestamp(25.0, windows) == "deepseek_harness"
+    assert _client_for_timestamp(20.5, windows) is None
+    assert _client_for_timestamp(None, windows) is None
+    assert _client_for_timestamp(15.0, {"a": (10.0, 20.0), "b": (14.0, 16.0)}) is None
 
 
 def test_materializer_keeps_toolbelt_distinct_from_verifier():

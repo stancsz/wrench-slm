@@ -43,10 +43,32 @@ def load_router_state(config: RouterConfig, path: str | Path) -> ProposalRouter:
         raise ValueError("router state counters invalid")
     if not all(isinstance(state[field], bool) for field in fields[2:]):
         raise ValueError("router state flags invalid")
+    attempts = state["attempts"]
+    failures = state["failures"]
+    enabled = state["enabled"]
+    circuit_open = state["circuit_open"]
+    bypass_reason = state.get("bypass_reason")
+    if (
+        "bypass_reason" in state
+        and bypass_reason is not None
+        and not isinstance(bypass_reason, str)
+    ):
+        raise ValueError("router state bypass reason invalid")
+    if attempts > config.max_attempts or failures > attempts:
+        raise ValueError("router state counters inconsistent")
+    if circuit_open:
+        if enabled or failures != config.failure_threshold:
+            raise ValueError("router state circuit flags inconsistent")
+    elif failures >= config.failure_threshold:
+        raise ValueError("router state failure threshold inconsistent")
+    if enabled and bypass_reason is not None:
+        raise ValueError("router state enabled bypass inconsistent")
+    if not enabled and not circuit_open and not isinstance(bypass_reason, str):
+        raise ValueError("router state disabled bypass missing reason")
     router = ProposalRouter(config)
-    router.attempts = state["attempts"]
-    router.failures = state["failures"]
-    router.enabled = state["enabled"]
-    router.circuit_open = state["circuit_open"]
-    router.bypass_reason = state.get("bypass_reason") if isinstance(state.get("bypass_reason"), str) else None
+    router.attempts = attempts
+    router.failures = failures
+    router.enabled = enabled
+    router.circuit_open = circuit_open
+    router.bypass_reason = bypass_reason
     return router

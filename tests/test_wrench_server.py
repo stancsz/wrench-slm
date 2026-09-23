@@ -53,6 +53,68 @@ def test_model_local_server_accepts_raw_payload_and_returns_openai_shape(tmp_pat
         thread.join(timeout=5)
 
 
+def test_session_title_preflight_uses_local_zero_model_call_path(tmp_path: Path):
+    trace_path = tmp_path / "title-trace.jsonl"
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-title-test",
+        max_request_bytes=4 * 1024 * 1024,
+        trace_log=trace_path,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-title-test",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": (
+                        "Generate the session title from this JSON array of human messages:\n"
+                        '[{"text":"Review local evidence"}]'
+                    ),
+                }
+            ],
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = json.loads(response.read().decode("utf-8"))
+
+        assert body["choices"][0]["message"]["content"] == "Review local evidence"
+        assert body["wrench"]["backend"] == "embedded-title-mechanical"
+        assert body["wrench"]["model_calls"] == 0
+        assert body["wrench"]["context_gate"]["mode"] == "session_title_preflight"
+        trace = json.loads(trace_path.read_text(encoding="utf-8").splitlines()[0])
+        assert trace["backend"] == "embedded-title-mechanical"
+        assert trace["model_calls"] == 0
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+def test_session_title_preflight_does_not_capture_quoted_user_text():
+    result = server_module._deterministic_title_result(
+        [
+            {
+                "role": "user",
+                "content": (
+                    "Explain this phrase: Generate the session title from this JSON array of human messages: "
+                    '[{"text":"not a title request"}]'
+                ),
+            }
+        ]
+    )
+
+    assert result is None
+
+
 def test_model_local_server_can_force_model_only_diagnostic(tmp_path: Path):
     server = WrenchHTTPServer(
         ("127.0.0.1", 0),
@@ -80,6 +142,8 @@ def test_model_local_server_can_force_model_only_diagnostic(tmp_path: Path):
         assert body["wrench"]["fallback_reason"] == "model_not_loaded"
         assert body["wrench"]["mechanical_fast_path"] is False
         assert body["wrench"]["backend"] != "embedded-mechanical"
+        assert body["wrench"]["advisor_handoff"]["schema"] == "wrench.advisor-handoff.v1"
+        assert body["wrench"]["advisor_handoff"]["frontier_policy"]["max_frontier_calls"] == 2
     finally:
         server.shutdown()
         server.server_close()
@@ -791,3 +855,244 @@ def test_model_local_server_maps_native_timeout_to_504(tmp_path: Path, monkeypat
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_native_upstream_uses_one_bounded_repair_pass_after_format_failure(tmp_path: Path):
+    (tmp_path / "README.md").write_text("settlement fixture\n", encoding="utf-8")
+    calls: list[dict[str, object]] = []
+
+    class UpstreamHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            calls.append(json.loads(self.rfile.read(length).decode("utf-8")))
+            content = (
+                "not json"
+                if len(calls) == 1
+                else json.dumps(
+                    {
+                        "schema": "wrench.proposal.v1",
+                        "action": "read_file",
+                        "path": "README.md",
+                        "max_bytes": 4096,
+                    }
+                )
+            )
+            body = json.dumps(
+                {
+                    "choices": [{"message": {"role": "assistant", "content": content}}],
+                    "usage": {"prompt_tokens": 100, "completion_tokens": 5, "total_tokens": 105},
+                }
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
+    upstream_thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    upstream_thread.start()
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+        upstream_url=f"http://127.0.0.1:{upstream.server_port}/v1/chat/completions",
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        payload = {
+            "model": "wrench-test",
+            "messages": [
+                {"role": "system", "content": "Return one JSON proposal only."},
+                {"role": "user", "content": "Review the fixture and return a bounded proposal."},
+            ],
+            "max_tokens": 64,
+        }
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = json.loads(response.read().decode("utf-8"))
+        assert len(calls) == 2
+        assert "failed local format validation" in calls[1]["messages"][0]["content"]
+        assert body["wrench"]["status"] == "accepted"
+        assert body["wrench"]["model_calls"] == 2
+        assert body["wrench"]["repair_pass_count"] == 1
+        assert body["wrench"]["frontier_usage"]["total_tokens"] == 210
+        assert body["wrench"]["cost_accounting"]["frontier_tokens"] == 210
+        assert body["wrench"]["cost_accounting"]["local_model_calls"] == 0
+        assert body["wrench"]["upstream_attempts"][0]["fallback_reason"] == "model_output_invalid_json"
+        assert body["wrench"]["upstream_attempts"][1]["status"] == "accepted"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+        upstream.shutdown()
+        upstream.server_close()
+        upstream_thread.join(timeout=5)
+
+
+def test_native_upstream_accepts_one_hash_bound_final_answer_after_tool_result(tmp_path: Path):
+    (tmp_path / "README.md").write_text("settlement fixture\n", encoding="utf-8")
+    calls: list[dict[str, object]] = []
+
+    class UpstreamHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers["Content-Length"])
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            calls.append(payload)
+            messages = payload.get("messages", [])
+            tool_messages = [
+                item for item in messages
+                if isinstance(item, dict) and item.get("role") == "tool"
+            ]
+            if tool_messages:
+                tool_text = str(tool_messages[-1].get("content", ""))
+                content = json.dumps(
+                    {
+                        "schema": "wrench.final-answer.v1",
+                        "answer": "Read-only result received and verified.",
+                        "tool_result_sha256": server_module.hashlib.sha256(
+                            tool_text.encode("utf-8")
+                        ).hexdigest(),
+                    }
+                )
+            else:
+                content = json.dumps(
+                    {
+                        "schema": "wrench.proposal.v1",
+                        "action": "read_lines",
+                        "path": "README.md",
+                        "start": 1,
+                        "end": 1,
+                    }
+                )
+            body = json.dumps(
+                {
+                    "choices": [{"message": {"role": "assistant", "content": content}}],
+                    "usage": {"prompt_tokens": 100, "completion_tokens": 8, "total_tokens": 108},
+                }
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
+    upstream_thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    upstream_thread.start()
+    server = WrenchHTTPServer(
+        ("127.0.0.1", 0),
+        WrenchWorker(tokenizer=None, model=None, allowed_root=tmp_path),
+        model_name="wrench-test",
+        max_request_bytes=4 * 1024 * 1024,
+        upstream_url=f"http://127.0.0.1:{upstream.server_port}/v1/chat/completions",
+        use_mechanical_route=False,
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+
+    def post(payload: dict[str, object]) -> dict[str, object]:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    try:
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "read_lines",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "filePath": {"type": "string"},
+                            "offset": {"type": "integer"},
+                            "limit": {"type": "integer"},
+                        },
+                    },
+                },
+            }
+        ]
+        first = post(
+            {
+                "model": "wrench-test",
+                "tools": tools,
+                "messages": [{"role": "user", "content": "Review README.md."}],
+            }
+        )
+        first_message = first["choices"][0]["message"]
+        tool_call = first_message["tool_calls"][0]
+        second = post(
+            {
+                "model": "wrench-test",
+                "tools": tools,
+                "messages": [
+                    {"role": "user", "content": "Review README.md."},
+                    {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [tool_call],
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call["id"],
+                        "content": "settlement fixture",
+                    },
+                ],
+            }
+        )
+        assert len(calls) == 2
+        assert first["wrench"]["frontier_round"] == 1
+        assert first["wrench"]["final_answer"] is False
+        assert second["choices"][0]["message"]["content"] == "Read-only result received and verified."
+        assert second["wrench"]["backend"] == "native-upstream-final-verified"
+        assert second["wrench"]["frontier_round"] == 2
+        assert second["wrench"]["final_answer"] is True
+        assert second["wrench"]["model_calls"] == 1
+        assert second["wrench"]["frontier_usage"]["total_tokens"] == 108
+        assert second["wrench"]["cost_accounting"]["frontier_tokens"] == 108
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+        upstream.shutdown()
+        upstream.server_close()
+        upstream_thread.join(timeout=5)
+
+
+def test_final_answer_envelope_rejects_wrong_hash_and_free_form_output():
+    expected = "a" * 64
+    wrong_hash = server_module._parse_final_answer_output(
+        json.dumps(
+            {
+                "schema": "wrench.final-answer.v1",
+                "answer": "unsafe",
+                "tool_result_sha256": "b" * 64,
+            }
+        ),
+        tool_result_sha256=expected,
+    )
+    free_form = server_module._parse_final_answer_output(
+        "The tool result looks good.",
+        tool_result_sha256=expected,
+    )
+    assert wrong_hash == {"status": "abstain", "fallback_reason": "final_answer_hash_mismatch"}
+    assert free_form == {"status": "abstain", "fallback_reason": "final_answer_invalid_json"}

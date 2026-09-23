@@ -1,0 +1,124 @@
+{
+  "schema": "wrench.operational-shadow-receipt.v1",
+  "status": "PASS_BOUNDED_OPERATIONAL_SHADOW",
+  "scope": "local mechanical-only portable package; no tool execution; no production approval",
+  "package_dir": "D:\\models\\_wrench-release-candidate-settlement5-20260922",
+  "concurrency": 8,
+  "rounds": 25,
+  "requests_expected": 200,
+  "requests_completed": 200,
+  "errors": [],
+  "accepted": 68,
+  "abstained": 132,
+  "status_histogram": {
+    "abstain": 132,
+    "accepted": 68
+  },
+  "mechanical_fast_path": 167,
+  "model_calls": 0,
+  "latency_ms": {
+    "p50": 3.968,
+    "p95": 2053.154,
+    "max": 2082.749,
+    "burst_elapsed": 10291.305,
+    "accepted_only_p50": 3.517,
+    "accepted_only_p95": 26.465
+  },
+  "latency_by_action_ms": {
+    "git_read_status": {
+      "count": 33,
+      "p50": 2.945,
+      "p95": 24.081,
+      "max": 25.707
+    },
+    "health_read": {
+      "count": 33,
+      "p50": 2048.433,
+      "p95": 2067.724,
+      "max": 2082.749
+    },
+    "literal_search": {
+      "count": 33,
+      "p50": 1.719,
+      "p95": 23.403,
+      "max": 24.145
+    },
+    "patch_draft": {
+      "count": 33,
+      "p50": 1.554,
+      "p95": 16.654,
+      "max": 25.2
+    },
+    "read_file": {
+      "count": 34,
+      "p50": 3.517,
+      "p95": 26.465,
+      "max": 28.567
+    },
+    "read_lines": {
+      "count": 34,
+      "p50": 3.352,
+      "p95": 26.012,
+      "max": 28.02
+    }
+  },
+  "cancel_probe": {
+    "client_closed_mid_request": true,
+    "recovery": {
+      "elapsed_ms": 2.019,
+      "status": "accepted",
+      "backend": "embedded-mechanical",
+      "mechanical_fast_path": true,
+      "model_calls": 0,
+      "cost_accounting": {
+        "schema": "wrench.cost-accounting-receipt.v1",
+        "raw_input_tokens": 7,
+        "model_prompt_tokens": 0,
+        "model_completion_tokens": 0,
+        "local_model_tokens": 0,
+        "input_tokens_not_sent_to_model": 7,
+        "model_calls": 0,
+        "local_model_calls": 0,
+        "repair_passes": 0,
+        "frontier_tokens": 0,
+        "frontier_prompt_tokens": 0,
+        "frontier_completion_tokens": 0,
+        "frontier_cost_usd": null,
+        "total_workflow_tokens": 0,
+        "mechanical_fast_path": true,
+        "total_local_elapsed_ms": 0.648,
+        "usd_cost": null,
+        "usd_cost_status": "not_priced_local_runtime"
+      }
+    }
+  },
+  "resource_before": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 28574412800,
+    "ram_available_ratio": 0.5562,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "resource_after": {
+    "ram_total_bytes": 51370344448,
+    "ram_available_bytes": 28336128000,
+    "ram_available_ratio": 0.5516,
+    "vram_available": false,
+    "ram_reserve_pass": true,
+    "vram_reserve_pass": true
+  },
+  "checks": {
+    "all_expected_requests_completed": true,
+    "all_responses_bounded": true,
+    "mechanical_fast_path_coverage_recorded": true,
+    "zero_model_calls": true,
+    "cancel_recovery_accepted": true,
+    "ram_reserve_before": true,
+    "ram_reserve_after": true,
+    "vram_reserve_before": true,
+    "vram_reserve_after": true
+  },
+  "all_checks_pass": true,
+  "receipt_sha256": "eaca20e16f2fed15da9c2b9dd75edb9914872b3bbdfcc257e4846e9752fed34d"
+}

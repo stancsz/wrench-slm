@@ -157,6 +157,11 @@ def _latency_by_action(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     }
 
 
+def _receipt_digest(rows: list[dict[str, Any]], recovery: dict[str, Any], errors: list[str]) -> str:
+    seed = json.dumps({"rows": rows, "recovery": recovery, "errors": errors}, sort_keys=True).encode()
+    return hashlib.sha256(seed).hexdigest()
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     package_dir = args.package_dir.resolve()
     server_script = package_dir / "wrench_server.py"
@@ -231,7 +236,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     for row in rows:
         status = str(row.get("status"))
         status_histogram[status] = status_histogram.get(status, 0) + 1
-    receipt_seed = json.dumps({"rows": rows, "recovery": recovery, "errors": errors}, sort_keys=True).encode()
     receipt = {
         "schema": "wrench.operational-shadow-receipt.v1",
         "status": "PENDING_CHECKS",
@@ -242,6 +246,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "requests_expected": len(tasks),
         "requests_completed": len(rows),
         "errors": errors,
+        "rows": rows,
         "accepted": accepted,
         "abstained": abstained,
         "status_histogram": status_histogram,
@@ -277,7 +282,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if receipt["all_checks_pass"]
         else "FAIL_BOUNDED_OPERATIONAL_SHADOW"
     )
-    receipt["receipt_sha256"] = hashlib.sha256(receipt_seed).hexdigest()
+    receipt["receipt_sha256"] = _receipt_digest(rows, recovery, errors)
     args.output.resolve().parent.mkdir(parents=True, exist_ok=True)
     args.output.resolve().write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     return receipt

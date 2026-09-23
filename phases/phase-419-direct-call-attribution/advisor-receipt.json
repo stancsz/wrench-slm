@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.luna-advisor-receipt.v1",
+  "phase": 419,
+  "date": "2026-09-22",
+  "model": "codex-sol-advisor",
+  "endpoint": "http://localhost:4000/v1/chat/completions",
+  "request_id": "chatcmpl-codex-advisor-c8f60336e60c",
+  "packet_chars": 1089,
+  "advice_words": 104,
+  "usage": {
+    "prompt_tokens": 330,
+    "completion_tokens": 468,
+    "total_tokens": 798
+  },
+  "decision_changed": true,
+  "advice": "Capture request ID, start/end timestamps, active subprocess-window ID/client, endpoint/model, content-free shape (message/tool counts, stream flag), status/latency/usage/cost, purpose enum, classifier version, and reason; classify client only from nonoverlapping windows and purpose only by in-memory exact source-confirmed title-marker matching, persisting neither prompt nor marker, with all other cases unknown and Phase 403 unchanged. Test reordered title requests, near-match/non-match prompts, zero persisted content, and overlapping/missing windows. Stop if windows overlap, matching requires persisting content, or prompt-derived text enters receipts."
+}

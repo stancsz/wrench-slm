@@ -1,0 +1,45 @@
+{
+  "template": true,
+  "schema": "wrench.openai-cost-export.aggregate.v1",
+  "provider": "openai",
+  "endpoint": "https://api.openai.com/v1/organization/costs",
+  "paid_transaction_receipt": true,
+  "billing_reference": "replace-with-provider-dashboard-or-billing-reference",
+  "scope": {
+    "project_id": "replace-with-child-contract-project-id",
+    "api_key_id": "replace-with-child-contract-api-key-id",
+    "bucket_start_time": null,
+    "bucket_end_time": null,
+    "dedicated_project": true,
+    "exclusive_api_key": true,
+    "exclusive_for_entire_interval": true,
+    "isolation_evidence_reference": "replace-with-human-reviewed-isolation-evidence"
+  },
+  "export_sha256": "replace-with-canonical-export-sha256",
+  "export": {
+    "object": "page",
+    "data": [
+      {
+        "object": "bucket",
+        "start_time": 0,
+        "end_time": 86400,
+        "results": [
+          {
+            "object": "organization.costs.result",
+            "amount": {
+              "value": 0.0,
+              "currency": "usd"
+            },
+            "line_item": "replace-with-provider-line-item",
+            "project_id": "replace-with-child-contract-project-id",
+            "api_key_id": "replace-with-child-contract-api-key-id",
+            "quantity": 0,
+            "quantity_unit": "replace-with-provider-quantity-unit"
+          }
+        ]
+      }
+    ],
+    "has_more": false,
+    "next_page": null
+  }
+}

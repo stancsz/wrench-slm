@@ -24,6 +24,7 @@ from .patching import (
     is_patch_prompt,
 )
 from .ttc import enforce_ttc
+from .handoff import build_advisor_handoff
 from .prefill import (
     FirstLayerContextGate,
     MechanicalPrefillIndex,
@@ -223,6 +224,42 @@ def _mechanical_context_gate_receipt(
     }
 
 
+def _attach_advisor_handoff(
+    result: dict[str, Any],
+    messages: list[dict[str, str]],
+    *,
+    working_messages: list[dict[str, str]] | None = None,
+    prefill_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Attach a bounded stronger-model packet to an abstention only."""
+
+    if result.get("status") != "abstain":
+        return result
+    try:
+        result["advisor_handoff"] = build_advisor_handoff(
+            messages,
+            result=result,
+            working_messages=working_messages,
+            prefill_receipt=prefill_receipt,
+        )
+    except Exception as exc:
+        # The original fail-closed result remains authoritative. A handoff
+        # packaging error must not turn into raw-payload forwarding or a new
+        # execution path.
+        result["advisor_handoff"] = {
+            "schema": "wrench.advisor-handoff.v1",
+            "handoff_required": True,
+            "authority": "proposal_only_no_mutation",
+            "frontier_policy": {
+                "max_frontier_calls": 2,
+                "return_each_result_to_wrench_verifier": True,
+                "preserve_raw_payload_out_of_band": True,
+            },
+            "error": type(exc).__name__,
+        }
+    return result
+
+
 @dataclass
 class WrenchWorker:
     """A bounded proposal worker backed by a local model directory."""
@@ -232,6 +269,7 @@ class WrenchWorker:
     allowed_root: Path
     prefill_index: MechanicalPrefillIndex = field(default_factory=MechanicalPrefillIndex)
     intent_safety_gate: Any | None = None
+    binary_abstain_gate: Any | None = None
 
     @classmethod
     def from_pretrained(
@@ -241,12 +279,18 @@ class WrenchWorker:
         allowed_root: str | Path = ".",
         load_model: bool = True,
         prefill_cache_bytes: int | None = None,
+        binary_abstain_artifact: str | Path | None = None,
         **model_kwargs: Any,
     ) -> "WrenchWorker":
         model_path = Path(model_dir)
         tokenizer = None
         model = None
         intent_safety_gate = None
+        binary_abstain_gate = None
+        if binary_abstain_artifact is not None:
+            from .binary_abstain import BinaryAbstainGate
+
+            binary_abstain_gate = BinaryAbstainGate.from_artifact(binary_abstain_artifact)
         if load_model:
             from transformers import AutoModelForImageTextToText, AutoTokenizer
 
@@ -302,6 +346,7 @@ class WrenchWorker:
             allowed_root=root,
             prefill_index=MechanicalPrefillIndex(max_bytes=prefill_cache_bytes),
             intent_safety_gate=intent_safety_gate,
+            binary_abstain_gate=binary_abstain_gate,
         )
 
     def propose(
@@ -315,6 +360,20 @@ class WrenchWorker:
 
         if not isinstance(messages, list) or not messages:
             return {"status": "abstain", "fallback_reason": "qwen_request_invalid"}
+        binary_receipt = None
+        if self.binary_abstain_gate is not None:
+            try:
+                binary_receipt = self.binary_abstain_gate.check_messages(messages)
+                if not isinstance(binary_receipt, dict) or binary_receipt.get("decision") not in {"abstain", "not_abstain"}:
+                    raise ValueError("invalid binary gate receipt")
+            except Exception as exc:
+                binary_receipt = {"decision": "abstain", "reason": "gate_error",
+                                  "error": type(exc).__name__, "authority": "abstain_only"}
+            if binary_receipt["decision"] != "not_abstain":
+                return _attach_advisor_handoff({
+                    "status": "abstain", "fallback_reason": "binary_abstain_gate_rejected",
+                    "binary_abstain_gate": binary_receipt,
+                }, messages)
         users = [item.get("content") for item in messages if item.get("role") == "user"]
         users = [content for content in users if isinstance(content, str)]
         prompt = users[-1] if users else ""
@@ -416,14 +475,26 @@ class WrenchWorker:
                         ),
                     }
                 )
+                _attach_advisor_handoff(result, messages)
+                if binary_receipt is not None:
+                    result["binary_abstain_gate"] = binary_receipt
                 return result
 
         if self.model is None:
-            return {"status": "abstain", "fallback_reason": "model_not_loaded"}
+            return _attach_advisor_handoff(
+                {"status": "abstain", "fallback_reason": "model_not_loaded"},
+                messages,
+            )
         if self.tokenizer is None:
-            return {"status": "abstain", "fallback_reason": "tokenizer_not_loaded"}
+            return _attach_advisor_handoff(
+                {"status": "abstain", "fallback_reason": "tokenizer_not_loaded"},
+                messages,
+            )
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or not 1 <= max_tokens <= 512:
-            return {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"}
+            return _attach_advisor_handoff(
+                {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"},
+                messages,
+            )
         request_messages = add_patch_schema_examples(messages)
         request_messages, prefill_receipt = _dynamic_prefill_messages(
             request_messages,
@@ -511,6 +582,8 @@ class WrenchWorker:
                 "model_device": str(next(self.model.parameters()).device),
             }
         )
+        if binary_receipt is not None:
+            result["binary_abstain_gate"] = binary_receipt
         if prefill_receipt is not None:
             result["dynamic_prefill"] = prefill_receipt
             result["dynamic_prefill"]["cache"] = self.prefill_index.stats()
@@ -518,4 +591,10 @@ class WrenchWorker:
             result["patch_retry_count"] = patch_retry_count
         if repair_pass_count:
             result["repair_pass_count"] = repair_pass_count
+        _attach_advisor_handoff(
+            result,
+            messages,
+            working_messages=request_messages,
+            prefill_receipt=prefill_receipt,
+        )
         return result

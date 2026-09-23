@@ -33,3 +33,9 @@ phases/phase-29-unseen-evaluation/runtime-*.raw.json
 phases/phase-30-corrected-calibration-eval/runtime-*.raw.json
 phases/phase-31-teacher-baseline/runtime-*.raw.json
 phases/phase-33-schema-guided-calibration/runtime-*.raw.json
+
+# Installed client runtimes and local package metadata
+**/node_modules/
+phases/**/.dsh/
+phases/**/dsh-home/
+*.egg-info/

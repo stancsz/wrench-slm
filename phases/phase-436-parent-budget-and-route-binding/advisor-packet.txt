@@ -1,0 +1,13 @@
+Decision: choose a fail-closed model-identity contract for future paid-canary cost validation.
+
+Observed facts:
+- The active Q4 parent contract is `wrench-slm-productive-value-2026-09-22` with `monetary_budget: 0`.
+- The paired-canary child validator checks exact workload, endpoint, request model, one repetition, positive finite child cap, and provider-hard-cap reference, but does not read the parent Q4 budget or compare the child cap to it.
+- The current positive child-contract unit fixture passes with a synthetic USD 0.10 cap. Focused canary and receipt tests pass 8/8.
+- A read-only port-4000 `/v1/models` inventory exposes GPT-6 aliases including `codex-subscription`, `codex-astra`, and `codex-luna`. No Wrench canary request is correlated to an alias or provider model.
+- `validate_paid_cost_receipt.py` hardcodes `minimax-guided`; provider-export templates do too. Export records are checked against the receipt model, but there is no approved child-contract input to the validator.
+- No provider cap reference or authoritative cost export is available. No model completion request was made for this investigation.
+
+Constraints: do not spend, issue provider calls, alter the parent budget, infer a GPT-6 alias, or weaken exact workload and human-approval checks. Preserve the parent zero-spend boundary. The gateway's requested alias and the provider-reported model may be distinct identities.
+
+Question: what is the smallest safe design for supporting a future GPT-6 canary in the cost validator: bind the requested alias to the approved child contract while separately requiring provider-export model identity/mapping, or keep validation closed until that mapping is evidenced? Give a verdict, minimal next change, and a stop condition.

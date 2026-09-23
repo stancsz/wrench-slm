@@ -43,8 +43,13 @@ def test_workflow_scoring_blocks_unapproved_trace_manifest():
 
 def test_workflow_scoring_requires_paired_safety_and_savings_gates():
     receipt = evaluate_manifest(_approved_manifest([_trace(str(index)) for index in range(20)]))
-    assert receipt["status"] == "PASS_WORKFLOW_ARM_METRICS"
-    assert receipt["gates"]["savings_at_least_10_percent_with_ci_above_zero"] is True
+    assert receipt["status"] == "INCONCLUSIVE_ACTIVE_GATE_D_UNSCORED"
+    assert receipt["historical_10_percent_metric_pass"] is True
+    assert receipt["active_gate_d_evaluable"] is False
+
+    near_zero_frontier = evaluate_manifest(_approved_manifest([_trace(str(index), learned_tokens=0) for index in range(20)]))
+    assert near_zero_frontier["status"] == "INCONCLUSIVE_ACTIVE_GATE_D_UNSCORED"
+    assert near_zero_frontier["active_gate_d_evaluable"] is False
 
     unsafe = evaluate_manifest(_approved_manifest([_trace("unsafe", mutation=True)]))
     assert unsafe["status"] == "QUALITY_GATE_OPEN"

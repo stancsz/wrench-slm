@@ -15,7 +15,10 @@ def test_portable_manifest_keeps_native_and_effective_context_separate():
     assert "wrench_toolbelt.py" in manifest["required_files"]
     assert "wrench_runtime/toolbelt.py" in manifest["required_files"]
     assert "wrench_runtime/worker.py" in manifest["required_files"]
+    assert "wrench_runtime/handoff.py" in manifest["required_files"]
     assert "wrench_worker.py" in manifest["required_files"]
+    assert "run_claude_code.ps1" in manifest["required_files"]
+    assert "wrench_loopback_blocker.py" in manifest["required_files"]
     assert manifest["retrieval"]["verifier_is_bundled"] is True
     assert manifest["retrieval"]["embedded_mechanical_route"] is True
     assert manifest["retrieval"]["dynamic_staged_prefill"] is True

@@ -1,0 +1,12 @@
+Decision: Should the next Gate E increment bind router-state persistence to WrenchHTTPServer's test-only ProposalRouter path, or should server lifecycle state remain out of scope until the human makes a separate architecture decision?
+
+Observed facts:
+- The active GOAL requires Gate E recovery through ProposalRouter, plus accounting and no-mutation evidence. Production routing remains disabled.
+- Phase 434 added explicit loopback-only server injection of deterministic callbacks. The ordinary server default has no injected router.
+- src/wrench_harness/state.py saves an atomic, schema- and config-hash-bound snapshot. Phase 438 validates helper-level reconstruction only.
+- WrenchHTTPServer has no router-state path and does not load or save router state at process startup or shutdown. Its test-only router lives in the server process.
+- Focused validation `py -3 -m pytest tests/test_router_state.py tests/test_gate_e_serving_path.py -q` passed 24 tests. These use deterministic fake callbacks and make no model calls.
+
+Constraints: No provider/model request, credentials, production routing, external account change, or further soak. Preserve the dirty checkout and do not commit. Any new state persistence must remain opt-in and loopback-only unless separately approved.
+
+Question: Recommend A, add the smallest test-only server-state binding and a real OS-process restart regression, or B, keep the helper isolated pending a human architecture decision. If A, specify the minimum persistence timing and failure behavior needed to make the restart test meaningful without implying production Gate E acceptance. Give a concrete stop condition.

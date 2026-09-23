@@ -6,19 +6,50 @@ param(
     [int]$Port = 28900,
     [int]$ClaudePort = 28944,
     [int]$ClaudeProxyPort = 28945,
-    [string]$ClaudeExecutable = "claude"
+    [string]$ClaudeExecutable = "claude",
+    [string]$OpenCodeExecutable = "opencode",
+    [string]$DshExecutable = "dsh",
+    [string]$Prompt = "Read README.md and report its first heading.",
+    [string]$UpstreamUrl = "",
+    [switch]$DisableMechanicalRoute
 )
 
 $ErrorActionPreference = "Stop"
 $package = (Resolve-Path -LiteralPath $PackageDir -ErrorAction Stop).Path
 $root = (Resolve-Path -LiteralPath $AllowedRoot -ErrorAction Stop).Path
 $python = Get-Command python -ErrorAction Stop
-$opencodeCommand = Get-Command opencode.cmd -ErrorAction SilentlyContinue
-if (-not $opencodeCommand) { $opencodeCommand = Get-Command opencode -ErrorAction Stop }
+$opencodeCommand = Get-Command $OpenCodeExecutable -ErrorAction SilentlyContinue
+if ($OpenCodeExecutable -eq "opencode") {
+    $opencodeCommand = Get-Command opencode.cmd -ErrorAction SilentlyContinue
+    if (-not $opencodeCommand) { $opencodeCommand = Get-Command opencode -ErrorAction Stop }
+}
+if (-not $opencodeCommand) { throw "OpenCode executable not found: $OpenCodeExecutable" }
 $opencode = $opencodeCommand.Source
-$dshCommand = Get-Command dsh.cmd -ErrorAction SilentlyContinue
-if (-not $dshCommand) { $dshCommand = Get-Command dsh -ErrorAction Stop }
+$opencodeVersion = (& $opencode --version | Out-String).Trim()
+$dshCommand = $null
+if ($DshExecutable -eq "dsh") {
+    $dshCommand = Get-Command dsh.cmd -ErrorAction SilentlyContinue
+    if (-not $dshCommand) { $dshCommand = Get-Command dsh -ErrorAction Stop }
+} else {
+    $dshCommand = Get-Command $DshExecutable -ErrorAction Stop
+}
 $dsh = $dshCommand.Source
+$dshVersion = (& $dsh --version | Out-String).Trim()
+$dshPackageVersion = $null
+$dshPackageJson = Join-Path (Split-Path $dsh -Parent) "node_modules/@deepseek-ai/dsh/package.json"
+if (Test-Path -LiteralPath $dshPackageJson -PathType Leaf) {
+    $dshPackageVersion = (Get-Content -LiteralPath $dshPackageJson -Raw | ConvertFrom-Json).version
+}
+$dshHashAlgorithm = [System.Security.Cryptography.SHA256]::Create()
+$dshHashStream = [System.IO.File]::OpenRead($dsh)
+try {
+    $dshExecutableSha256 = [System.BitConverter]::ToString(
+        $dshHashAlgorithm.ComputeHash($dshHashStream)
+    ).Replace("-", "").ToLowerInvariant()
+} finally {
+    $dshHashStream.Dispose()
+    $dshHashAlgorithm.Dispose()
+}
 $claudeCommand = Get-Command ("{0}.cmd" -f $ClaudeExecutable) -ErrorAction SilentlyContinue
 if (-not $claudeCommand) { $claudeCommand = Get-Command $ClaudeExecutable -ErrorAction Stop }
 $claude = $claudeCommand.Source
@@ -78,6 +109,12 @@ $serverArgs = @(
     "--max-request-bytes", 536870912,
     "--trace-log", $trace
 )
+if ($UpstreamUrl) {
+    $serverArgs += @("--upstream-url", $UpstreamUrl, "--upstream-timeout-seconds", "60")
+}
+if ($DisableMechanicalRoute) {
+    $serverArgs += "--disable-mechanical-route"
+}
 $serverProcess = $null
 $opencodeOutput = ""
 $dshOutput = ""
@@ -85,6 +122,15 @@ $claudeOutput = ""
 $opencodeExit = $null
 $dshExit = $null
 $claudeExit = $null
+$opencodeElapsedMs = $null
+$dshElapsedMs = $null
+$claudeElapsedMs = $null
+$opencodeStartedAtUnixMs = $null
+$opencodeFinishedAtUnixMs = $null
+$dshStartedAtUnixMs = $null
+$dshFinishedAtUnixMs = $null
+$claudeStartedAtUnixMs = $null
+$claudeFinishedAtUnixMs = $null
 $opencodeMode = "normal"
 $opencodeSupportsPure = $false
 $originalKey = $env:WRENCH_LOCAL_API_KEY
@@ -124,16 +170,21 @@ try {
         $ErrorActionPreference = "Continue"
         $opencodeHelp = (& $opencode run --help 2>&1 | Out-String)
         $opencodeSupportsPure = $opencodeHelp -match "(?m)--pure\b"
+        $opencodeStartedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $opencodeTimer = [Diagnostics.Stopwatch]::StartNew()
         $opencodeOutput = (& $opencode run -m wrench/wrench-local `
-            "Read README.md and report its first heading." 2>&1 | Out-String)
+            $Prompt 2>&1 | Out-String)
         $opencodeExit = $LASTEXITCODE
         if ($opencodeExit -ne 0 -and $opencodeSupportsPure) {
             $opencodeMode = "pure-fallback"
             $pureOutput = (& $opencode run --pure -m wrench/wrench-local `
-                "Read README.md and report its first heading." 2>&1 | Out-String)
+                $Prompt 2>&1 | Out-String)
             $opencodeOutput = "NORMAL ATTEMPT:`n$opencodeOutput`nPURE FALLBACK:`n$pureOutput"
             $opencodeExit = $LASTEXITCODE
         }
+        $opencodeTimer.Stop()
+        $opencodeElapsedMs = [math]::Round($opencodeTimer.Elapsed.TotalMilliseconds, 3)
+        $opencodeFinishedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
         $env:WRENCH_LOCAL_API_KEY = "wrench-local"
         # Current DSH resolves the deepseek-official route through its
@@ -166,24 +217,44 @@ try {
         $env:XDG_DATA_HOME = $dshDataHome
         $env:XDG_STATE_HOME = $dshStateHome
         $env:XDG_RUNTIME_DIR = $dshRuntimeHome
+        $dshStartedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $dshTimer = [Diagnostics.Stopwatch]::StartNew()
         $dshOutput = (& $dsh --profile headless --patch $dshPatchForSmoke `
-            "Read README.md and report its first heading." 2>&1 | Out-String)
+            $Prompt 2>&1 | Out-String)
         $dshExit = $LASTEXITCODE
+        $dshTimer.Stop()
+        $dshElapsedMs = [math]::Round($dshTimer.Elapsed.TotalMilliseconds, 3)
+        $dshFinishedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 
         # The Claude launcher owns a second local server and a loopback-only
         # outbound blocker. Run it as a real client, with no provider
         # credentials, and keep its trace separate from the shared OpenCode
         # and DSH endpoint trace.
-        $claudeOutput = (& $powershell.Source -NoProfile -ExecutionPolicy Bypass `
-            -File $claudeLauncher `
-            -Port $ClaudePort `
-            -ProxyPort $ClaudeProxyPort `
-            -AllowedRoot $workspace `
-            -TraceLog $claudeTrace `
-            -ClaudeExecutable $claude `
-            -Print `
-            -Prompt "Read README.md and report its first heading." 2>&1 | Out-String)
+        $claudeArguments = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $claudeLauncher,
+            "-Port", $ClaudePort,
+            "-ProxyPort", $ClaudeProxyPort,
+            "-AllowedRoot", $workspace,
+            "-TraceLog", $claudeTrace,
+            "-ClaudeExecutable", $claude,
+            "-Print",
+            "-Prompt", $Prompt
+        )
+        if ($UpstreamUrl) {
+            $claudeArguments += @("-UpstreamUrl", $UpstreamUrl)
+        }
+        if ($DisableMechanicalRoute) {
+            $claudeArguments += "-DisableMechanicalRoute"
+        }
+        $claudeStartedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $claudeTimer = [Diagnostics.Stopwatch]::StartNew()
+        $claudeOutput = (& $powershell.Source @claudeArguments 2>&1 | Out-String)
         $claudeExit = $LASTEXITCODE
+        $claudeTimer.Stop()
+        $claudeElapsedMs = [math]::Round($claudeTimer.Elapsed.TotalMilliseconds, 3)
+        $claudeFinishedAtUnixMs = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     } finally {
         $ErrorActionPreference = $clientErrorPreference
         Pop-Location
@@ -228,22 +299,40 @@ try {
         package_dir = $package
         allowed_root = $workspace
         port = $Port
+        prompt = $Prompt
+        upstream_enabled = [bool]$UpstreamUrl
+        mechanical_route_enabled = -not $DisableMechanicalRoute
         clients = [ordered]@{
             opencode = [ordered]@{
+                executable = $opencode
+                version = $opencodeVersion
                 exit_code = $opencodeExit
+                started_at_unix_ms = $opencodeStartedAtUnixMs
+                finished_at_unix_ms = $opencodeFinishedAtUnixMs
                 mode = $opencodeMode
                 supports_pure = $opencodeSupportsPure
+                elapsed_ms = $opencodeElapsedMs
                 structured_read_observed = $readToolObserved
                 output_file = "opencode.stdout.txt"
             }
             deepseek_harness = [ordered]@{
+                executable = $dsh
+                executable_sha256 = $dshExecutableSha256
+                version = $dshVersion
+                package_version = $dshPackageVersion
                 exit_code = $dshExit
+                started_at_unix_ms = $dshStartedAtUnixMs
+                finished_at_unix_ms = $dshFinishedAtUnixMs
+                elapsed_ms = $dshElapsedMs
                 structured_read_observed = $readToolObserved
                 isolated_home = "dsh-isolated"
                 output_file = "dsh.stdout.txt"
             }
             claude_code = [ordered]@{
                 exit_code = $claudeExit
+                started_at_unix_ms = $claudeStartedAtUnixMs
+                finished_at_unix_ms = $claudeFinishedAtUnixMs
+                elapsed_ms = $claudeElapsedMs
                 structured_read_observed = $claudeReadToolObserved
                 trace_rows = $claudeTraceRows.Count
                 output_file = "claude.stdout.txt"

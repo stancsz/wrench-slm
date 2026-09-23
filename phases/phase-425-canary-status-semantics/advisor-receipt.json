@@ -1,0 +1,16 @@
+{
+  "schema": "wrench.luna-advisor-receipt.v1",
+  "phase": 425,
+  "date": "2026-09-22",
+  "model": "codex-sol-advisor",
+  "endpoint": "http://localhost:4000/v1/chat/completions",
+  "request_id": "chatcmpl-codex-advisor-e26eb846398e",
+  "packet_chars": 1555,
+  "decision_changed": true,
+  "usage": {
+    "prompt_tokens": 347,
+    "completion_tokens": 1029,
+    "total_tokens": 1376
+  },
+  "advice": "Map missing, incomplete, or unapproved accounting to INCONCLUSIVE and keep the process exit nonzero. Nonzero local or frontier calls are not automatic failures; if accounting or savings evaluation is incomplete, report INCONCLUSIVE, while a fully evidenced threshold miss remains FAIL. Preserve genuine answer and safety failures, do not claim Gate D from one paired canary, and stop before provider spend or release claims."
+}

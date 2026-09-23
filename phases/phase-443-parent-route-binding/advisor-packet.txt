@@ -1,0 +1,12 @@
+Decision: Determine the narrowest safe guard for preventing a paid-canary child route from exceeding the active Q4 parent route.
+
+Facts:
+- The active Wrench parent contract binds one paid paired canary to the GPT-6 route at `http://localhost:4000/v1`, one repetition, maximum USD 500. The exact GPT-6 alias is not yet selected.
+- The running gateway exposes `openrouter` -> `openrouter/minimax/minimax-m3` and `minimax` -> `minimax/MiniMax-M3`. Read-only credential metadata checks succeeded; no model completion was sent.
+- `_validate_parent_monetary_budget` checks parent contract ID and budget. `_validate_paid_baseline_child_contract` binds the parent hash, budget, endpoint, child alias, and child-declared expected provider model, but does not compare the child route with a structured parent route allowance.
+- A synthetic in-process child for alias `openrouter`, expected provider model `openrouter/minimax/minimax-m3`, exact current parent hash, one repetition, and USD 0.01 cap was accepted against the active GPT-6 parent. No output directory, network request, or model call was made.
+- A separate human route-choice request is pending. This review must not decide whether the user should retain GPT-6 or switch to MiniMax.
+
+Constraints: Do not make a provider/model request, change the active parent scope, infer route approval, or weaken any spend, workload, or hash guard. Keep the exact GPT-6 variant pending unless the human chooses it.
+
+Question: Is this a fail-open authorization defect, and what is the smallest fail-closed remediation that avoids parsing free-text scope? Should missing structured parent route allowance block child creation/run until the human binds an exact alias or explicit model-family allowlist? Give the verdict, next local test, and stop condition.

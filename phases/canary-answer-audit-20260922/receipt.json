@@ -1,0 +1,38 @@
+{
+  "schema": "wrench.saved-client-answer-audit.v1",
+  "status": "FAIL_SAVED_CLIENT_ANSWER_CHECK",
+  "source_receipt_sha256": "9dc2a1185c975030b4b7e2cddf71f4e4fd75272e4356802ee4685753001b1f77",
+  "source_smoke_status": "PASSED",
+  "clients": {
+    "opencode": {
+      "oracle": "bounded-first-heading-output-v1",
+      "correct": false,
+      "output_sha256": "f9bac4cb10705d3040b4ddb6d908924e79cb8c4005ec067b9537132ff8d23fc1",
+      "expected_observation": "# Wrench SLM",
+      "reason": "expected_answer_missing_or_mismatched",
+      "source_file": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-389-accounting-gate\\receipt-hybrid\\opencode.stdout.txt",
+      "source_file_sha256": "d10fec661b662f3803c66d7388c87c2d707930392d9878fc64a18275c5e2cb92"
+    },
+    "deepseek_harness": {
+      "oracle": "bounded-first-heading-output-v1",
+      "correct": true,
+      "output_sha256": "0d8705b728b5e119723ed81d4416c5fa8cc8cff7c4d1bc54193105f74e95bec6",
+      "expected_observation": "# Wrench SLM",
+      "reason": "expected_answer_observed",
+      "source_file": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-389-accounting-gate\\receipt-hybrid\\dsh.stdout.txt",
+      "source_file_sha256": "100b9dcca80434c239d1f02015a76c8b034cfecab12d0042d9c0ac7600960d3f"
+    },
+    "claude_code": {
+      "oracle": "bounded-first-heading-output-v1",
+      "correct": true,
+      "output_sha256": "5115aa686835f36a7f635b62e7b4edb47e01faa09b88eba0cf1b2ca20f3c3168",
+      "expected_observation": "# Wrench SLM",
+      "reason": "expected_answer_observed",
+      "source_file": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\phases\\phase-389-accounting-gate\\receipt-hybrid\\claude.stdout.txt",
+      "source_file_sha256": "f82a76239a86ac1daa21be7c36fdd6ac347d8effbdee5f3d11b2bf300a1411f5"
+    }
+  },
+  "provider_called": false,
+  "production_enablement": false,
+  "scope": "Saved first-heading answers only; no general semantic or productive-value claim"
+}

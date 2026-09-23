@@ -1,0 +1,12 @@
+Decision: Align the paired-canary status classifier with the active outcome contract without weakening any release gate.
+
+Observed facts:
+- The utility contract defines outcomes as PASS_WRENCH, INCONCLUSIVE, or FAIL_WRENCH and says missing or unapproved evidence is INCONCLUSIVE.
+- `_classify_canary_status` currently returns `FAIL_PAIRED_REAL_CLIENT_HYBRID_CANARY_ACCOUNTING_INCOMPLETE` when both answer checks pass but accounting is incomplete.
+- The CLI returns exit code 0 only for the specific PASS status; all other outcomes remain nonzero.
+- The pass predicate also requires zero hybrid frontier tokens and zero hybrid model calls. The active Gate D instead measures at least 95% net frontier-token savings after local inference and overhead; the single paired canary is necessary but insufficient.
+- A pinned local loopback run passed the direct OpenCode/DSH checks and all three hybrid client answer checks, with zero hybrid model calls, but lacked provider request IDs and paid cost. It correctly did not pass.
+
+Constraints: no provider spend, no release-gate relaxation, no production changes, no historical receipt rewrites. Preserve a nonzero process exit for anything other than a qualified pass.
+
+Question: What is the smallest safe status/predicate correction now? Specifically, should incomplete evidence map to INCONCLUSIVE while retaining nonzero exit, and should nonzero frontier/local calls be classified as INCONCLUSIVE pending threshold accounting rather than immediate FAIL? Give a verdict, minimal regression, and stop condition.

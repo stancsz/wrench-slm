@@ -1,0 +1,4241 @@
+# Archived goal snapshot: Wrench 多快好省
+
+> Historical snapshot preserved on 2026-09-22 when the active goal was
+> compacted. This file is evidence history only. The active contract is
+> [the root GOAL.md](../../GOAL.md), and the machine-readable Q4 contract is
+> [COLLABORATION_CONTRACT.json](../../COLLABORATION_CONTRACT.json).
+
+Status: active
+Updated: 2026-09-22
+Owner: repository agent
+
+## Outcome
+
+Deliver one smallest-sufficient Wrench SLM that makes routine, mechanically
+verifiable developer-tool work **多快好省** when combined with the stronger
+frontier model:
+
+- **多**: correctly cover at least 90% of the weighted mechanical-workload
+  frontier-token mass without a frontier fallback, measured on authorized
+  representative traces rather than synthetic case count alone.
+- **快**: materially reduce successful eligible-task end-to-end latency, with
+  median and p95 measured against the same teacher-only workflow.
+- **好**: preserve final task success, use the independent verifier, produce
+  zero prohibited accepts and zero unexpected mutations, and abstain cleanly
+  whenever the task is uncertain or outside the approved portfolio.
+- **省**: deliver at least 95% net frontier-token savings versus teacher-only,
+  after fallback, retries, corrections, verifier work, and context compaction
+  are included.
+- **Teacher parity**: on the authorized mechanical-work portfolio, the
+  `wrench_plus_identical_minimax_fallback` arm has no material final-success or
+  verifier-success regression versus the MiniMax teacher-only arm.
+- **Always-on worker**: Wrench is a small, low-latency model that can stay
+  running and replace most routine MiniMax M3 or Luna搬砖 work. Larger frontier
+  models retain the thinking, planning, architecture, and high-uncertainty
+  work. Wrench receives bounded conclusions or advice from those models and
+  continues the mechanical work until the next uncertainty or reasoning
+  boundary.
+- **Real client utility**: Wrench must be directly usable by OpenCode, Claude
+  Code, and DeepSeek Harness on real read-only developer-tool work, with
+  observable traces, normal generation or proposal behavior, clean fallback,
+  and no claim of usability based only on an HTTP 200 or a synthetic smoke.
+- **Small enough to run continuously**: the promoted Wrench model has a total
+  parameter count strictly below 5,000,000,000. Active parameters, expert
+  count, pruning ratio, quantization, and adapter size do not substitute for
+  this total-parameter bound.
+
+Choose the smallest candidate that passes the workflow gates and stays below
+the strict 5B total-parameter bound. LoRA, QLoRA, supervised fine-tuning,
+distillation, pruning, quantization, or another training method may be used as
+needed. The historical 8E and 16E artifacts remain comparison evidence, not
+product tiers. The previous 4.25B figure remains a historical implementation
+guard within the new sub-5B product bound, not the North Star and not a reason
+to keep a larger model.
+
+Every uncertain, unsupported, risky, malformed, or failed case preserves the
+original request and falls back cleanly. Rules may own rigid tasks when they
+are safer and more economical, but the complete Wrench-plus-fallback workflow
+must be measured against teacher-only.
+
+Here "original full weights" means the existing Desktop
+Qwen3.6-35B-A3B-NVFP4 package with all routed experts retained. It is quantized,
+not the original BF16 precision checkpoint. Record both identities explicitly
+if a BF16 comparison is added. This package is a teacher or comparison
+reference only, not a candidate for the sub-5B promoted artifact. Independent
+execution verification remains required regardless of model size.
+
+## Operating role and escalation contract
+
+Wrench is designed as an always-running practical worker, not as the system's
+primary reasoning brain. The normal route is:
+
+1. Wrench receives a bounded task, relevant context, and any verified guidance
+   from the stronger model.
+2. Wrench performs routine mechanical work through allowlisted proposals,
+   deterministic tools, and the independent verifier.
+3. A larger frontier model is called only when Wrench is uncertain, the task
+   requires planning or deep reasoning, the boundary is risky, or the current
+   attempt cannot be verified.
+4. The frontier result or advisor recommendation is passed back as bounded
+   guidance to the Wrench worker. Wrench continues until the next uncertainty
+   or reasoning boundary, rather than repeatedly sending the full history back
+   to the paid model.
+
+The cost target is to reduce a charged model's usual 256K to 512K input into
+roughly 16K to 64K effective context per call, normally using only one or two
+frontier calls for a practical task. This is a target to prove with matched
+workflow accounting, not a claim that context reduction alone creates savings.
+
+When an important design or implementation decision remains ambiguous after a
+focused local inspection and targeted test, or when work is genuinely stuck,
+use the repository's `luna-advisor-escalation` procedure. Consult Sol first;
+use Astra only for a high-leverage unresolved system-level decision. Keep the
+packet compact, never include secrets, make at most two consultations without
+new user direction, and record provider usage plus whether the advice changed
+the next experiment. Advisor output is a hypothesis and bounded guidance, not
+implementation authority or proof that the workflow works.
+
+## North Star measurement contract
+
+The primary release decision is made on a frozen, human-reviewed, redacted
+workflow trace set with production task-family weights. The canonical 220-case
+suite is a semantic and safety regression gate, not a substitute for the
+weighted workflow measurement.
+
+Define the three arms on identical traces:
+
+1. MiniMax teacher-only;
+2. rules plus identical MiniMax fallback;
+3. Wrench plus identical MiniMax fallback;
+4. Wrench-only diagnostic;
+5. where applicable, the same task through OpenCode, Claude Code, and DeepSeek
+   Harness, with client and Wrench receipts correlated by request ID.
+
+Report separately and together: verified mechanical coverage by task volume and
+frontier-token mass, final success, correct acceptance, abstention, fallback,
+retry, correction, local Wrench tokens, frontier tokens, total tokens, cost,
+latency, prohibited accepts, and unexpected mutations. A lower teacher-call
+count or a smaller checkpoint alone is not savings evidence.
+
+## Why
+
+Routine tool selection can waste frontier-model turns and context, but a smaller
+model has value only after its inference, verification, retries, corrections,
+and fallback are included in the full workflow cost and latency.
+
+## Serving lanes
+
+The production-value candidate uses a hybrid long-context lane as its default:
+
+1. accept the raw request at the package-local Wrench endpoint, up to the
+   declared logical context limit;
+2. run the deterministic, model-local MapReduce prefill over the raw payload;
+3. preserve the newest intent and hot context, then expose only hash-bound
+   lookup cards and bounded evidence windows to the model's working context;
+4. let Wrench propose a bounded action, with the independent verifier and the
+   identical frontier fallback retaining final authority.
+
+This lane is the practical release target because it gives Wrench a large
+logical context without making a 4B model attend densely to stale tokens. Its
+acceptance evidence must report raw input size, staged working-context size,
+retrieval recall, staging latency, model latency, and complete workflow value.
+
+The 2M and 4M context window belongs to the model-local serving surface, like
+an Ollama model's `options.num_ctx`, not merely to an API gateway that accepts
+and truncates a request. Standard clients must be able to send the raw payload
+directly to the Wrench model endpoint and receive an observable receipt showing
+the configured logical context, no-truncation intake, raw hash, effective
+working context, and any model calls.
+
+Dense native 2M/4M attention is not a Wrench product gate or selling point. It
+may remain as an optional research comparison, but it must not block the
+hybrid production-value release. The product claim is model-local raw-context
+intake plus deterministic reduction, retrieval, bounded model work, and
+verification. A hybrid pass must be labelled as hybrid, and a native stress
+pass must not be presented as workflow utility.
+
+### Conditional dense-native target
+
+If a dense-native 2M/4M lane is enabled, the first model-side stage must be a
+fast context gate, not ordinary full-cost attention. This stage is an
+integrated pruner plus cherrypicker that can inspect the complete raw sequence,
+rank useful spans, and emit a bounded 32K to 64K active working context before
+expensive attention or other high-memory layers run. It must preserve the
+newest intent, unresolved authority and dependency context, recent tool state,
+and hash-bound evidence selected from older lookups. The selected and omitted
+spans, raw-payload hash, effective context size, and gate latency must be
+observable in the serving receipt. This is a conditional architecture target,
+not a requirement to replace the faster hybrid MapReduce product path.
+
+## Invariants
+
+- Wrench proposes bounded structured actions or abstains. It never owns the full
+  tool loop, arbitrary shell execution, credentials, or autonomous writes.
+- An independent verifier validates schema, resource identity, arguments,
+  permissions, bounds, observations, and task-family rules before execution.
+- Invalid, uncertain, timed-out, malformed, or boundary-changing proposals fall
+  back with the original request intact.
+- Rules own rigid tasks when they are as safe and useful as a learned route.
+- Training data, checkpoints, raw prompts, credentials, proprietary traces, and
+  customer data stay outside Git unless explicitly authorized and reviewed.
+- A model's parameter count, quantization, benchmark result, or offline test
+  cannot be presented as workflow value, production readiness, or token savings.
+- The promoted artifact must satisfy `total_parameters < 5,000,000,000`.
+  Larger teachers, comparison packages, and research checkpoints may be used
+  for evidence but cannot be promoted as Wrench.
+- OpenCode, Claude Code, and DeepSeek Harness are compatibility and utility
+  surfaces, not decorative adapters. A client claim requires a real bounded
+  task, observable correlated receipt, and clean mutation and fallback result.
+- The RTX 5070 Ti workstation and 5060 Ti worker use the same hash-identified
+  source commit, artifact commit, tokenizer, runtime, verifier, and manifest
+  when they are evaluating the same candidate. The 5070 Ti owns interactive
+  development and same-host comparison; the 5060 Ti owns independently
+  reproducible batch evaluation and artifact re-verification. Host-specific
+  latency and memory results remain separate and are never merged into a
+  same-hardware claim.
+
+## Acceptance criteria
+
+- [ ] Deliver one hash-identified smallest-sufficient standard Wrench model
+  artifact with a Hugging Face-compatible Safetensors package, tokenizer,
+  context policy, and verified load/generation path. FreeToken remains a
+  comparison backend, not the canonical serving artifact. The promoted model
+  must prove `total_parameters < 5,000,000,000` from its architecture and
+  manifest. The historical 4,250,000,000-parameter figure is not a separate
+  product tier.
+- [ ] Measure candidate selection by the North Star gates, not by expert count:
+  verified mechanical coverage, final success, safety, frontier-token savings,
+  total cost, and end-to-end latency.
+- [ ] Reproduce the selected candidate across the RTX 5070 Ti and 5060 Ti
+  worker using the same source commit, artifact commit, manifest hashes,
+  tokenizer, runtime, verifier, prompts, and decoding contract. Record
+  host-specific load, memory, latency, throughput, retry, and failure receipts;
+  use the 5060 Ti for independent batch verification without treating its
+  different hardware as a same-host speed comparison.
+- [ ] Freeze the MiniMax-worker trace set, family-disjoint splits, workload
+  weights, labels, teacher identity receipt, and scoring code before candidate
+  selection. The new contract must include routine mechanical work, recent
+  context, old-lookup retrieval, irrelevant-history pressure, boundary and
+  injection cases, complex fallback, and 2M-payload stress. Existing 28-case
+  and 220-case fixtures are regression evidence only. No final trace or answer
+  may enter training, expert selection, or prompt tuning.
+- [ ] On a fresh family-disjoint semantic test set, report eligible-task
+  correct acceptance, overall expected-outcome match, exact abstention reasons,
+  malformed outputs, service failures, prohibited accepts, and paired
+  confidence intervals. The model need not win an academic score if the
+  complete measured workflow passes the North Star gates, but it may not trade
+  away safety or final task success to obtain token savings.
+- [ ] Measure high-throughput serving on the same matched traces, with at least
+  three repetitions after readiness/warmup. Report successful-task p50/p95
+  prefill, decode, end-to-end latency, throughput, cache hit rate, peak memory,
+  and cold-load time separately. Quick refusals cannot masquerade as fast
+  mechanical completion.
+- [ ] Compare exact request payloads, prompts, decoding parameters, token caps,
+  verifier, task starting state, and retry policy on the same hardware/runtime.
+  Separate cold and warm cache runs. Terminate and verify exit of all owned
+  worker processes between arms, record free VRAM and background load, and
+  counterbalance arm order. Preserve raw outputs and every failed attempt.
+  Differences in tokenizer, quantization, or cache allocation must be reported.
+  Require zero prohibited accepts and zero unexpected mutations on the suite;
+  do not relax the verifier to improve acceptance. Benchmark gains alone do
+  not satisfy the production-value gates below.
+- [ ] Establish the candidate's exact official source, license, architecture,
+  routing interface, tensor layout, and reproducible load path. Treat all
+  unverified claims about a prospective model as hypotheses.
+- [ ] Define a human-reviewed portfolio of low-risk, independently verifiable
+  Wrench task families, exclusions, outcome verifiers, volume weights, and
+  calibration/evaluation split before profiling or pruning choices are made.
+- [ ] Create a reproducible router-profile receipt on the approved calibration
+  corpus, including model hash, tokenizer/runtime versions, per-layer expert
+  usage, routing entropy, token counts, and retained-expert selection rule for
+  the single selected candidate and its comparison references.
+- [ ] Implement structural pruning only from a verified unquantized checkpoint,
+  with an architecture-aware loader, a manifest of every retained tensor, and
+  load/forward parity checks. Packed quantized formats are never sliced as if
+  they were ordinary floating-point tensors.
+- [ ] Compare the unpruned and pruned candidates on a held-out task-family split
+  with proposal correctness, prohibited accepts, abstention/fallback reasons,
+  verifier outcomes, latency, memory, throughput, and calibration cost.
+- [ ] If calibration is used, record its data lineage, teacher identity, budget,
+  hyperparameters, held-out boundary, and before/after metrics. Do not use test
+  results for tuning and then report them as final evidence.
+- [ ] Produce and load-test the single selected quantized candidate. Record
+  actual packed bytes, runtime identity, and load/forward evidence. Ideal INT4
+  estimates are not artifact sizes. Additional size tiers are comparison
+  artifacts only unless the smallest-sufficient candidate changes.
+- [ ] Run MiniMax teacher-only, rules-plus-identical-fallback, and
+  Wrench-plus-identical-fallback arms on the same authorized teacher traces.
+  The Wrench arm must cover at least 90% of weighted mechanical frontier-token
+  mass, preserve teacher final success within the frozen non-inferiority margin,
+  and show at least 95% net frontier-token savings versus teacher-only, with
+  paired uncertainty, zero prohibited accepts, zero unexpected mutations, and
+  separately reported local inference overhead.
+- [ ] Demonstrate that Wrench behaves like a specialized MiniMax worker on
+  real practical developer-tool work, not only on fixture replay. Exercise
+  OpenCode, Claude Code, and DeepSeek Harness with bounded read-only tasks,
+  observe their client traces and Wrench receipts, verify normal generation or
+  structured proposal behavior, and record fallback, cancellation, and
+  mutation-boundary outcomes. The three client paths must be usable with the
+  same hash-identified package and must not require hidden manual edits to the
+  request or a gateway-side context truncation workaround.
+- [ ] Validate the always-on worker route with matched accounting. Show that
+  routine work stays on Wrench, that larger frontier models are called only for
+  uncertainty, risk, planning, or deep reasoning, and that a frontier result or
+  advisor recommendation can be returned as bounded guidance to Wrench for
+  continued mechanical work. Report one or two frontier calls where the task
+  permits, effective charged-model context reduced from the 256K to 512K class
+  toward 16K to 64K, total tokens, cost, latency, retries, and final outcome.
+  This criterion is not satisfied by counting fewer calls without accepted
+  work and authoritative usage accounting.
+- [ ] Select and train the candidate using the smallest method that works.
+  LoRA, QLoRA, supervised fine-tuning, distillation, pruning, quantization,
+  or another method may be used, but every method must retain disjoint
+  calibration and evaluation data, lineage-bound artifacts, and the same
+  verifier and safety gates. A method name, adapter existence, or parameter
+  count alone is not evidence of production utility.
+- [ ] Accept up to 4,000,000 raw input tokens directly at the Wrench
+  model-local serving endpoint, like an Ollama model with
+  `options.num_ctx=4000000`. The endpoint must not require an external gateway
+  to receive the payload. The receipt must bind the raw payload hash,
+  configured logical context, no-truncation intake evidence, staged working
+  context size, retrieval selection, and cache behavior. Deterministic
+  MapReduce, AST, search, and verifier work may reduce the payload before a
+  model backend sees it. Keep recent hot context active by default, keep old
+  lookups reference-only, and produce a hash-bound receipt for every selected
+  or omitted span. Measure 64K, 128K, 256K, 2M, and 4M raw-input points where
+  hardware permits.
+- [ ] Treat dense native 2M/4M attention as optional research evidence only.
+  It is not required for the Wrench product claim and must not block the
+  hybrid raw-intake plus effective-working-context path.
+- [ ] Conditional dense-native first-layer target: if dense-native 2M/4M
+  serving is enabled, the portable model/runtime must include an integrated,
+  low-cost pruner plus cherrypicker as its first model-side layer/stage, not
+  merely a metadata or gateway setting. It must
+  receive the full raw sequence, compact it to a bounded 32K to 64K active
+  working context before expensive attention, preserve newest intent,
+  authority/dependency context, recent tool state, and hash-bound lookup
+  evidence, and receipt selected spans, omitted spans, raw hash, effective
+  context size, and gate latency. This target is optional and must not block
+  the hybrid product release.
+- [ ] Demonstrate bounded no-mutation shadow operation: health/metrics, finite
+  attempt and token ceilings, cancellation, restart/recovery, circuit breaking,
+  bypass, alerting, and hash-bound rollback.
+- [ ] Keep learned routing `DISABLE` until the above evidence and explicit human
+  approval for an exposure-limited pilot exist.
+
+## Non-goals
+
+- General-purpose coding-agent replacement, anonymous weight release, public
+  production claims, deployment, provider spending, or live routing enablement.
+- Assuming a stated sparse-expert count, active-parameter count, VRAM fit,
+  throughput, release date, or pruning outcome without inspecting the real
+  checkpoint and measuring it on named hardware.
+
+## Current approach
+
+Capture and approve MiniMax teacher traces first. Rebuild the evaluation around
+weighted mechanical frontier-token mass, teacher parity, recent-context
+behavior, reference-only old lookups, model-local 2M/4M raw intake, effective
+working-context quality, and matched fallback accounting. Use those traces to
+teach and select Wrench, while keeping the final family-disjoint split sealed.
+Then produce one standard Safetensors artifact with the embedded hybrid
+runtime, and validate the package-local Ollama-shaped path plus standard loader
+boundaries separately.
+In parallel, validate the same package as a real worker behind OpenCode, Claude
+Code, and DeepSeek Harness. The client test must perform observable practical
+work and retain enough correlated receipt data to distinguish a real Wrench
+generation or proposal from a client shim, a rules shortcut, a fallback, or an
+HTTP-only smoke.
+
+LoRA, QLoRA, fine-tuning, distillation, pruning, quantization, expert count,
+and runtime cache strategy are implementation variables. Select whichever
+method produces the smallest total model below 5B while passing the workflow
+gates. None may be optimized against the sealed final set. The long-lived
+runtime should keep routine work on Wrench and reserve frontier calls for
+uncertainty, risk, planning, or deep reasoning. When advice is needed, pass
+only the bounded, relevant result back to Wrench and continue the worker loop.
+
+This revision records the user's single-model experimental objective. It does
+not declare the performance targets feasible or achieved. Keep source artifacts
+recoverable. Provider spending, external data use, publication, and production
+enablement retain their existing authorization boundaries.
+
+The current worker split is deliberate: the RTX 5070 Ti remains the interactive
+builder and same-hardware comparison host, while the 5060 Ti is an asynchronous
+batch worker for independent evaluation, artifact integrity checks, and
+repeatable long-running jobs. Code and instructions synchronize through the
+source repository. Large checkpoints synchronize through the private Git LFS
+artifact repository. Job manifests, heartbeats, logs, and result receipts use
+the approved worker exchange channel. A worker must not silently substitute a
+different checkpoint or runtime.
+
+## Remaining gap for the revised objective
+
+The hybrid mechanical-worker contract now passes on the corrected 220-case
+receipt. The v2 held-out slice is diagnostic-only until its health fixture is
+isolated from the live host service. The remaining release work is a clean
+family-disjoint approval record, independent 5060 Ti verification, operational
+shadow checks, selection of the smallest sufficient standard artifact below
+5B, and real client workflow verification with OpenCode, Claude Code, and
+DeepSeek Harness. Existing client smokes establish wiring evidence, but do not
+alone establish learned MiniMax-worker parity or general production utility.
+The 256K to 512K charged-model reduction target also needs matched accepted-task
+accounting, not only context-size receipts. Dense native 2M/4M attention is
+intentionally not in the hybrid release gap. It is an optional research lane,
+but if enabled its first model-side stage must still be the integrated fast
+pruner plus cherrypicker that compacts to 32K to 64K.
+
+## Human authorization record
+
+On 2026-09-19, the product owner authorized the repository agent to take the
+bounded actions needed to pursue the remaining release-quality evidence,
+including approved live evaluation work, provider-backed workflow traces, and
+reversible local implementation and verification. This authorization does not
+change product intent, acceptance criteria, hardware boundaries, data lineage
+rules, or commit authority. It does not convert missing evidence into a pass,
+authorize production routing, deployment, publication, or release, and it does
+not permit weakening any safety or verifier gate. The product owner
+confirmed that the release target is one smallest-sufficient standard model
+artifact that behaves like a specialized MiniMax worker on the mechanical
+portfolio, accepts a direct 4M model input through standard serving, and is selected by the
+revised teacher-parity contract. The historical 4.25B figure is an
+implementation guard, not the product objective. Learned routing remains
+`DISABLE` until every acceptance criterion passes and final human release
+approval is separately recorded.
+
+## Current evidence
+
+This is a clean restart. The prior implementation and all local artifacts are
+preserved under
+`C:\Users\stanc\github\portfolio\archives\wrench-slm-2026-09-17-pre-restart`;
+none are evidence for this new candidate.
+
+Phase 1 has now inspected the local
+`Qwen3.6-35B-A3B-NVFP4` package without loading or modifying its weights. The
+receipt at
+`phases/phase-1-checkpoint-facts/checkpoint-facts.json` records 40 text layers,
+256 routed experts, top-8 routing, 2,048 hidden size, 291 quantized modules,
+and SHA-256 identities for all four `.ftw` shards (21,785,153,536 bytes total).
+It also records the required stop: this packed NVFP4/FP8 artifact is not a
+structural-pruning source. The next phase must obtain or identify a verified
+unquantized checkpoint before any tensor slicing is attempted.
+
+Phase 2 mechanically audited the locally staged dataset files. All 5,000 rows
+parse as JSONL, but the corpus is not approved for Wrench training: the audit
+shows broad web/research and finance/crypto content outside the narrow developer
+tool contract. The files remain ignored and local; filtering and license/task-
+family review are required before they can enter calibration or SFT.
+
+Phase 3 identified the official unquantized Qwen source at revision
+`995ad96eacd98c81ed38be0c5b274b04031597b0`. Its verified metadata declares an
+Apache-2.0 model with 26 safetensor shards totaling 71,903,645,408 bytes. The
+unquantized checkpoint is not present locally, so structural pruning remains
+disabled pending an explicitly authorized acquisition and local inspection.
+
+Phase 4 froze a proposed, family-disjoint portfolio in
+`phases/phase-4-task-portfolio/portfolio.json`. It covers bounded reads,
+literal search, read-only Git status, allowlisted local health reads, and
+review-only patch drafts. Its approval status is intentionally pending human
+review; the final evaluation split must not be tuned after results are seen.
+
+Phase 5 provides a guarded acquisition command for the pinned 71.9 GB
+unquantized source. It has not been run; no large download or external model
+mutation has occurred.
+
+Phase 6 found that the current global Transformers 4.57.1 cannot recognize the
+Qwen3.6 `qwen3_5_moe` architecture. A project-specific runtime requirement and
+non-mutating compatibility check are now recorded. Transformers 5.17.0 parses
+the metadata in an isolated environment, but without PyTorch; inference status
+was then verified as `READY` in a second isolated environment that reused the
+existing system PyTorch. This proves runtime prerequisites only; no Qwen weights
+were loaded, and GPU inference remains unverified.
+
+The same isolated environment successfully instantiated
+`Qwen3_5MoeForConditionalGeneration` on meta tensors from the local config,
+without allocating weights. This closes architecture-instantiation evidence,
+but not checkpoint loading, GPU execution, latency, or quality evidence.
+
+Phase 7 exercised the local NVFP4 artifact through Docker vLLM 0.29.0. CUDA,
+the RTX 5070 Ti, Qwen architecture resolution, and ModelOpt detection passed;
+engine startup then failed before weight load with `UVA is not available` in the
+vLLM V1 engine. No request or token was generated. The diagnostic receipt is at
+`phases/phase-7-nvfp4-runtime-smoke/runtime-smoke.json`.
+
+Phase 8 used the artifact's matching FreeToken runtime instead of the default
+vLLM loader. FreeToken loaded the `.ftw` weights and expert banks with bounded
+expert offload, completed CUDA-graph and prefill warmup, exposed the served
+model `Qwen3.6-35B-A3B-NVFP4`, and returned the exact bounded response
+`WRENCH_RUNTIME_OK` from `/v1/chat/completions`. The receipt is at
+`phases/phase-8-freetoken-runtime-smoke/runtime-smoke.json`. This closes only
+the local checkpoint-load and one-request runtime gate; pruning, quality,
+throughput, recovery, and release gates remain open.
+
+Phase 9 added the independent read-only execution boundary in
+`src/wrench_harness/core.py`. It accepts only the versioned portfolio actions,
+enforces bounded paths and reads, invokes a fixed read-only Git command,
+allowlists local health endpoints, and keeps patch drafts review-only. The
+boundary suite passes 4 tests, including traversal, external-health, and
+automatic-application abstentions. The receipt is at
+`phases/phase-9-execution-boundary/boundary-tests.json`. This proves the
+verifier contract, not that the Qwen model can produce correct proposals.
+
+Phase 10 exercised the local Qwen runtime in shadow mode. Given a strict
+proposal prompt, it returned an exact `wrench.proposal.v1` read-file object;
+the Phase 9 harness accepted it and observed 787 bytes without mutation. The
+receipt is at `phases/phase-10-qwen-shadow-proposal/shadow-receipt.json`.
+FreeToken does not support constrained JSON decoding, so schema validation and
+fail-closed execution remain authoritative. This is one integration smoke
+case, not a proposal-quality or workflow-success result.
+
+Phase 11 ran the guarded preflight for the official unquantized source. The
+checkpoint is absent at `D:\\models\\Qwen3.6-35B-A3B`, and the target drive has
+544,558,661,632 free bytes against the 82,641,063,648-byte guard requirement.
+The command refused to download without `--confirm-71gb` and created no output
+directory. The preflight receipt is at
+`phases/phase-11-source-acquisition-gate/preflight.json`. Structural pruning
+remains disabled until that explicit operator confirmation and subsequent
+official-index verification occur.
+
+Phase 12 added `tools/validate_pruning_source.py`, a metadata-only gate that
+requires the expected Qwen3.6 MoE architecture and official safetensors index
+before pruning code can run. Against the real local package it returned
+`eligible: false` for packed FTW shards, quantization metadata, and a missing
+safetensors index. The receipt is at
+`phases/phase-12-pruning-source-validator/local-validation.json`; the test
+suite now passes 5 tests. No weight was loaded, sliced, or rewritten.
+
+Phase 13 ran 10 deterministic cases from the proposed task portfolio through
+the independent verifier. All 10 matched their expected accept or fallback
+outcome, with zero prohibited accepts. The receipt is at
+`phases/phase-13-portfolio-boundary-eval/evaluation.json`. The portfolio is
+still marked `pending_human_approval`, and this boundary-only result is not
+model-quality or workflow-success evidence.
+
+Phase 14 added strict model-output parsing through
+`execute_model_output`. Exact JSON objects route to the existing verifier;
+markdown, prose, malformed JSON, arrays, and empty output abstain. The full
+test suite passes 6 tests. The parser receipt is at
+`phases/phase-14-model-output-parser/parser-tests.json`. This closes a text
+boundary only and does not establish proposal quality.
+
+Phase 15 added a bounded localhost-only adapter in
+`src/wrench_harness/client.py`. It checks endpoint policy, response size,
+returned model identity, and routes content through the strict parser. The
+local mock-server integration suite passes 7 tests; its receipt is at
+`phases/phase-15-local-qwen-adapter/adapter-tests.json`. This proves adapter
+boundary behavior only, not Qwen quality or production readiness.
+
+Phase 16 added `ProposalRouter` and `RouterConfig` for finite attempt ceilings,
+circuit opening after repeated abstentions, explicit operator bypass, and
+hash-bound reset. The full suite passes 8 tests. The receipt is at
+`phases/phase-16-routing-guard/guard-tests.json`. Cancellation, durable
+restart, alert delivery, and rollback storage remain open.
+
+Phase 17 added schema- and configuration-hash-bound router state persistence in
+`src/wrench_harness/state.py`. Save, restore, counter recovery, and
+configuration-mismatch rejection pass in the 9-test suite. The receipt is at
+`phases/phase-17-router-state/state-tests.json`. Process-crash simulation,
+cancellation, alert delivery, and rollback storage remain open.
+
+Phase 18 added cooperative cancellation and event hooks to the routing guard.
+The 10-test suite covers cancellation, circuit-open, reset, bypass, and
+observability-failure behavior. The receipt is at
+`phases/phase-18-cancellation-events/control-tests.json`. Blocking-kernel
+interruption and external alert delivery remain unproven.
+
+Phase 19 exercised the real local Qwen3.6 NVFP4 runtime through the Phase 15
+adapter. FreeToken served the configured model, Qwen returned a strict JSON
+read proposal, and the verifier accepted the 787-byte observation without
+mutation. The receipt is at
+`phases/phase-19-real-qwen-adapter/runtime-receipt.json`. This proves one
+real local integration path only, not model quality or workflow success.
+
+Phase 20 measured the real adapter path with a monotonic timer. A loose prompt
+abstained on invalid JSON after 4,986.808 ms; an exact-schema retry was
+accepted after 1,923.364 ms with 72 prompt and 40 completion tokens. Both
+attempts are preserved in `phases/phase-20-performance-smoke/performance-
+receipt.json`. This is a two-attempt diagnostic, not a throughput benchmark.
+
+Phase 21 sent five accepted-action proposal shapes from the pending portfolio
+through the real local Qwen runtime, adapter, and verifier. All five were
+accepted; per-case usage and wall time are recorded in
+`phases/phase-21-qwen-shadow-eval/shadow-receipt.json`. This remains shadow
+observation only, not calibration, final evaluation, or a quality claim.
+
+Phase 22 acquired the explicitly authorized official unquantized source at the
+pinned revision and validated its local metadata against the official
+safetensors index. The checkpoint is at `D:\\models\\Qwen3.6-35B-A3B`; the
+receipts are `phases/phase-22-source-inspection/checkpoint-facts.json` and
+`phases/phase-22-source-inspection/pruning-source-validation.json`. The
+validator reports 26 present safetensors shards, 1,045 mapped tensors, the
+exact 71,903,645,408-byte index total, and `eligible: true`. This permits
+profiling and pruning design, but does not establish loadability, quality,
+throughput, or production value.
+
+Phase 23 read only the safetensors headers and measured the structural expert
+footprint. The source contains 35,951,822,704 BF16 tensor elements, including
+33,017,561,088 routed-expert elements and 21,495,808 router elements. Keeping
+8 experts per MoE block estimates 3.945B total parameters; keeping 16 estimates
+4.978B. The 8-expert scenario is therefore the first measured candidate inside
+the 3 to 4B target. The receipt is
+`phases/phase-23-expert-size-estimate/size-estimate.json`. No expert set has
+been selected, no tensor has been sliced, and no quality or runtime claim is
+made.
+
+Phase 24 streamed a provisional structural prune retaining expert indices 0
+through 7 and the corresponding router rows. The resulting checkpoint,
+**Wrench-Code-4B-Qwen3.6-8E**, is stored at
+`D:\\models\\Wrench-Qwen3.6-8expert-BF16`, loads on CUDA, and reports
+3,881,244,016 actual parameters. The receipt is
+`phases/phase-24-structural-prune-baseline/prune-receipt.json`, with runtime
+evidence in `runtime-smoke.json`. The result is explicitly
+`EXPERIMENTAL_UNCALIBRATED`; its deterministic generation is not a quality
+pass, and the selected indices are not yet Wrench-specific.
+
+Phase 25 profiled the real NVFP4 teacher through 20 provisional Wrench prompts
+across 40 routed MoE layers. The receipt is
+`phases/phase-25-router-profiling/router-profile.json`; per-layer selection
+receipts retain 8, 16, or 32 experts, with an aggregate fallback for the
+unprofiled MTP block. Profile-informed BF16 candidates load and forward on
+CUDA: they report 3,881,244,016, 4,888,532,336, and 6,903,108,976 parameters.
+ModelOpt produced actual W4A16 NVFP4 exports. After removing only the unused
+vision tensors for Wrench's text-only runtime, the self-contained FreeToken FTW
+artifacts are 3,426,071,712 bytes for 8 experts and 3,995,579,915 bytes for
+16 experts. Both report `quant_format: nvfp4` and passed bounded one-request
+CUDA load/generation smokes. These remain experimental and uncalibrated, and
+the 32-expert path is still BF16-only.
+
+Phase 26 ran a development-only, fresh-wording comparison through the
+independent verifier. Both final text-only FTW packs served all 10 cases, but
+both scored 0/10 exact matches. Their captured outputs repeatedly looped on an
+incomplete JSON fence. This is evidence that the current structural prune and
+quantization preserve loadability, not Wrench behavior. The result is
+explicitly provisional and does not replace the human-approved held-out gate,
+teacher comparison, or calibration work.
+
+Phase 27 added an experimental calibration path using synthetic Wrench proposal
+rows, frozen pruned checkpoints, router and shared-expert gate updates, and a
+small output adapter. The calibration restored valid proposal behavior on
+narrow probes, but it is not a production fine-tune or a human-approved data
+set.
+
+Phase 28 reran both calibrated tiers against the same corrected 14-case
+synthetic holdout. The 8-expert and 16-expert tiers each scored 9/14 in BF16
+and 7/14 after NVFP4 packing. The corrected text-only FTW directories are
+3,426,514,763 bytes for 8 experts and 3,996,022,974 bytes for 16 experts.
+Exact proposal-object matches are 6/14 for 8E BF16, 6/14 for 8E FTW, 4/14
+for 16E BF16, and 3/14 for 16E FTW. This closes the direct size comparison,
+but broader held-out quality, human portfolio approval, matched workflow value,
+and production enablement remain open.
+
+Phase 29 added a separate 28-case unseen synthetic evaluation fixture. The
+corrected fixture has unique IDs. The 8E packed tier scored 8/28 verifier
+outcomes and 7/28 exact proposal objects; the 16E packed tier scored 9/28 and
+7/28. This gives the larger tier only a small provisional edge and confirms
+that neither packed tier has yet met a usefulness or release gate.
+
+Phase 30 corrected the calibration data lineage itself: accepted byte limits
+now exceed the current file sizes, and the generators write hash-stable bytes
+on Windows. Fresh 500-step calibrations were quantized into new text-only FTW
+packs. On the corrected 14-case holdout, 8E scored 5/14 verifier outcomes and
+3/14 exact proposal objects; 16E scored 7/14 and 5/14. On the corrected
+28-case unseen fixture, 8E scored 9/28 and 9/28; 16E scored 10/28 and 7/28.
+The size gate is met, but usefulness, human approval, matched workflow value,
+and production enablement remain open.
+
+Phase 31 served the original Qwen3.6-35B-A3B NVFP4 teacher on the same
+28-case fixture. The teacher's raw generic tool-call dialect scores 0/28 under
+the strict Wrench schema, so a receipt-visible deterministic adapter was used
+for semantic baseline comparison. The adapted teacher scored 12/28 verifier
+outcomes and 7/28 exact proposal objects. This is a baseline, not a release
+claim; the 3--4 GiB Wrench packs remain materially smaller and still require
+matched workflow evidence.
+
+Phase 32 compared the latest 8E and 16E packed tiers with that teacher on the
+same 28-case fixture. Mean wall time was 6.076 seconds for 8E, 4.271 seconds
+for 16E, and 9.852 seconds for the teacher. The nearest-rank p95 values were
+11.275, 11.357, and 17.398 seconds respectively. This is local diagnostic
+evidence only; it does not establish throughput, workflow value, or release
+readiness. The receipt is `phases/phase-32-runtime-comparison/comparison.json`.
+
+Phase 33 added an explicit action-to-field schema to the calibration prompt and
+retrained both tiers without changing the verifier. The new 8E and 16E packed
+artifacts are 3,423,498,137 bytes and 3,991,755,140 bytes. On the explicit
+14-case holdout they scored 6/14 and 8/14 verifier outcomes, with 5/14 and
+4/14 exact proposal objects. On the separate 28-case explicit-schema unseen
+fixture both scored 12/28 verifier outcomes and 8/28 exact proposal objects.
+The corresponding 16E BF16 holdout scored 9/14 verifier outcomes and 7/14
+exact proposals before packing, making the packing loss explicit.
+This is a provisional behavior improvement, not a quality or release claim.
+The lineage and receipts are in
+`phases/phase-33-schema-guided-calibration/comparison.json`.
+
+Phase 34 added a receipt-only matched workflow-arm evaluator for cloud-only,
+rules-plus-identical-fallback, and learned-plus-identical-fallback. It computes
+paired stronger-model token savings, bootstrap uncertainty, final success,
+prohibited accepts, unexpected mutations, and p95 latency. It refuses release
+scoring unless the input manifest explicitly carries
+`authorization: approved_real_workflow`. The placeholder manifest is recorded
+as `BLOCKED_TRACE_AUTHORIZATION` in
+`phases/phase-34-workflow-arm-protocol/protocol-receipt.json`; no real traces
+or workflow-value claim were introduced.
+
+Phase 35 loaded the new 8E 3.188 GiB NVFP4 pack through FreeToken and sent
+diagnostic requests through the local adapter. The legacy prompt abstained on a
+missing path, while the exact calibration system prompt produced one accepted,
+verified bounded README read. This is one trained prompt shape only and is not
+a broad quality, workflow-value, or release claim. The receipts are in
+`phases/phase-35-new-tier-adapter-smoke`.
+
+Phase 36 ran the same 28-case explicit-schema unseen fixture through the strict
+local adapter for both packed tiers. The 8E and 16E tiers each accepted 10/28
+responses, with 8/20 accepted task cases. Boundary safety differed: 8E had
+6/8 abstentions and 2 prohibited accepts, while 16E had 7/8 abstentions and 1
+prohibited accept. These are runtime development receipts only; prohibited
+accepts keep both tiers non-promotable. The comparison is in
+`phases/phase-36-unseen-schema-adapter/comparison.json`.
+
+Phase 37 added all eight distinct boundary cases to a safety-focused 8E
+calibration set and retrained the BF16 candidate before W4A16 NVFP4 export. The
+new text-only pack remains 3,423,498,186 bytes (3.188 GiB). On the same strict
+28-case unseen adapter fixture, it retained 8/20 accepted task cases and
+improved boundary behavior from 6/8 abstentions with 2 prohibited accepts to
+8/8 abstentions with zero prohibited accepts. This is a development safety
+improvement, not workflow-value or production evidence. The comparison is in
+`phases/phase-37-safety-calibration/comparison.json`.
+
+The same safety augmentation was applied to the 16E tier. Its new text-only
+pack is 3,991,755,191 bytes (3.718 GiB), with zero prohibited boundary accepts
+but 6/20 accepted task cases versus 8/20 for the prior pack. It is therefore a
+recorded safety candidate, not a promoted replacement for the larger tier.
+
+The safety-calibrated 8E pack also passed a separate 14-case holdout with all
+5 expected-abstention cases rejected and zero prohibited accepts, but only 4/9
+task cases accepted. This confirms the safety effect without establishing
+usefulness or production readiness.
+
+Phase 38 records the dual-tier artifact selection. The safety-calibrated 8E
+pack is the compact 3.188 GiB option, while the prior 16E pack is the larger
+3.718 GiB option with better task acceptance than the safety-calibrated 16E
+candidate. Both remain experimental and must stay behind the strict verifier,
+fallback, and matched-workflow gates. The catalog is in
+`phases/phase-38-dual-tier-catalog/catalog.json`.
+
+Phase 39 tested a lighter safety-weighted 16E recalibration. The resulting
+3.718 GiB pack had zero prohibited boundary accepts but only 4/20 accepted task
+cases, versus 8/20 for the prior 16E pack. It is not promoted. This negative
+result keeps the larger tier recommendation evidence-bounded and leaves
+calibration tradeoffs open. Evidence is in
+`phases/phase-39-balanced-16e/comparison.json`.
+
+Phase 40 tested runtime prompt shaping on the prior 16E pack without changing
+weights. A simple adaptive few-shot policy reached 13/20 accepted task cases,
+zero prohibited boundary accepts, and 21/28 expected outcomes, versus 8/20
+and one prohibited accept with the zero-shot adapter. This is diagnostic
+adapter evidence only; the lexical risk classifier still needs family-disjoint
+real-workflow evaluation. A separate 14-case family-disjoint holdout reached
+8/14 accepted cases and 11/14 expected outcomes, but produced one prohibited
+accept by turning a regex request into an accepted `literal_search` action.
+This confirms the policy does not yet safely classify boundary-changing
+requests. Evidence is in `phases/phase-40-few-shot-adapter/comparison.json`.
+
+Phase 41 added a narrow request-intent guard after the Phase 40 holdout found
+that regex intent could be rewritten as an accepted literal search. The guard
+passes the latest user prompt into verification and fails closed with
+`literal_mode_required` for that mismatch. On a rerun of the same holdout,
+expected outcomes improved from 11/14 to 12/14 and prohibited accepts fell
+from 1 to 0, while accepted cases were 7/14. This is still synthetic
+verifier evidence only; it does not establish real-workflow value or release
+readiness. Evidence is in `phases/phase-41-request-intent-guard`.
+
+Phase 42 exercised the existing router controls across a persisted-state
+boundary. Circuit opening, state save and reload, configuration-hash mismatch
+rejection, hash-bound reset, and cooperative cancellation all passed in a
+bounded local receipt. External alert delivery, blocking-kernel interruption,
+and production rollback storage remain unproven. Evidence is in
+`phases/phase-42-router-recovery/router-control-receipt.json`.
+
+Phase 43 re-verified the live quantized artifacts and their manifests. The
+compact 8E safety tier remains 3.188 GiB on disk with 3.169 GiB of packed
+weights and 3,881,244,016 parameters. The larger 16E tier remains 3.718 GiB
+on disk with 3.697 GiB of packed weights and 4,888,532,336 parameters. Both
+still pass the export and text-only receipts, while the catalog continues to
+make no quality or production claim. Evidence is in
+`phases/phase-43-artifact-reverification/catalog.json`.
+
+Phase 44 attempted to rerun the compact 8E adaptive holdout, but the available
+FreeToken environment could not be restored: the shell interpreter lacked the
+package and CUDA-enabled PyTorch, and the editable build stopped because
+`CUDA_HOME` was unset. No weights were loaded and no request was served. This
+is a runtime-prerequisite diagnostic, not a model-quality result. Evidence is
+in `phases/phase-44-compact-runtime-prerequisite/diagnostic.json`.
+
+Phase 45 restored the CUDA FreeToken environment and evaluated the compact 8E
+artifact on the same 14-case adaptive holdout as the larger tier. Before the
+destructive-intent guard it accepted 4/14 cases, matched 7/14 outcomes, and
+had 1 prohibited accept. After the guard it accepted 3/14, matched 8/14, and
+had 0 prohibited accepts. The larger 16E reference remains stronger on this
+holdout at 7/14 accepted and 12/14 expected outcomes with zero prohibited
+accepts. This is synthetic runtime evidence only. Evidence is in
+`phases/phase-45-compact-holdout/comparison.json`.
+
+Phase 46 reran the larger 16E artifact after the destructive-intent guard. On
+the same 14-case holdout it remained at 7/14 accepted, 12/14 expected
+outcomes, and zero prohibited accepts. Directly compared with the compact 8E
+result of 3/14 accepted and 8/14 expected outcomes, the larger tier is the
+more useful experimental candidate while both remain behind fallback and real
+workflow gates. Evidence is in
+`phases/phase-46-larger-holdout/comparison.json`.
+
+Phase 47 summarized runtime and reported-token accounting from the paired
+guarded holdout. The 8E tier was faster at 25.390 seconds total, 1,813.6 ms
+mean, and 2,380.6 ms p95, with 4,542 reported tokens. The 16E tier took
+30.621 seconds total, 2,187.2 ms mean, and 3,262.0 ms p95, with 4,590
+reported tokens, while delivering the stronger acceptance result. This is
+local synthetic diagnostic evidence, not paid-token savings or production
+latency proof. Evidence is in
+`phases/phase-47-guarded-runtime-cost/comparison.json`.
+
+Phase 48 ran the broader 28-case explicit-schema fixture through both guarded
+tiers. The 16E tier accepted 14/28, matched 22/28 outcomes, and had zero
+prohibited accepts. The 8E tier moved from 12/28 accepted and one prohibited
+traversal rewrite to 11/28 accepted, 19/28 matches, and zero prohibited
+accepts after the traversal guard. This confirms the larger tier is the more
+useful experimental candidate, while the compact tier remains the faster,
+smaller safety option. Evidence is in
+`phases/phase-48-guarded-unseen/comparison.json`.
+
+Phase 49 performed a requirement-level audit against every acceptance criterion
+in this file. The result is `NO_GO_EXPERIMENTAL_ONLY`: the 3–4 GiB quantized
+tiers, synthetic quality comparisons, and local bounded controls are evidenced,
+but human portfolio approval, authorized real workflow traces, external alert
+delivery, and production enablement remain open. The audit is recorded in
+`phases/phase-49-release-gate-audit/audit.json`.
+
+Phase 50 made the rollout hold explicit in
+`config/wrench-routing-policy.json`: learned routing is `DISABLE`, and the
+stronger-model fallback remains authoritative until the listed evidence and
+human pilot approval exist. The policy is covered by a regression test in
+`tests/test_policy.py`.
+
+Phase 51 tightened the real-workflow protocol. An approved trace manifest now
+requires a trace-set SHA-256 plus capture ID, timestamp, reviewer, and source
+scope before paired savings are computed. Missing provenance is explicitly
+blocked, and no real trace data was added. Evidence is in
+`phases/phase-51-trace-provenance-gate`.
+
+Phase 52 made the trace authorization receipt hash-integrity checked. For an
+approved manifest, the evaluator recomputes the canonical trace-set SHA-256
+and blocks any mismatch before calculating paired savings. No real workflow
+data was added. Evidence is in `phases/phase-52-trace-hash-integrity`.
+
+Phase 54 separated ideal INT4 payload estimates from actual NVFP4 artifacts.
+The ideal half-byte estimates are 1.808 GiB for 8E and 2.277 GiB for 16E,
+while verified packed weights are 3.169 GiB and 3.697 GiB, with full text-only
+directories at 3.188 GiB and 3.718 GiB. The practical 3–4 GiB artifact target
+is met; the ideal estimates are not download-size claims. Evidence is in
+`phases/phase-54-ideal-vs-packed-size/comparison.json`.
+
+Phase 55 added the current tier-selection guide at
+`docs/WRENCH_MODEL_TIERS.md`. It makes the 8E compact and 16E larger artifacts
+usable as explicit experimental choices while preserving the strict verifier,
+stronger-model fallback, and disabled learned-routing policy.
+
+Phase 56 added a fail-closed tier resolver in `src/wrench_harness/tier.py`.
+It selects only the verified compact or larger catalog entry, requires the
+learned-routing policy to remain `DISABLE`, rejects missing artifacts, and
+labels every result `EXPERIMENTAL_ONLY`.
+
+Phase 57 verified that resolver against the live Phase 43 catalog, routing
+policy, and both external quantized artifact directories. Both compact and
+larger selections resolved as `EXPERIMENTAL_ONLY` with learned routing
+`DISABLE`. Evidence is in
+`phases/phase-57-live-tier-resolution/live-tier-resolver-receipt.json`.
+
+Phase 59 expanded the evaluation boundary to 220 deterministic cases across
+the six approved task families plus 40 explicit out-of-domain negatives:
+120 eligible workflow proposals, 60 boundary or failure cases, and 40
+unrelated-task abstention cases covering React work, database migration, shell
+execution, Git publication, authentication redesign, multi-step debugging,
+deployment, general coding, external API integration, and destructive file
+operations. The suite is balanced at 30 in-domain cases per family, with
+out-of-domain cases kept in their own category, and split into 132
+calibration, 44 development, and 44 draft final cases. Template groups remain
+confined to one split. The canonical grouped suite and hashes are in
+`evals/wrench-expanded-v1/manifest.json`, and offline manifest plus verifier
+validation passed in `evals/wrench-expanded-v1/validation.json`.
+This is a coverage expansion marked `DRAFT_PENDING_HUMAN_APPROVAL`; it is not
+yet final quality evidence, and accepted health-read cases still require live
+endpoint execution receipts. The out-of-domain guard returns the stable
+`task_family_not_allowlisted` reason even when a prompt contains a safe-looking
+proposal.
+
+Phase 60 added `tools/run_workflow_arm_replay.py`, a receipt-only assembler for
+matched `cloud_only`, `rules_plus_identical_fallback`, and
+`learned_plus_identical_fallback` traces. It records final success,
+prohibited accepts, unexpected mutations, stronger-model and total tokens,
+retry count, provider requests, cost, and latency, then delegates paired
+token/cost and latency scoring to the Phase 34 evaluator. It requires matched
+IDs, canonical trace hashing, provenance, and explicit
+`approved_real_workflow` authorization before opening the quality gates. It
+does not call providers, spend money, execute proposals, or authorize
+production enablement; no real replay traces are claimed by this phase.
+
+2026-09-19 Builder verification: the product owner explicitly approved
+advancing the evaluation work within this contract. Re-ran the expanded-suite
+validator and focused replay/schema tests: `PASS_EXPANDED_EVALUATION_MANIFEST`
+for 220 cases (120 eligible, 60 boundary, 40 out-of-domain; 132 calibration,
+44 development, 44 draft-final; 20 live executions skipped) and `8 passed`.
+This verifies manifest and harness integrity only. The final slice remains
+non-authoritative until the approved human labels and live health receipts are
+captured, and no real workflow replay or release-quality claim is introduced.
+
+2026-09-19 one-expert sizing: measured the verified unquantized source from
+safetensors headers only for exactly one retained expert per MoE block. The
+estimate is 3,041,824,624 parameters across 40 layers and 41 MoE blocks, with
+32,909,998,080 routed elements removed from the 256-expert source. This is a
+structural estimate only; no expert was selected, tensor payload was loaded, or
+quality claim was made. Receipt: `phases/phase-61-one-expert-size/size-estimate.json`.
+
+2026-09-19 one-expert selection tooling: extended the router-selection and
+structural-pruning tools to support an explicit target top-1 router while
+retaining one telemetry-ranked expert per route. Derived the 40-route,
+one-expert selection receipt from the existing router telemetry and compiled
+both tools successfully. Receipt:
+`phases/phase-61-one-expert-size/selection-1.json`. The checkpoint has not yet
+been written or load-tested.
+
+2026-09-19 full 220-case 8E evaluation: ran the canonical
+`evals/wrench-expanded-v1/cases.jsonl` suite end to end against
+`Wrench-Code-4B-Qwen3.6-8E-Safety-Experimental`. All 220 requests completed,
+all 220 case IDs were unique, and there were zero transport failures. The
+receipt reports 30/120 eligible exact proposal matches, 20/60 boundary correct
+outcomes, 40/40 out-of-domain correct abstentions, 90/220 overall correct
+outcomes, and 15 prohibited accepts. The 20 eligible health-read cases were
+not live-service evidence because no allowlisted health service was included
+in the run. Receipt and detailed breakdown:
+`phases/phase-62-full-220-evaluation/receipt-8e.json` and
+`phases/phase-62-full-220-evaluation/README.md`. This is a completed full-suite
+diagnostic run and is not a release pass.
+
+2026-09-19 mechanical long-context serving: changed the default staged working
+context from 40K to 64K, with a 48K recent hot budget and a 16K mechanical
+reference-card budget. Integrated the reducer into the local FreeToken Wrench
+serving submission path. A real 4M-configured endpoint accepted a raw input
+estimate of 4,000,023 tokens and produced an exact 1,278-token model prefill;
+the reducer reported 123.772 ms cold ingestion and 0.245 ms hot selection.
+This is runtime integration evidence only. Native 4M attention, retrieval
+recall, worker quality, and production release gates remain open.
+
+2026-09-19 native retrieval and portable package evidence: the deterministic
+220-case mechanical retrieval diagnostic passed with 1.0 target-reference
+recall, 1.0 current-intent preservation, and 1.0 hash-bound reference rate;
+receipt: `phases/phase-71-native-retrieval-quality/retrieval-220.json`. The
+reducer-bypassed native 1M probe on the 4M-configured endpoint was stopped
+after 567 seconds without an HTTP response while GPU work remained saturated;
+receipt: `phases/phase-71-native-retrieval-quality/native-1m.json`. Native 1M
+and 2M attention are therefore not release claims. A portable package now
+bundles the custom tokenizer hook and mechanical prefill dependency so a local
+Transformers loader can stage long input without a separately installed
+harness. Structural validation passes. At the user's explicit request, the
+package is now a public experimental artifact at
+`stancsz/Wrench-4B-Qwen3.6-8E`; this does not authorize production claims.
+
+2026-09-19 mechanical fast path and calibration evidence: added a conservative
+deterministic parser for high-confidence read_file, read_lines,
+literal_search, git_read_status, and explicitly bounded health requests. Its
+proposals still pass the existing verifier and multi-pass TTC guard; malformed
+or risky requests fail closed. On the historical 220-case diagnostic replay,
+the original v7 Safety model plus this fast path produced 156/220 correct
+outcomes, 80/120 exact eligible accepts, zero prohibited accepts, zero
+transport failures, and 137 mechanical fast-path requests. This is not the
+final matched MiniMax workflow score. The parser and runtime are also bundled
+into the portable package and verified through `AutoTokenizer` dynamic-module
+loading. A LoRA/router calibration probe was measured and rejected after it
+produced 86/220 correct outcomes and 24 prohibited accepts.
+
+2026-09-19 teacher-aligned LoRA replay: captured 224 MiniMax proposal traces,
+kept 183 valid `train_` rows, and excluded 23 evaluation rows plus 18 invalid
+or unallowlisted teacher outputs. A rank-8, 100-step v10 LoRA probe was then
+replayed on the full 220-case diagnostic suite without using those cases for
+calibration. It produced 7/220 correct outcomes, 0/120 exact eligible accepts,
+19 prohibited accepts, zero transport failures, 9.873 seconds median latency,
+and 11.401 seconds p95 latency. The candidate is rejected. Evidence is in
+`phases/phase-76-teacher-calibration/v10-eval-score-220.json`; the clean
+training lineage and replay artifacts are committed in `68ab8fa`.
+
+The phase also revalidated the existing v5 portable package as
+`PASS_STRUCTURAL_PACKAGE`. This proves package structure and hashes only. The
+canonical production release still requires a supported standard serving
+backend, formal model card and license, native direct 2M/4M attention evidence,
+and matched MiniMax workflow savings before production enablement or learned
+routing.
+
+2026-09-19 native overlay refinement: changed the FreeToken long-context
+overlay so all ten gated-attention layers can use a bounded 65,536-token
+sliding window with zero global full-attention layers. The real FreeToken
+config parser resolved 30 linear layers plus 10 SWA layers under
+`WRENCH_GLOBAL_FULL_LAYERS=none`. A BF16 direct native probe then completed
+with 65,448 actual prompt tokens, no truncation, HTTP 200, and
+`native_context_pass=true` in 244,524.717 ms. The Windows runtime needed a
+torch-only per-bank MoE copy fallback because the optional FreeToken JIT kernel
+requires a CUDA toolkit that is not installed. This is native correctness
+evidence only, not release-speed evidence. The current 2M/4M native release
+gate and retrieval quality gate remain open. Receipts:
+`phases/phase-77-long-context-overlay/long-context-overlay-policy.json` and
+`phases/phase-77-long-context-overlay/native-64k-swa8k-rerun.json`.
+
+The same BF16 native endpoint was then measured with a 32K prefill chunk. A
+fresh 64K probe completed with 65,448 actual prompt tokens in 20,492.372 ms,
+and a 256K probe completed with 262,070 actual prompt tokens in 85,748.418 ms;
+both were HTTP 200 with no truncation. A direct 2M probe completed with
+1,999,912 actual prompt tokens, HTTP 200, no truncation, and 1,189,092.628 ms
+elapsed. A 64K prefill chunk was slower at 218,836.114 ms for the same 64K
+payload, so 32K is the current measured launcher setting. This closes the
+native 2M input correctness milestone, but not the 4M gate, retrieval quality,
+or the fast-serving target. Receipts:
+`phases/phase-77-long-context-overlay/native-64k-bf16-maxprefill32768.json`,
+`phases/phase-77-long-context-overlay/native-256k-bf16-maxprefill32768.json`,
+`phases/phase-77-long-context-overlay/native-2m-bf16-maxprefill32768.json`,
+and `phases/phase-77-long-context-overlay/native-64k-bf16-maxprefill65536.json`.
+
+The reducer-bypassed 4M direct probe then completed with 3,999,928 actual
+prompt tokens, HTTP 200, no truncation, and 3,203,402.919 ms elapsed, about
+53.4 minutes at 1,248.65 input tokens/s. This closes the direct model endpoint
+4M input correctness gate. It does not pass the fast-serving target or long
+context retrieval quality: the runtime uses bounded recent SWA attention and a
+runtime RoPE extension over a checkpoint whose original config remains 2M.
+Receipt: `phases/phase-77-long-context-overlay/native-4m-bf16-maxprefill32768.json`.
+
+The same phase then loaded the 4M-configured NVFP4 candidate with Triton
+experts and completed a warm 16K direct probe at 16,318 actual prompt tokens,
+without truncation, in 6,021.138 ms. Cold offload chunks were only about 28 to
+67 input tokens/s, and FreeToken rejects resident fused serving for NVFP4, so
+this backend is not yet the fast native release path. The native probe builder
+was corrected to avoid tokenizing the entire synthetic payload locally; server
+reported prompt usage remains authoritative. Receipt:
+`phases/phase-77-long-context-overlay/native-16k-nvfp4-swa8k-fastprobe.json`.
+
+2026-09-19 native capacity and portable package refinement: fixed the
+FreeToken package-level Qwen parser alias, added a pure-SWA pool path with a
+zero-layer full-token bookkeeping slab, and added an explicit runtime rotary
+table extension for the 4M capacity probe. The BF16 candidate then started
+with a 2M KV address space at 0.64 GiB and a 4M KV address space at 0.66 GiB;
+both completed warmup and served an HTTP 200 smoke request. These are startup
+capacity receipts, not reducer-bypassed 2M or 4M payload passes. The 4M probe
+also uses runtime RoPE extension while the checkpoint config remains at 2M
+positions, so no 4M quality claim is made. Receipts:
+`phases/phase-77-long-context-overlay/native-2m-swa-only-startup.json`,
+`phases/phase-77-long-context-overlay/native-4m-swa-only-startup.json`.
+
+The portable package materializer now handles cross-volume Windows copies,
+embeds the native and fast mode contract, bundles the long-context overlay, and
+ships a `serve_freetoken.ps1` entrypoint. The v2 package passed structural
+validation with nine Safetensors shards and is published as a public
+experimental artifact. Direct 4M payload, standard vLLM or Ollama adapters,
+long-context retrieval quality, and the matched MiniMax North Star gates remain
+open. Receipt: `phases/phase-77-long-context-overlay/portable-package-validation.json`.
+
+2026-09-19 mechanical-worker trace capture: the current MiniMax-compatible
+endpoint completed a fresh proposal-only replay over all 220 historical fixture
+cases with zero transport failures. 189/220 outputs normalized to the Wrench
+proposal schema; 31/220 remained invalid or unparseable, including three
+responses explicitly terminated at the 768-token completion cap. This is useful
+input for trace review and calibration, but it is not a matched workflow,
+teacher-parity, or production receipt. The trace is hash-bound at
+`63f071156267d59aad2bbf1c5c2cc929338dc2b821f30b02696a62aa9a72569c` and is
+recorded at `phases/phase-78-mechanical-worker/teacher-traces-220-max768-replay.json`.
+The v1 evaluation manifest now records that teacher capture exists while keeping
+the workflow-arm and release gates open.
+
+The same phase attempted to start the calibrated NVFP4 4M candidate through the
+native FreeToken launcher. Weights and NVFP4 experts loaded, but the backend
+worker terminated while resolving hybrid SWA cache sizing with
+`ValueError: Expected at most one SWA attention group`; the API then stopped.
+This is recorded at
+`phases/phase-78-mechanical-worker/nvfp4-native4m-launch-failure.json`. The
+candidate therefore has no native NVFP4 serving or 220-case quality result yet.
+
+The BF16 safety-calibrated 8E candidate was then replayed over all 220 historical
+fixture rows using the exact case system and user prompts, with the mechanical
+fast path enabled. All 220 requests completed. It produced 159/220 expected
+outcome matches, 80/120 eligible exact accepts, 5 prohibited accepts,
+137/220 mechanical fast-path requests, a 44.254 ms median, and a 10,034.813 ms
+p95. Family results were uneven, especially `health_read` at 6/30 outcome
+matches and `patch_draft` at 12/30. This is stronger current-candidate evidence
+than the old 28-case result, but it remains historical diagnostic evidence and
+does not pass the safety or matched MiniMax workflow gates. Receipt:
+`phases/phase-78-mechanical-worker/wrench-safety-bf16-220.json`.
+
+Five prompt-aware fail-closed guards were then added for binary-as-text reads,
+empty literals, missing or null search roots, and non-repository status checks.
+The same BF16 candidate and all 220 inputs were replayed from a clean endpoint.
+Outcome matches increased to 162/220, eligible exact accepts stayed at 80/120,
+and prohibited accepts fell from 5 to 0. Mechanical fast-path coverage stayed
+137/220. Median latency was 44.708 ms and p95 was 10,044.587 ms. Receipt:
+`phases/phase-78-mechanical-worker/wrench-safety-bf16-220-guarded.json`. The
+candidate remains below the quality gate because health-read and patch-draft
+families are weak and the long fallback tail remains.
+
+The BF16 safety-calibrated checkpoint was tested as a possible replacement for
+the public portable package. Its worker quality is better than the public base
+candidate, but structural package validation rejected it because the checkpoint
+config declares only 262,144 maximum positions, below the required 2M native
+model-input contract. No package from that attempt was published. Receipt:
+`phases/phase-79-safety-portable-package/portable-package-validation.json`.
+
+To test the candidate intersection, the safety weights were given a derived
+2M YaRN context config without modifying the original tensors. FreeToken then
+loaded the five-shard candidate, allocated the 4M runtime KV address space, and
+completed warmup. The latest guarded 220 replay produced 163/220 outcome
+matches, 80/120 eligible exact accepts, zero prohibited accepts, zero
+transport/runtime abstentions, 137/220 mechanical fast-path requests, 45.341
+ms median latency, 2,854.370 ms p95, and 967.432 ms mean latency. This is
+startup and diagnostic quality evidence, not MiniMax parity or production
+quality evidence. Receipt:
+`phases/phase-80-safety-native2m/wrench-safety-native2m-220-guarded.json`.
+
+2026-09-19 safety-candidate native 2M direct-input verification: the exact
+safety-calibrated checkpoint, served under the explicit native-attention probe
+profile, accepted 1,999,912 actual model-side prompt tokens with HTTP 200 and
+no truncation. The request completed in 967,098.697 ms. This closes the
+candidate-specific direct 2M input correctness milestone, but not the 4M
+candidate gate, full-global-attention claim, retrieval quality, fast-serving
+target, or MiniMax matched-workflow gates. Receipt:
+`phases/phase-80-safety-native2m/native-2m-bf16-direct.json`.
+
+The same safety candidate then passed the reducer-bypassed direct 4M input
+probe: HTTP 200, 3,999,928 actual model-side prompt tokens, no truncation,
+and 3,232,073.278 ms elapsed, about 53.9 minutes. This closes the
+candidate-specific direct 4M input correctness milestone. It does not close
+full-global-attention, retrieval recall, fast-serving, or MiniMax
+matched-workflow gates because the serving profile uses bounded 8K SWA and a
+runtime RoPE extension. Receipt:
+`phases/phase-80-safety-native2m/native-4m-bf16-direct.json`.
+
+2026-09-19 4M mechanical retrieval stress: added a two-stage embedded prefill
+index. Cold ingest now hashes and records cheap size metadata without scanning
+every identifier; query-time selection uses bounded exact-term lookup after
+the latest intent is known. On a near-4M estimated-token cold reference plus
+current intent, the final receipt reports 3,999,951 raw estimated tokens, 92
+model-prefill tokens, 1.0 target-reference recall, 1.0 current-intent
+preservation, 1.0 hash-bound reference rate, 98.713 ms cold ingest, 44.441 ms
+hot selection, and zero model calls. The 220-case deterministic retrieval
+regression remains 1.0 on all three retrieval measures. This closes the
+mechanical 4M-to-small-working-set diagnostic, not native full-attention
+retrieval quality or MiniMax parity. Receipt:
+`phases/phase-81-monster-retrieval/retrieval-4m-final.json`.
+
+The mechanical health route was then changed to use the verifier's bounded
+defaults when a rigid local health request says only "bounded timeout" or
+"response cap". The verifier continues to own host, path, query, fragment,
+and numeric-bound checks. On a fresh full 220 replay this moved outcome
+matches to 173/220, exact eligible accepts to 81/120, mechanical fast-path
+coverage to 157/220, and median latency to 8.203 ms, while p95 rose to
+5,057.505 ms because the historical fixture targets an unavailable health
+service and incurs bounded connection timeouts. Prohibited accepts remained
+zero. This improves local mechanical routing but is still diagnostic, not
+MiniMax parity or matched-workflow savings evidence. Receipt:
+`phases/phase-80-safety-native2m/wrench-safety-native2m-220-health-mechanical.json`.
+
+2026-09-19 deterministic boundary routing: extended the embedded mechanical
+router to fail closed on explicit invalid limits, line ranges, missing paths,
+repository-root errors, health endpoint violations, literal mode errors, and
+invalid patch requests before invoking the model. A fresh same-host 220 replay
+then reached 204/220 outcome matches and 200/220 mechanical fast-path
+requests, with 81/120 eligible exact accepts and zero prohibited accepts.
+Median latency was 0.559 ms and p95 was 5,683.262 ms. The ten health misses
+are due to the intentionally absent localhost:4000 fixture; the remaining
+patch-draft misses require model-generated diffs and are not fabricated by the
+router. This is a diagnostic safety and latency improvement, not MiniMax
+parity or a production release. Receipt:
+`phases/phase-82-boundary-router/wrench-safety-native2m-boundary-router-v2.json`.
+
+2026-09-19 full historical workflow-arm replay: completed all 220 rows with
+the teacher-only, rules-plus-fallback, Wrench-plus-identical-fallback, and
+Wrench-only arms. The Wrench-only arm reached 80.8% weighted final success,
+92.1% weighted verifier success, zero prohibited accepts, zero unexpected
+mutations, zero frontier tokens, 0.339 ms median latency, and 3,220 ms p95.
+The receipt remains `QUALITY_GATE_OPEN`: it is historical fixture evidence,
+not the approved family-disjoint real-workflow evaluation. The main failure
+clusters are patch-draft model transport and unavailable `/health` fixtures.
+The runner now uses killable subprocesses for provider and local model calls,
+and the verifier prunes model artifacts from literal search and bounds Git and
+health work. Evidence: `phases/phase-83-diagnostic-workflow-arms/README.md`,
+`evaluation.json`, and `trace-manifest.json`.
+
+2026-09-19 portable verifier embedding: materialized a v4 public package with
+`wrench_toolbelt.py` and `wrench_runtime/toolbelt.py` alongside the tokenizer,
+prefill runtime, and mechanical router. Structural validation passed with the
+same 3,881,244,016-parameter BF16 checkpoint. The two toolbelt files were
+uploaded to `stancsz/Wrench-4B-Qwen3.6-8E` and their remote hashes match the
+local package. This makes the read-only verifier part of the copied model
+directory, but does not make Ollama, GGUF, or vLLM support verified. Evidence:
+`phases/phase-83-diagnostic-workflow-arms/portable-package-validation-v4.json`
+and commit `7575727`.
+
+2026-09-20 scorer-scope correction: fixed the mechanical-worker scorer so
+frontier-token coverage and savings are calculated only from traces explicitly
+marked `category=eligible`, while safety, verifier, and parity metrics still
+cover every trace. The diagnostic runner now persists each case's category and
+split in the trace manifest. Historical manifests without category remain
+scoreable only under an explicitly labeled `legacy_all_traces` scope and are
+not promoted to release evidence. Ten focused scorer/router tests pass. This
+corrects the acceptance measurement boundary; it does not improve the current
+historical score or close the North Star gates.
+
+2026-09-20 standard Hugging Face loader verification: corrected the portable
+tokenizer metadata from a stale 262,144 limit to the declared 4,000,000 input
+limit, updated the public Hub revision, and verified both the local package and
+a fresh public Hub snapshot with Transformers 5.17.0. `AutoConfig` resolves
+`Qwen3_5MoeForConditionalGeneration`; `AutoTokenizer` resolves
+`WrenchTokenizer`; the package manifest and runtime files are present. This
+closes the standard config/tokenizer loading slice, not full-weight generation,
+native 4M quality, vLLM/Ollama support, or MiniMax parity. Evidence is in
+`phases/phase-84-standard-hf-loader/` and the public revisions
+`d2e045a0fe619ccdec4e6f215695bbb3bb3546da`,
+`f6e47637a8c1a5b2aabe0ee33287b5ac51044057`,
+`6e2cb942574df589166d313ceb7360409b97e458`, and
+`4acffe441fc8914af8824b1f202fa977d57dc83c`.
+
+2026-09-20 public safety-candidate package replacement: replaced the public
+Hub contents with the safety-calibrated v7 native-2M candidate materialized as
+a 4M-declared portable package. The package contains five BF16 Safetensors
+shards, 3,881,244,016 parameters, the embedded read-only toolbelt and
+mechanical reducer, a portable FreeToken launcher, and no machine-local source
+paths in its public metadata. The remote index now references only the five
+new shards; the superseded nine-shard package and runtime cache files were
+removed. The package-local structural validator passes with
+`config_max_position_embeddings=4000000`.
+
+The downloaded package was served through FreeToken 0.1.3+g52322e984 with a
+4,000,000 max sequence length, loaded all five shards, allocated about 5.22 GiB
+of KV cache, and returned a strict schema-valid read-only proposal in 9,309.977
+ms for an 85-token prompt. This is a package and backend smoke pass only. Plain
+Transformers has passed config, tokenizer, and full weight loading, but its
+generation smoke is still invalid and is not claimed as a quality pass. The
+public package remains `EXPERIMENTAL_PUBLIC_ARTIFACT`; native 4M retrieval
+quality, production throughput, GGUF/Ollama/vLLM adapters, and the full matched
+220-case MiniMax-worker acceptance gate remain open. Evidence:
+`phases/phase-84-standard-hf-loader/safety-v5-package-validation-4m.json`,
+`safety-v5-standard-hf-load-weights.json`, and
+`safety-v5-freetoken-package-smoke.json`.
+
+2026-09-20 embedded worker API slice: added `WrenchWorker` to the portable
+model directory. `wrench_worker.py` and `wrench_runtime/worker.py` expose one
+model-shaped entrypoint that routes high-confidence mechanical requests through
+the bundled deterministic route and verifier without a model call. Ambiguous
+requests can load the standard Transformers model and remain fail-closed when
+generation is malformed. The local v5 package worker returned an accepted
+read-only proposal directly from the downloaded directory with `load_model=False`;
+the structural package validator and full test suite pass (`90 passed`). A
+same-historical-fixture diagnostic of the embedded deterministic route produced
+190/220 expected outcomes, 81/120 eligible exact accepts, and zero prohibited
+accepts. This is lower than the model-plus-runtime diagnostic because ambiguous
+cases correctly abstain when no model is loaded; it is not a quality or parity
+claim. The
+public Hub audit confirms the worker files, verifier core, 4M config, five-shard
+index, and zero private-path leaks. This improves portability and zero-model-call
+mechanical latency, but does not claim standard Transformers generation quality,
+4M retrieval quality, Ollama/GGUF/vLLM support, or MiniMax parity. Evidence:
+`phases/phase-84-standard-hf-loader/safety-v5-package-validation-worker.json` and
+public commit `1ba309f60f58039b1aa49529b274208322a34f87`.
+
+2026-09-20 public v5 package full 220-case replay: started the exact
+downloaded v5 directory with its bundled FreeToken launcher and ran the
+canonical 220-case client path end to end. The run completed all 220 rows with
+190/220 expected outcomes, 81/120 eligible exact accepts, zero prohibited
+accepts, 200/220 mechanical fast-path requests, 20 transport/runtime
+abstentions, 0.543 ms median latency, and 10,032.616 ms p95 latency. This is
+strong package-integrity and safety evidence, but not a quality pass: the
+remaining tail is concentrated in model-backed patch or complex requests, and
+the historical fixture is not the sealed MiniMax workflow set. Receipt:
+`phases/phase-84-standard-hf-loader/safety-v5-model-220.json`.
+
+2026-09-20 NVFP4 native4M portable candidate: materialized and publicly
+published a two-shard ModelOpt NVFP4 W4A16 package with 3,881,244,016
+parameters and a declared 4,000,000-token endpoint. The package includes the
+bundled worker, verifier, mechanical reducer, tokenizer hook, and FreeToken
+launcher. Structural validation passed, and the public repository is
+`stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M` at revision `7377cc4`.
+This is an experimental package, not a completed GGUF/Ollama/vLLM adapter or
+native retrieval-quality release.
+
+The NVFP4 candidate completed a 220-case replay with 190/220 outcomes,
+81/120 exact eligible accepts, zero prohibited accepts, 200/220 mechanical
+fast-path requests, 0.542 ms median, and 1,820.217 ms p95. A reproducible
+runner health fixture was then added so the allowlisted local health cases do
+not depend on an unrelated service. With that fixture enabled, the same
+candidate reached 200/220 outcomes (90.9%), 82/120 exact eligible accepts,
+zero prohibited accepts, 0.546 ms median, 368.268 ms p95, and 87.831 ms mean.
+The remaining historical eligible failures are concentrated in model-backed
+patch drafts. This is still regression evidence, not the sealed weighted
+MiniMax workflow gate. Evidence:
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-220-health-fixture-runner.json`;
+implementation commit `84464b6`.
+
+2026-09-20 patch-draft bounded retry and portable release cleanup: embedded the
+patch schema examples and one bounded corrective retry in both the model-backed
+client and the package worker. On the same 220-case health-fixture replay, this
+raised expected outcomes to 219/220 (99.5%) with 82/120 exact eligible accepts,
+zero prohibited accepts, 200/220 mechanical fast-path requests, 0.540 ms
+median, 475.684 ms p95, and 71.147 ms mean. The one remaining miss is a
+nested-path patch draft. The portable package now includes the patching module,
+lazy-loads Transformers for mechanical-only use, passes the full suite at
+91 tests, and passes structural validation with two NVFP4 shards and
+`config_max_position_embeddings=4000000`. The public NVFP4 repository remains
+an experimental artifact at revision `5f915e35`, with no GGUF/Ollama/vLLM
+quality claim. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-220-patch-twoshot-retry.json`,
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v9-validation.json`,
+and public Hub revision `5f915e35455be361a8b64d632b8fcf9f90769c4c`.
+
+2026-09-20 NVFP4 direct-2M runtime gate: the first pure-SWA launch exposed two
+serving defects. FreeToken's automatic MoE cache sizing rejected the zero-full
+layer policy, and its Wrench request hook ignored `WRENCH_NATIVE_DIRECT_INPUT`
+and compacted a direct 2M request before model tokenization. The overlay now
+merges the checkpoint's existing SWA layers into one group, uses an explicit
+MoE cache size in the launcher, and disables the reducer only for explicit
+native-direct mode. After the fix, the NVFP4 candidate accepted a direct
+1,999,912-token prompt with no truncation and HTTP 200 at configured max
+4,000,000. End-to-end prefill and completion took 1,389,715.469 ms on the
+RTX 5070 Ti, about 23.2 minutes, so this closes the direct 2M intake evidence
+but is a clear performance failure against the North Star. The result does not
+claim native retrieval quality or 4M speed. Evidence:
+`phases/phase-85-nvfp4-native4m/native-2m-swa8k-direct-v2.json`; related runtime
+tests pass in the full `91 passed` suite.
+
+The first chunk-size tuning experiment increased `max_prefill_length` from
+32,768 to 65,536 for the same direct 2M request. It produced no complete
+response within roughly 410 seconds while the GPU remained fully utilized, so
+the larger chunk was aborted and rejected as a performance tuning. Receipt:
+`phases/phase-85-nvfp4-native4m/native-2m-swa8k-p64k-timeout.json`. Keep the
+32K result as the current reproducible baseline until a kernel-level or
+multi-stage prefill optimization is implemented.
+
+2026-09-20 diagnostic historical-layer fast path: an opt-in runtime overlay now
+preserves the leading control prefix, keeps the raw request at the model
+endpoint, and skips attention plus MLP work for reference-only middle history.
+With a 32,768-token control prefix and a bounded recent-control suffix, a direct
+2,004,136-token request completed with HTTP 200 in 84,851.710 ms, and a direct
+3,999,942-token request completed with HTTP 200 in 129,290.508 ms on the RTX
+5070 Ti. A separate 112,287-token synthetic recent-intent smoke produced an
+exact verified bounded-read proposal in 29,598.956 ms. These are runtime and
+single-case diagnostics only. They do not establish native 4M retrieval quality,
+MiniMax parity, matched 220-case utility, or release readiness. Evidence:
+`phases/phase-87-native-prefill-tuning/native-2m-history-skip-layers-runtime-hint.json`,
+`phases/phase-87-native-prefill-tuning/native-4m-history-skip-layers-pure.json`,
+and `phases/phase-87-native-prefill-tuning/history-skip-layers-runtime-hint4.json`.
+
+2026-09-20 embedded mechanical endpoint route: the portable runtime now has an
+opt-in buffered OpenAI route for high-confidence read-only proposals. It can
+scan the newest intent, resolve a path from a bounded exact-term card in old
+reference text, and return a standard chat completion without a model call.
+The synthetic 80,079-character history probe placed `run_worker` at offset
+40,000, resolved `src/wrench_harness/worker.py`, and passed the independent
+verifier in 30.992 ms with `model_calls=0`. Ambiguous requests still use the
+model path. This is embedded-toolbelt evidence only, not native 4M retrieval
+quality, matched 220-case utility, or MiniMax parity. Evidence:
+`phases/phase-88-public-package/history-lookup-route-v7-accepted.json`.
+
+2026-09-20 MoE residency tuning: an explicit `moe_cache_size=320` was tested
+because the historical warm 16K NVFP4 probe used that geometry. The 16K probe
+was healthy at 14,558.191 ms, but the complete direct 2M replay took
+1,570,463.990 ms, about 26.2 minutes, versus 1,389,715.469 ms with the
+baseline cache size 16. Both runs reported 1,999,912 model-side prompt tokens
+with no truncation and HTTP 200. Cache 320 is therefore rejected as the
+default long-context setting; short-context residency and full-sequence
+prefill have different bottlenecks. Evidence:
+`phases/phase-86-nvfp4-cache-tuning/native-16k-cache320.json` and
+`phases/phase-86-nvfp4-cache-tuning/native-2m-cache320.json`.
+
+2026-09-20 package-local reference lookup hardening: the deterministic lookup
+route is now shared by `mechanical_route`, `WrenchWorker`, and the long-context
+OpenAI overlay. It scans the old prefix first and falls back to the full
+payload when a structured reference line lands inside the recent suffix
+boundary. The full suite passes `100 passed`; a fresh v15 portable package
+passes structural validation, and a package-local 38K simulated payload is
+accepted as a bounded `read_file` proposal with `backend=embedded-mechanical`
+and zero model calls. The public Hub revision is recorded separately. This is
+still embedded-toolbelt and package-integrity evidence, not native 4M retrieval
+quality, MiniMax parity, GGUF/Ollama/vLLM compatibility, or production
+readiness. Evidence: `phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v15-validation.json`;
+tests `100 passed`.
+
+2026-09-20 multi-turn payload and portable copy-paste hardening: the embedded
+worker and OpenAI endpoint now preserve all user-message history as reference
+payload while using only the newest user message as the active intent. A fresh
+v16 package passed structural validation with two NVFP4 shards and declared
+4,000,000-token input, and its package-local multi-turn lookup returned an
+accepted bounded `read_file` proposal through `embedded-mechanical` with zero
+model calls. The materializer now also prevents a duplicated suffix in the
+published `hf download --local-dir` command. This advances the direct-model
+package path, but does not establish native 4M retrieval quality, MiniMax
+parity, GGUF/Ollama/vLLM compatibility, or production readiness. Evidence:
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v16-validation.json`;
+full suite `102 passed`.
+
+2026-09-20 4M mechanical retrieval replay: the current package toolbelt
+replayed 220 historical retrieval cases with `1.0` target-reference recall,
+`1.0` current-intent preservation, `1.0` hash-bound reference rate, and zero
+model calls. A separate 4,000,000-token estimated monster payload reduced to
+92 model-prefill tokens, with 102.543 ms cold ingest and 42.997 ms hot
+selection on the local development machine. This validates the deterministic
+map-reduce layer and its latency target, not LLM native attention quality or
+MiniMax parity. Evidence: `phases/phase-89-mechanical-retrieval/mechanical-220.json`
+and `phases/phase-89-mechanical-retrieval/mechanical-4m.json`.
+
+2026-09-20 package worker dynamic prefill: `WrenchWorker` now applies the
+same bounded staged prefill inside the downloaded model package for model-backed
+requests above the 64K estimated raw-token threshold. It keeps hash-bound
+reference cards and the newest intent, while exposing the reducer receipt to
+callers. A fake-model integration test confirms a 70K+ payload becomes a
+model prefill of at most 64K, and the full suite passes `103 passed`. This is
+the portable internal toolbelt path toward 4M practical use; it is not a claim
+that dense native attention over 4M tokens is fast or that retrieval quality
+matches MiniMax. The v18 package manifest and README now expose this behavior
+as a bundled runtime feature. Evidence: `tests/test_embedded_worker.py` and
+`phases/phase-84-standard-hf-loader/native4m-nvfp4-portable-v18-validation.json`.
+
+2026-09-20 4M package-worker latency optimization: the worker now uses a
+content-addressed lightweight index, bounded exact-term lookup, and a
+monolithic-message split for the newest suffix. The reproducible 4,000,000
+estimated-token probe preserved the target reference, reduced the model
+working prefill to 1,852 tokens, made zero model calls, and completed in
+70.139 ms. Full regression suite is `104 passed`. This is the strongest
+current evidence for the fast internal toolbelt path; it still does not prove
+dense native 4M attention quality or MiniMax parity. Evidence:
+`phases/phase-90-embedded-prefill/worker-4m.json`.
+
+2026-09-20 standard Hugging Face tokenizer staging: the public package's
+normal `AutoTokenizer.from_pretrained(..., trust_remote_code=True)` path now
+uses the same monolithic-message split as `WrenchWorker`. A fresh v20 package
+probe accepted a 4,000,000 estimated-token raw user payload, preserved the
+historical lookup marker and newest intent, and staged 1,850 model-prefill
+tokens in 86.336 ms after tokenizer load. This proves the package-shaped
+internal reducer is reachable without the repository harness. It still does
+not prove dense native 4M attention quality, MiniMax parity, or production
+readiness. Evidence: `tools/probe_standard_hf_tokenizer_prefill.py` and
+`phases/phase-91-hf-tokenizer-prefill/standard-hf-tokenizer-4m-v20.json`.
+
+2026-09-20 safe teacher calibration probe: a new builder retained only 176
+development rows whose frozen oracle was an accepted allowlisted action and
+excluded all 44 boundary rows from training. A 300-step rank-8 LoRA reached a
+training loss of `0.0001155123`, but on the same 44-case final split it
+produced 16/44 correct outcomes, 6/24 correct eligible accepts, zero
+prohibited accepts, and 7 transport failures. The v7 safety baseline on that
+split also produced 16/44 correct outcomes but only 5/24 correct eligible
+accepts and 4 prohibited accepts. Neither arm is a quality or release pass,
+and the LoRA checkpoint is not published. Evidence:
+`phases/phase-92-safe-teacher-calibration/README.md` and its four receipts.
+
+2026-09-20 native skip and attention-LoRA probes: the native probe now loads
+the custom tokenizer explicitly and the serving script accepts an explicit
+`none` full-attention policy. Direct 1M and 4M inputs passed the no-truncation
+intake gate, but the aggressive 4M skip policy took `199.177` seconds and was
+slower than the earlier `129.291` second diagnostic, so it is rejected as a
+default. A 600-step rank-8 attention LoRA over the 10 full-attention layers
+used 4,460,544 trainable parameters and reached loss `0.0001005`, but the
+unseen 44-case split fell to 15/44 correct outcomes, 3/24 correct eligible
+accepts, and one prohibited accept. It is rejected and unpublished. Evidence:
+`phases/phase-93-native-skip-tuning/README.md`.
+
+2026-09-20 current-source mechanical route replay: a dedicated semantic-only
+runner replayed the canonical 220-case fixture without executing the dirty
+repository. The current implementation routed 200/220 requests mechanically
+(90.91%), matched 200 expected route outcomes, produced zero prohibited
+accepts, and completed the replay in `6.758` ms. All 30 read_file, 30
+read_lines, 30 literal_search, 30 git_read_status, and 30 health_read cases
+routed; 20 patch prompts without concrete diffs remained model-fallback
+required. This is current source coverage evidence, not weighted frontier-token
+coverage or MiniMax parity. Evidence: `phases/phase-94-mechanical-route`.
+
+2026-09-20 public package latest-intent correction: the downloaded package had
+a real 4M monolithic-payload bug where stale reference text could override the
+newest read request. The worker now isolates the newest explicit intent before
+mechanical routing while preserving the complete payload for reference lookup.
+The v22 materialized package passed structural validation and a 4,000,000-token
+estimated payload probe returned the expected `read_file` action through the
+embedded route in `10.948` ms with zero model calls. The full suite passed
+`109` tests. This closes a package routing correctness issue, not native dense
+4M attention quality, MiniMax parity, or production readiness. Evidence:
+`phases/phase-95-public-package-4m-route`.
+
+2026-09-20 model-local serving slice: the portable package now contains its own
+OpenAI-compatible `wrench_server.py` endpoint. A v24 materialized package
+accepted complete raw payloads at 64K, 2M, and 4M estimated tokens through
+`/v1/chat/completions`; the 4M request reported `4,000,010` input tokens,
+returned the current `read_file` action, made zero model calls, and completed
+the request in `138.212` ms. The 64K and 2M probes completed in `35.488` ms and
+`76.024` ms. This is a meaningful model-local package serving path, but the
+mechanical route intentionally bypasses dense native attention. Native dense
+4M retrieval quality, learned MiniMax parity, and production readiness remain
+open. Evidence: `phases/phase-96-model-local-server`.
+
+2026-09-20 native backend load probe: the v24 NVFP4 package loaded through
+FreeToken with a 4,000,000-token address space and an 8.69 GiB KV allocation.
+A ready native endpoint accepted a direct 65,470-token prompt with no
+truncation and returned HTTP 200, proving the direct-input capacity path at
+64K. However, the same request took `77,205.615` ms and decoded at about
+`0.52 token/s` under expert offload. The fused MoE profile was rejected by the
+backend for NVFP4. Standard Transformers full-weight loading remains
+unverified because the available environments are below the package's 5.17
+minimum. This is a native capacity pass but a throughput fail. Evidence:
+`phases/phase-97-standard-weight-load`.
+
+2026-09-20 native embedded-route accounting correction: the v25 package's real
+FreeToken endpoint accepted a complete 4,000,000-token raw request at
+`/v1/chat/completions`, reported `4,000,010` prompt tokens, preserved the
+latest intent, returned the expected `read_file` proposal, and made zero model
+calls in `454.852` ms. The route now records raw input chars, raw token
+estimate, effective working tokens, and input mode instead of reporting zero
+prompt tokens. This is direct endpoint capacity plus fast mechanical routing,
+not dense native generation quality or MiniMax parity. Evidence:
+`phases/phase-98-native-embedded-route`.
+
+2026-09-20 native KV geometry optimization: the 4M long-context overlay was
+letting FreeToken's cache planner create an approximately `885M`-page mapping,
+which consumed `8.69 GiB` of KV allocation and left no usable GPU headroom.
+Pinning `--num-tokens 4000000` keeps the 4M capacity while reducing the actual
+KV allocation to `1.59 GiB` and leaving `8.29 GiB` free for expert serving. On
+matched direct 64K input, native latency improved from `77,205.615` ms to
+`23,449.596` ms, about `3.3x`; a roughly 1K input completed in `706.233` ms.
+This is a real native serving improvement, but the 64K result remains too slow
+for the throughput gate. Evidence: `phases/phase-99-pinned-kv-throughput`.
+
+The pinned launcher is now public in v27 at Hub revision
+`9eafc5a6101675d38bdac4957f72fe8ffa35cd52`; its remote launcher and package
+manifest hashes match the local candidate. The weights remain unchanged.
+
+2026-09-20 pinned native history-skip diagnostic: with the same v27 package,
+4M KV capacity pin, direct 64K input, and one-token decode, skipping historical
+MoE MLP computation before position `48,000` reduced latency from `23,108.787`
+ms to `17,004.096` ms, about `1.36x`. The setting remains opt-in because
+retrieval quality and MiniMax parity under skipped history are unverified.
+Evidence: `phases/phase-100-skipmlp-pinned`.
+
+2026-09-20 weighted route accounting: added
+`tools/score_mechanical_route_frontier.py` to join the current deterministic
+route with the captured teacher frontier-token mass while excluding boundary
+and out-of-domain rows from the mechanical denominator. On the historical
+220-case fixture, 100/120 eligible rows route mechanically, but they cover only
+`78.9999%` of eligible weighted frontier-token mass. The entire uncovered mass
+is the 20 eligible patch-draft prompts whose text omits the actual diff, so the
+route correctly leaves them for model/fallback handling. This is a stronger
+diagnostic than the prior `90.91%` all-category case-count figure, but it is
+still not the authorized family-disjoint workflow gate. Evidence:
+`phases/phase-101-public-copy-paste-package/weighted-route-frontier-score.json`.
+
+2026-09-20 patch fast-path verifier integration: a review-only unified diff
+with `+++ b/README.md` now becomes a verifier-relative `README.md` path instead
+of the invalid `b/README.md` path. The bundled `WrenchWorker` accepted the
+proposal through the independent verifier, reported `applied: false`, and left
+the file unchanged. The corrected mechanical runtime was synchronized to the
+public HF package at revision
+`6681773374f0a40ef6b953ec0efe384f16625962`. This improves complete-payload
+patch work, but does not alter the historical fixture's intentionally missing
+diffs or prove MiniMax parity. Evidence: `tests/test_mechanical_worker.py` and
+`phases/phase-101-public-copy-paste-package/public-hf-route-fix-receipt.json`.
+
+2026-09-20 pinned native 2M direct probe: the public v28 NVFP4 package was
+served with `--num-tokens 4000000`, `--kv-reserve-tokens 8192`, automatic expert
+cache, and native direct input. A direct request reached `1,999,929` actual
+prompt tokens with HTTP 200 and `truncated=false` under the configured 4M
+maximum. Elapsed time was `1,287,078.199` ms, about 21.45 minutes, with
+`max_tokens=1`. This is a real pinned 2M capacity pass and a decisive native
+throughput failure, not a practical-serving pass. Evidence:
+`phases/phase-102-native-pinned-2m/native-2m.json`.
+
+2026-09-20 bounded default-read fast path: simple requests such as `Read
+README.md.` now receive the verifier's explicit 256 KiB cap and avoid an
+unnecessary model prefill. Requests asking for the entire, whole, complete,
+full, or all contents remain fallback-required to avoid silently truncating a
+large file. The historical 220-case fixture is unchanged at 200/220 routes
+and `78.9999%` eligible weighted frontier-token mass because its uncovered
+patch prompts omit their actual diffs. Evidence:
+`phases/phase-103-bounded-default-read`.
+
+2026-09-20 native 4M runtime boundary repair: the FreeToken overlay now
+handles `WRENCH_HISTORY_SKIP_LAYERS_BEFORE=auto` as a real dynamic policy and
+propagates the complete request length from chunked prefill into the decoder
+boundary. A direct native request reached `3,995,331` actual prompt tokens with
+HTTP 200, `truncated=false`, and a configured 4,000,000-token model limit. The
+default 64K recent-tail profile completed in `173,384.564` ms on the RTX 5070
+Ti. This proves native capacity and the repaired fast-history boundary, not
+native 4M retrieval quality or MiniMax parity. Evidence:
+`phases/phase-122-native-fast-history`.
+
+2026-09-20 native launcher workspace boundary and full regression: the
+portable FreeToken launcher now accepts `-AllowedRoot` and passes the selected
+read-only repository root into the embedded mechanical route. Review-only
+patch proposals are validated against that root before the no-model response
+is returned, while mutation remains external. A v41 package passed structural
+validation, and a ready native endpoint passed the complete prompt-complete
+220-case contract with 220/220 outcome matches, 120/120 exact eligible
+proposals, 220/220 mechanical fast paths, 0 model calls, 0 prohibited accepts,
+0 transport/runtime failures, median `0.544` ms, and p95 `39.022` ms. The
+result is still a package and mechanical-route gate, not MiniMax parity,
+native 4M retrieval quality, or the approved matched workflow savings gate.
+Evidence: `phases/phase-123-native-fast-history-220`.
+
+The v41 package also passed a fresh direct native 4M capacity probe after the
+launcher root change: `3,995,322` actual model-side prompt tokens, HTTP 200,
+`truncated=false`, `native_context_pass=true`, configured maximum
+`4,000,000`, and `173,270.470` ms elapsed on the RTX 5070 Ti. This confirms
+no regression in the direct-input path, but it remains a capacity and serving
+receipt rather than retrieval-quality or MiniMax-parity proof.
+
+2026-09-20 frontier coverage and portable backend audit: the current
+deterministic route covers 100/120 eligible historical rows and `78.9999%` of
+eligible frontier-token mass. The 20 uncovered eligible rows are patch-draft
+prompts with no concrete diff, so fail-closed fallback is intentional. A
+complete ready-endpoint replay remained at 220/220 outcome matches with zero
+model calls and zero prohibited accepts. Separately, Ollama `0.32.13` was
+tested with its matching MLX CUDA bundle. The runner loaded 3,993 tensors, but
+the public text-only package was rejected because its config still declares a
+vision tower. An isolated text-only metadata experiment reached prefill, then
+hit the host's missing cuDNN directory. Ollama Windows completion therefore
+remains unverified. Evidence: `phases/phase-124-v41-frontier-coverage` and
+`phases/phase-125-ollama-portable-runtime`.
+
+2026-09-20 v42 portable package repair: the bundled FreeToken overlay now
+imports the embedded mechanical router from the actual package-local runtime,
+and the text-only exporter removes the multimodal config fields that make
+Ollama demand absent vision tensors. A v42 package loaded with 4,000,000-token
+KV capacity and completed a short model request. Its embedded route processed
+all 220 historical prompts as mechanical fast paths with zero model calls and
+zero prohibited accepts. The receipt records 200/220 outcome matches and
+82/120 exact eligible proposals because 20 accepted patch prompts omit their
+diff; the verifier correctly refuses to invent one. An isolated Ollama 0.34.2
+MLX run also accepted a real `num_ctx=4,000,000` generation request with HTTP
+200 and `/api/ps` reported `context_length=4,000,000` after a local cuDNN path
+workaround, but stock Windows Ollama remains unverified. Evidence:
+`phases/phase-126-portable-v42`.
+
+2026-09-20 active-expert fan-out probe: the top-k materializer now copies
+embedded runtime directories, fixing structural validation for derived
+variants. Weight-identical config variants with top-k=4 and top-k=2 reduced
+same-host direct 64K native prefill from 23,241.743 ms for top-k=8 to
+17,657.311 ms and 13,997.873 ms. The top-k=2 variant passed a direct
+3,995,336-token native probe with HTTP 200 and `truncated=false` at the
+4,000,000-token limit in 154,315.680 ms. Its complete-payload 220-case
+mechanical route remained 220/220 outcome matches, 220/220 fast paths, zero
+model calls, and zero prohibited accepts. Free generation was still invalid,
+so these variants remain diagnostic candidates behind mechanical routing and
+identical teacher fallback, not public quality releases. Evidence:
+`phases/phase-127-topk-active-compute`. Full regression is `135 passed`.
+
+2026-09-20 provider-backed MiniMax M3 replay: the real
+`https://api.minimax.io/v1/chat/completions` endpoint completed proposal-only
+captures for both the canonical 220-case fixture and the 220-case
+complete-payload derivative, with zero transport failures. The canonical replay
+records zero prohibited accepts after new verifier intent guards, 50.91%
+weighted eligible mechanical token-mass coverage, and 59.67% net frontier-token
+savings. The complete-payload diagnostic records 100% frontier-token savings,
+85.47% strict exact-oracle coverage, zero prohibited accepts, and zero
+unexpected mutations. The remaining exact gap is the fixture's under-specified
+health prompts whose target objects contain values not present in the request.
+This is still diagnostic evidence, not MiniMax parity, production utility, or
+release authorization. Evidence: `phases/phase-128-live-minimax-teacher`.
+Full regression is `139 passed`.
+
+2026-09-20 top-k=4 direct-model quality probe: the weight-identical top-k=4
+NVFP4 variant was evaluated on the complete 220-case fixture. The embedded
+deterministic route matched 200/220 outcomes, 82/120 eligible proposals, zero
+prohibited accepts, and measured 0.285 ms median with 56.005 ms p95 while
+making zero model calls. With that route disabled, the direct model matched
+only 62/220 outcomes and 4/120 eligible proposals, with six prohibited
+accepts, 415.166 ms median, and 1,560.488 ms p95. The direct candidate is
+rejected for publication and router promotion. This confirms that the current
+practical value is in the bundled mechanical worker, while learned direct
+proposal generation still needs targeted structured training and independent
+validation. Evidence: `phases/phase-129-topk4-quality`.
+
+2026-09-20 balanced boundary attention LoRA probe: a 400-step rank-8 LoRA
+updated the router and all full-attention Q/K/V/O projections in the frozen
+BF16 8E backbone. It used 456 development rows and 4,460,544 trainable
+parameters. On the full 220-case direct replay, the candidate reached 138/220
+outcome matches and 52/120 exact eligible accepts, improving proposal matching
+over the top-k=4 direct baseline, but produced 14 prohibited accepts. It is
+therefore rejected by the zero-tolerance safety gate and remains unpublished.
+The next optimization must reduce unsafe accepts without giving up the
+mechanical route's sub-second behavior. Evidence:
+`phases/phase-130-balanced-attn-lora`.
+
+2026-09-20 package-local Ollama API slice: the bundled model-local server now
+supports `GET /api/tags`, `GET` and `POST /api/show`, `POST /api/chat`, and
+`POST /api/generate` in addition to the existing OpenAI-compatible route. A
+fresh v44 portable package passed structural validation and accepted a
+3,999,998-token estimated monolithic request through `POST /api/chat` with
+`options.num_ctx=4000000`. It recovered the newest `read_file` intent through
+the embedded mechanical backend in 5.779 ms with zero model calls. This proves
+the copy-paste package's Ollama-shaped 4M intake surface, not stock Ollama
+checkpoint loading, dense native 4M attention, MiniMax parity, or production
+readiness. Evidence: `phases/phase-131-ollama-api`.
+
+2026-09-20 fresh v44 prompt-complete replay: the current portable package was
+run against the derived 220-case executable mechanical contract. It matched
+220/220 outcomes and 120/120 exact eligible proposals, routed all 220 through
+the package-local mechanical path, made zero model calls, produced zero
+prohibited accepts, and measured 0.594 ms median with 42.204 ms p95. This
+revalidates the 90% mechanical-work target on a prompt-complete contract after
+the Ollama-shaped API update. It does not close native dense 4M retrieval
+quality, MiniMax parity, or family-disjoint production utility. Evidence:
+`phases/phase-132-v44-prompt-complete`.
+
+2026-09-20 package-local native bridge: the portable server now accepts an
+optional native upstream while keeping the public Ollama-shaped endpoint and
+the verifier inside the downloaded model directory. The generated
+`serve_freetoken.ps1 -OllamaApi` mode keeps FreeToken on an internal loopback
+port, routes mechanical requests locally, and verifies native text before
+returning it. A fresh v45 package accepted a 4,000,000-token request with
+HTTP 200, a 4,000,010-token prompt estimate, zero model calls on the mechanical
+route, and 109.977 ms request time. Source and materializer tests pass, and the
+full repository regression is 141 passed. This closes a package integration
+gap, not stock Ollama loading, native dense 4M retrieval quality, MiniMax
+parity, or production readiness. Evidence:
+`phases/phase-133-native-ollama-bridge`. The updated runtime and launcher were
+also synchronized to the public Hub revision
+`72bbc1e748f6ca35f41a972f13c2b224720c771b`; the weights were unchanged.
+
+2026-09-20 real native bridge smoke: the v47 one-command launcher reached
+`READY` with the actual FreeToken `0.1.3+g52322e984` runtime and the RTX 5070
+Ti. The public package endpoint accepted a 37,142,960-character request with
+`options.num_ctx=4000000`, counted 4,000,013 prompt tokens, routed it through
+the embedded mechanical path in 128.228 ms, and made zero model calls. A
+non-mechanical request reached the real native backend in 2,340.310 ms; its
+malformed proposal was rejected by the package verifier as
+`model_output_invalid_json`. Automatic cache sizing was insufficient under the
+current competing GPU workload, while the exposed manual profile
+`MoeCacheSize=16, KvReserveTokens=1024` started successfully. This is a real
+native loading and fail-closed bridge pass, not a learned-quality, MiniMax
+parity, direct dense 4M, or production-throughput pass. Evidence:
+`phases/phase-134-real-native-bridge-smoke`. The updated launcher and docs were
+also synchronized to public Hub revision
+`b253262898aeda32576b785489e0043342e1a431`; weights were unchanged.
+
+2026-09-20 bounded native 220-case replay: the v48 portable launcher added a
+9-second native upstream timeout and safely handled clients that disconnect
+after their own deadline. The full 220-case replay completed without hanging:
+200/220 outcome matches, 100/120 eligible exact accepts, zero prohibited
+accepts, 20 bounded native-path runtime abstentions, and 0.822 ms median /
+146.683 ms p95 measured latency. The 20 misses are all `patch_draft` cases
+whose learned native generation exceeded the timeout. This is a stability
+and fail-closed diagnostic result, not a learned-quality, MiniMax parity, or
+production release pass. Evidence: `phases/phase-136-bounded-native-220`.
+
+2026-09-20 corrected-root native-package replay: the v48 package and the
+220-case evaluator were bound to the same fixture root, fixing the previous
+root mismatch that sent resolvable patch cases to native fallback. The full
+replay then matched 220/220 outcomes and 120/120 exact eligible proposals,
+with zero prohibited accepts, zero transport/runtime abstentions, 220/220
+mechanical fast-path requests, 0.584 ms median, and 45.084 ms p95. This closes
+the package-local mechanical regression for the canonical fixture. It does not
+close native dense 4M retrieval quality, MiniMax parity, or the matched
+workflow North Star gates. Evidence: `phases/phase-137-native-220-correct-root`.
+
+2026-09-20 reducer-bypassed native long-context probe: a generic inert request
+that did not match the embedded mechanical route was sent through the v48
+package to the internal native backend. A 65,536-token direct request timed
+out after 120.079 seconds without provider usage or a native completion; the
+2M attempt also reached its 600-second client deadline without a completion.
+This is a real native-path performance failure, not a gateway compaction
+failure. The native direct-input capacity surface remains present, but native
+prefill is not yet fast enough for the 2M/4M North Star. Evidence:
+`phases/phase-138-native-retrieval-probe`.
+
+2026-09-20 public v49 runtime repair: the materialized portable package passed
+structural validation and a fresh 4M package-local raw-payload route probe in
+16.292 ms with zero model calls. Native upstream timeouts now return explicit
+HTTP 504 `upstream_timeout` status. The updated runtime was synchronized to
+public Hub revision `e52b6d7e91ad3f88c1a00e3c64e8878ac70ad182`, with weights
+unchanged and a fresh remote SHA verification. This keeps the public package
+operationally bounded, but does not close native dense 4M retrieval quality or
+speed. Evidence: `phases/phase-139-public-v49`.
+
+2026-09-20 native readiness gate: the v50 launcher no longer treats
+FreeToken `/v1/models` as sufficient readiness. It requires a real native
+completion smoke request, captures `native-startup.log` and
+`native-startup-error.log`, and fails before exposing the public API when the
+backend worker exits. Under the current competing GPU/resource state, the
+`FastHistoryKeepTokens=8192` profile correctly failed closed during native
+worker initialization instead of presenting a false healthy endpoint. This
+improves operational correctness and diagnosis, but does not close native
+2M/4M speed or retrieval quality. Evidence:
+`phases/phase-140-fast-history-ab`.
+
+2026-09-20 public v51 readiness package: the portable launcher and docs now
+require a real native completion smoke before exposing the package API and
+capture native startup logs. The regenerated package passed structural
+validation and the 4M package-local mechanical route in 19.2 ms with zero
+model calls. Launcher and docs were synchronized to public Hub revision
+`ad66f828cf70442b77630142f83a0c2f9a26502c`; weights were unchanged and fresh
+remote hash verification passed. Evidence: `phases/phase-141-public-v51`.
+
+2026-09-20 embedded native handoff: the package server now applies the
+deterministic dynamic prefill before forwarding ambiguous requests to its
+internal native backend. It still accepts the raw request and verifies the
+native answer against the original latest intent, while the backend receives a
+bounded staged message set and the receipt carries the original payload hash.
+The regression suite passed 144 tests. The 4M worker probe passed with zero
+model calls and a bounded staged prefill, but the current local reducer measured
+621.756 ms, so the sub-100-ms map-reduce target remains open. This closes the
+previous packaging gap, not native 4M retrieval quality, native speed, GGUF or
+stock Ollama loading, MiniMax parity, or production readiness. Evidence:
+`phases/phase-142-native-handoff-prefill`.
+
+2026-09-20 prefill latency and native handoff repair: the 4M reducer no longer
+runs a DOTALL fenced-code regex over the entire payload, and generic intents no
+longer trigger repeated old-context scans without an explicit path or symbol
+lookup key. The standalone 4M probe fell from 621.756 ms to 92.763 ms. The
+real package-server to protocol-stub handoff accepted a 3,999,942-token raw
+request, delivered a 1,845-token staged prompt, and measured 85.714 ms for
+server-side staging with one verified upstream call. This is still a staging
+and integration result, not native dense 4M retrieval quality or MiniMax
+parity. Evidence: `phases/phase-144-prefill-profile`.
+
+2026-09-20 native direct-input truth boundary: the package server now honors
+`WRENCH_NATIVE_DIRECT_INPUT=1` instead of silently staging a request while the
+native tokenizer reports direct mode. The generated launcher defaults to the
+fast staged path and exposes `-NativeDirectInput` for the actual raw-input
+capability path. The direct receipt binds ordered-message payload SHA-256 and
+raw/model prompt token counts. Full regression passed 146 tests, and the v54
+package passed structural validation plus the 4M mechanical route in 17.715 ms
+with zero model calls. This repairs the evidence boundary, but clean-GPU native
+2M/4M generation and retrieval quality remain open. Evidence:
+`phases/phase-146-public-v54`.
+
+2026-09-20 direct raw-input accounting: the package-server probe exercised the
+explicit direct mode with a 4M raw request. The local protocol stub received
+`3,999,942` prompt tokens, exactly matching the package raw estimate, with
+`server_staging_elapsed_ms=0` and `native_direct_input=true`. The staged arm
+reduced the same raw request to `1,845` estimated tokens. Native backend usage
+tokens are now copied into the receipt when available. These are protocol and
+accounting receipts, not native model generation or retrieval-quality passes.
+Evidence: `phases/phase-147-native-direct-receipt` and
+`phases/phase-148-public-v55`.
+
+2026-09-20 real FreeToken startup boundary: the current public NVFP4 package
+was launched through the installed daemon on ports 28201 and 28202. Both
+backend attempts failed before model generation because spawned Torch workers
+hit Windows `WinError 1455` while loading CUDA DLLs; the 64K KV retry also hit
+OpenBLAS allocation failure. The daemon ended with `running=false` and
+`pid=null`. At measurement time the host had 1.84GB free physical memory and
+the GPU reported 15,797MiB of 16,303MiB used. No process was terminated.
+This closes the current host's native measurement attempt, not the product
+goal. A clean host or independent 5060Ti run is required for native 2M/4M
+generation and retrieval evidence. Evidence:
+`phases/phase-149-native-startup-boundary`.
+2026-09-20 native launcher memory-pressure repair: the generated portable
+launcher and standalone native launcher now pass FreeToken `--num-tokenizer 0`,
+sharing tokenization with the detokenizer so an extra Torch worker is not
+started. The generated package metadata records this startup profile and the
+targeted regression suite passed 12 tests. A fresh 64K-KV startup parsed
+`num_tokenizer=0`, but the scheduler and shared detokenizer still failed before
+generation with Windows `WinError 1455` while loading CUDA DLLs. This is a
+real startup improvement and sharper diagnosis, not native 2M/4M generation,
+retrieval quality, MiniMax parity, or production evidence. Evidence:
+`phases/phase-150-native-shared-tokenizer`.
+
+2026-09-20 public v56 portable refresh: the NVFP4 Safetensors package was
+materialized with the shared-tokenizer native launcher and uploaded to the
+public Hub repository at revision
+`1c5af1683b41ae756bd434d96c19b530d4913029`. Structural validation passed, the
+downloaded-package 4M mechanical route measured 15.304 ms with zero model
+calls, and fresh Hub downloads confirmed the launcher argument, README note,
+and runtime metadata. This publishes the startup repair while keeping native
+2M/4M generation, retrieval quality, MiniMax parity, GGUF, and production
+claims explicitly open. Evidence: `phases/phase-151-public-v56`.
+
+2026-09-20 native low-memory environment profile: the launcher now enables
+lazy CUDA module loading and constrains OpenBLAS, OMP, MKL, and NumExpr pools
+to one thread, in addition to serial expert loading and shared tokenization.
+The full regression remained at 146 passing tests. A direct Torch import
+changed from OpenBLAS allocation failure to success with
+`torch 2.11.0+cu130` under the new variables. The v58 package passed
+structural validation and its 4M mechanical route measured 14.945 ms with
+zero model calls. A real native probe still failed before generation because
+both workers hit Windows `WinError 1455` loading CUDA DLLs. The profile was
+published at Hub revision `0e9b16a70cff945eb9976079f6315e3bcf35963a`.
+Native 2M/4M generation, retrieval quality, MiniMax parity, and production
+readiness remain open. Evidence: `phases/phase-154-native-low-memory-env`.
+
+2026-09-20 native serial expert-load profile: the launcher now combines
+FreeToken `--expert-load serial` with `--num-tokenizer 0`, and the v57 package
+was published at revision `b47ced8c6ccec42d24104418a29c6401f848a369`.
+Repository regression remained green at 146 tests, structural validation
+passed, and the 4M mechanical route measured 15.403 ms with zero model calls.
+A real 64K-KV native probe parsed both low-memory flags but both remaining
+Torch workers still failed before generation with `WinError 1455` loading
+`nvperf_host.dll`. This narrows the blocker to host Windows commit/pagefile
+state, not parallel expert loading. Native 2M/4M generation, retrieval
+quality, MiniMax parity, and production readiness remain open. Evidence:
+`phases/phase-153-native-serial-expert-load`.
+
+2026-09-20 independent weighted MiniMax-worker score replay: the checked-in
+scorer was rerun against both existing 220-case diagnostic trace manifests.
+The complete-patch replay remains `QUALITY_GATE_OPEN` at
+`0.8546684503519975` weighted frontier-token coverage and `1.0` net savings;
+the canonical v5 replay remains `QUALITY_GATE_OPEN` at
+`0.5091198427476598` coverage and `0.5966536852733304` savings. Both retain
+zero prohibited accepts and zero unexpected mutations. This independently
+confirms the remaining gap to the 90%/95% North Star gates. Evidence:
+`phases/phase-152-independent-mini-max-score`.
+
+2026-09-20 native process-tree cleanup and public v59 portable package: the
+generated launcher now kills the complete FreeToken native process tree when
+startup fails. Full regression remained at 146 passing tests. The v59 package
+passed structural validation and its downloaded-package 4M mechanical route
+measured 16.051 ms with zero model calls. A real launcher smoke correctly
+returned a host-resource failure on the current GPU, with no test-port
+listener or matching process remaining afterward. The package was published
+at Hub revision `5456c8942efc14950fec0d2ce57f73eaa9a02c5c`. Native 2M/4M
+generation, retrieval quality, MiniMax parity, GGUF compatibility, and
+production readiness remain open. Evidence:
+`phases/phase-155-native-process-tree-cleanup`.
+
+2026-09-20 public v60 copy-paste repair: the portable package materializer now
+rewrites the complete canonical package path in the direct Python worker
+example, avoiding a duplicated `NVFP4-native4M` suffix. The targeted test and
+full regression passed, the v60 package passed structural validation, and the
+fresh Hub download retained the native launcher controls. Public Hub revision
+is `6eab44cd8c41b24de4c424b524cba670a1f3713b`. Native 2M/4M generation,
+retrieval quality, MiniMax parity, GGUF compatibility, and production
+readiness remain open. Evidence:
+`phases/phase-156-public-v60-path-fix`.
+
+2026-09-20 MapReduce plus dynamic native working-context path: old material is
+now reduced through content-addressed reference cards and bounded evidence
+windows, while the latest intent and hot context stay active. Receipts record
+the map stage, reduce stage, original payload hash, prepared payload hash, and
+evidence-window count. The full regression is 148 passing tests. Complete
+220-case deterministic retrieval remains at 1.0 target-reference recall and
+1.0 evidence-window recall. The package runtime accepts a 4M payload and
+reduces it to a bounded working context without a model call. A 4M native
+handoff stub measured 114.563 ms server-side staging after streaming hash
+optimization. The current diagnostic 220 workflow remains below the North
+Star at 0.559589 weighted coverage and 0.618292 net frontier-token savings, so
+the goal remains active. The updated public package is Hub revision
+`b31828264d7d9771674d313c2439f39556e3fdd1`. Evidence:
+`phases/phase-160-mapreduce-dynamic-native`.
+
+2026-09-20 exact reference patch retrieval: the package-local MapReduce route
+now recovers an already-present unified diff from old reference text when the
+newest intent asks for an unapplied review-only patch. Matching paths, hunk
+presence, bounded size, existing-file checks, and the normal verifier remain
+required; missing content still abstains. Full regression passed, a fresh v64
+portable package passed structural validation, and a fresh package smoke
+accepted the recovered proposal with `applied=false`. The public Hub update is
+revision `829dbe7cb15c52f5ac483079139e741504912a15`; fresh downloaded package
+hashes match the local runtime and contain `reference_patch_route`. This adds
+safe old-lookup utility but does not close the 90%/95% workflow gates.
+The v64 package also recovered an exact diff from a 4.8M estimated-token,
+15.6MB payload in 62.737 ms with zero model calls. Evidence:
+`phases/phase-161-reference-patch-package-validation.json` and
+`phases/phase-161-reference-patch-package/long-context-reference-patch-stress.json`.
+
+2026-09-20 native launcher executable repair and host-resource receipt: the
+portable Windows launcher now defaults to the installed `ft.cmd` wrapper. A
+fresh v65 native launch reached FreeToken and parsed the 4M context flags,
+serial expert loading, and shared-tokenizer mode, then failed on the current
+host with WinError 1455 and a CUDA allocation failure while only about 1.31 GiB
+was free. The launcher cleaned ports 28960 and 28961 afterward. This narrows
+the native-direct blocker to host resources; it does not close native quality
+or production gates. Evidence: `phases/phase-162-native-launcher-ftcmd`.
+
+2026-09-20 public v66 package repair: the rebuilt package passed structural
+validation and package-local exact reference patch smoke. The public Hub
+revision `ffa6bce60508e34cb4db59ccdf434576e67955e3` was fresh-downloaded;
+launcher and mechanical runtime hashes matched local v66, with `ft.cmd` as the
+Windows default and `reference_patch_route` present. This publishes the
+launcher repair and bundled retrieval behavior, not native dense 4M quality or
+MiniMax parity. Evidence: `phases/phase-163-public-v66-ftcmd`.
+
+2026-09-20 adaptive MapReduce working-context tier: the default hybrid path
+remains 64K, while long context-sensitive intents can deterministically promote
+to a bounded 128K tier under `WRENCH_MODEL_PREFILL_MAX_BUDGET`. The selection
+requires an explicit newest-intent marker and records the choice in the
+dynamic-prefill receipt. Full regression passed at 152 tests; the 220-case
+deterministic route remained 220/220 fast path with zero prohibited accepts.
+This improves the dynamic-native working-context path but is not dense native
+2M/4M attention or MiniMax workflow parity. Evidence:
+`phases/phase-164-adaptive-prefill-tier`.
+
+The bundled adaptive runtime was published in the public v67 package revision
+`842c42e64bf0a3ec89cb458eba90c403f5f19c61`. Fresh-downloaded runtime hashes
+match the local package, so this behavior is present for copy-paste users.
+
+The 220-case route evaluator was also corrected to honor its `--root` fixture
+argument. The prompt-complete derived contract now replays 220/220 strict
+outcomes with 0 prohibited accepts; this is a mechanical-contract receipt, not
+MiniMax parity or final workflow utility evidence.
+
+2026-09-20 bundled endpoint workflow replay: the prompt-complete derived
+220-case contract ran through the package-local HTTP endpoint and independent
+verifier with 220/220 outcome matches, 120/120 exact eligible proposals, zero
+prohibited accepts, zero model calls, 0.595 ms median latency, and 42.219 ms
+p95 latency. This validates the executable mechanical lane, not the matched
+MiniMax workflow gate or native dense 2M/4M attention. Evidence:
+`phases/phase-165-prompt-complete-workflow`.
+
+2026-09-20 public v67 4M endpoint intake: the downloaded package's own local
+HTTP server accepted a 4,000,000-token estimated raw request, returned HTTP
+200 with 4,000,010 prompt tokens accounted, and completed the hybrid route in
+145.594 ms. The direct worker route measured 16.484 ms with zero model calls.
+This proves model-local 4M intake plus MapReduce, not dense native 4M
+attention. Evidence: `phases/phase-166-public-v67-4m-endpoint`.
+
+2026-09-20 bounded multi-anchor retrieval: the reducer now preserves one first
+hit for each distinct path, symbol, or error-code anchor, up to eight evidence
+windows. The 4M retrieval diagnostic retained 1.0 reference recall, 1.0
+evidence-window recall, 1.0 current-intent preservation, and 1.0 hash binding;
+cold ingest was 65.469 ms and hot selection 21.185 ms with a 52-token staged
+prefill. Full regression passed 153 tests. Evidence:
+`phases/phase-167-multi-anchor-retrieval`.
+
+The updated retrieval runtime was published in public v68 at Hub revision
+`33341a7551b4fd4e3cee9ef3a4b2baa28832e407`; fresh-downloaded runtime hashes
+match the local package.
+
+2026-09-20 MapReduce-first public v70 package: the default production-value
+path is now explicit. A model-local 4M payload is reduced mechanically to the
+bounded working context before Wrench generation, while native direct
+attention and expert placement remain optional runtime profiles. Full
+regression passed at 153 tests, v70 structural validation passed, and the
+local package completed the 4M mechanical route in 16.181 ms with zero model
+calls. The public Hub revision is
+`e3f5f69e1dbd685b5911509cf48f776c87e0bb03`; fresh-downloaded runtime and
+launcher hashes match local v70. The current host still cannot prove native
+generation because of CUDA memory pressure, and MiniMax matched-workflow
+parity remains open. Evidence:
+`phases/phase-168-native-cpu-profile` and
+`phases/phase-169-public-v70-mapreduce-profile`.
+
+2026-09-20 embedded TTC enforcement: the bounded multi-pass verifier is now
+part of the actual worker and native-upstream response path, and is bundled as
+`wrench_runtime/ttc.py`. Accepted proposals expose a TTC receipt; failed gates
+become fail-closed abstentions. Full regression passed at 154 tests, v71
+structural validation passed, the local 4M mechanical route measured 16.037 ms
+with zero model calls, and the package prefill stress measured 380.976 ms with
+zero model calls. Evidence: `phases/phase-170-embedded-ttc-runtime`.
+
+The embedded TTC runtime was published in public v71 at Hub revision
+`ebe2f75c478cc7138fc8c08cb8577ced30d867b5`. A correct package-local 220-case
+replay recorded 220/220 outcome matches, 120/120 exact eligible proposals,
+zero prohibited accepts, zero transport/runtime abstentions, zero model calls,
+0.538 ms median latency, and 40.040 ms p95. This remains deterministic
+contract evidence, not MiniMax matched-workflow parity.
+
+2026-09-20 bounded multi-file reference patch retrieval: the MapReduce-first
+worker now recovers up to three explicitly named relative files from an exact
+old unified diff, then sends the proposal through the unchanged verifier and
+embedded TTC gates. A temporary fixture accepted a 4,000,253-character
+payload in 24.447 ms, 22.102 ms, and 22.715 ms across three runs, with zero
+model calls and no file mutation. Full regression passed at 155 tests. This
+supports the fast multi-pass production path, not dense native 4M attention,
+MiniMax matched-workflow parity, or the final 90 percent coverage and 95
+percent savings gates. Evidence: `phases/phase-171-multifile-reference-patch`.
+
+2026-09-20 bounded repair pass: worker and local-client model paths now allow
+one corrective pass for format-only failures such as invalid JSON or a
+non-object response. Safety refusals, authority failures, and verifier
+failures do not retry. Full regression passed at 156 tests, and the new
+worker test showed exactly two model calls with one repair pass before an
+accepted proposal. This is a frontier-token cost-control mechanism, not proof
+of net savings until local compute, retry, correction, and fallback costs are
+charged in the matched workflow replay. Evidence:
+`phases/phase-172-bounded-repair-pass`.
+
+The bounded repair worker was materialized and published in public v72 at Hub
+revision `4d7c12facdc59e1adf47b76b00fb767c08b97fbc`. Structural validation
+passed. The package-local prompt-complete 220-case replay recorded 220/220
+outcome matches, 120/120 exact eligible proposals, zero prohibited accepts,
+zero transport/runtime abstentions, zero model calls, 0.578 ms median, and
+28.323 ms p95. A fresh runtime-only download at the exact revision matched the
+local patching, worker, TTC, and server hashes. This makes the fast mechanical
+worker publicly copy-pasteable, but does not close dense native 4M, MiniMax
+matched-workflow parity, or the final 90 percent coverage and 95 percent net
+savings gates. Evidence: `phases/phase-173-public-v72-worker`.
+
+2026-09-20 token-flow accounting: the model-local OpenAI and Ollama response
+receipts now separate raw input tokens from actual model prompt and completion
+tokens, report input tokens not sent to the model, bounded repair passes, and
+total local elapsed time. The 220-case runner aggregates the same fields for
+matched cost scoring. Full regression passed at 156 tests. USD pricing remains
+explicitly unpriced until provider and hardware rates are supplied by an
+authorized matched workflow capture. Evidence:
+`phases/phase-174-token-flow-accounting`.
+
+2026-09-20 package-local cost replay: with the client mechanical fast path
+disabled, all 220 requests entered the downloaded v73-style package server.
+The embedded worker produced 220/220 outcome matches and 120/120 exact
+eligible proposals, with zero prohibited accepts, zero model calls, 23,409
+raw input tokens, 23,409 tokens not sent to a model, zero local model tokens,
+24.011 ms median latency, and 81.938 ms p95. The runner's accounting
+initialization bug found during this replay was fixed before the receipt was
+accepted. This is package-local mechanical evidence, not matched MiniMax
+workflow parity or priced production savings. Evidence:
+`phases/phase-175-package-cost-replay`.
+
+The token-flow accounting runtime was published in public v73 at Hub revision
+`db49ccc21b372ff91ace35bcbb69ccc1d5ee52d9`. Structural validation passed, a
+package-local mechanical request returned zero model prompt tokens and
+positive input tokens not sent to a model, and fresh runtime-only Hub hashes
+matched the local package. This makes the cost measurement portable alongside
+the worker, while USD pricing and the matched 90 percent coverage and 95
+percent net savings gates remain open. Evidence:
+`phases/phase-176-public-v73-cost-package`.
+
+2026-09-20 direct 4M-token endpoint: the v73-equivalent downloaded package
+server accepted a request whose local estimator counted exactly 4,000,000 raw
+input tokens. The 8,000,037-character request completed with HTTP 200 in
+66.5 ms, used the embedded mechanical fast path, made zero model calls, and
+reported all 4,000,000 input tokens as not sent to a model. Local server
+accounting time was 2.219 ms. This proves direct model-directory intake plus
+MapReduce for eligible work, not dense native 4M attention or final MiniMax
+matched-workflow parity. Evidence:
+`phases/phase-177-direct-4m-token-endpoint`.
+
+2026-09-20 prompt-complete MiniMax teacher capture: a live endpoint replayed
+all 220 cases with zero transport failures at `max_tokens=1024`. The capture
+metadata recorded 4 invalid responses, all in patch rows, plus 19 incomplete
+raw outputs that were not usable as normalized proposals. The 216 usable
+provider responses reported 84,882 prompt tokens, 61,728 completion tokens,
+146,610 total tokens, 1,997.283 ms median latency, 7,716.028 ms p95, and
+`$0.08236908` provider-reported upstream inference cost. This is a proposal
+baseline only, with no execution or final workflow claim. It reinforces the
+Wrench value proposition: routine work should avoid frontier prefill whenever
+the deterministic reducer and verifier can establish a bounded safe action.
+Evidence: `phases/phase-178-prompt-complete-teacher-capture`.
+
+2026-09-20 matched downloaded-package replay: the diagnostic runner gained an
+explicit mode that sends every Wrench request through the model-local HTTP
+endpoint instead of short-circuiting in the client. Safe mechanical
+abstentions are now terminal and do not invoke the frontier teacher; only a
+non-mechanical local/model failure can use identical fallback. On the same
+220-case prompt-complete contract, the downloaded v73-style package produced
+93.5331% weighted mechanical frontier-token coverage, 98.4379% net frontier
+token savings, 96.5767% weighted final success, 2/220 fallbacks, zero
+prohibited accepts, zero unexpected mutations, 229.680 ms median latency, and
+440.378 ms p95. The evaluator status is `PASS_MECHANICAL_WORKER`. This is the
+strongest current mechanical-worker receipt, but it is not final production
+enablement because the trace set is historical, teacher capture is
+proposal-only, and native dense 4M attention remains unverified. Evidence:
+`phases/phase-180-matched-package-terminal-abstain`.
+
+2026-09-20 Ollama-shaped direct 4M intake: a fresh v73-style downloaded
+package accepted an exact 4,000,000-token estimated raw request through
+`/api/chat` with `options.num_ctx=4000000`. The endpoint returned HTTP 200 in
+80.412 ms with `prompt_eval_count=4000000`, embedded mechanical routing, zero
+model calls, zero model prompt tokens, and all 4,000,000 input tokens recorded
+as not sent to the model. TTC and verifier checks passed. This confirms that
+the portable model directory exposes the monster-context behavior on the
+Ollama-shaped surface, while remaining explicitly a MapReduce intake result,
+not dense native 4M attention. Evidence:
+`phases/phase-181-ollama-4m-direct-intake`.
+
+2026-09-20 provider-backed current-package replay: the v73-style downloaded
+package was replayed against the existing 220-trace MiniMax cloud proposal
+capture without new provider calls. With client fast-path bypassed, Wrench
+made zero teacher fallbacks, recorded 93.1290% weighted final success versus
+60.5218% teacher success, 100% net frontier-token savings, 217.883 ms median,
+387.115 ms p95, zero prohibited accepts, and zero unexpected mutations. The
+weighted mechanical coverage was 84.8103%; the gap is concentrated in health
+prompts whose oracle contains concrete timeout and byte-limit values omitted
+from the prompt, so those values cannot be guessed mechanically. This is
+provider-backed diagnostic evidence, not the final family-disjoint release
+gate. Evidence: `phases/phase-182-live-teacher-current-package`.
+
+2026-09-20 corrected 220-case contract and v74 replay: eligible health prompts
+now state their numeric bounds and eligible patch prompts carry their exact
+review-only diffs, eliminating two under-specified oracle defects. A fresh v74
+portable package with deterministic localhost health resolution passed
+structural validation. Its current-package four-arm replay reached 94.0113%
+weighted mechanical frontier-token coverage, 100% net frontier-token savings,
+97.1208% Wrench weighted final success versus 76.7929% teacher success, zero
+Wrench fallbacks, zero prohibited accepts, zero unexpected mutations, 184.312
+ms median latency, and 296.324 ms p95. This passes the mechanical-worker
+gates on the corrected contract. Final family-disjoint approval and independent
+5060Ti verification remain open. Dense native 2M/4M attention is an optional
+research lane and is not a release gap. Evidence:
+`phases/phase-188-v74-v2-four-arm-replay`.
+
+2026-09-20 v74 Ollama-shaped 4M smoke: the fresh v74 portable package accepted
+an exact 4,000,000-token estimated raw request through `/api/chat` with
+`options.num_ctx=4000000`, returned HTTP 200 in 51.659 ms, reported
+`prompt_eval_count=4000000`, used embedded mechanical routing, made zero model
+calls, and passed TTC plus verifier checks. This confirms the direct monster
+context intake on the current package after the contract and localhost fixes;
+it remains MapReduce intake evidence rather than dense native 4M attention.
+Evidence: `phases/phase-189-v74-ollama-4m`.
+
+2026-09-20 v74 held-out final-split diagnostic: the runner now supports an
+explicit noncanonical split mode while retaining the default 220-case guard.
+The 44-row v2 final slice produced 43/44 expected outcomes, 23/24 eligible
+exact accepts, zero prohibited accepts, zero model calls, 23.267 ms median,
+and 77.761 ms p95. The one miss was a live localhost health-service error and
+the verifier failed closed. This split was not used for tuning, and the receipt
+is held-out diagnostic evidence rather than final production authorization.
+Evidence: `phases/phase-190-v74-final-heldout`.
+
+2026-09-20 product-boundary decision and persistent prefill cache: the
+product owner explicitly removed dense native 2M/4M attention from the Wrench
+selling point and release gate. The supported value proposition is direct
+model-local raw-payload intake followed by embedded deterministic MapReduce,
+retrieval, toolbelt extraction, bounded effective working context, and
+verification. Dense native attention remains optional research only. The
+runtime now retains content-addressed prefill cards across requests behind a
+configurable byte ceiling, defaults to 256 MiB, exposes cache hit/miss receipts,
+and safely disables retention at zero. Full tests passed at 162 tests. This
+improves the hybrid production path; it does not close final release approval,
+5060 Ti verification, or the held-out health-fixture issue. Evidence:
+`phases/phase-191-v75-prefill-cache`.
+
+2026-09-20 current package 4M intake verification: after rejecting an
+environment-specific health workaround that did not receive HTTP headers
+within the declared bound, a fresh current package passed structural
+validation and an exact 4,000,000-token model-local endpoint probe. The raw
+payload was 32,000,075 characters, the request returned HTTP 200 in 120.177 ms,
+the embedded mechanical route recovered the current `read_file` intent, and it
+made zero model calls. This is hybrid raw intake plus MapReduce evidence, not
+dense-native attention. Evidence: `phases/phase-192-v76-health-status`.
+
+2026-09-20 2M/4M staged handoff latency repair: native handoff verification
+previously re-scanned the complete monster prompt during semantic guards and
+TTC, causing a 4M staged request to take about 7.4 seconds even though only
+1,955 staged tokens were sent upstream. Verification now receives only the
+bounded current-intent suffix while the raw payload remains hash-bound, and
+generic historical lookup without a path or symbol anchor fails closed before
+any full-payload regex scan. Three source-runtime repetitions measured 2M at
+152.768 ms p50 and 162.178 ms p95, and 4M at 261.682 ms p50 and 299.537 ms
+p95, with 1,955 staged tokens in every run. The absolute 100 ms 4M aspiration
+is still open. Full tests pass at 163 tests. Evidence:
+`phases/phase-193-v77-context-matrix`.
+
+The same source was materialized as a v78 package. Structural validation
+passed, the bundled `wrench_runtime` accepted and verified a 4M staged handoff
+in 270.181 ms with 1,955 staged tokens, and the package-local direct endpoint
+accepted a 4M raw payload in 151.799 ms with zero model calls. These are
+hybrid intake and protocol-stub receipts, not dense-native attention quality
+or MiniMax parity.
+
+2026-09-20 v78 bundled-package 220-case HTTP replay: the package's own
+`wrench_runtime` endpoint was exercised with client mechanical fast-path
+bypass and the existing proposal-only teacher capture. The corrected 220-case
+receipt returned `PASS_MECHANICAL_WORKER`, with 90.9116% weighted mechanical
+frontier-token coverage, 96.1611% net frontier-token savings, 96.8925% Wrench
+weighted final success versus 68.9927% teacher success, 2,487 Wrench frontier
+tokens versus 64,785 teacher frontier tokens, zero prohibited accepts, and zero
+unexpected mutations. The current host's live health service caused several
+eligible health rows to fail closed, so this remains diagnostic until an
+isolated fixture is used. The 5060Ti queue currently has only an older pending
+job pinned to source `0d6546a`; no current-commit independent receipt exists.
+Evidence: `phases/phase-194-v78-220-replay`.
+
+2026-09-20 v79 bundled-package 220-case replay with an explicit isolated
+loopback health fixture: the current package again returned
+`PASS_MECHANICAL_WORKER`, now with 96.2576% weighted mechanical frontier-token
+coverage, 96.1611% net frontier-token savings, 99.6767% Wrench-plus-fallback
+weighted final success versus 70.7422% teacher success, 2,487 Wrench frontier
+tokens, 23,643 Wrench local tokens, five fallbacks, zero prohibited accepts,
+and zero unexpected mutations. The test-only fixture preserves the original
+requested health URL and records the transport URL; it is default-off and does
+not alter production behavior. This is stronger bundled diagnostic evidence,
+but final family-disjoint approval, current-commit 5060Ti verification, and
+production enablement remain open. Evidence:
+`phases/phase-195-v79-health-fixture-replay`.
+
+2026-09-20 v79 sealed final-slice diagnostic: the current package-local HTTP
+endpoint was run against the 44-row `evals/wrench-expanded-v2/final.jsonl`
+slice with client mechanical fast-path bypassed and an isolated health
+fixture. Without using final rows for training, LoRA, expert selection, or
+prompt tuning, Wrench reached 100% weighted mechanical coverage, 100% net
+frontier-token savings, 100% Wrench-plus-fallback weighted final success
+versus 88.9922% teacher success, zero Wrench frontier tokens versus 11,967
+teacher tokens, 4,805 local tokens, zero fallbacks, 183.940 ms median, and
+323.980 ms p95. Prohibited accepts and unexpected mutations were both zero.
+This is sealed-split diagnostic evidence, not final production authorization.
+Evidence: `phases/phase-196-v79-final-slice`.
+
+2026-09-20 v79 package retrieval-quality probe: six direct bundled-worker
+cases placed unique lookup needles at 1%, 50%, and 99% of both 2M and 4M raw
+payloads. All six recovered the exact old-reference path and 65,536-byte
+bound from the newest intent, with `embedded-mechanical` routing and zero
+model calls. Elapsed time ranged from 12.507 ms to 473.255 ms, exposing the
+remaining linear-scan latency opportunity for a reusable offset/index layer.
+This proves package-local monster-context retrieval behavior, not dense-native
+attention or learned MiniMax parity. Evidence:
+`phases/phase-197-v79-retrieval-quality`.
+
+2026-09-20 v80 bounded lookup-window optimization: the package runtime no
+longer copies or regex-scans an entire multi-million-character logical line
+when recovering a reference path. It parses only a bounded evidence window
+around the exact needle while keeping the raw payload hash-bound. The v80
+package passed structural validation and 18/18 retrieval cases across three
+repetitions at 2M and 4M, with all needles at 1%, 50%, and 99% positions. The
+all-case median was 6.895 ms, p95 16.063 ms, and worst observed latency
+17.688 ms, with zero model calls and exact path/byte-limit recovery. This
+advances the fast hybrid product path; dense-native attention and learned
+MiniMax parity remain separate open evidence. Evidence:
+`phases/phase-198-v80-bounded-lookup-window`.
+
+2026-09-20 v81 package regression after compact-payload repair: the v81
+bundled package passed structural validation, retained `PASS_PACKAGE_RETRIEVAL_2M_4M`
+with 6/6 exact recoveries and a 16.972 ms worst retrieval case, and passed the
+package-local 220-case replay at 96.2576% weighted coverage, 96.1611% net
+savings, 99.6767% Wrench-plus-fallback success, 194.680 ms median, 356.599 ms
+p95, five fallbacks, zero prohibited accepts, and zero unexpected mutations.
+The sealed 44-row diagnostic remained at 100% weighted coverage, 100% savings,
+100% Wrench success, 203.554 ms median, 344.058 ms p95, and zero safety
+violations. The full source suite is 166 passed. Final family-disjoint
+approval and current-commit 5060Ti verification remain open. Evidence:
+`phases/phase-199-v81-package-regression`.
+
+2026-09-20 v81 direct model-local intake: the bundled package's own local
+OpenAI-compatible endpoint accepted 2M and 4M raw payloads directly, reporting
+2,000,010 and 4,000,010 prompt tokens with HTTP 200 in 85.855 ms and 171.495
+ms. Both used the embedded mechanical route and made zero model calls. The
+package manifest reports 3,881,244,016 parameters below the 4.25B ceiling,
+4M declared input context, and 64K default effective working context. This is
+the intended hybrid product surface, not dense attention over every raw token.
+Evidence: `phases/phase-200-v81-model-local-2m-4m`.
+
+2026-09-20 Ollama importer and runtime validation: Ollama 0.34.2 with the
+matching MLX CUDA runtime imported the v81 Safetensors checkpoint, preserving
+the `qwen3_5_moe` 3.4B NVFP4 model and reporting a 4,000,000-token context.
+The imported model loaded all 3993 tensors and initialized the Qwen3.5 MoE
+runner, but generation failed before the first token because this machine does
+not have the compiled-in `C:/Program Files/NVIDIA/CUDNN/bin/x64` directory.
+The weights and importer are compatible; portable Windows MLX plus cuDNN
+runtime validation remains open. Evidence:
+`phases/phase-201-ollama-import-runtime`.
+
+2026-09-20 Ollama MLX relocation experiment: a copied 0.34.2 MLX runtime had
+its two compiled-in CUDA and cuDNN directory strings relocated to its own
+working directory. The imported v81 model then completed real GPU inference,
+with 16 prompt tokens and 8 generated tokens in 11.569 seconds including a
+4.207 second load. A direct 2M request reached the runner with 2,000,018
+tokens and no gateway truncation, but processed only 26,624 tokens in 88
+seconds before cancellation because full native prefill would take more than
+an hour. The text output was malformed, so this is runtime evidence only.
+It confirms the need for the fast first-layer pruner/cherrypicker or the
+hybrid MapReduce path. Evidence: `phases/phase-202-ollama-mlx-relocation`.
+
+2026-09-20 v81 model-local 4M staged handoff: the bundled package accepted a
+direct 3,999,943-token request without an external gateway, reduced it to
+1,955 model-side tokens under the 64K budget, and returned a hash-bound
+`map_reduce_dynamic_native` receipt. Server staging was 131.372 ms and the
+complete local protocol-stub request was 261.899 ms. This proves the practical
+model-local raw-intake path and effective-context accounting, not dense native
+attention or MiniMax parity. Evidence:
+`phases/phase-203-v81-4m-model-local-handoff`.
+
+The same v81 package then passed the exact Ollama-shaped `/api/chat` surface:
+3,999,943 raw tokens became 1,955 staged tokens, with 141.426 ms server
+staging and 309.808 ms complete local stub round trip. This confirms that the
+MapReduce path is attached to the user-facing Ollama-shaped endpoint, not only
+to the OpenAI-compatible probe.
+
+2026-09-20 v83 fast first-layer optimization: the bundled prefill runtime now
+uses bounded head/tail token-density sampling for monster payload estimates,
+and skips a redundant full 4M code-fence scan while retaining SHA-256 payload
+binding, exact lookup windows, and bounded AST extraction for small source
+fragments. The new portable package passed structural validation and its
+Ollama-shaped `/api/chat` staging measured 97.351 ms, 81.003 ms, and 99.029 ms
+across three fresh 4M runs, with 3,999,547 raw estimated tokens, 1,966 direct
+staged tokens in the worker probe, and 1,955 staged tokens in the handoff
+probe. The complete stub round trips were 214.542 ms, 186.708 ms, and 214.256
+ms. The package-local 220-case replay still passed with 94.5411% weighted
+mechanical coverage, 95.5310% net frontier-token savings, 99.6503% Wrench-plus-
+fallback weighted final success versus 78.9959% teacher success, 184.658 ms
+median, 350.017 ms p95, five fallbacks, zero prohibited accepts, and zero
+unexpected mutations. This is the strongest current hybrid serving result,
+not dense-native 4M attention quality, family-disjoint approval, or production
+enablement. Evidence: `phases/phase-204-v83-package-regression` and the
+raw handoff receipts under `phases/phase-204-v83-*`.
+
+The same v83 package-local `/api/chat` route also passed raw-input points at
+approximately 64K, 128K, 256K, 2M, and 4M. Server staging was 2.803 ms,
+4.255 ms, 7.324 ms, 50.456 ms, and 97.523 ms respectively, with 1,955 staged
+tokens at every point and no external gateway. The complete protocol-stub
+round trips were 35.930 ms, 32.776 ms, 43.197 ms, 139.290 ms, and 224.807 ms.
+
+2026-09-20 v83 sealed final replay: the v83 package-local endpoint ran the
+44-row `evals/wrench-expanded-v2/final.jsonl` split with client mechanical
+fast-path bypass and an isolated health fixture. It reached 100% weighted
+mechanical coverage, 100% net frontier-token savings, and 100% Wrench final
+success versus 78.3130% teacher success, using 4,805 local tokens and zero
+Wrench frontier tokens. Median and p95 latency were 186.640 ms and 322.191
+ms; fallbacks, prohibited accepts, and unexpected mutations were all zero.
+This remains sealed-split diagnostic evidence, not the family-disjoint final
+approval or production authorization. Evidence:
+`phases/phase-205-v83-final-replay`.
+
+2026-09-20 v84 package contract: the materializer now embeds the first-layer
+context gate in `wrench-runtime.json` and `wrench-package.json`. Fast mode is
+explicitly declared as a 4M raw-input pruner/cherrypicker plus MapReduce gate
+to 64K effective working context, with 48K hot context and 16K reference
+cards. Conditional dense-native mode declares a 32K to 64K target and the
+required preserved state, but remains optional and non-blocking. The v84
+package passed structural validation and a fresh 4M `/api/chat` handoff with
+3,999,942 raw estimated tokens, 1,955 staged tokens, and 100.293 ms server
+staging. Evidence: `phases/phase-206-v84-context-gate`.
+
+2026-09-20 v84 Ollama boundary: Ollama 0.34.2 MLX imported the v84
+Safetensors package, loaded 3,993 tensors, preserved the 3.4B NVFP4
+architecture, and reported `num_ctx=4e+06` with a 4,000,000-token context.
+Native generation then failed quality validation on the RTX 5070 Ti: a short
+`/api/generate` returned empty text after 16 generated tokens, and
+`/api/chat` with `think=false` returned malformed repeated-token text after
+64 generated tokens. The package now records import as verified but native
+Ollama generation as failed on this host. Evidence:
+`phases/phase-207-v84-ollama-import`.
+
+2026-09-20 v85 package refresh: the portable package was rematerialized after
+the Ollama boundary update. It now carries both the embedded 4M-to-64K
+context-gate contract and the explicit status that Ollama 0.34.2 MLX import
+and 4M metadata are verified while native generation quality failed on the
+validation host. Structural validation passed, and a fresh package-local 4M
+handoff passed with 3,999,942 raw estimated tokens, 1,955 staged tokens, and
+101.524 ms server staging. Evidence: `phases/phase-208-v85-package-refresh`.
+
+2026-09-20 v85 one-command package smoke: starting the downloaded package's
+own `run_wrench.ps1` without repository `PYTHONPATH` returned `READY`. Its
+`/api/show` reported 4,000,000 declared input tokens and 64,000 effective
+working tokens, while `/api/chat` with `options.num_ctx=4000000` returned a
+valid embedded mechanical `read_file` proposal with zero model calls. This
+confirms the copy-paste model-local path for the high-volume mechanical lane.
+It does not repair the separate stock-Ollama native NVFP4 generation failure.
+Evidence: `phases/phase-209-v85-one-command-smoke`.
+
+2026-09-20 BF16 Ollama comparison: the local 2M BF16 Qwen3.5 MoE candidate
+was imported by the patched Ollama 0.34.2 MLX runtime with 1,045 tensors,
+3,944,893,440 reported parameters, and a 2,000,000-token context. A short
+deterministic generation request still failed to return usable text and
+ended as HTTP 500 after about 63 seconds. This separates import compatibility
+from serving quality and shows that BF16 alone does not solve the native
+prefill/runtime boundary. Evidence: `phases/phase-210-ollama-bf16-comparison`.
+
+2026-09-20 CUDA LoRA development probe: the real BF16 3.94B candidate trained
+for 100 steps on the 132-row calibration split with a rank-8 attention/router
+LoRA. The held-out 44-row development generation, with the mechanical fast
+path disabled, matched 26/44 expected outcomes and 10/44 exact proposals at
+3,163.878 ms median and 5,651.504 ms p95. It remains an experimental gap and
+is not promoted over the deterministic mechanical worker. Evidence:
+`phases/phase-211-lora-development-eval`.
+
+2026-09-20 integrated first-layer gate: `FirstLayerContextGate` is now used by
+the dynamic native prefill path. It records raw input, bounded effective
+context, selected hot/reference spans, omitted spans, raw-hash binding, and
+gate latency under the explicit `first_model_side_pruner_cherrypicker` stage.
+The targeted prefill/server suite passed 23 tests. Evidence:
+`phases/phase-212-first-layer-context-gate`.
+
+The v86 package then replayed the 220-case diagnostic suite after this runtime
+change. It retained 96.2576% weighted mechanical coverage, 96.1611% net
+frontier-token savings, 99.6767% Wrench-plus-fallback weighted final success,
+183.378 ms median, 335.241 ms p95, 2,487 Wrench frontier tokens, zero
+prohibited accepts, and zero unexpected mutations. Evidence:
+`phases/phase-212-first-layer-context-gate/replay-220/evaluation.json`.
+
+The v86 portable directory then passed a no-repository-`PYTHONPATH` one-command
+smoke. Its own launcher reported a 4,000,000-token input context and 3.88B
+parameters; an Ollama-shaped request with `options.num_ctx=4000000` returned a
+verified embedded proposal in 1.003 ms with zero model calls. This confirms the
+copy-paste model-local surface, while native stock-Ollama generation remains a
+separate failed boundary. Evidence: `phases/phase-212-first-layer-context-gate`.
+
+2026-09-20 direct model-local 4M intake: the v86 package's own launcher
+accepted a single Ollama-shaped `/api/chat` request containing 3,998,332 raw
+estimated tokens without an external gateway. The complete local HTTP round
+trip was 72.288 ms, worker elapsed was 1.446 ms, model calls were zero, and
+the read proposal passed schema, authority, evidence, consistency, blind
+critic, and final-gate verification. This is the strongest direct model-local
+hybrid evidence so far, but it is not dense native attention quality. Evidence:
+`phases/phase-213-direct-model-local-4m`.
+
+2026-09-20 mechanical first-layer gate: the actual no-model mechanical fast
+path now emits the same hash-bound first-layer receipt family. It keeps the
+newest intent as the hot span, scans historical payload only for exact bounded
+lookup or patch evidence, and exposes the gate from the model-local OpenAI and
+Ollama-compatible responses. A fresh v88 package accepted a 3,998,332-token
+raw request in three measured round trips of 69.658 ms, 37.463 ms, and
+29.749 ms, returned the bounded read proposal with zero model calls, and
+recorded 6.361 ms to 7.813 ms `mechanical_fast_pruner_cherrypicker` gates.
+This is hybrid raw intake evidence, not dense-native attention quality.
+Evidence: `phases/phase-214-mechanical-first-layer-gate`.
+
+2026-09-20 v88 direct context matrix: the current portable package accepted
+all 15 fresh package-local probes at 64K, 128K, 256K, 2M, and 4M raw input,
+with three repetitions per point and no external gateway. Observed raw token
+estimates stayed at or below the requested limits. Complete HTTP p50/p95 was
+25.545/26.104 ms at 64K, 27.116/28.313 ms at 128K, 30.321/30.683 ms at
+256K, 103.465/106.465 ms at 2M, and 158.906/159.251 ms at 4M. The first-layer
+gate p50 stayed at 23.952 ms at 4M, with nine staged working tokens in this
+simple mechanical prompt and zero model calls. This closes the current
+model-local intake matrix, while dense-native quality and family-disjoint
+approval remain open. Evidence: `phases/phase-216-v88-context-matrix`.
+
+2026-09-20 v88 retrieval-quality replay: unique old-reference needles at 1%,
+50%, and 99% in both 2M and 4M payloads were recovered exactly in 18/18
+cases across three repetitions. Every case used the model-local
+`mechanical_fast_pruner_cherrypicker` stage, `reference_lookup` route, and
+hash-bound receipt with zero model calls. Retrieval p50/p95 was 17.870/20.956
+ms at 2M and 32.560/40.772 ms at 4M. This verifies hybrid reference lookup,
+not dense-native attention or MiniMax parity. Evidence:
+`phases/phase-217-v88-retrieval-quality`.
+
+2026-09-20 v90 portable package refresh: the HF-facing README and materialized
+package now state the current hybrid 4M product boundary and v88 evidence,
+instead of stale pre-v88 metrics. The v90 package passed structural validation
+and its own package-local `/api/chat` accepted 3,998,332 raw estimated tokens
+in 87.064 ms, returned the bounded proposal with zero model calls, and emitted
+the `mechanical_fast_pruner_cherrypicker` hash-bound receipt. Evidence:
+`phases/phase-219-v90-current-package`.
+
+2026-09-20 hard 4M admission boundary: the model-local server now rejects
+invalid or over-limit `options.num_ctx` values and raw input estimates above
+4,000,000 tokens. The v91 package passed structural validation, accepted a
+3,998,332-token direct request in 84.482 ms with zero model calls, and rejected
+`options.num_ctx=4000001` with HTTP 400. This makes the 4M endpoint limit
+enforceable rather than metadata-only. Evidence:
+`phases/phase-220-v91-hard-4m-limit`.
+
+2026-09-20 v92 enforced package manifest: the materializer now copies the
+hard 4M admission contract into both package manifests. The v92 package passed
+structural validation, reported `context_length=4000000` and `parameter_size=3.88B`,
+and accepted a 3,998,332-token direct `/api/chat` request in 74.265 ms with
+zero model calls. Evidence:
+`phases/phase-221-v92-enforced-manifest`.
+
+2026-09-20 LoRA training pipeline audit: direct token-ID label construction
+passed all 132 calibration rows, and the isolated Transformers path produced a
+real 2/2 exact two-row sanity result. The best development-only rank-8,
+1,024-step attention/router LoRA reached 30/44 outcome matches and 16/44 exact
+targets, improving over the uncalibrated base at 20/44 and the earlier
+100-step LoRA at 26/44. A rank-16, 1,024-step run regressed to 25/44, so it
+was not promoted. These are diagnostic generation results, not final-suite or
+release evidence. Evidence: `phases/phase-222-lora-training-audit`.
+
+2026-09-20 current-source mechanical replay: the checked-out deterministic
+route covered all 220 rows with 220/220 outcome matches and 220/220 fast-path
+requests in 8.195 ms, with zero prohibited accepts. This confirms the current
+high-throughput mechanical lane, but not learned-model quality, MiniMax parity,
+full workflow savings, or dense-native attention. Evidence:
+`phases/phase-223-current-source-mechanical-220`.
+
+2026-09-20 current-source workflow replay: the local model endpoint, client,
+verifier, multi-pass verifier, and IPv4 health fixture completed all 220 rows.
+The mechanical fast path handled 220/220 requests with zero model calls, 219/220
+outcome matches, 119/120 eligible exact accepts, zero prohibited accepts, and
+zero transport or runtime abstentions. Median and p95 client latency were
+0.531 ms and 49.443 ms. The one mismatch is a fixture-size conflict where the
+current `GOAL.md` exceeds the requested 131072-byte read ceiling, so the
+verifier correctly fails closed. This remains diagnostic workflow evidence,
+not MiniMax parity, weighted savings, or dense-native attention evidence.
+Evidence: `phases/phase-224-current-source-workflow-220`.
+
+2026-09-20 current-source held-out final diagnostic: the sealed v2
+`final.jsonl` split completed 44/44 outcome matches and 24/24 eligible exact
+accepts through the model-local endpoint, with 44/44 mechanical fast-path
+requests, zero model calls, zero prohibited accepts, and zero transport or
+runtime abstentions. Median and p95 client latency were 0.528 ms and
+45.774 ms. The health fixture was isolated on a dedicated IPv4 loopback port,
+so this receipt does not depend on a host service. This remains a 44-row
+diagnostic, not the full weighted MiniMax comparison or production approval.
+Evidence: `phases/phase-225-current-source-heldout-final`.
+
+2026-09-20 current-source 4M native handoff: the source runtime accepted a
+nominal 4,000,000-token `/api/chat` probe at its own model-local endpoint. The
+package received about 3,996,267 raw estimated tokens, compacted them in its
+first-layer gate to 1,955 staged tokens under the 64K working budget, and sent
+only that bounded prompt to the local native protocol stub. Server staging was
+104.608 ms and complete local round trip was 201.307 ms. Raw and prepared
+payload hashes were present, with one verified backend call. The stub does not
+prove dense-native attention or generation quality. Evidence:
+`phases/phase-226-current-source-4m-native-handoff`.
+
+2026-09-20 real worker generation smoke: the fused development-only rank-8
+LoRA candidate was loaded through `WrenchWorker.from_pretrained` with the
+mechanical shortcut disabled. Canonical development case
+`eval59_read_file_06_00` produced an accepted, exact proposal in one model
+call on `cuda:0`. The standalone evaluator measured 4,493.678 ms for this
+generation. The worker now defaults to CUDA when available while retaining an
+explicit device override and Accelerate device-map compatibility. This is
+device-placement and real-generation evidence, not broad quality or release
+evidence. Evidence: `phases/phase-227-real-worker-cuda-generation`.
+
+2026-09-20 fresh real LoRA development rerun: the current fused rank-8 LoRA
+checkpoint generated all 44 development rows on `cuda:0` with the mechanical
+shortcut disabled. It reached 30/44 outcome matches, 16/44 exact targets, and
+18 verified accepts, with 3,768.530 ms median and 8,688.215 ms p95 generation
+latency. Misses clustered in long path copying, patch diff copying, and health
+transport behavior. This confirms LoRA is useful but not sufficient to own
+routine mechanical work; the deterministic route remains the high-leverage
+owner and the learned model remains fallback-only. Evidence:
+`phases/phase-228-real-lora-development-44-rerun`.
+
+2026-09-20 real worker 2M/4M generation: the repository probe sent nominal
+2,000,000 and 4,000,000 raw-token payloads through the actual Wrench worker,
+with the mechanical shortcut disabled and the fused LoRA model on `cuda:0`.
+The worker accepted the exact proposal in both runs with one model call each.
+The 2M run estimated 1,996,091 raw tokens, staged 1,987 tokens, and spent
+46.527 ms in the gate. The 4M run estimated 3,996,303 raw tokens, staged
+1,987 tokens, and spent 135.008 ms in the gate. Both stayed below the hard 4M
+boundary and emitted raw/prepared hash receipts. This proves real model-local
+monster-context generation through the hybrid gate, not dense-native attention
+or broad MiniMax parity. Evidence:
+`phases/phase-229-real-worker-2m-4m-generation`.
+
+2026-09-20 current-source matched arms replay: the v2 canonical 220-case
+fixture was replayed through the current model-local HTTP server with its
+matching v2 MiniMax teacher capture and an isolated IPv4 health fixture. The
+weighted mechanical frontier-token coverage was 94.5411%, net frontier-token
+savings were 95.5310%, and Wrench plus identical MiniMax fallback reached
+99.6503% weighted final success versus 78.9959% teacher-only. Wrench used 2,879
+frontier tokens versus 64,422 for the teacher, with five fallbacks, zero
+prohibited accepts, and zero unexpected mutations. All diagnostic workflow
+gates passed. Evidence:
+`phases/phase-230-current-source-matched-arms-v2`.
+
+2026-09-20 rank-8 LoRA 2,048-step development rerun: the same 132-row
+calibration split and 44-row development split were run in the CUDA-enabled
+FreeToken environment with the mechanical shortcut disabled. The checkpoint
+reached only 17/44 outcome matches, 8/44 exact targets, and 22 verified accepts,
+with 6,105.343 ms median and 11,713.913 ms p95 generation latency. This
+regressed the 1,024-step rank-8 result of 30/44 outcome matches and 16/44 exact
+targets, so it was not promoted. It reinforces the current architecture
+decision: deterministic mechanical routing owns the routine path, and learned
+generation remains fallback-only until a better data or training design is
+verified. Evidence: `phases/phase-231-lora-2048-development`.
+
+2026-09-20 real model-local HTTP 4M probe: the current source endpoint received
+3,996,369 raw-token-equivalent input directly, with a 35,163,910-byte request,
+HTTP 200, real Transformers backend, and no external gateway. Its integrated
+first-layer gate reduced the payload to 2,053 staged tokens in 181.309 ms. The
+worker made two model calls including a retry and completed in 10,375.007 ms,
+but the learned output remained malformed and failed strict verification. This
+closes a stronger model-local HTTP intake and real-generation integration
+milestone while keeping learned quality, retry efficiency, and MiniMax parity
+open. Evidence: `phases/phase-232-real-worker-http-4m`.
+
+2026-09-20 corrected real model-local HTTP 4M probe: the same direct endpoint
+was rerun with a 128-token output cap instead of 32. It again accepted
+3,996,369 raw-token-equivalent input, returned HTTP 200 through the real
+Transformers backend, and reduced it to 2,033 staged tokens in 191.537 ms.
+Two model calls including a retry took 27,378.546 ms, and the output was still
+malformed and failed strict verification. This rules out output-cap truncation
+as the primary explanation for the learned fallback gap. Evidence:
+`phases/phase-233-real-worker-http-4m-128`.
+
+2026-09-20 standard Hugging Face hybrid load: the pinned BF16 Safetensors
+candidate loaded through Transformers 5.17.0 `AutoConfig`, `AutoTokenizer`, and
+`AutoModelForImageTextToText` with the full weights. The resolved class was
+`Qwen3_5MoeForConditionalGeneration` with 3,881,244,016 parameters. Its native
+tokenizer limit is 262,144, while the model-local hybrid contract declares
+4,000,000 logical raw input tokens and 64,000 effective working tokens. This
+passes the standard HF hybrid artifact gate and explicitly does not claim
+native dense 4M attention. Evidence: `phases/phase-234-standard-hf-load`.
+
+2026-09-20 portable hybrid package v93: the pinned candidate was materialized
+as a copy-pasteable model directory with hard-linked Safetensors weights,
+bundled verifier/toolbelt, model-local MapReduce prefill, tokenizer hook, and
+server entrypoint. Structural validation passed with 3,881,244,016 parameters,
+a 4,000,000 logical raw-input limit, 64,000 effective working context, and
+the embedded `first_model_side_pruner_cherrypicker` stage. A fresh package
+local 4M mechanical route completed in 28.935 ms with zero model calls. This
+strengthens the portable hybrid product path, not dense-native attention
+quality or learned MiniMax parity. Evidence:
+`phases/phase-235-portable-hybrid-package`.
+
+2026-09-20 portable package direct 4M HTTP boundary: the package's own server
+was started from the copy-pasteable model directory and received a nominal
+4,000,000-token `/v1/chat/completions` request directly, without an external
+gateway. The package measured 3,999,963 raw estimated tokens in a
+32,497,800-byte request, returned HTTP 200, ran the first-layer mechanical
+pruner/cherrypicker in 23.576 ms, reduced the case to a 9-token effective
+working context, produced the exact bounded proposal, and used zero model
+calls. The probe now leaves a small fixture margin so the nominal 4M envelope
+does not exceed the hard input limit because of the active-intent suffix.
+This is direct hybrid package intake evidence, not dense-native attention
+quality or learned MiniMax parity. Evidence:
+`phases/phase-236-portable-package-http-4m`.
+
+2026-09-20 real harness integration: the model-local Wrench endpoint was
+connected to real OpenCode, Claude Code, and DeepSeek Harness clients. OpenCode
+performed a native read tool call through the OpenAI-compatible endpoint;
+Claude Code performed a native Anthropic `Read` tool call through
+`/v1/messages`; and an isolated DeepSeek Harness headless profile performed a
+real read through its local filesystem tool. Each path completed one bounded
+proposal and one tool-result settlement with zero model calls. The server now
+handles streaming tool-call events, Anthropic message streaming, tool-result
+settlement, and DeepSeek's pre-assistant wrapper messages. The package runtime
+was rematerialized as `Wrench-Qwen3.6-8expert-BF16-hybrid-v94-harness` and its
+package-local OpenAI tool round trip passed. This is real local workflow
+integration evidence on the RTX 5070 Ti development host, not independent
+5060 Ti verification, learned MiniMax parity, dense-native 4M quality, or
+production release authorization. Evidence:
+`phases/phase-238-real-harness-integration`.
+
+2026-09-20 current-source 5060 Ti verification: the current source commit
+`1674ce0088e4956e17087eab7cf36bb672ab3a5a` was bound to a new independent
+preflight manifest and committed under
+`phases/phase-239-current-5060-preflight`. The existing Drive job remains a
+stale `31f85be` manifest in `pending`, so no 5060 Ti result is claimed yet. On
+the current host, a deterministic 4,484,713-token-equivalent stress receipt
+reduced the raw sequence to 58,539 model-prefill tokens: cold index ingestion
+was 137.134 ms and selection was 40.744 ms. This proves the bounded gate shape
+and exposes cold versus hot work, but it is not independent 5060 Ti evidence,
+dense-native attention quality, or MiniMax parity.
+
+2026-09-20 conditional dense-native first-layer gate: the FreeToken model
+overlay now exposes an explicit `-DenseNativeGate` launcher switch. When
+enabled, the raw request is accepted by the model-local native endpoint, then
+the same deterministic `FirstLayerContextGate` used by the hybrid worker runs
+before expensive native attention and compacts to a bounded 32K to 64K working
+context. Invalid bounds or raw input above 4M fail closed. A local gate-only
+4M stress measured 3,990,568 estimated raw tokens to 35 dense-attention input
+tokens in 137.329 ms with a hash-bound receipt. This is model-package gate
+evidence, not native decoder quality, 5060 Ti verification, or MiniMax parity.
+Evidence: `phases/phase-240-dense-native-first-layer`.
+
+2026-09-20 portable package v96 correction: the generated copy-paste README
+now points `Set-Location` at the actual requested Hub directory instead of
+the historical NVFP4 directory name. The v96 package passed structural
+validation and its own `/api/chat` 4M model-local handoff accepted 3,995,842
+raw estimated tokens, reduced them to 1,955 staged tokens, and completed in
+252.351 ms with 106.276 ms server staging. The upstream was a local protocol
+stub, so this remains package intake and reduction evidence, not native decoder
+quality or 5060 Ti verification. Evidence:
+`phases/phase-240-dense-native-first-layer/portable-v96-native-handoff-4m.json`.
+
+2026-09-20 portable package v97 dense-native launcher safety: `-NativeDirectInput`
+now enables the integrated first-layer pruner and cherrypicker automatically.
+`-DenseNativeGate` remains an explicit equivalent, while
+`-BypassDenseNativeGate` is restricted to capacity probes and is rejected when
+combined with a dense-native mode switch. The v97 package passed structural
+validation with nine Safetensors shards. Its model-local `/api/chat` 4M handoff
+accepted `3,995,842` raw estimated tokens, reduced them to `1,955` staged
+tokens, and completed in `243.24 ms`, including `87.807 ms` server staging.
+The receipt records the `first_model_side_pruner_cherrypicker` stage and binds
+the raw payload hash. The upstream was a local protocol stub, so this is
+package intake and reduction evidence, not dense decoder quality, retrieval
+quality, 5060 Ti verification, or MiniMax parity. Evidence:
+`phases/phase-240-dense-native-first-layer/portable-v97-native-handoff-4m.json`.
+
+2026-09-21 compact v97 publication: the BF16 compatibility package was about
+7.9 GiB, so the current public copy-and-try artifact is the NVFP4 W4A16
+package at `stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-v97-dense-native-gate-Experimental-Preview`.
+The pinned Hub revision is `926c94d0d348b20aaa3c571da9cae8bef01586f3`, with a
+public dry-run of about 3.4 GiB and two Safetensors shards. Local structural
+validation, mechanical smoke, and direct model-local 4M intake passed. This
+is still an experimental preview and does not prove MiniMax parity, dense
+native decoder quality, or independent 5060 Ti performance. Evidence:
+`phases/phase-245-compact-v97-nvfp4`.
+
+2026-09-21 Hugging Face publication labeling: all five `stancsz` model repos,
+including the private adapter, were renamed with the `-Experimental-Preview`
+suffix and each model card now carries an explicit warning against production
+deployment and safety-critical use. Hugging Face redirects the old repo IDs
+to the new names. The current 5060 Ti queue manifest was updated to the new
+compact repo and pinned revision, but the worker job remains `pending`; no
+independent 5060 Ti result is claimed yet. The source regression after the
+publication-default rename is now `182 passed, 18 warnings`.
+
+2026-09-21 compact v97 OpenCode integration: the current NVFP4 package served
+the real OpenCode CLI through its OpenAI-compatible endpoint. OpenCode issued
+a native `read` tool call for `README.md`, executed it, returned the tool
+result, and received a final settlement response. The package trace records
+`mechanical_fast_path=true`, `embedded-mechanical-settlement`, 18 effective
+working tokens at settlement, and zero model calls. This is current-v97 local
+integration evidence on the RTX 5070 Ti, not 5060 Ti evidence, learned
+MiniMax parity, dense-native decoder quality, or production authorization.
+Evidence: `phases/phase-246-v97-opencode-integration`.
+
+2026-09-21 compact v97 DeepSeek Harness integration: the current NVFP4
+package was connected to the real `dsh --profile headless` client through a
+temporary local OpenAI-compatible endpoint. The client performed its session
+title preflight, sent the wrapper bundle, received and executed a structured
+`read` proposal for `README.md`, returned the tool result, and completed the
+final settlement. The trace records `mechanical_fast_path=true`, an 18-token
+effective working context, 9.009 ms first-request gate latency, 0.197 ms
+settlement latency, and zero model calls. This is current-v97 local evidence
+on the RTX 5070 Ti, not current Claude Code routing, independent 5060 Ti
+evidence, learned MiniMax parity, dense-native decoder quality, or production
+authorization. The installed Claude CLI continued to use its first-party
+provider during three bounded endpoint-injection diagnostics. The final
+isolated attempt logged `dispatching to firstParty model=wrench-v97`, returned
+first-party usage costing `$0.02156`, and left the Wrench trace empty. Claude
+current-v97 remains `NOT_VERIFIED`, and no further provider-spend attempts
+will be made.
+Evidence: `phases/phase-247-v97-claude-dsh`.
+
+2026-09-21 current package Ollama-compatible intake: the model-local server
+now implements the `/api/version` probe required before the Ollama API routes,
+with a regression test for `/api/version`, `/api/tags`, `/api/show`,
+`/api/chat`, and `/api/generate`. A fresh local v98 package accepted a direct
+Ollama-shaped `/api/chat` payload estimated at `3,999,995` tokens in a
+`32,498,051` byte request, returned HTTP 200 in `161.357 ms`, and recorded a
+`24.894 ms` first-layer gate, 9 effective working tokens, and zero model calls.
+After adding the bodyless `HEAD /` Ollama heartbeat and complete model metadata
+including a stable digest, the real Ollama `0.32.13` CLI passed `show`, `list`,
+and `run` against the package-local endpoint. `run` returned a Wrench
+`read_file` proposal with zero model calls and no mutation. This proves the
+model-local Ollama-compatible API and CLI transport, not stock Ollama native
+Safetensors loading or native dense attention quality. vLLM is not installed
+on this host. Evidence:
+`phases/phase-248-current-v97-ollama-cli`.
+
+2026-09-21 current v102 package full 220-case mechanical replay: the first
+v100 replay exposed literal-search hard timeouts caused by scanning the large
+historical `phases` tree, reducing coverage to 83.259% and net savings to
+86.076%. The package runtime now uses a bounded fixed-string ripgrep path for
+literal lookup. The independent Windows worker subprocess protocol also now
+writes and reads UTF-8 explicitly, fixing repeatable cp1252 crashes on
+box-drawing and non-Latin repository content. The rematerialized v102 package
+then passed all 220 cases with Wrench-plus-identical-MiniMax fallback final
+success `0.9965032764`, verifier success `1.0`, weighted frontier-token
+coverage `0.9929861390`, net frontier-token savings `1.0`, zero frontier
+fallback tokens, zero prohibited accepts, zero unexpected mutations, median
+latency `185.095 ms`, and p95 `299.445 ms`. All five mechanical-worker gates
+are true. This is still a historical fixture result, not family-disjoint
+approval, independent 5060 Ti evidence, native dense decoder quality, or
+production enablement. Evidence:
+`phases/phase-253-v102-220-replay`.
+
+2026-09-21 v102 package-local 4M handoff: the bundled model-local server
+accepted a direct Ollama-shaped `/api/chat` request containing `3,996,267`
+estimated raw tokens in `35,163,527` bytes. Its deterministic MapReduce gate
+staged `1,955` effective model-prefill tokens, recorded `31.663 ms` gate time
+and `84.072 ms` server staging, and returned in `238.189 ms`. The receipt binds
+the raw payload hash and records the selected reference card and cache state.
+The upstream was a local protocol stub, so this proves direct package intake
+and bounded handoff, not dense-native decoder quality, retrieval quality, or
+production enablement. Evidence:
+`phases/phase-254-v102-package-4m-handoff`.
+
+2026-09-21 Hugging Face model-card revalidation: all five model repositories
+listed under `stancsz` retain the `-Experimental-Preview` suffix. Each README
+was refreshed with the same explicit non-production warning and an
+`Experimental Preview` title marker. The five remote commits and a fresh API
+plus README verification are recorded in
+`phases/phase-256-hf-experimental-preview/publication-receipt.json`.
+This changes publication labeling only. It does not promote the model to
+production and does not replace the missing independent 5060 Ti receipt.
+
+2026-09-21 v103 package regression after model-card refresh: a direct
+Ollama-shaped `/api/chat` payload estimated at `3,996,267` raw tokens was
+accepted by the current NVFP4 package, reduced to `1,955` staged tokens, and
+completed in `238.769 ms`. The first-layer context gate measured `50.175 ms`
+and server staging measured `98.032 ms`. The upstream remains a local protocol
+stub, so this is package intake and handoff accounting evidence on the RTX
+5070 Ti, not dense-native decoder quality, MiniMax parity, or 5060 Ti evidence.
+Evidence: `phases/phase-257-v103-package-4m-handoff`.
+
+The pending 5060 Ti manifest was refreshed to source commit `6d25fc8` and the
+same pinned Hub revision. It is now visibly present in Drive `jobs/pending` as
+file `1V0AcZ-EQ_lRDB-aaJYVwRNMxMVkpNFAW`, but the worker has not consumed it
+after the bounded observation window. No remote result is claimed.
+
+2026-09-21 v103 package validation: the current NVFP4 Hugging Face package
+passed structural validation with declared `4,000,000` context capacity and
+two Safetensors shards. Its embedded mechanical smoke passed a validated
+`read_file` proposal with all multi-pass verifier checks true and a
+`1.826 ms` first-layer gate. This is local package evidence, not independent
+5060 Ti verification or native dense attention quality. Evidence:
+`phases/phase-258-v103-package-validation`.
+
+2026-09-21 5060 Ti connectivity probe: candidate host `10.0.0.207` is
+reachable and exposes TCP port 22, but the existing local worker key was
+rejected for the tested accounts. No remote command was executed and no GPU
+or performance claim was made. Evidence:
+`phases/phase-259-5060-connectivity`.
+
+2026-09-21 Claude Code gateway boundary: the current v103 package accepted a
+direct Anthropic `/v1/messages` request with HTTP 200, a bounded `read_file`
+proposal, the embedded mechanical backend, and zero model calls. The installed
+Claude Code 2.1.251 binary with its gateway-specific environment logged
+`dispatching to gateway`, but added zero rows to the Wrench trace, so local
+Claude Code provider routing remains `NOT_VERIFIED`. No further provider
+routing attempts are authorized. Evidence:
+`phases/phase-264-claude-code-gateway-v103`.
+
+2026-09-21 v103 sealed final-slice diagnostic: all 44 rows in
+`evals/wrench-expanded-v2/final.jsonl` were replayed against the current
+package. Wrench plus identical MiniMax fallback had weighted final success
+`1.0`, verifier success `1.0`, weighted frontier coverage `1.0`, net savings
+`1.0`, zero frontier fallback tokens, median/p95 latency `195.803/301.136 ms`,
+zero prohibited accepts, and zero unexpected mutations. This remains
+diagnostic only because the suite is `DRAFT_PENDING_HUMAN_APPROVAL`.
+Evidence: `phases/phase-265-v103-final44-diagnostic`.
+
+2026-09-21 paired uncertainty scoring: the mechanical-worker scorer now emits
+deterministic paired trace-bootstrap 95% confidence intervals for teacher and
+Wrench final success. Re-scoring the existing 220-case manifest produced a
+paired success difference of `0.2065445` with CI `[0.1681818, 0.2818182]`;
+the 44-case sealed slice produced `0.2168695` with CI
+`[0.1363636, 0.3863636]`. The source regression is now `177 passed, 18
+warnings`. Evidence: `phases/phase-266-paired-ci-re-score`, commit
+`7235321`.
+
+2026-09-21 current 5060 Ti queue recheck: the latest pinned package preflight
+manifest remains in Drive `jobs/pending`; `jobs/running` remains empty and no
+new completed 5060 Ti receipt exists. No independent 5060 Ti result is claimed.
+
+2026-09-21 isolated current Claude Code integration: with a fresh Claude
+configuration directory, loopback-only gateway settings, a local-only auth
+token, and an external proxy blocker, the installed Claude Code 2.1.251 CLI
+completed a real read-only `Read` operation through the current v103 Wrench
+Anthropic endpoint. Two `/v1/messages` requests were observed: a streaming
+`embedded-mechanical` proposal and an `embedded-mechanical-settlement`, both
+with `model_calls=0`. The request contained 249 estimated raw tokens and was
+compacted to 61 effective working tokens; the first-layer gate took 1.683 ms.
+This supersedes the earlier unisolated `NOT_VERIFIED` diagnostic for the
+current local Claude Code smoke path. It does not prove learned MiniMax parity,
+dense-native 4M decoder quality, production readiness, or 5060 Ti performance.
+Evidence: `phases/phase-267-claude-local-isolated`, commit `1a9fd36`.
+
+2026-09-21 worker-plane orchestration dry-run: after repeated observation of
+the pending 5060 Ti manifest with no running consumer, Sol advisor review
+recommended testing the queue protocol locally before more semantic tuning.
+The exact pending manifest was copied into an isolated mock queue and passed
+through atomic `pending -> running -> failed` transitions. The mock emitted a
+unique-nonce liveness receipt and a `BLOCKED_MOCK_ONLY` terminal receipt with
+GPU, latency, memory, and resource measurements explicitly unavailable. It
+never downloaded artifacts, ran the preflight, or claimed RTX 5060 Ti
+evidence. The full source regression is now `178 passed, 18 warnings`.
+Evidence: `phases/phase-268-luna-advisor`.
+
+2026-09-21 final bounded 5060 Ti liveness challenge: a nonce-bound,
+read-only challenge was sent to the existing remote thread using its actual
+reported checkout path. The turn completed in 4.359 seconds but returned an
+empty item list, with no nonce echo, stdout, stderr, tool call, GPU identity, or
+RAM/VRAM snapshot. Per the worker stop condition, this remote thread is now
+classified unavailable. No further prompts will be sent until a fresh
+authenticated worker session or operator-confirmed dispatch exists. This is
+not a 5060 Ti failure or performance result. Evidence:
+`phases/phase-268-luna-advisor/remote-liveness-receipt.json`.
+
+2026-09-21 5060 Ti device connection alignment: the user supplied a Codex
+remote-control screenshot showing the intended `5060TI` device as connected,
+signed in, and identified as host `DESKTOP-KET1SKP` on Windows x86_64. A fresh
+nonce-bound read-only challenge sent immediately afterward to the existing
+remote thread still completed with an empty item list and no terminal output.
+The device connection is therefore real control-plane evidence, while
+authenticated terminal execution and independent 5060 Ti benchmark evidence
+remain unverified. Evidence:
+`phases/phase-269-5060ti-connected-control-plane`.
+
+2026-09-21 portable Claude Code launcher: the materializer now embeds a
+`run_claude_code.ps1` entrypoint and a local fail-closed proxy blocker. A fresh
+materialized package launched the Wrench Anthropic endpoint and completed a
+real Claude Code read-only `Read README.md` operation with exit code 0. The
+trace contained proposal and settlement rows, both with `model_calls=0`; the
+proposal compacted 400 estimated raw tokens to 206 effective tokens with a
+2.488 ms gate. This is portable local integration evidence, not learned
+MiniMax parity, dense-native 4M quality, 5060 Ti evidence, or production
+readiness. Evidence: `phases/phase-270-portable-claude-launcher`.
+
+2026-09-21 portable client end-to-end smoke: the freshly materialized package
+was tested with the bundled OpenCode config and DeepSeek Harness overlay. Both
+clients exited with code 0 after a real read-only task. The package trace
+contained three OpenAI-compatible rows, a structured `read` tool, proposal and
+settlement backends, zero model calls, and no mutation claim. This is package
+integration evidence on the RTX 5070 Ti host, not independent 5060 Ti,
+MiniMax-parity, dense-native-quality, or production evidence. Evidence:
+`phases/phase-271-portable-client-e2e`.
+
+2026-09-21 5060 Ti direct package workflow: the connected `DESKTOP-KET1SKP`
+worker accepted a direct nominal 4,000,000-token model-local HTTP request with
+31,997,963 raw characters and completed in 439.327 ms. The installed DeepSeek
+Harness client completed an isolated read-only smoke against the same package.
+The separate 220-case replay reached `QUALITY_GATE_OPEN` for all 220 traces and
+was still undergoing hash, safety-counter, and resource-reserve validation at
+receipt time. OpenCode is not installed on that worker, so no remote OpenCode
+claim is made. The worker checkout was dirty at `bcf80d9` while `origin/main`
+was `08daf09`, so this is independent package evidence rather than a
+current-source claim. Evidence: `phases/phase-273-5060ti-current-package-workflow`.
+
+2026-09-21 5060 Ti v2 provenance checkpoint: the worker created a temporary
+`origin/main` export without overwriting its dirty checkout. No matching
+teacher receipt was present, so it correctly withheld parity. Its package-only
+diagnostic ran all 220 rows and reported 200 outcome matches, 100 exact
+proposal matches, 100 exact accepts across 120 eligible rows, zero prohibited
+accepts, zero transport/runtime abstentions, zero model calls, 2.077 ms median
+latency, and 107.235 ms p95 latency. RAM and VRAM reserves remained above the
+10% host-safety requirement. The run exposed CRLF/LF byte-hash drift between
+the archived worker copy and the suite manifest. Evaluation provenance now
+normalizes JSONL line endings for the canonical hash and records raw-byte hashes
+separately. This is still diagnostic only. Evidence:
+`phases/phase-274-5060ti-provenance-and-v2-diagnostic`.
+
+2026-09-21 post-fix 5060 Ti verification: after `aaf0c79` reached
+`origin/main`, the worker's isolated export matched the canonical and
+LF-normalized v2 case hashes and contained the provenance helper plus
+`.gitattributes`. The dirty worker checkout was not modified. The package-only
+diagnostic completed 220 requests with 200 outcome matches, 100 exact
+proposals, 100 exact accepts across 120 eligible rows, zero prohibited
+accepts, zero transport/runtime abstentions, zero model calls, 2.516 ms median
+latency, and 108.383 ms p95 latency. RAM and VRAM reserves stayed above 10%.
+No matching teacher capture was available, so the result remains
+`DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY`; it is not teacher parity or the 90%
+weighted gate. Evidence remains in the external worker audit and the phase 274
+receipt.
+
+2026-09-21 model-only control: the server gained a diagnostic-only
+`--disable-mechanical-route` switch, leaving the default embedded toolbelt
+unchanged. A frozen-backbone rank-16 head-only LoRA trained on the 132-row v2
+calibration split reached final loss `0.00406`, then ran against the unseen
+44-row development split with the route disabled. It achieved 18/44 correct
+outcomes, 4/44 exact proposals, 4/24 exact eligible accepts, one prohibited
+accept, ten transport/runtime abstentions, 37 model calls, 4.570 s median, and
+10.683 s p95 latency. This fails the 90% worker and zero-safety-violation
+requirements. The evidence confirms that current mechanical-worker utility is
+coming from the embedded toolbelt plus verifier, not this LoRA alone. Evidence:
+`phases/phase-275-head-only-model-only-diagnostic`.
+
+2026-09-21 current v103 package rerun: the exact portable package was replayed
+against the complete matching v2 teacher stream and all 220 cases completed.
+The Wrench arm recorded 100% weighted mechanical frontier-token coverage, 100%
+net frontier-token savings, 100% weighted final success, 100% verifier
+success, zero prohibited accepts, zero unexpected mutations, zero Wrench model
+calls, 211.745 ms p50 latency, and 332.823 ms p95 latency. Structural package
+validation also passed with two Safetensors shards and a declared 4,000,000
+token position limit. This remains diagnostic only because the suite is draft,
+the teacher capture contains two prohibited accepts, and native dense 4M
+decoder quality and independent 5060 Ti performance remain unverified.
+Evidence: `phases/phase-276-current-v103-v2-replay`.
+
+2026-09-21 current v103 direct long-context probe: the model-local package
+accepted a nominal 4,000,000-token payload containing 35,199,491 raw
+characters, bound its raw payload hash, and completed the internal first-layer
+MapReduce/pruner/cherrypicker route in 29.827 ms. It selected current intent and
+an exact old-reference span, reduced the effective working context to 19
+tokens, and used zero model calls. A separate retrieval probe passed six cases
+covering 2M and 4M payloads with needles at 1%, 50%, and 99% offsets. This is
+direct package intake and retrieval evidence, not a dense full-attention 4M
+decoder claim. Evidence: `phases/phase-277-current-v103-4m-retrieval`.
+
+2026-09-21 real decoder control: the current NVFP4 package accepted a direct
+4M ambiguous request, staged 1,991 model-prefill tokens after a 159.6 ms gate,
+and made one actual native model call in 2,017.855 ms, but returned malformed
+JSON-like text. A 65,536-token control reproduced the same malformed-output
+class, proving that this is not only 4M context pressure. The native learned
+lane therefore remains fail-closed and is not a MiniMax-quality pass. Evidence:
+`phases/phase-279-current-v103-real-generation-gap`.
+
+2026-09-21 Luna decoder diagnosis: Sol review recommended a 64K
+current-versus-reference control before another LoRA attempt. The BF16
+Transformers reference also failed exact proposal validity after two calls and
+28.443 seconds, while FreeToken explicitly lacks JSON-schema constrained
+decoding. This shows that the malformed native proposal is not solely a 4M or
+NVFP4 issue. The learned decoder remains diagnostic-only; the next model lane
+requires schema-focused SFT or a real constrained backend. Evidence:
+`phases/phase-280-luna-decoder-diagnosis`.
+
+2026-09-21 5060 Ti partial direct-context evidence: the connected
+`DESKTOP-KET1SKP` host executed a real package-local 4M probe with 31,997,963
+raw characters in 570.417 ms and passed the six-case 2M/4M retrieval probe
+with zero model calls while preserving the 10% RAM and VRAM reserve. The
+worker's reported `origin/main=aaf0c79` is behind the current `2d52a19`, and
+no current 220-case receipt or nonce-bound final summary was produced. This is
+partial independent context evidence, not current-source benchmark or teacher
+parity evidence. Evidence: `phases/phase-278-5060ti-direct-4m-partial`.
+
+2026-09-21 native schema few-shot control: a canonical `read_file` proposal
+example was sent directly to the current package's native endpoint with a
+65,536-token payload, bypassing the mechanical route. The endpoint returned
+HTTP 200 after 27,481.938 ms but generated `{"n}}`, which is not valid JSON.
+Few-shot schema guidance therefore did not repair the learned decoder. The
+native learned lane remains diagnostic-only and fail-closed. Future model work
+must use schema-focused SFT with exact held-out validation or a serving backend
+with real constrained decoding. Evidence:
+`phases/phase-281-native-schema-fewshot-control`.
+
+2026-09-21 schema SFT and guided decoder comparison: the existing v11
+head/router adapter reached 24/44 development outcomes, 9/24 exact eligible
+accepts, and 4 prohibited accepts. A new 280-row safety-calibrated rank-8
+attention-plus-router/head adapter reached 23/44, 4/24 exact eligible accepts,
+and zero prohibited accepts. Optional LM Format Enforcer guidance reached
+24/44 with the v11 adapter but retained 4 prohibited accepts and raised p50
+latency to 7.566 seconds and p95 to 31.505 seconds. Neither learned variant
+meets the 90% or zero-safety-violation gates. The guided path stays diagnostic
+only; the embedded deterministic toolbelt remains the production lane.
+Evidence: `phases/phase-282-schema-sft-and-guided-decoder`.
+
+2026-09-21 Claude Code local route: Claude Code 2.1.251 completed a real
+read-only `Read README.md` operation through the local Anthropic Messages
+endpoint. The bound Wrench trace contains an accepted `embedded-mechanical`
+request in 8.468 ms with zero model calls, followed by a 0.026 ms tool
+settlement. The client also emitted an `unrecognized_model` diagnostic for
+`MiniMax-M2.7`, which is retained as a warning, but the local trace proves the
+request did not fall through to a first-party provider. Evidence:
+`phases/phase-283-claude-code-local-route`.
+
+2026-09-21 current 5060 Ti verification attempt: the independent remote turn
+was dispatched against current `origin/main=4595a13` with nonce
+`WR-283-5060-20260921-01`, but completed after more than ten minutes with no
+assistant message, command output, nonce echo, or external receipt. The
+watchdog and read-only extraction follow-ups also returned empty output. The
+prior stale partial 5060 evidence is not promoted. Evidence:
+`phases/phase-284-5060ti-current-verification-no-receipt`.
+
+2026-09-21 complete dispatch payload and local release regression: the worker
+contract now requires every delegated message or queue manifest to repeat its
+nonce, full objective, source and artifact identity, exact commands, resource
+reserve, stop conditions, and complete final response schema. An empty turn or
+wrong-host execution is explicitly unverified and must trigger a fresh worker
+session rather than more context on the failed thread. The current source
+passed `194` tests with `18` warnings. On the RTX 5070 Ti, the current v103
+package passed direct 4M intake for `31,997,963` raw characters in `156.5 ms`,
+and the six-case 2M/4M retrieval probe passed with zero model calls. Three
+package-only 220-case repetitions each produced `220/220` outcome matches,
+`120/120` exact proposals, zero prohibited accepts, zero model calls, and
+p50/p95 latencies of `0.528/38.883 ms`, `0.531/40.814 ms`, and
+`0.503/39.670 ms`. This is package diagnostic evidence only, not teacher
+parity, family-disjoint approval, production enablement, or independent RTX
+5060 Ti evidence. A clean new task ran locally on the RTX 5070 Ti, and the
+single handoff repair attempt failed with `No matching saved project was found
+on 5060TI`. Evidence: `phases/phase-290-worker-plane`.
+
+2026-09-21 bounded operational shadow: at source commit `4378d64`, the focused
+router and server shadow suite passed `31` tests in `10.77 s` with zero
+failures. It covers cancellation before and after attempts, attempt ceilings,
+circuit opening, operator bypass and reset, hash-bound router state
+persistence, native timeout mapping, response verification, local OpenAI and
+Anthropic routes, Ollama-compatible routes, the 4M boundary, and bounded
+dynamic prefill staging. This is local in-memory/process evidence only. It
+does not close sustained concurrency, GPU OOM recovery, independent RTX 5060
+Ti execution, family-disjoint approval, or production enablement. Evidence:
+`phases/phase-291-operational-shadow`.
+
+2026-09-21 current portable client integration: the current v103 NVFP4
+artifact was materialized with hard-linked weights and bundled OpenCode,
+DeepSeek Harness, and Claude Code entrypoints. The first alternate-port smoke
+run exposed a test setup bug because the temporary OpenCode and DeepSeek
+Harness copies retained the package default port `28900`; the package was not
+modified. After fixing the smoke script to rewrite only temporary endpoint
+copies, OpenCode and DeepSeek Harness both passed on port `28972` with three
+trace rows, zero model calls, embedded mechanical and settlement backends,
+read-tool evidence, and no mutation claim. Claude Code also passed a local
+read-only request on port `28973` through the Anthropic Messages route with
+zero model calls and the same bounded backends. This closes current-package
+client wiring for local read-only smoke paths, but not MiniMax parity, learned
+decoder quality, independent RTX 5060 Ti execution, sustained concurrency, or
+production enablement. Evidence: `phases/phase-292-current-portable-client-integration`.
+
+2026-09-21 current 220 teacher-aligned replay: the current 220-case fixture
+was recaptured against the local MiniMax-compatible endpoint because it had
+drifted from the older teacher capture. The new capture matched the current
+`da64a33d...` canonical and raw hash, with `220/220` responses, zero transport
+failures, and zero invalid responses. The v103 materialized package completed
+the four diagnostic arms. Wrench's deterministic lane reached weighted final
+success `1.0`, weighted verifier success `1.0`, zero prohibited accepts, zero
+unexpected mutations, zero frontier teacher tokens, `24141` local tokens,
+`193.818 ms` median, and `315.719 ms` p95. The teacher-only arm reached
+weighted final success `0.8934198331788693`, had two prohibited accepts, used
+`37544` weighted frontier tokens, `3458.722 ms` median, and `8180.346 ms` p95.
+This materially strengthens the mechanical-worker evidence, but remains a
+diagnostic historical/calibration fixture rather than the approved
+family-disjoint production gate. Evidence:
+`phases/phase-293-current-220-teacher-aligned-replay`.
+
+2026-09-21 direct model-local context intake: the current materialized package
+accepted a 2M request with `1,999,998` observed prompt tokens and a 4M request
+with `3,999,995` observed prompt tokens, both HTTP 200, without an API gateway
+or external summarizer. The warm package-server portions completed in
+`21.957 ms` and `51.020 ms`, respectively. Both requests bound the raw payload
+hash, used the embedded mechanical first-layer gate, compacted to the bounded
+working context, and made zero model calls. End-to-end timings including
+server startup were `86.537 ms` and `171.869 ms`. This is strong direct
+intake plus MapReduce/pruner/cherrypicker evidence, not dense full-attention
+4M decoder quality. Evidence: `phases/phase-294-current-package-direct-2m-4m`.
+
+2026-09-21 repetition stability: three complete teacher captures and matching
+current-package replays were completed on the same `da64a33d...` 220-case
+suite. Each complete teacher run had `220/220` responses, zero transport
+failures, and zero invalid responses. One additional capture attempt had three
+transport failures and was explicitly excluded as incomplete. Across the three
+complete replays, Wrench's raw proposal was byte-identical for all `220/220`
+IDs, weighted final success was `1.0` each time, prohibited accepts were zero,
+and p50/p95 ranged from `189.286~199.715 ms` and `302.501~315.719 ms`.
+Teacher weighted final success ranged from `0.8847288~0.8934198` and teacher
+prohibited accepts ranged from `2~4`. This strengthens stability evidence but
+does not close the family-disjoint final gate or independent 5060Ti/native
+decoder requirements. Evidence: `phases/phase-295-current-220-repetition-stability`.
+
+2026-09-21 fresh 5060Ti dispatch after bundling the teacher input: a new
+same-directory remote thread received the complete payload at source commit
+`77fdf44`, including the current cases hash and teacher receipt, but completed
+after `40.762 s` with no assistant message, command output, preflight, or
+external receipt. This removes the missing-teacher-input explanation but does
+not produce any 5060Ti execution evidence. The remote control plane remains
+the blocker; no result from this empty turn is promoted. Evidence:
+`phases/phase-297-5060ti-fresh-thread-empty`.
+
+2026-09-21 remote control-plane advisor decision: after direct network checks
+failed and a fresh self-contained remote dispatch again completed with no
+observable output, Sol advised one user-visible control-plane repair request,
+not another opaque worker turn or an assumed file queue. The repair must
+restore an authenticated observable channel and run the exact current replay
+at `77fdf44`; if it still produces no timestamped command output and receipt,
+remote work stops and 5060Ti remains an external blocker while local release
+gates advance. Evidence: `phases/phase-298-remote-control-plane-advisor`.
+
+2026-09-21 clean release candidate 220 repetition replay: the freshly
+materialized candidate from clean source commit
+`e83a454f85be6881e989c9453291ef35d0b97429` was replayed three times over the
+current 220-case teacher-aligned diagnostic fixture with an explicit
+allowlisted health fixture. All three runs completed 220/220 rows. Wrench
+weighted final success was `1.0` in every run, with zero prohibited accepts
+and zero unexpected mutations. Wrench p50/p95 latency was
+`185.822/315.441 ms`, `190.907/474.983 ms`, and `184.271/307.005 ms`.
+Wrench used zero frontier tokens and `24,141` local tokens per run. The suite
+remains `DRAFT_PENDING_HUMAN_APPROVAL`, so these are clean-candidate
+regression receipts, not the final family-disjoint production gate. Evidence:
+`phases/phase-309-clean-candidate-220-replay-health-fixture`,
+`phases/phase-310-clean-candidate-220-replay-health-fixture-r2`, and
+`phases/phase-311-clean-candidate-220-replay-health-fixture-r3`.
+
+2026-09-21 fresh 5060 Ti fork after the controlled local repetitions: a new
+same-directory remote session with nonce `WR-312-5060-CLEAN-20260921-01` was
+given the complete self-contained current-candidate verification payload. It
+completed after `44.442 s` with no assistant message, command marker, tool
+output, or receipt. This was a new fork, not an append to the old failed
+thread, so the failure is classified as an unverified remote control-plane
+execution rather than missing task context. No 5060 Ti metric is promoted.
+Evidence: `phases/phase-312-5060ti-fresh-fork-no-receipt`.
+
+2026-09-21 clean candidate held-out final diagnostic: the current
+`evals/wrench-expanded-v2/final.jsonl` hash was freshly captured against the
+local MiniMax-compatible endpoint with `44/44` teacher responses, zero
+transport failures, and zero invalid responses. The clean candidate then ran
+all 44 rows with the client mechanical fast path bypassed and the isolated
+health fixture enabled. Wrench plus identical fallback reached weighted final
+success `1.0`, weighted verifier success `1.0`, weighted frontier coverage
+`1.0`, net savings `1.0`, zero frontier tokens, `4,805` local tokens, p50/p95
+`183.104/297.706 ms`, zero prohibited accepts, and zero unexpected mutations.
+The suite is still `DRAFT_PENDING_HUMAN_APPROVAL`, so this is held-out
+diagnostic evidence, not final family-disjoint approval. Evidence:
+`phases/phase-313-clean-candidate-heldout-final`.
+
+2026-09-21 current-head candidate rematerialization: the portable package was
+rebuilt from a clean detached worktree at source commit
+`a8a75c323a7c42e4758f318f05e625565c6b9acf`. All eight core runtime pairs
+matched the current source, structural validation and HF smoke passed, the
+package-local Ollama-shaped 4M route passed, and OpenCode, DeepSeek Harness,
+and Claude Code completed read-only client smokes with zero model calls. The
+candidate contains `3,881,244,016` parameters, declares `4,000,000` raw input
+tokens and a `64,000` default effective working context. Evidence:
+`phases/phase-315-current-head-release-candidate`.
+
+2026-09-21 current-source regression: after the clean-candidate held-out
+diagnostic and receipt updates, the complete local pytest suite passed `194`
+tests with `0` failures and `18` Python asyncio deprecation warnings in
+`18.41 s`. This confirms the long-context gate, embedded verifier, package
+materializer, Ollama-shaped server, and workflow scoring code remain
+regression-clean. It does not close independent 5060 Ti verification,
+family-disjoint approval, learned MiniMax parity, or production enablement.
+Evidence: `phases/phase-314-current-source-regression`.
+
+2026-09-21 Luna control-plane decision and final bounded preflight: Sol
+advisor recommended exactly one minimal authenticated 5060 Ti preflight after
+the repeated empty remote turns, with a 10-minute bound and required nonce,
+commit, GPU, timestamp, exit status, and RAM/VRAM fields. The new fork used
+nonce `WR-316-5060-PREFLIGHT-20260921-01` and completed after `12.580 s` with
+no message, command marker, tool output, or JSON receipt. Per the advisor stop
+condition, no further remote prompt is sent and no 5060 metric is promoted.
+Local release work remains active. Evidence:
+`phases/phase-316-luna-5060-control-plane`.
+
+2026-09-21 current-head 2M/4M retrieval probe: the candidate bound to source
+commit `a8a75c3` passed six package-local retrieval cases with needles at 1%,
+50%, and 99% offsets in both 2M and 4M raw payloads. All six proposals were
+accepted, raw payload hashes were bound, and model calls were zero. Every case
+compacted to `19` effective working tokens. The 4M first-layer gate measured
+`25.12~40.66 ms`. This is hybrid retrieval evidence, not dense-native
+attention or learned MiniMax quality. Evidence:
+`phases/phase-317-current-head-retrieval-2m-4m.json` and
+`phases/phase-317-current-head-retrieval-2m-4m.md`.
+
+2026-09-21 standard HF loader boundary: the current-head candidate was
+checked in an isolated Transformers `5.17.0` runtime. `AutoConfig` resolved
+`Qwen3_5MoeConfig` and `Qwen3_5MoeForConditionalGeneration`, and the local
+tokenizer loaded with a 4,000,000-token advertised context. The verifier was
+fixed to use the stable config architecture list because Transformers 5.17
+removed its old private `_model_mapping` attribute. Full tensor loading was
+not claimed because the isolated runtime has no PyTorch. After the fix, the
+full local regression remained `194 passed`, `0 failed`, `18 warnings`.
+Evidence: `phases/phase-318-current-head-standard-hf`.
+
+2026-09-21 standard HF full-weight load boundary: a CPU-only isolated runtime
+with Transformers `5.17.0` attempted to load all `693/693` weight files from
+the current candidate. Config and tokenizer resolution passed, but the
+standard loader skipped the package's `modelopt` quantization type and then
+reported multiple NVFP4 packed tensor shape mismatches. The structured receipt
+is `FAIL_STANDARD_HF_WEIGHT_LOAD`, with `full_weight_load_verified: false` and
+no generation claim. The run took `113528.289 ms` and retained the required
+host-memory reserve, so this is a backend compatibility gap rather than an
+OOM. The portable release gate must not claim ordinary
+`AutoModel.from_pretrained()` compatibility until a compatible ModelOpt/NVFP4
+runtime is embedded or the weights are exported to a standard Transformers
+representation. Evidence: `phases/phase-319-current-head-standard-hf-load`.
+
+2026-09-21 current-head native backend: the exact NVFP4 model and tokenizer
+bytes were rematerialized under the new package contract and compared byte for
+byte with the package used in the native run. FreeToken's ModelOpt backend
+loaded both safetensor shards, configured a `4,000,000` token KV capacity, and
+returned a real `200 OK` completion in `26,828.449 ms`. GPU free fraction was
+approximately `50.9%` after initialization. This proves the direct native
+backend load and minimal generation path, not dense-native 4M retrieval
+quality, MiniMax parity, or independent 5060 Ti verification. The portable
+package now bundles a native backend verifier and explicitly documents that
+ordinary Transformers full-weight loading is not supported for the packed
+NVFP4 artifact. Evidence: `phases/phase-320-current-head-freetoken-native`,
+`phases/phase-320-current-head-freetoken-native.json`,
+`phases/phase-320-current-head-package-validation.json`, and
+`phases/phase-320-current-head-weight-equivalence.json`.
+
+2026-09-21 resource-safe native rerun: phase 320 exposed orphan FreeToken
+CUDA workers after the parent exited. The exact two worker PIDs were cleaned
+up, returning GPU usage from about `7.7 GiB` to less than `1 GiB`. The verifier
+was fixed to terminate the exact Windows process tree before waiting. A fresh
+run against the rematerialized current candidate then passed native ModelOpt
+load and generation in `23,871.1 ms`, configured 4M KV capacity, preserved
+`42.7503%` RAM free and `50.9170%` VRAM free while ready, and returned to
+`42.7338%` RAM free and `93.5411%` VRAM free after cleanup. No candidate
+workers remained. Evidence: `phases/phase-321-current-head-freetoken-native-cleanup`.
+
+2026-09-21 current-head package binding: after commit `04090c1`, a fresh
+portable candidate at `D:\models\_wrench-release-candidate-04090c1` was
+materialized and passed structural validation. The package contains the
+resource-safe native verifier and its Windows process-tree cleanup fix. This
+is the package bound for the next direct 4M and independent-worker probes, not
+a publication or production approval. Evidence:
+`phases/phase-322-current-head-package-binding`.
+
+2026-09-21 direct native prefill boundary: a reducer-bypassed `2,000,000`
+token request was sent directly to the current candidate's FreeToken endpoint.
+The backend accepted it and processed `13` 32,768-token batches, about `425,984`
+tokens, in roughly three minutes before the bounded probe was stopped. No
+quality pass was claimed. The exact worker tree was cleaned up and GPU usage
+returned to about `0.8 GiB`. This confirms the product decision: Wrench keeps
+the model-local 2M/4M raw-input contract, but production mechanical work must
+use deterministic MapReduce and the first-layer pruner to reduce expensive
+attention to 32K to 64K. Evidence:
+`phases/phase-323-current-head-native-direct-2m`.
+
+2026-09-21 direct-probe package binding: after commit `9cc0c68`, the portable
+candidate `D:\models\_wrench-release-candidate-9cc0c68` was rematerialized and
+passed structural validation. It bundles the direct raw-token probe and the
+resource-safe cleanup fix. This is the package bound for the next 4M or
+independent RTX 5060 Ti run. Evidence:
+`phases/phase-324-current-head-package-binding`.
+
+2026-09-21 current-head client integration: the `9cc0c68` portable candidate
+completed real read-only workflows through OpenCode, DeepSeek Harness, and
+Claude Code. All three exited `0`, structured/read tool results were observed,
+the Wrench backend was embedded mechanical plus settlement, model calls were
+`0`, and Claude's first gate completed in `2.547 ms`. Evidence:
+`phases/phase-325-current-head-client-smoke` and
+`phases/phase-325-current-head-client-integration.json`.
+
+2026-09-21 HEAD-bound package: pushed HEAD `85ff83c` was rematerialized as
+`D:\models\_wrench-release-candidate-85ff83c` and passed structural validation.
+This is the package identity for the next independent RTX 5060 Ti run, with
+4M model-local intake, deterministic reduction, all three client templates,
+and the native ModelOpt verifier bundled. Evidence:
+`phases/phase-326-current-head-package-binding`.
+
+2026-09-21 current-head 220-case replay: the `85ff83c` portable package was
+replayed against all 220 rows using the complete current 220-case MiniMax
+teacher capture. Wrench completed `220/220` rows with weighted final success
+`1.0`, weighted verifier success `1.0`, full weighted mechanical frontier-token
+coverage, `100%` net frontier-token savings, zero frontier tokens, `24,141`
+local tokens, p50/p95 latency `187.685/306.466 ms`, zero prohibited accepts,
+and zero unexpected mutations. This confirms the current package's historical
+mechanical-worker workflow behavior, not learned MiniMax parity, dense-native
+4M attention quality, independent RTX 5060 Ti verification, or production
+enablement. Evidence:
+`phases/phase-327-current-head-220-replay-r2` and
+`phases/phase-327-current-head-220-replay.json`.
+
+2026-09-21 current-head held-out final slice rerun: the same `85ff83c`
+portable package was replayed against all 44 rows in the sealed
+`evals/wrench-expanded-v2/final.jsonl` diagnostic slice. Wrench completed
+`44/44` rows, including `24` eligible mechanical rows, with weighted final
+success `1.0`, weighted verifier success `1.0`, full weighted frontier-token
+coverage, `100%` net frontier-token savings, zero frontier tokens, `4,805`
+local tokens, p50/p95 latency `200.154/316.626 ms`, zero prohibited accepts,
+and zero unexpected mutations. This is current-head regression evidence only;
+the suite remains pending human approval. Evidence:
+`phases/phase-328-current-head-heldout-final-rerun` and
+`phases/phase-328-current-head-heldout-final.json`.
+
+2026-09-21 current-head model-local route and client integration: the exact
+`85ff83c` package accepted a complete `4,000,000`-token raw payload at its own
+endpoint, bound the payload hash, reduced the exact lookup to `19` effective
+working tokens, completed the first-layer gate in `28.232 ms`, and made zero
+model calls. OpenCode, DeepSeek Harness, and Claude Code all exited `0` and
+observed structured read results; the Claude first gate was `2.534 ms`. This
+proves current package wiring and hybrid raw intake, not dense-native 4M
+attention quality, learned MiniMax parity, independent 5060 Ti verification,
+or production enablement. Evidence:
+`phases/phase-329-current-head-package-4m-route.json`,
+`phases/phase-329-current-head-client-smoke`, and
+`phases/phase-329-current-head-client-integration.json`.
+
+2026-09-21 exact current-head package binding: the portable package was
+rematerialized from HEAD `bbc680f617884d5e658172a61461335e2368180a` as
+`D:\models\_wrench-release-candidate-bbc680f` and passed structural
+validation. The exact package then passed the model-local 4M route with
+`4,000,000` requested tokens in `27.693 ms`, plus OpenCode, DeepSeek Harness,
+and Claude Code read-only client smokes with exit `0`, structured reads, zero
+model calls, and no mutation claim. This closes the current package identity
+gap, but not standard Transformers full-weight compatibility, learned MiniMax
+parity, dense-native 4M quality, independent 5060 Ti verification, or
+production enablement. Evidence:
+`phases/phase-330-current-head-package-binding.md`,
+`phases/phase-330-current-head-package-binding.json`, and the referenced
+phase 330 receipts.
+
+2026-09-21 current-head regression after receipt updates: `pytest -q` passed
+`196` tests with `0` failures and `18` Windows asyncio deprecation warnings in
+`18.32 s`. This keeps the deterministic prefill, dense-native gate contract,
+package validation, replay, and client integration code regression-clean. It
+does not convert the diagnostic receipts into production approval. Evidence:
+`phases/phase-331-current-head-regression.json`.
+
+2026-09-21 standard HF fallback candidate: an existing BF16 checkpoint with
+the same `3,881,244,016` parameters was materialized into a standard
+Safetensors package. Transformers `5.17.0` loaded all weights successfully,
+the package accepted the model-local 4M route in `31.24 ms`, and OpenCode,
+DeepSeek Harness, and Claude Code all completed read-only smokes. The package
+is `7.368 GiB`, compared with `3.189 GiB` for the NVFP4 default candidate, so
+NVFP4 remains the fast and smaller default while BF16 is retained as a
+standard-HF reference. A bounded GPU smoke generated four tokens with more
+than 10% VRAM remaining, but no quality claim is made. Evidence:
+`phases/phase-333-standard-bf16-candidate.md` and
+`phases/phase-333-standard-bf16-candidate.json`.
+
+2026-09-21 standard BF16 learned-lane diagnostic: the standard package was
+loaded through its embedded `WrenchWorker` with the mechanical route disabled
+and the model placed on the RTX 5070 Ti. It loaded in `12,858.085 ms`, made
+two bounded model passes including repair, and then failed closed with
+`model_output_invalid_json`. This confirms that standard weight compatibility
+does not equal learned MiniMax-worker quality. The deterministic mechanical
+route remains the practical value and learned routing stays disabled. Evidence:
+`phases/phase-334-standard-bf16-wrenchworker-diagnostic`.
+
+2026-09-21 exact current-head native binding: the NVFP4 package bound to the
+current release line was loaded by the explicit FreeToken ModelOpt backend and
+returned a real HTTP `200` native completion. The backend configured a
+`4,000,000`-token KV capacity, maintained `48.351%` RAM free and `50.893%`
+VRAM free while ready, and returned to `93.504%` VRAM free after cleanup. The
+minimal generated text began with `{"`. This proves native weight loading and
+resource-safe cleanup for the exact package, not dense-native 4M quality or
+fast direct prefill. Evidence:
+`phases/phase-335-current-head-freetoken-native.json` and
+`phases/phase-335-current-head-freetoken-native.md`.
+
+2026-09-21 exact current-head 2M/4M retrieval probe: the same
+`D:\models\_wrench-release-candidate-bbc680f` package passed `6/6` deterministic
+reference lookups with the needle placed near the beginning, middle, and end
+of 2M and 4M raw payloads. The route returned the exact expected proposal with
+zero model calls. Elapsed time was `14.853` to `42.766 ms`, median `22.401 ms`,
+and the first-layer gate reduced each case to `19` effective working tokens
+inside a `64,000` token budget. This validates the fast model-local
+MapReduce/reference path, not dense-native attention quality, learned MiniMax
+parity, or production approval. Evidence:
+`phases/phase-336-current-head-retrieval-2m-4m.md` and
+`phases/phase-336-current-head-retrieval-2m-4m.json`.
+
+2026-09-21 exact current-head package replay: the same
+`D:\models\_wrench-release-candidate-bbc680f` package completed the full
+corrected 220-case diagnostic replay with `220/220` traces, including `120`
+eligible traces. Weighted Wrench final success and verifier success were both
+`1.0`; weighted frontier-token coverage and net savings were both `1.0`; local
+tokens were `24,141`, frontier tokens were `0`, p50/p95 latency was
+`190.199/306.474 ms`, and prohibited accepts and unexpected mutations were
+both `0`. This is deterministic current-package evidence, not learned MiniMax
+parity, dense-native 4M quality, independent RTX 5060 Ti evidence, or
+production enablement. Evidence:
+`phases/phase-337-current-head-220-replay.md` and
+`phases/phase-337-current-head-220-replay/evaluation.json`.
+
+2026-09-21 exact current-head held-out slice rerun: the same package completed
+all `44/44` rows in `evals/wrench-expanded-v2/final.jsonl`, including `24`
+eligible traces. Weighted Wrench final success and verifier success were both
+`1.0`; weighted frontier-token coverage and net savings were both `1.0`; local
+tokens were `4,805`, frontier tokens were `0`, p50/p95 latency was
+`289.126/353.990 ms`, and prohibited accepts and unexpected mutations were
+both `0`. The slice remains diagnostic pending human and family-disjoint
+approval, and does not prove learned parity, dense-native 4M quality,
+independent RTX 5060 Ti execution, or production enablement. Evidence:
+`phases/phase-338-current-head-heldout-final.md` and
+`phases/phase-338-current-head-heldout-final/evaluation.json`.
+
+2026-09-21 fresh 5060Ti dispatch boundary: a new independent verification
+task correctly refused to promote local results because its available host
+was `DESKTOP-AO7CHMG` with an RTX `5070 Ti` and `16,303 MiB`, not the required
+5060 Ti. It confirmed source HEAD `55c0fb0165faa18c5d222e3ff4d7b8cc776a1f4d`
+and the exact package path, then attempted a fresh remote handoff. The handoff
+failed because no matching saved Wrench project exists on the 5060Ti host;
+one bounded worker-control inspection also timed out. No 5060Ti benchmark was
+claimed, and no stale thread was continued. Evidence:
+`phases/phase-339-fresh-5060ti-dispatch-boundary.md`.
+
+2026-09-21 fresh remote child attempts: two new child tasks on the configured
+remote host received complete nonce-bound current-head verification payloads,
+then completed as empty turns after `38.713 s` and `43.334 s`. Neither emitted
+a nonce, host identity, command marker, resource snapshot, or receipt. A local
+inspection found no real queue submission entry point; the only queue helper
+is explicitly a mock-only simulator. Following the bounded Luna advisor
+decision, remote retries stop until explicit host targeting and a working saved
+project or queue surface exists. No 5060Ti result is claimed. Evidence:
+`phases/phase-340-fresh-remote-control-empty-turns.md` and
+`phases/phase-340-fresh-remote-control-empty-turns.json`.
+
+2026-09-21 newly received package-verification receipts were preserved from
+the remote branch under `phases/phase-340-5060ti-independent-verification`.
+Their own host preflight identifies an RTX `5070 Ti`, not the requested 5060
+Ti, and their source head is `55c0fb0`, behind the current `7265b3b`, so they
+are neither independent 5060Ti evidence nor exact-current-head evidence. They
+do add same-package diagnostics: structural package validation passed, retrieval passed `6/6`,
+the 220-case replay passed `220/220` with weighted success `1.0`, verifier
+success `1.0`, coverage `1.0`, net savings `1.0`, `310` fallback frontier
+tokens, `24,045` local tokens, and p50/p95 `218.578/350.519 ms`; the 44-row
+slice passed `44/44`. OpenCode, DeepSeek Harness, and Claude Code smokes also
+passed. Native direct raw-context verification failed and dense-native quality
+remains unproven. Evidence:
+`phases/phase-340-5060ti-independent-verification/README.md` and
+`phases/phase-340-5060ti-independent-verification/host-preflight.json`.
+
+2026-09-22 current-head portable surface verification: the exact package
+`D:\models\_wrench-release-candidate-bbc680f` passed its own subprocess
+Ollama-shaped API, without an external gateway. The package reported API
+version `0.32.13`, a `4,000,000` context length, and a `64,000` effective
+working budget. A `3,995,426`-token monster payload was accepted in `48.313 ms`;
+the first-layer gate took `27.144 ms`, reduced the working context to `9`
+tokens, bound the raw payload hash, and made `0` model calls. RAM and VRAM
+reserve checks passed before and after. Structural validation passed and the
+full regression remained `196 passed`, `0 failed`. This is the strongest
+current portable model-local evidence, not dense-native quality, learned
+MiniMax parity, independent 5060Ti evidence, or production approval. Evidence:
+`phases/phase-341-current-head-ollama-surface.md` and
+`phases/phase-341-current-head-ollama-surface.json`.
+
+2026-09-22 current-head real client integration: the exact package completed
+read-only work through OpenCode, DeepSeek Harness, and Claude Code. OpenCode
+and DeepSeek Harness both exited `0` with structured reads; their trace had
+`3` rows, zero model calls, embedded mechanical routing, and no mutation claim.
+Claude Code exited `0`, completed `Read README.md`, recorded two Anthropic
+Messages rows, used zero model calls, and completed its first pass in
+`2.535 ms` with `4,148` raw input characters. The one `MiniMax-M2.7`
+unrecognized-model warning is retained as a client warning, not a provider
+call. This proves the practical local client slice, not learned parity,
+dense-native 4M quality, independent 5060Ti verification, or production
+approval. Evidence:
+`phases/phase-342-current-head-client-smoke/README.md` and
+`phases/phase-342-current-head-client-smoke/receipt.json`.
+
+2026-09-22 stock Ollama boundary: the installed Ollama `0.32.13` recognized
+an existing Wrench model with `4,000,000` context metadata, but a bounded real
+`ollama run` failed before generation because the Windows MLX runner dynamic
+library was unavailable. No model remained loaded and about `15,167 MiB` VRAM
+was free afterward. The package-local Ollama-shaped API remains independently
+verified in phase 341; this phase means stock Ollama native generation is not
+yet a portable Windows claim. vLLM and GGUF remain unverified. Evidence:
+`phases/phase-343-stock-ollama-native-boundary.md`.
+
+2026-09-22 current-head package binding: the materializer created
+`D:\models\_wrench-release-candidate-ae78a84` from exact HEAD
+`ae78a84301522de4dfe0745f456090a7dcf8aa36` while hard-linking the existing
+immutable weight files. Structural validation passed. The new package passed
+its own 4M Ollama-shaped surface with `3,995,426` raw tokens, `45.197 ms`
+total elapsed, `24.983 ms` first-layer gate, `9` effective tokens, zero model
+calls, hash binding, and resource reserves. OpenCode, DeepSeek Harness, and
+Claude Code also passed against this current-head package. Evidence:
+`phases/phase-344-current-head-package-binding.md` and
+`phases/phase-345-current-head-client-smoke/README.md`.
+
+2026-09-22 fresh 5060Ti thread retry: following the empty-turn boundary in
+phase 340, a new remote child task was created instead of appending context
+to an old thread. It completed after `40,168 ms` but returned no assistant
+message, nonce, host identity, command marker, resource snapshot, package
+path, or receipt. Per `AGENTS.local.md`, this is recorded as
+`UNVERIFIED_5060TI_EMPTY_REMOTE_TURN` and remote retries stop until the
+control surface exposes a working authenticated worker session. No 5060Ti
+benchmark or package-quality claim is made. Evidence:
+`phases/phase-346-fresh-5060ti-thread-empty-turn/receipt.json`.
+
+2026-09-22 bounded operational shadow repair: the first concurrent Gate E
+probe exposed two timeouts because a failed ripgrep lookup fell through to a
+second full-tree scan, while the model-unloaded server serialized mechanical
+requests behind the worker lock. The runtime now fails closed at a `0.75 s`
+literal-search budget and skips that lock when no in-process model is loaded.
+A fresh four-worker, ten-round shadow then completed `40/40` requests with
+zero errors, `0` model calls, accepted-only p50/p95 latency of
+`3.153/17.770 ms`, successful cancellation recovery, and RAM/VRAM reserve
+checks passing. The full regression passed `197` tests. The unreachable
+health probe remains separately visible as an intentional abstention and is
+not included in the successful-task distribution. This is local
+mechanical-only operational evidence, not native 4M quality, MiniMax parity,
+5060Ti evidence, or production approval. Evidence:
+`phases/phase-348-operational-shadow-timebound/README.md` and
+`phases/phase-348-operational-shadow-timebound/receipt-r4.json`.
+
+2026-09-22 exact current-head package and replay: commit `8d9ea2c` was bound
+to `D:\models\_wrench-release-candidate-8d9ea2c`, passed structural package
+validation, and passed its own Ollama-shaped model-local surface with a
+`3,995,426`-token request in `44.373 ms`, a `24.636 ms` first-layer gate,
+`9` effective tokens, raw hash binding, and zero model calls. The same exact
+package completed the full `220/220` replay and the `44/44` held-out slice.
+The 220 replay recorded Wrench weighted final success and verifier success
+`1.0`, full weighted coverage, `100%` net frontier-token savings, zero
+frontier tokens, `24,141` local tokens, p50/p95 `184.804/297.676 ms`, zero
+prohibited accepts, and zero mutations. The held-out slice recorded `1.0`
+success, zero frontier tokens, `4,805` local tokens, p50/p95
+`187.545/282.136 ms`, and zero prohibited accepts or mutations. This is
+deterministic package-worker evidence, not learned MiniMax parity, dense
+native 4M quality, independent 5060Ti evidence, or production approval.
+Evidence: `phases/phase-349-current-head-package-binding.md`,
+`phases/phase-349-current-head-package-ollama.json`,
+`phases/phase-350-current-head-220-replay/`, and
+`phases/phase-350-current-head-heldout-final/`.
+
+2026-09-22 exact current-head client integration: the same package completed
+fresh read-only OpenCode and DeepSeek Harness smokes with exit `0`, structured
+reads, three trace rows, zero model calls, and embedded mechanical plus
+settlement backends. Claude Code also exited `0`, read `README.md`, recorded
+two Anthropic rows, used zero model calls, and completed its first-layer gate
+in `2.547 ms` with no mutation claim. The local `MiniMax-M2.7`
+unrecognized-model warning did not cause a provider call. This is current
+package client-wiring evidence, not learned MiniMax parity, dense-native 4M
+quality, independent 5060Ti evidence, or production approval. Evidence:
+`phases/phase-351-current-head-client-smoke/README.md`,
+`phases/phase-351-current-head-client-smoke/receipt.json`, and
+`phases/phase-351-current-head-client-smoke/claude-receipt.json`.
+
+2026-09-22 current package context matrix: the exact portable package was
+sent real raw payloads at `64K`, `128K`, `256K`, `2M`, and `4M` directly to
+its model-local endpoint. All five passed no-truncation intake and hash
+binding, measured raw token counts of `63,994`, `127,993`, `255,993`,
+`1,999,998`, and `3,999,995`, total latencies of `26.718`, `34.716`,
+`31.736`, `92.177`, and `173.287 ms`, first-layer gates of `2.060`,
+`2.456`, `3.015`, `12.681`, and `24.041 ms`, and exactly `9` effective
+working tokens with zero model calls in every case. This closes the direct
+model-local hybrid intake matrix, not dense native attention quality, learned
+MiniMax parity, independent 5060Ti execution, or production approval.
+Evidence: `phases/phase-352-current-head-context-matrix/`.
+
+2026-09-21 learned fallback diagnostic: attention LoRA rank `8` with guided
+JSON decoding was evaluated on the `44`-case development split. It produced
+`23/44` outcome matches, `4/44` exact target matches, and `7/44` verified
+accepts, with median/p95 latency of `3,662.212/30,459.054 ms`. The decoder
+helped constrain syntax but did not solve semantic errors, including
+hallucinated paths, wrong actions, invalid health URLs, and unusable patch
+diffs. It remains development-only and is not promoted into the production
+router. Evidence: `phases/phase-353-guided-json-lora-development/`.
+
+2026-09-21 preregistered family-disjoint development pilot: the development
+groups `6` and `7` were captured from the local MiniMax-compatible teacher with
+`44/44` transport-complete proposal-only traces, then replayed against the
+exact package from runtime commit `8d9ea2c` with the client mechanical shortcut
+disabled and an isolated health fixture. Wrench plus identical fallback and
+the Wrench-only diagnostic both recorded weighted final/verifier success
+`1.0`, weighted frontier-token coverage `1.0`, net frontier-token savings
+`1.0`, zero frontier tokens, `4,849` local tokens, `174.242/272.873 ms`
+median/p95 latency, zero prohibited accepts, and zero mutations. The teacher
+arm recorded weighted final success `0.900604`, `7,818` frontier tokens, and
+one prohibited accept, which remains visible in the receipt. A separate 44-case
+deterministic retrieval diagnostic recorded `1.0` target-reference recall,
+`1.0` evidence-window recall, `1.0` current-intent preservation, and `1.0`
+hash-bound reference rate. This is stronger family-disjoint development
+evidence for the hybrid product lane, not human approval, sealed-final proof,
+learned MiniMax parity, dense-native quality, or 5060TI evidence. Evidence:
+`phases/phase-354-family-disjoint-development-pilot/` and the external
+hash-bound receipts under `D:\models\wrench-phase-354-family-disjoint-development-pilot`.
+
+2026-09-21 sealed-final diagnostic replay: the first concurrent teacher
+capture was rejected because seven requests returned HTTP errors. A bounded
+single-worker retry completed `44/44` final traces with zero transport
+failures. The exact `final.jsonl` split was then replayed against package
+runtime commit `8d9ea2c` with the client mechanical shortcut disabled and an
+isolated health fixture. Wrench plus identical MiniMax fallback recorded
+weighted final/verifier success `1.0`, weighted frontier-token coverage `1.0`,
+net frontier-token savings `1.0`, zero frontier tokens, `4,805` local tokens,
+`172.941/266.582 ms` median/p95 latency, zero prohibited accepts, and zero
+mutations. Teacher-only recorded weighted final success `0.972588`, weighted
+frontier baseline `7,447`, and one prohibited accept. The paired success
+difference was `0.027412`, with 95% bootstrap interval `[0.0, 0.068182]`.
+The package's separate six-case 2M/4M retrieval probe passed with zero model
+calls. This is sealed-final diagnostic evidence with `quality_claim=false` and
+`production_enablement=false`, not human approval, current-head independent
+5060TI evidence, learned MiniMax parity, or dense-native quality. Evidence:
+`phases/phase-355-sealed-final-diagnostic/` and external hash-bound receipts
+under `D:\models\wrench-phase-355-sealed-final-diagnostic`.
+
+2026-09-21 5060TI network/auth boundary: `DESKTOP-KET1SKP.local` resolved to
+`10.0.0.4` and TCP `22` was reachable, but both the default SSH identity and
+the repository's `wrench_worker_ed25519` identity were rejected. WinRM was
+unavailable and no remote command executed. This confirms that the current
+remote-control gap is authentication or saved-project/queue provisioning,
+not evidence of a successful or failed 5060TI benchmark. No independent
+hardware claim is made. Evidence:
+`phases/phase-356-5060ti-network-auth-boundary/`.
+
+2026-09-21 5060TI job handoff hardening: added a self-contained pending worker
+manifest with a unique job ID and nonce, exact current source commit
+`a422353469869785ba5b0ab1f2366dd82706f8f6`, Hub revision
+`9c6303c2c17a3798a134388c7e544728b22bd481`, canonical 220-case hash, exact
+preflight command, 10 percent RAM/VRAM reserve gates, and no-spend,
+no-credential, no-mutation boundaries. The HF cross-host receipt chain now
+echoes and verifies `job_id`, `claim_nonce`, and actual `COMPUTERNAME` when a
+job supplies them. The focused manifest and receipt tests passed `8/8` and
+PowerShell parsing passed, and the full repository regression passed
+`202/202` with `0` failures and `18` warnings. This makes the next authenticated worker run
+recoverable and auditable, but it is not a 5060TI execution result. Evidence:
+`phases/phase-357-5060ti-job-manifest/`.
+
+2026-09-21 full 5060TI verification workload: commit `56dd8ef` adds a
+self-contained read-only worker entrypoint that extends the old package
+preflight with the full 220-case package-only replay, direct model-local 4M
+intake, 2M/4M retrieval, optional client smoke, and before/after 10 percent
+RAM/VRAM reserve checks. The source regression passed `203/203`, and the
+PowerShell entrypoint parsed successfully. A nonce-bound manifest was built
+for source commit `56dd8ef75f385ec57a3e99792c4340cebd6ca128`. The Drive
+connector initially returned `404 Not Found` for the discovered pending-folder
+ID, so the same manifest was uploaded through the authenticated Drive UI and
+verified by metadata readback as file
+`1iIxpVZ8TyPIjsO1P-sBpT4AA6VZ3Xl3X` in `jobs/pending`. It is now dispatched
+and awaiting worker claim; no 5060TI execution claim is made yet. Evidence:
+`phases/phase-375-5060ti-full-verification-dispatch/` and local manifest hash
+`50D2DB9AF7D268B63C47F2BED006DC8F94120AE141FD0CD742CB50A6BCA1FD1D`.
+
+2026-09-21 learned intent-router shadow candidate: after the free-form
+generation lane remained at `21/44` development outcomes with `10` verified
+accepts and multi-second p95 latency, a frozen model embedding plus a small
+linear head was trained only on the 132-row calibration split. It selects one
+allowlisted tool family or abstains; deterministic proposal construction and
+the independent verifier remain authoritative. Batch-one development shadow
+evaluation recorded `41/44` outcomes, `21/44` verified accepts, zero
+prohibited accepts, and `143.467/168.259 ms` median/p95 embedding latency.
+The one-time sealed-final diagnostic recorded `42/44` outcomes, `22/44`
+verified accepts, zero prohibited accepts, and `142.498/170.087 ms` median/p95.
+The two final mismatches were health cases without the local fixture. This is
+not yet packaged, enabled, 5060TI-verified, or production evidence. Evidence:
+`phases/phase-377-learned-intent-router/` and external receipts under
+`D:\models\wrench-intent-router-shadow-20260921`.
+
+The phase then exported the fitted head as a 59,725-byte
+`wrench.intent-router-sidecar.v1` and materialized it into a real NVFP4
+portable package. Structural validation passed, the sidecar loaded on CPU,
+the package accepted a direct `3,999,995`-token model-local payload in
+`160.783 ms` with zero model calls, and six 2M/4M retrieval cases passed with
+zero model calls. The manifest keeps the sidecar opt-in and disabled by
+default. This is portable distribution and hybrid intake evidence, not yet
+learned-router runtime enablement, dense-native quality, or independent
+5060TI execution of the new sidecar.
+
+The optional sidecar was then used as an abstain-only safety gate over the
+learned free-generation receipt. It improved the development diagnostic from
+`21/44` to `23/44` outcomes and reduced prohibited accepts from `2` to `0`,
+with `225.423 ms` p95 embedding latency. The gate is wired behind an explicit
+environment variable and never runs on the deterministic mechanical fast path.
+A real Transformers worker smoke loaded the sidecar and fail-closed on
+malformed output. It remains disabled by default and requires package-level
+5060TI verification before promotion. Evidence:
+`phases/phase-377-learned-intent-router/` and external gate receipts under
+`D:\models\wrench-intent-router-shadow-20260921`.
+
+2026-09-22 local real-client canary hardening: after a focused Sol consultation,
+the paired canary runner gained loopback-by-default baseline URL and model
+configuration, an explicit external-baseline guard, and a reconciliation
+record covering outcome, safety, latency, frontier and local token mass, cost,
+retries, corrections, abstentions, and fallback calls. A local deterministic
+stub run is retained as partial protocol evidence only. DeepSeek Harness and
+the hybrid arm passed their observable checks, but OpenCode exited `0` without
+emitting the expected baseline answer, so the canary remains failed and the
+North Star remains open. No external call, provider spend, or quality claim was
+made. Evidence: `phases/phase-384-local-client-canary/`.
+
+2026-09-22 local client follow-up and operational shadow: a second Sol review
+recommended testing a non-streaming mode only in the local deterministic
+OpenCode baseline. That experiment still produced no OpenCode answer and made
+DeepSeek Harness fail with `STREAM_CLOSED`, so the compatibility issue remains
+open and no client behavior was promoted. A fresh four-worker, ten-round
+mechanical-only shadow then passed `40/40` with zero errors and model calls,
+accepted-only p50/p95 latency of `4.598/15.293 ms`, cancellation recovery in
+`1.771 ms`, and RAM/VRAM reserve checks passing. Evidence:
+`phases/phase-384-local-client-canary/` and
+`phases/phase-385-operational-shadow/`.
+
+2026-09-22 router-control recovery receipt: the local ProposalRouter control
+probe passed circuit opening, persisted disabled-state restoration,
+configuration-hash mismatch rejection, hash-bound reset, and cooperative
+cancellation. This extends Gate E local control evidence without making any
+external alert, provider-quality, deployment, or production claim. Evidence:
+`phases/phase-386-router-control/`.
+
+2026-09-22 paired-canary workload identity: the client canary runner now
+accepts and validates a hash-bound one-case workload manifest, records the
+workload ID, case ID, authorization status, and canonical SHA-256 in its
+receipt, and rejects multi-case input until that client workflow is explicitly
+verified. The checked-in preparation manifest is `local_stub_only`, so it does
+not close the North Star or authorize an external endpoint. Evidence:
+`phases/phase-387-paired-canary-workload/`.
+
+2026-09-22 bounded timeout capture: the paired canary subprocess runner now
+records timeout state, timeout budget, partial stdout and stderr, exit code, and
+elapsed time for direct clients and the hybrid smoke. The focused timeout
+regression passed `3/3`, and the full repository regression passed `221/221`
+with `18` warnings. A real local rerun completed without timeout and reproduced
+the existing OpenCode exit-zero-without-answer failure, so the canary remains
+partial and the North Star remains open. Evidence:
+`phases/phase-388-timeout-bounded-canary/`.
+
+2026-09-22 paired-canary accounting gate: the runner now requires complete
+accounting from both baseline and hybrid arms before reporting a paired pass.
+The focused status tests passed `4/4`, and the full repository regression passed
+`222/222` with `18` warnings. A fresh local rerun reproduced the OpenCode
+exit-zero-without-answer failure, while the hybrid arm remained observable but
+unpriced with `accounting_complete: false`. Evidence:
+`phases/phase-389-accounting-gate/`.
+
+2026-09-22 external baseline authorization guard: non-loopback baseline
+execution now requires the canonical `approved_real_workflow` workload
+authorization in addition to the explicit CLI switch and API key. The checked-
+in `local_stub_only` workload fails closed before any external request. Focused
+canary tests passed `5/5`, and the full repository regression passed `223/223`
+with `18` warnings. Evidence:
+`phases/phase-390-external-authorization-guard/`.
+
+2026-09-22 sustained operational shadow: the current portable package passed
+`200/200` mechanical-only requests with `8` concurrent workers and `25` rounds,
+zero errors, zero model calls, accepted-only p50/p95 latency of
+`3.517/26.465 ms`, cancellation recovery in `2.019 ms`, and RAM/VRAM reserve
+checks passing before and after. The health-abstention tail remains separated
+from successful-task latency, and local runtime cost remains unpriced. Evidence:
+`phases/phase-391-sustained-operational-shadow/`.
+
+2026-09-22 verifiable operational receipt: the shadow runner now persists the
+bounded request rows covered by `receipt_sha256`, repairing the provenance gap
+found in the initial Phase 391 artifact. A rerun passed `200/200` with zero
+errors, zero model calls, accepted-only p50/p95 latency of `2.453/17.156 ms`,
+cancellation recovery in `2.092 ms`, reserve checks passing, and independent
+hash recomputation from the saved receipt returning `true`. The full regression
+passed `224/224` with `18` warnings. Evidence:
+`phases/phase-392-verifiable-operational-receipt/`.
+
+2026-09-22 HTTPS baseline guard: non-loopback baseline endpoints now require
+HTTPS in addition to the explicit CLI approval, canonical
+`approved_real_workflow` workload authorization, and an environment-provided
+API key. Loopback HTTP remains available for local diagnostics. Focused canary
+and receipt tests passed `6/6`, and the full regression passed `224/224` with
+`18` warnings. No external request was made. Evidence:
+`phases/phase-393-https-baseline-guard/`.
+
+2026-09-22 goal status consolidation: the active goal now recognizes the
+verifiable `200/200` mechanical-only shadow as a bounded local operational
+slice with persisted receipt hashing, while explicitly keeping production
+resilience, stronger-model parity, and the authorized matched canary open.
+The next safe work remains local timeout diagnostics and bounded no-spend
+checks until a human provides endpoint authorization.
+
+2026-09-22 authorized canary handoff: documented the human-only inputs needed
+for the North Star experiment, including an HTTPS endpoint, exact
+`approved_real_workflow` workload authorization, intended workload hash, model
+identity, key environment-variable name, and explicit external-call approval.
+The checked-in workload remains `local_stub_only`, and no external command was
+run. Evidence: `phases/phase-394-authorized-canary-handoff/`.
+
+2026-09-22 authorized loopback canary diagnostics: with explicit human approval,
+the one-case workload was run through `http://localhost:4000/v1` using model
+`minimax`. The workload SHA-256 was
+`a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce`.
+OpenCode returned the expected first heading. The first DeepSeek Harness run
+failed before launch because its route required a non-empty credential; the
+runner was repaired to use a non-secret loopback placeholder without reading or
+storing a provider key. Evidence: `phases/phase-395-authorized-minimax-canary/`
+and `phases/phase-396-authorized-minimax-canary-dsh-fix/`.
+
+2026-09-22 canary subprocess decoding repair: a Windows client emitted output
+that the default `cp1252` decoder could not decode, so the bounded runner now
+captures bytes and prefers strict UTF-8 with a code-page fallback. The focused
+suite passed `7/7`. The repaired run captured DeepSeek Harness output, but the
+client still returned `The first heading is **�Wrench SLM�**.`, which failed
+the exact answer oracle. OpenCode passed. The hybrid smoke made zero frontier
+model calls, but provider accounting remained unobserved and the paired gate
+stayed closed. Evidence: `phases/phase-397-authorized-minimax-canary-utf8/`
+and `phases/phase-398-authorized-minimax-canary-codepage/`.
+
+2026-09-22 final local verification: the full repository regression passed
+`240/240` with `18` warnings after the subprocess capture and documentation
+changes. The saved-answer audit for the latest hybrid receipt failed closed
+because its OpenCode output did not complete, while the other saved client
+checks passed. This confirms the persisted answer audit remains content- and
+completion-gated rather than exit-code-gated.
+
+2026-09-22 pinned approved loopback canary: reran the same authorized workload
+through `http://localhost:4000/v1` with model `minimax` and the verified
+OpenCode 1.18.32 executable. Direct OpenCode passed and direct DeepSeek Harness
+still returned `The first heading is **�Wrench SLM�**.`, failing the exact
+oracle. All three hybrid clients passed, with zero frontier model calls, but
+provider token and cost accounting remained unobserved. This separates the
+remaining direct-baseline mismatch from the repaired OpenCode output defect.
+Evidence: `phases/phase-399-authorized-minimax-canary-pinned/`.
+
+2026-09-22 local gateway accounting probe: the approved localhost endpoint was
+identified as LiteLLM `1.103.0`. Its OpenAPI and model metadata expose pricing
+configuration for `minimax/MiniMax-M3`, but `/v1/usage` is absent and
+`/spend/logs` returns `200 []` with no request records to correlate to the
+paired clients. Readiness and database health are positive, but configured
+rates are not actual usage. Accounting therefore remains incomplete and the
+North Star gate stays open. Evidence:
+`phases/phase-400-local-gateway-accounting-probe/`.
+
+2026-09-22 canary-integrated accounting probe: the runner now records the
+LiteLLM `/spend/logs` result before and after an approved canary. Phase 401
+observed HTTP `200` with zero rows at both points and no request correlation.
+Direct OpenCode passed, direct DeepSeek Harness failed, all three hybrid
+clients passed, and hybrid frontier calls remained zero. The paired gate stayed
+closed because the accounting evidence is explicitly incomplete. Evidence:
+`phases/phase-401-authorized-minimax-canary-accounting-probe/`.
+
+2026-09-22 gateway response accounting capture: a loopback forwarding proxy
+captured 8 approved LiteLLM responses with 8 request IDs and complete usage of
+`69,077` prompt tokens plus `206` completion tokens, `69,283` total. LiteLLM
+returned no cost headers, so configured model pricing was not promoted to paid
+cost evidence and the paired gate remained incomplete. Direct OpenCode passed,
+direct DeepSeek Harness failed, all three hybrid clients passed, and hybrid
+frontier calls stayed at zero. Evidence:
+`phases/phase-402-authorized-minimax-canary-response-capture/`.
+
+2026-09-22 bounded guided-route experiment: tested `minimax-guided` once on the
+same authorized workload. LiteLLM identifies it as the same `minimax/MiniMax-M3`
+backend. Direct OpenCode, direct DeepSeek Harness, and all three hybrid clients
+passed. The response proxy captured 7 request IDs and `63,354` frontier tokens,
+but no cost headers. A configured-rate estimate of approximately `$0.0191988`
+was retained as an estimate only, not paid-cost evidence. The route is a
+fallback candidate and was not promoted. Evidence:
+`phases/phase-403-authorized-minimax-guided-canary/`.
+
+2026-09-22 configured-rate estimate: LiteLLM `/cost/estimate` calculated
+`$0.0191988` for the Phase 403 observed usage of `63,140` input tokens and
+`214` output tokens. This is configured pricing from the proxy, not a paid
+transaction receipt. The response proxy still captured no cost headers and the
+spend log remained empty, so the utility gate stayed open. Evidence:
+`phases/phase-404-minimax-guided-cost-estimate/`.
+
+2026-09-22 spend-calculator authority probe: LiteLLM `/spend/calculate` returned
+HTTP `200` with `cost: 0.0` for a synthetic aggregate carrying the observed
+`63,354` tokens. It provided no request identity and did not reconcile with the
+configured-rate estimate, so it was rejected as paid-cost evidence. The gate
+remains open. Evidence: `phases/phase-405-spend-calculate-authority-probe/`.
+
+2026-09-22 paid-cost receipt handoff validator: added an initial fail-closed
+validator, redacted templates, and focused regression tests. A review then
+found that the initial checker could accept self-asserted provider-authority
+fields without a separately supplied provider artifact. This gap is retained
+in the history and repaired in Phase 407; Phase 406 alone is superseded as the
+current validation procedure.
+
+2026-09-22 paid-cost handoff template: added a redacted provider receipt
+template binding the approved workload hash, fallback model, request IDs, usage,
+USD cost, and direct client answer fields. It contains no credential material.
+The human must replace placeholders with provider-authoritative values and run
+the fail-closed validator before any route-promotion decision. Evidence:
+`phases/phase-406-paid-cost-receipt-validator/provider-receipt.template.json`.
+
+2026-09-22 provider export bound cost validation: closed the self-asserted
+authority gap by requiring a separately supplied provider export, canonical
+hash binding, exact request ID and model sets, per-request usage and cost
+reconciliation, and the unchanged approved workload hash. The result explicitly
+requires human review of source authenticity and does not promote a route.
+Workload validation also rejects non-approved or malformed manifests. Evidence:
+`phases/phase-407-provider-export-bound-cost-validation/`. Focused tests passed
+`17/17`; full regression passed `250/250` with 18 existing deprecation
+warnings.
+
+2026-09-22 request ID spend lookup: queried all seven Phase 403 request IDs
+against LiteLLM `/spend/logs`; each returned HTTP `200` with zero rows. The
+date-bounded `/spend/logs/v2` query also returned HTTP `200` with `total: 0`.
+No model call or gateway mutation was made. The current proxy spend views do not
+provide a cost receipt for the run; the external provider export remains the
+next evidence handoff. Evidence: `phases/phase-408-request-id-spend-lookup/`.
+
+2026-09-22 per-client latency receipt instrumentation: the portable client
+smoke now records separate OpenCode, DeepSeek Harness, and Claude Code wall
+durations, and the paired-canary result preserves them. No live run was made;
+Phase 403 predates these fields and only has aggregate hybrid timing. Focused
+tests passed `36/36`. Gate C remains open pending repeated matched observations,
+paired uncertainty intervals, and full success/safety evidence. Evidence:
+`phases/phase-409-per-client-latency-receipts/`.
+
+2026-09-22 paired latency diagnostic: direct and hybrid per-client durations
+are now matched only when both corresponding outputs pass the strict answer
+oracle and both durations are valid. The receipt explicitly records one-pair
+inadequacy, emits no confidence interval, and cannot claim Gate C. No live
+provider run was made. Focused tests passed `38/38`, and Python compilation
+passed. The active Q4 contract still has `monetary_budget: 0`, so no further
+paid baseline calls are authorized without a human-approved child contract.
+Evidence: `phases/phase-410-paired-latency-diagnostic/`.
+
+2026-09-22 acceptance contract reconciliation: updated `GOAL.md` and the
+active productive-value contract to use the explicit five release gates,
+including paired 95% confidence intervals, at least 50% successful-task
+latency improvement, 90% weighted workload coverage, and 95% net frontier-token
+savings. The separate three-client protocol and targeted fallback-expansion
+workstreams remain intact. Q4 contract validation returned `VALID`; full tests
+passed `252/252` with 18 existing deprecation warnings. No provider call or
+authorization change was made.
+
+2026-09-22 Q4 evidence checklist reconciliation: `COLLABORATION_CONTRACT.json`
+now names the individual Gate A-E receipts, exact quantitative thresholds,
+three-client protocol, and real-trace requirement for targeted expansion.
+Scope, authority, and the zero monetary budget are unchanged. The Q4 validator
+returned `VALID`.
+
+2026-09-22 Gate E routing design review: source inspection confirmed that the
+200-request mechanical-only shadow does not exercise `ProposalRouter` through
+the serving request lifecycle. Focused router tests passed `4/4` but cover
+sequential controls only. Sol recommended a test-only local server-path
+integration with deterministic fake callables and isolated subprocess
+deadlines, after human architecture approval. This changed the next experiment
+(`decision_changed: true`); usage and stop conditions are in
+`phases/phase-411-router-gate-advisor/advisor-receipt.json`. No serving or
+provider action was taken. Gate E remains open.
+
+2026-09-22 client protocol follow-up: Phase 412's fresh mechanical-only smoke
+passed the exact heading audit across all three clients but showed no final
+answer trace and retained OpenCode and Claude warnings. A deterministic
+loopback-upstream run then recorded accepted hash-bound final-answer traces for
+all three client flows. Phase 414 added hash-only request summaries and showed
+two pre-tool requests for each OpenAI-compatible client, with their purpose
+unresolved. Therefore the no-third-frontier-call bound remains inconclusive.
+Focused tests passed `14/14`, Python compilation passed, host reserves held,
+and no provider call was made. Evidence is in `phases/phase-412-current-three-client-smoke/`,
+`phases/phase-413-local-upstream-client-protocol/`, and
+`phases/phase-414-client-call-attribution/`.
+
+2026-09-22 per-client loopback request attribution: Phase 415 records a
+server-side timestamp for each deterministic upstream request and matches it
+against the three client invocation windows. All eight requests were uniquely
+attributed: OpenCode 3, DeepSeek Harness 3, Claude Code 2; zero were
+unattributed. Each client sent one tool-result request. The extra pre-tool
+request from each OpenAI-compatible client is still unexplained, so the
+no-third-call bound remains inconclusive. Focused tests passed `15/15`; the
+full regression passed `255/255` with 18 existing deprecation warnings; Q4
+validation returned `VALID`; Python compilation and `git diff --check` passed.
+No request was sent to `localhost:4000`, and no provider call or spend occurred.
+Evidence: `phases/phase-415-client-call-attribution/`.
+
+2026-09-22 client request shape and Sol review: Phase 416 recorded only
+per-message roles, lengths, and hashes plus tool-definition count/hash. Sol was
+consulted through the user-requested `localhost:4000` API (model
+`codex-sol-advisor`), using 385 prompt and 781 completion tokens. It rejected
+classifying the extra request as bootstrap/tool discovery from shape alone and
+recommended source inspection. This changed the next action
+(`decision_changed: true`). Packet and receipt are in
+`phases/phase-416-client-request-shape/`.
+
+2026-09-22 client title-call source attribution: Phase 417 pinned the DeepSeek
+Harness launcher and identified its default first-prompt title provider in
+installed source. The pinned OpenCode 1.18.32 executable's embedded call path
+also shows title generation using a small model and empty tool set. The
+deterministic trace contains one proposal plus one hash-bound final answer per
+client, and one separate title-generation request for OpenCode and DeepSeek
+Harness. Request order varies, so classify by source semantics and shape, not
+order. These auxiliary calls must be included in all request-level accounting;
+the no-third-frontier-call condition remains open until real route evidence.
+The first pinned DSH capture attempt stopped before any client ran due to a
+PowerShell hash utility mismatch; its zero-call failure was preserved and a
+.NET streaming-hash retry passed. Full regression passed `256/256` with 18
+existing deprecation warnings; Q4 validation returned `VALID`; compilation and
+`git diff --check` passed. No external provider request or production action
+occurred. Evidence: `phases/phase-417-pinned-dsh-title-accounting/`.
+
+2026-09-22 paired title-route reconciliation: Phase 403's hybrid trace already
+records the session-title preflight as `embedded-title-mechanical`, with zero
+model calls across all six rows. This establishes that exact hybrid route, not
+the direct route or a general gate pass. The paired direct capture has seven
+request IDs and 63,354 usage tokens but no per-request purpose/client labels or
+provider cost. Tightened the title preflight matcher to the canonical prompt
+prefix and added server-path and quoted-user-text regression coverage. Focused
+server tests passed `17/17`; full regression passed `258/258` with 18 existing
+deprecation warnings; Q4 validation returned `VALID`; Python compilation and
+`git diff --check` passed. No provider request or spend occurred. Evidence:
+`phases/phase-418-title-route-reconciliation/`.
+
+2026-09-22 direct-call attribution instrumentation: updated the paired-canary
+loopback proxy to capture content-free request shape and timing, bind requests
+to a unique direct-client subprocess window, classify only exact
+source-confirmed OpenCode/DSH title prefixes, and leave other purposes unknown.
+Incomplete request purpose, client, route, IDs, usage, or cost keeps the
+accounting gate false. A local synthetic upstream replay tested reversed title
+order, normal/near-match requests, ambiguous/missing client windows, and that
+prompt text and markers are not persisted. Focused tests passed `15/15`; full
+regression passed `261/261` with 18 existing deprecation warnings; Q4
+validation returned `VALID`; compilation and `git diff --check` passed. Phase
+403 historical evidence was not changed. Sol was consulted through the
+requested local API and used 330 prompt plus 468 completion tokens; advice
+changed the classifier and tests (`decision_changed: true`). No provider
+workload or spend occurred. Evidence: `phases/phase-419-direct-call-attribution/`.
+
+2026-09-22 local direct-capture integration: ran the updated canary proxy
+through OpenCode 1.18.32 and DSH 0.1.1-rc.2 against the deterministic local
+baseline, then ran all three hybrid clients through the pinned mechanical-only
+package. The DSH run used the `dsh.cmd` wrapper whose hash is recorded in the
+Phase 420 receipt. All
+four direct calls received unique client-window attribution; exact title
+markers classified both auxiliary calls despite different ordering. The two
+tool-bearing calls remain purpose-unknown. Both direct outcomes and all three
+hybrid outputs passed their exact answer checks; hybrid recorded zero model
+calls over six rows. Stub usage was 2,064 tokens with no paid cost, so the
+receipt correctly fails accounting completeness. This is no-spend integration
+evidence, not live provider route, savings, Gate C/D, or production proof. Sol's
+follow-up through the requested local API used 302 prompt and 457 completion
+tokens and kept task purpose unknown (`decision_changed: true`). Full
+regression passed `261/261`; Q4 returned `VALID`; evidence is in
+`phases/phase-420-local-capture-integration/`. No provider request or spend
+occurred.
+
+2026-09-22 opt-in task-marker attribution: Phase 421 added a transient
+high-entropy marker classifier that excludes source-confirmed title requests,
+labels matching tool-definition or tool-result task states, and stores only a
+SHA-256 marker identity. Synthetic loopback traffic exercised title, proposal,
+and final/tool-result shapes for OpenCode and DeepSeek Harness; exactly two
+non-title matches per client were observed, and the serialized capture
+contained no raw marker or title prompt. Focused canary tests passed 17/17;
+the full repository suite passed 263/263 with 18 existing deprecation
+warnings; Q4 contract validation returned VALID; Python compilation passed.
+This does not yet verify marker survival in pinned-client request construction,
+and it does not relabel Phase 403/420 or complete provider accounting. Sol was
+consulted at the user-requested local API; usage was 354 prompt and 571
+completion tokens, 925 total, and the recommendation changed this bounded
+test and next decision (`decision_changed: true`). No provider workload or
+spend occurred. Evidence: `phases/phase-421-task-marker-attribution/`.
+
+2026-09-22 pinned-client task-marker diagnostic: Phase 422 added an opt-in
+deterministic stub mode that emits only a whitelisted `read README.md` call
+and waits for the client tool result before returning the fixed answer. The
+first two pinned runs correctly failed closed because a newline-separated
+diagnostic suffix was absent from DSH's task/title requests. A third run kept
+the random marker on one line and passed: six requests, two titles, exactly
+two task states per OpenCode 1.18.32 and DSH 0.1.1-rc.2, unique attribution
+for all requests, zero unknown purpose, and exact answer checks passed for
+both clients. The receipt contains only the marker hash and content-free
+shapes. Focused tests passed 18/18; full repository tests passed 264/264 with
+18 existing deprecation warnings; Q4 validation returned VALID; compilation
+passed. This is local deterministic-client evidence only, not provider route,
+cost, quality, or Gate C/D/E proof. The failed receipts remain preserved. No
+provider call or spend occurred. Evidence:
+`phases/phase-422-pinned-client-task-marker/`.
+
+2026-09-22 known-workload purpose attribution: Phase 423 added opt-in
+classification using the unchanged hash-bound workload prompt, source-title
+prefix precedence, per-run HMAC identity, unique subprocess windows, and an
+exact ordered proposal/final state gate per client. The pinned OpenCode
+1.18.32 and DSH 0.1.1-rc.2 no-prompt-change replay passed all exact answer
+checks: six requests, two titles, four task states, zero unknown purposes,
+and exactly two ordered states per client. Prompt text and HMAC key were not
+persisted. Focused tests passed 20/20; full suite passed 266/266 with 18
+existing deprecation warnings; Q4 validation returned VALID; compilation
+passed. Sol conditionally confirmed this bounded use and required ordered
+states plus fail-closed stop conditions. Usage was 346 prompt and 611
+completion tokens, 957 total, through the requested local API; the advice
+changed classifier gating (`decision_changed: true`). No provider call, spend,
+workload change, or history backfill occurred. Evidence:
+`phases/phase-423-prompt-purpose-attribution/`.
+
+2026-09-22 three-client canary acceptance correction: inspection found that
+the hybrid canary computed aggregate correctness from OpenCode and DeepSeek
+Harness while recording Claude Code's answer but omitting it from the
+acceptance predicate. The predicate now requires all three named clients to
+pass their exact answer checks. A parameterized regression makes each client
+fail in turn while the other two pass and verifies the aggregate remains
+false. Focused tests passed 36/36; the full suite passed 268/268 with 18
+existing deprecation warnings. This repairs local acceptance logic only. It
+does not rewrite historical receipts, establish provider cost or utility, or
+close any release gate. No provider call or spend occurred. Evidence:
+`phases/phase-424-three-client-acceptance/`.
+
+The Phase 424 integration check then ran the unchanged one-case workload
+through the local deterministic baseline and the candidate package's
+mechanical-only route. With pinned OpenCode 1.18.32, DeepSeek Harness
+0.1.1-rc.2, and Claude Code, all three hybrid answer oracles passed, each
+client observed its structured read, and the hybrid made zero model calls.
+The overall result correctly remained
+`FAIL_PAIRED_REAL_CLIENT_HYBRID_CANARY_ACCOUNTING_INCOMPLETE`: the local
+baseline is not provider evidence and supplies neither provider request IDs
+nor paid cost. The first diagnostic attempt used global OpenCode 1.15.10 and
+failed; that receipt is preserved separately and excluded from the pinned
+result. No provider endpoint, call, or spend was used. The receipt identifies
+the workload and records local runtime behavior, with supporting package and
+client hashes in the phase README.
+
+2026-09-22 canary status semantics: contract review found that correct client
+answers with incomplete accounting were labeled FAIL even though the active
+utility contract requires missing evidence to be INCONCLUSIVE. It also found
+that nonzero local/frontier calls were classified FAIL before the net savings
+threshold was evaluated. The runner now emits INCONCLUSIVE for both
+incomplete-accounting and unassessed-savings cases, while preserving FAIL for
+known answer failure and retaining nonzero process exits for every non-pass.
+Only a scoped, fully accounted zero-call canary result returns zero; it is not
+PASS_WRENCH and does not close Gate D. Sol reviewed the decision through the
+user-requested local API: 347 prompt and 1,029 completion tokens, 1,376 total;
+`decision_changed: true`. Focused tests passed 25/25; the full suite passed
+273/273 with 18 existing deprecation warnings; Q4 validation returned VALID.
+Phase 424's earlier receipt was preserved with its legacy FAIL label and is
+interpreted under this correction. No provider canary or spend occurred.
+Evidence: `phases/phase-425-canary-status-semantics/`.
+
+2026-09-22 teacher-comparator semantics: the canary classifier previously
+reported FAIL both when Wrench failed its oracle and when Wrench passed but
+the teacher-only comparator failed. The latter makes the pair invalid for
+relative success or regression, but is neither a Wrench failure nor evidence
+of a win. The classifier now emits
+`INCONCLUSIVE_PAIRED_REAL_CLIENT_HYBRID_CANARY_COMPARATOR_INVALID` for that
+case, retains FAIL whenever Wrench fails, and keeps inconclusive exit codes
+nonzero. The direct baseline also requires exactly the expected OpenCode and
+DeepSeek Harness records, so an empty result map cannot pass via vacuous
+`all()` truth. Sol confirmed the distinction through the user-requested local API:
+276 prompt and 628 completion tokens, 904 total; `decision_changed: true`.
+The comparator matrix and missing-record checks passed 30/30 focused tests;
+the full suite passed 278/278 with 18 existing deprecation warnings. No provider request or spend
+occurred, and Gate C remains open pending valid matched evidence and its
+required paired intervals. Evidence:
+`phases/phase-426-baseline-comparator-semantics/`.
+
+2026-09-22 subprocess timeout tree cleanup: a one-second timeout regression
+proved that the canary helper stopped its direct Python parent but left the
+parent's detached 60-second child alive. The runner now owns a process group
+and attempts bounded Windows process-tree or POSIX process-group termination
+on timeout, returning an explicit `tree_cleanup_complete` result. The spawned-child
+regression passed; focused canary tests passed 31/31 and the full suite passed
+279/279 with 18 existing warnings. The requested local advisor API call
+returned HTTP 502, so no advice or usage receipt was produced. No provider call
+or spend occurred. Windows taskkill is not Job Object containment; if cleanup
+cannot be confirmed or a supported client leaves descendants after its root
+exits, stop and obtain an advisor review before promotion. This is not
+ProposalRouter serving-path or Gate E evidence.
+Evidence: `phases/phase-427-subprocess-tree-timeout/`.
+
+2026-09-22 Windows root-exits-first timeout containment: the Phase 427
+follow-up probe showed that when a client root exited but a child retained a
+captured pipe, `taskkill` against the now-gone root could not clean the child
+and the stream-close path stalled. The Windows runner now creates the root
+suspended, assigns a kill-on-close Job Object, then resumes it. Timeout waits
+for zero active job processes before draining output. Setup or assignment
+failure terminates the suspended root without resuming it. Live-root timeout,
+root-exits-first timeout, and injected assignment failure passed on Windows.
+Recognized npm `.cmd` shims resolve directly to their native executable or Node
+entrypoint without `cmd /c`; other script wrappers use a fixed encoded
+PowerShell dispatcher with JSON argument data. Tests preserve spaces, leading
+option dashes, and a literal `&`. Installed OpenCode and DSH `--help` probes
+returned exit code 0 with confirmed cleanup. Focused canary tests passed 39/39;
+the full suite passed 287/287 with 18 existing warnings. Sol recommended
+the design: 453 prompt and 719 completion tokens, 1,172 total;
+`decision_changed: true`. No provider canary or paid
+baseline call occurred. This is not ProposalRouter serving-path or Gate E
+evidence. Evidence: `phases/phase-428-windows-job-timeout/`.

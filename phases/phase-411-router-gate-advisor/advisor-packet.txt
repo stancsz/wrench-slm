@@ -1,0 +1,13 @@
+Decision: What is the smallest technically sound, provider-free way to make Gate E evidence real, given that the current ProposalRouter is not wired into the serving request path and does not impose invocation deadlines?
+
+Observed facts:
+- Active Gate E requires robustness under concurrency, cancellation, timeout, and circuit breaking via ProposalRouter.
+- `src/wrench_harness/router.py` invokes a synchronous zero-argument callable, checks cancellation only before and after it, and has no deadline or synchronization around shared router state.
+- `src/wrench_harness/server.py` has no ProposalRouter reference; its operational shadow runs the portable server with `--mechanical-only`.
+- Phase 392 passed 200 mechanical-only requests and cancellation recovery, but does not establish ProposalRouter concurrency or timeout behavior.
+- Focused router tests pass 4/4; they cover controls, not concurrent or timed invocations.
+- Q4 monetary and token budgets are zero. Do not recommend paid provider calls or production enablement.
+
+Constraint: preserve the nine workstreams, no direct mutation authority, and human-only architecture/acceptance decisions. No provider, package, deployment, or credential action.
+
+Question: Should the next step be a dedicated provider-free ProposalRouter stress harness or integration into the serving path? Which option is valid evidence for Gate E, and what bounded timeout/cancellation design avoids orphaned work? Give a verdict, smallest local experiment, and stop condition.

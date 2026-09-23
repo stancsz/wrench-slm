@@ -19,10 +19,10 @@ transport failure on `eval59_health_read_05_00`. Its receipt is kept outside the
 repository at `D:\models\wrench-teacher-traces-v2-stream.json` and is bound by
 SHA-256 `8acaf849b5ec325f744f9c3aed6b7c60974c8f9857e2d2f92781aedad05c006d`.
 
-The current v103 portable package replayed all 220 rows against that same
-teacher input set. It produced `PASS_MECHANICAL_WORKER` with 120 eligible
-mechanical rows, zero prohibited accepts, zero unexpected mutations, weighted
-mechanical frontier-token coverage of `1.0`, net frontier-token savings of
+The v103 portable package replayed all 220 rows against that same teacher
+input set. Its historical scorer produced `PASS_MECHANICAL_WORKER` with 120
+eligible mechanical rows, zero prohibited accepts, zero unexpected mutations,
+weighted mechanical frontier-token coverage of `1.0`, net frontier-token savings of
 `1.0`, and Wrench-plus-identical-fallback weighted final success of `1.0`.
 The Wrench arm measured 215.515 ms median and 340.085 ms p95 end-to-end
 latency, with 24,141 local tokens and zero frontier fallback tokens. The
@@ -33,7 +33,12 @@ replay evaluation receipt is external at
 These numbers are diagnostic evidence, not a release claim. The suite manifest
 is `DRAFT_PENDING_HUMAN_APPROVAL`, the teacher capture has one transport
 failure, and the result does not prove learned MiniMax parity or direct native
-4M serving.
+4M serving. The historical coverage denominator contained only observed
+traces, and its reported net savings did not reconcile all current Gate D
+overhead. The current scorer requires a declared eligible-workload universe
+to evaluate weighted coverage and leaves net savings unknown. See
+[Phase 432](../phases/phase-432-bound-workload-coverage/README.md). This note
+does not rewrite the saved v103 receipt.
 
 The independent 5060TI worker is the remote host `DESKTOP-KET1SKP` with an
 NVIDIA GeForce RTX 5060 Ti. Its completed HF package preflight reported

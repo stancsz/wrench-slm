@@ -1,0 +1,188 @@
+{
+  "schema": "wrench.paired-real-client-hybrid-canary.v1",
+  "status": "FAIL_PAIRED_REAL_CLIENT_HYBRID_CANARY_ACCOUNTING_INCOMPLETE",
+  "prompt": "Read README.md and report its first heading.",
+  "expected_observation": "# Wrench SLM",
+  "workload_id": "local-single-readme-heading-v1",
+  "workload_case_id": "readme-heading-001",
+  "workload_sha256": "231d44567d9d1b913226d5b1362edefdcf86c4c2d1d5ee780c2c6633606ac31a",
+  "workload_authorization": "local_stub_only",
+  "baseline": {
+    "kind": "local_deterministic_openai_compatible_baseline",
+    "endpoint_configured": false,
+    "model": "baseline-local",
+    "transport": "stream_or_provider_defined",
+    "elapsed_ms": 8170.287,
+    "upstream_calls": 4,
+    "frontier_tokens": 2064,
+    "clients": {
+      "opencode": {
+        "executable": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\tools\\opencode-v1.18.32\\opencode.exe",
+        "exit_code": 0,
+        "correct": true,
+        "answer_check": {
+          "oracle": "bounded-first-heading-output-v1",
+          "correct": true,
+          "output_sha256": "67875dd913690ff8dc41c4cbd9f34a40771d7f49fe8c00268010d6c644f82212",
+          "expected_observation": "# Wrench SLM",
+          "reason": "expected_answer_observed"
+        },
+        "timed_out": false,
+        "timeout_seconds": 120,
+        "elapsed_ms": 4704.188,
+        "stdout_tail": "{\"type\":\"step_start\",\"timestamp\":1790101385921,\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"part\":{\"id\":\"prt_0ca5b72a8001cZyxsrxQN5MzUf\",\"messageID\":\"msg_0ca5b6fce001OhH3T3hnrc46n6\",\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"type\":\"step-start\"}}\n{\"type\":\"text\",\"timestamp\":1790101385921,\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"part\":{\"id\":\"prt_0ca5b72ab001q32OCz0sKZP61j\",\"messageID\":\"msg_0ca5b6fce001OhH3T3hnrc46n6\",\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"type\":\"text\",\"text\":\"The first heading is # Wrench SLM.\",\"time\":{\"start\":1790101385899,\"end\":1790101385902}}}\n{\"type\":\"step_finish\",\"timestamp\":1790101385921,\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"part\":{\"id\":\"prt_0ca5b72b2001IAYOgqbbS6qBRY\",\"reason\":\"stop\",\"messageID\":\"msg_0ca5b6fce001OhH3T3hnrc46n6\",\"sessionID\":\"ses_f35a498d2ffe2hfmUIeYW90c46\",\"type\":\"step-finish\",\"tokens\":{\"total\":516,\"input\":480,\"output\":36,\"reasoning\":0,\"cache\":{\"write\":0,\"read\":0}},\"cost\":0}}",
+        "stderr_tail": "tamp=2026-09-22T18:23:05.207Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=invoicing existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\invoicing\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\invoicing\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.207Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=create-ex existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\create-ex\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\create-ex\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.207Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=deal-closer existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\deal-closer\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\deal-closer\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.207Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=company-os existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\company-os\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\company-os\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.208Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=hearth-context existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\hearth-context\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\hearth-context\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.208Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=pdf existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\pdf\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\pdf\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.208Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=suno-lyrics-generator existing=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\suno-lyrics-generator\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\suno-lyrics-generator\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.208Z level=WARN run=f52eda19 message=\"duplicate skill name\" name=browser existing=\"C:\\\\Users\\\\stanc\\\\.agents\\\\skills\\\\browser\\\\SKILL.md\" duplicate=\"C:\\\\Users\\\\stanc\\\\.claude\\\\skills\\\\browser\\\\SKILL.md\"\ntimestamp=2026-09-22T18:23:05.208Z level=INFO run=f52eda19 message=init count=59\ntimestamp=2026-09-22T18:23:05.227Z level=INFO run=f52eda19 message=stream providerID=baseline modelID=baseline-local session.id=ses_f35a498d2ffe2hfmUIeYW90c46 small=true agent=title mode=primary\ntimestamp=2026-09-22T18:23:05.245Z level=INFO run=f52eda19 message=\"llm runtime selected\" llm.runtime=ai-sdk llm.provider=baseline llm.model=baseline-local\ntimestamp=2026-09-22T18:23:05.469Z level=INFO run=f52eda19 message=\"watcher backend\" directory=\"C:\\\\Users\\\\stanc\\\\AppData\\\\Local\\\\Temp\\\\wrench-paired-canary-_0hpp9h3\\\\baseline\\\\workspace\" platform=win32 backend=windows\ntimestamp=2026-09-22T18:23:05.480Z level=INFO run=f52eda19 message=\"project copy refresh started\" projectID=global\ntimestamp=2026-09-22T18:23:05.481Z level=INFO run=f52eda19 message=\"project copy refresh done\" projectID=global updated=[] removed=[]\ntimestamp=2026-09-22T18:23:05.834Z level=INFO run=f52eda19 message=\"booting location services\" directory=\"C:\\\\Users\\\\stanc\\\\AppData\\\\Local\\\\Temp\\\\wrench-paired-canary-_0hpp9h3\\\\baseline\\\\workspace\" workspaceID=undefined\ntimestamp=2026-09-22T18:23:05.877Z level=INFO run=f52eda19 message=process session.id=ses_f35a498d2ffe2hfmUIeYW90c46 messageID=msg_0ca5b6fce001OhH3T3hnrc46n6\ntimestamp=2026-09-22T18:23:05.878Z level=INFO run=f52eda19 message=stream providerID=baseline modelID=baseline-local session.id=ses_f35a498d2ffe2hfmUIeYW90c46 small=false agent=build mode=primary\ntimestamp=2026-09-22T18:23:05.880Z level=INFO run=f52eda19 message=\"llm runtime selected\" llm.runtime=ai-sdk llm.provider=baseline llm.model=baseline-local\ntimestamp=2026-09-22T18:23:05.916Z level=INFO run=f52eda19 message=loop session.id=ses_f35a498d2ffe2hfmUIeYW90c46 step=1\ntimestamp=2026-09-22T18:23:05.917Z level=INFO run=f52eda19 message=\"exiting loop\" session.id=ses_f35a498d2ffe2hfmUIeYW90c46\ntimestamp=2026-09-22T18:23:05.922Z level=INFO run=f52eda19 message=\"disposing instance\" directory=\"C:\\\\Users\\\\stanc\\\\AppData\\\\Local\\\\Temp\\\\wrench-paired-canary-_0hpp9h3\\\\baseline\\\\workspace\""
+      },
+      "deepseek_harness": {
+        "executable": "C:\\Users\\stanc\\AppData\\Roaming\\npm\\dsh.cmd",
+        "exit_code": 0,
+        "correct": true,
+        "answer_check": {
+          "oracle": "bounded-first-heading-output-v1",
+          "correct": true,
+          "output_sha256": "53b297c2823b72d9fa652e62abafaf73ed029317d1bb2001d9c7e4899411e3da",
+          "expected_observation": "# Wrench SLM",
+          "reason": "expected_answer_observed"
+        },
+        "timed_out": false,
+        "timeout_seconds": 120,
+        "elapsed_ms": 3448.519,
+        "stdout_tail": "The first heading is # Wrench SLM.",
+        "stderr_tail": ""
+      }
+    },
+    "accounting": {
+      "frontier_tokens": 2064,
+      "local_tokens": 0,
+      "cost_usd": null,
+      "retries": 0,
+      "corrections": 0,
+      "abstentions": 0,
+      "fallback_calls": 0,
+      "cost_status": "not_priced_local_stub",
+      "accounting_complete": false
+    }
+  },
+  "hybrid": {
+    "exit_code": 0,
+    "receipt_status": "PASSED",
+    "correct": true,
+    "client_answers": {
+      "opencode": {
+        "oracle": "bounded-first-heading-output-v1",
+        "correct": true,
+        "output_sha256": "c3fc1f8a4a90b5d3cfc42c6d6c8e41afb41f967b8b9b8f2f37ea6d276ae0ba97",
+        "expected_observation": "# Wrench SLM",
+        "reason": "expected_answer_observed"
+      },
+      "deepseek_harness": {
+        "oracle": "bounded-first-heading-output-v1",
+        "correct": true,
+        "output_sha256": "1bb360224fe3ff31f4228f1f175d439d1730d55e655fcf78a3ab53ba03795880",
+        "expected_observation": "# Wrench SLM",
+        "reason": "expected_answer_observed"
+      },
+      "claude_code": {
+        "oracle": "bounded-first-heading-output-v1",
+        "correct": true,
+        "output_sha256": "3c5cb50bdd6727414da96f34c34a75b50e033bf38fe1cedc7f336a35dce369c9",
+        "expected_observation": "# Wrench SLM",
+        "reason": "expected_answer_observed"
+      }
+    },
+    "timed_out": false,
+    "timeout_seconds": 180,
+    "elapsed_ms": 11132.491,
+    "frontier_tokens": 0,
+    "model_calls": 0,
+    "trace_rows": 6,
+    "trace_latency_ms": [
+      2.503,
+      1.333,
+      0.381,
+      0.018,
+      2.229,
+      0.037
+    ],
+    "accounting": {
+      "frontier_tokens": 0,
+      "local_tokens": 17233,
+      "local_input_tokens": 17233,
+      "local_model_tokens": 0,
+      "cost_usd": null,
+      "cost_status": "not_priced_local_runtime",
+      "retries": 0,
+      "corrections": null,
+      "final_answer_rows": 0,
+      "abstentions": 0,
+      "fallback_calls": 0,
+      "accounting_complete": false
+    },
+    "receipt": {
+      "schema": "wrench.portable-client-smoke.v1",
+      "status": "PASSED",
+      "package_dir": "D:\\models\\_wrench-release-candidate-settlement5-20260922",
+      "allowed_root": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-paired-canary-_0hpp9h3\\hybrid\\client-workspace",
+      "port": 29470,
+      "prompt": "Read README.md and report its first heading.",
+      "upstream_enabled": false,
+      "mechanical_route_enabled": true,
+      "clients": {
+        "opencode": {
+          "executable": "C:\\Users\\stanc\\github\\portfolio\\wrench-slm\\artifacts\\tools\\opencode-v1.18.32\\opencode.exe",
+          "version": "1.18.32",
+          "exit_code": 0,
+          "mode": "normal",
+          "supports_pure": true,
+          "structured_read_observed": true,
+          "output_file": "opencode.stdout.txt"
+        },
+        "deepseek_harness": {
+          "exit_code": 0,
+          "structured_read_observed": true,
+          "isolated_home": "dsh-isolated",
+          "output_file": "dsh.stdout.txt"
+        },
+        "claude_code": {
+          "exit_code": 0,
+          "structured_read_observed": true,
+          "trace_rows": 2,
+          "output_file": "claude.stdout.txt",
+          "trace_file": "wrench-claude.trace.jsonl"
+        }
+      },
+      "trace": {
+        "rows": 6,
+        "model_calls": 0,
+        "protocols": [
+          "openai-chat-completions"
+        ],
+        "backends": [
+          "embedded-mechanical",
+          "embedded-mechanical-settlement",
+          "embedded-title-mechanical"
+        ],
+        "read_tool_observed": true,
+        "mutation_claim": false,
+        "path": "C:\\Users\\stanc\\AppData\\Local\\Temp\\wrench-paired-canary-_0hpp9h3\\hybrid\\wrench-client.trace.jsonl"
+      },
+      "claims_not_authorized": [
+        "independent RTX 5060 Ti verification",
+        "learned MiniMax parity",
+        "dense-native 4M decoder quality",
+        "production readiness"
+      ]
+    },
+    "stdout_tail": "{\n    \"schema\":  \"wrench.portable-client-smoke.v1\",\n    \"status\":  \"PASSED\",\n    \"package_dir\":  \"D:\\\\models\\\\_wrench-release-candidate-settlement5-20260922\",\n    \"allowed_root\":  \"C:\\\\Users\\\\stanc\\\\AppData\\\\Local\\\\Temp\\\\wrench-paired-canary-_0hpp9h3\\\\hybrid\\\\client-workspace\",\n    \"port\":  29470,\n    \"prompt\":  \"Read README.md and report its first heading.\",\n    \"upstream_enabled\":  false,\n    \"mechanical_route_enabled\":  true,\n    \"clients\":  {\n                    \"opencode\":  {\n                                     \"executable\":  \"C:\\\\Users\\\\stanc\\\\github\\\\portfolio\\\\wrench-slm\\\\artifacts\\\\tools\\\\opencode-v1.18.32\\\\opencode.exe\",\n                                     \"version\":  \"1.18.32\",\n                                     \"exit_code\":  0,\n                                     \"mode\":  \"normal\",\n                                     \"supports_pure\":  true,\n                                     \"structured_read_observed\":  true,\n                                     \"output_file\":  \"opencode.stdout.txt\"\n                                 },\n                    \"deepseek_harness\":  {\n                                             \"exit_code\":  0,\n                                             \"structured_read_observed\":  true,\n                                             \"isolated_home\":  \"dsh-isolated\",\n                                             \"output_file\":  \"dsh.stdout.txt\"\n                                         },\n                    \"claude_code\":  {\n                                        \"exit_code\":  0,\n                                        \"structured_read_observed\":  true,\n                                        \"trace_rows\":  2,\n                                        \"output_file\":  \"claude.stdout.txt\",\n                                        \"trace_file\":  \"wrench-claude.trace.jsonl\"\n                                    }\n                },\n    \"trace\":  {\n                  \"rows\":  6,\n                  \"model_calls\":  0,\n                  \"protocols\":  [\n                                    \"openai-chat-completions\"\n                                ],\n                  \"backends\":  [\n                                   \"embedded-mechanical\",\n                                   \"embedded-mechanical-settlement\",\n                                   \"embedded-title-mechanical\"\n                               ],\n                  \"read_tool_observed\":  true,\n                  \"mutation_claim\":  false,\n                  \"path\":  \"C:\\\\Users\\\\stanc\\\\AppData\\\\Local\\\\Temp\\\\wrench-paired-canary-_0hpp9h3\\\\hybrid\\\\wrench-client.trace.jsonl\"\n              },\n    \"claims_not_authorized\":  [\n                                  \"independent RTX 5060 Ti verification\",\n                                  \"learned MiniMax parity\",\n                                  \"dense-native 4M decoder quality\",\n                                  \"production readiness\"\n                              ]\n}",
+    "stderr_tail": ""
+  },
+  "frontier_token_reduction_rate": 1.0,
+  "quality_claim": false,
+  "partial_evidence": true,
+  "north_star_complete": false,
+  "notes": [
+    "Both arms use the same mechanical prompt and real OpenCode and DeepSeek Harness clients.",
+    "The baseline is deterministic and local, so this is a protocol/cost canary, not MiniMax parity or paid-provider quality evidence.",
+    "The hybrid arm also runs Claude Code through the existing portable smoke harness; the paired baseline comparison is scoped to OpenCode and DeepSeek Harness."
+  ]
+}

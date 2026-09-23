@@ -1,0 +1,12 @@
+Decision: choose a minimal test-only design for exercising `ProposalRouter` through the real Wrench HTTP request handler with concurrent requests, cancellation, invocation deadlines, circuit transitions, and reliable worker cleanup.
+
+Observed facts:
+- The human approved a test-only loopback integration using deterministic fake callables. No provider call or production route change is authorized.
+- `WrenchRequestHandler.do_POST` currently calls `server.worker.propose(...)` directly. `WrenchHTTPServer` is a `ThreadingHTTPServer`.
+- `ProposalRouter.run` invokes synchronously, checks cancellation only before and after the callback, and mutates attempt/failure/circuit state without a lock.
+- Phase 411 recommended actual handler requests and monotonic deadlines with terminate, grace-period kill, and join. Stop if a worker survives or state races.
+- The server and tests contain existing staged user changes. Keep the new work isolated to a test-only constructor injection and a new focused test file where possible.
+
+Constraints: production defaults and existing worker verification must remain unchanged; requests stay loopback-only; fake work must be deterministic; every subprocess/thread must be joined or recorded as a failed test; do not spend provider money or touch credentials.
+
+Question: what is the smallest architecture that gives meaningful timeout and cancellation behavior through the real handler while preserving race-free circuit state: an outer test watchdog around synchronous in-process calls, or a loopback-only injected callable run in a killable child process with router state kept in the server process? Recommend concrete result semantics and one bounded verification sequence.

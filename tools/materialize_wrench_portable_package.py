@@ -121,6 +121,11 @@ def materialize(
         shutil.copy2(repo_root / "src" / "wrench_harness" / "mechanical.py", runtime_dir / "mechanical.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "patching.py", runtime_dir / "patching.py")
         shutil.copy2(repo_root / "src" / "wrench_harness" / "worker.py", runtime_dir / "worker.py")
+        # The worker emits a bounded advisor handoff on abstention. Keep this
+        # pure protocol helper inside the downloaded package so OpenCode,
+        # Claude Code, and Ollama-shaped clients observe the same contract as
+        # the source checkout.
+        shutil.copy2(repo_root / "src" / "wrench_harness" / "handoff.py", runtime_dir / "handoff.py")
         shutil.copy2(
             repo_root / "src" / "wrench_harness" / "intent_safety_gate.py",
             runtime_dir / "intent_safety_gate.py",

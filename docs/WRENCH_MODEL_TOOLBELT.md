@@ -29,19 +29,12 @@ cards in a read-only lookup table. The receipt reports both raw input tokens
 and model prefill tokens, so internal compression cannot be misreported as
 native dense attention.
 
-This hybrid path is the release target when it meets the complete workflow
+This hybrid path is the active productive-value target when it meets the complete workflow
 gates: retrieval quality, safety, final success, frontier-token savings, and
-end-to-end latency. A separate native-direct runtime may still ingest the full
-sequence for comparison and research. Dense native attention over every raw
-token is not a Wrench product selling point or release gate, and it must not
-hold the hybrid production-value path hostage.
-
-If a dense-native experiment is enabled, the first model-side layer should
-implement the same idea internally: a fast pruner and cherrypicker that turns
-the raw sequence into a 32K to 64K active context before expensive attention.
-It must preserve current intent, authority boundaries, dependency evidence, and
-hash-bound lookup receipts. This is an optional native-lane design target, not
-an additional hybrid release requirement.
+end-to-end latency. Dense native attention, native-direct comparison, and
+model-runtime adapter work are skipped under the current goal. They are not
+Wrench product claims and must not hold the hybrid productive-value path
+hostage.
 
 The dynamic prefill uses cheap regex anchors first, then AST or lexical symbol
 extraction for code. It preferentially retains paths, symbols, tests, errors,
@@ -53,6 +46,39 @@ context and 16K for mechanical lookup cards. The 100 ms target is a hot-path
 target for cached 4M-to-64K selection.
 Cold indexing is incremental work performed as context arrives. It is reported
 separately from request latency and never hidden inside a model benchmark.
+
+## Frontier handoff, not frontier replay
+
+An abstention is now accompanied by a bounded
+`wrench.advisor-handoff.v1` packet. The packet contains the newest intent, the
+selected working context, the local failure reason, the Wrench attempt, and
+the hash-bound prefill receipt. It does not contain the raw 2M or 4M payload or
+an unbounded lookup table. The original payload remains available out of band
+for audit and explicit lookup.
+
+The handoff policy is deliberately small: one frontier review pass followed by
+at most one repair pass. Each frontier result returns to Wrench's parser,
+authority checks, and multi-pass verifier before it can be accepted. The
+frontier model has no tool execution or mutation authority. If the packet
+cannot be built within its byte budget, Wrench keeps the original abstention
+and fails closed instead of forwarding the monster context.
+
+When a client executes a verified read-only proposal and sends the result back,
+the upstream path has one additional bounded state. The second response must be
+exactly `wrench.final-answer.v1` with `schema`, `answer`, and
+`tool_result_sha256`. Wrench accepts the answer only when the hash matches the
+bounded result associated with Wrench's read-only tool-call id. A repeated
+proposal, wrong hash, free-form text, invalid transition, or third frontier
+call terminates as an abstention. This keeps completion, safety, loop freedom,
+and token accounting inside the portable model package rather than delegating
+them to OpenCode, DeepSeek Harness, or Claude Code.
+
+This is the main cost lever. Wrench performs the repetitive map, retrieve,
+AST, and verification work continuously, while the paid model sees only the
+latest intent and a bounded evidence packet. The useful success metric is the
+matched workflow's final success and total frontier-token savings, including
+handoff, retries, corrections, and fallback overhead. A smaller model score by
+itself is not a production-value claim.
 
 For context-sensitive requests, the package has a conservative adaptive tier.
 The newest intent must contain a marker such as `debug`, `compare`, `trace`,

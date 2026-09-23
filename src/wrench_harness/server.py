@@ -10,24 +10,78 @@ from __future__ import annotations
 import argparse
 from contextlib import nullcontext
 import hashlib
+import ipaddress
 import json
+import math
+import multiprocessing
 import os
 import threading
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib import request as urllib_request
 
 from .core import execute_model_output
+from .handoff import build_advisor_handoff
 from .mechanical import active_intent_suffix
+from .patching import add_bounded_repair_instruction
 from .prefill import _estimate_token_count, ordered_payload_sha256
+from .router import CancellationToken, ProposalRouter
 from .ttc import enforce_ttc
 from .worker import WrenchWorker, _dynamic_prefill_messages
 
 
 MAX_INPUT_CONTEXT_TOKENS = 4_000_000
+MAX_FINAL_ANSWER_CHARS = 16_384
+TEST_ROUTER_TERMINATE_GRACE_SECONDS = 0.25
+READ_ONLY_TOOL_NAME_MARKERS = {
+    "read",
+    "read_file",
+    "readfile",
+    "read_lines",
+    "readlines",
+    "literal_search",
+    "search",
+    "grep",
+    "ripgrep",
+}
+
+
+def _test_router_child_entrypoint(
+    invoke: Callable[[], dict[str, Any]],
+    connection: Any,
+) -> None:
+    """Run only an explicitly injected deterministic test callback in a child."""
+
+    try:
+        result = invoke()
+        if not isinstance(result, dict):
+            raise TypeError("test proposal callback must return a dictionary")
+        encoded = json.dumps(result, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
+        connection.send(("result", encoded))
+    except BaseException as exc:  # noqa: BLE001
+        try:
+            connection.send(("error", type(exc).__name__))
+        except (BrokenPipeError, EOFError, OSError):
+            pass
+    finally:
+        connection.close()
+
+
+def _terminate_test_router_process(process: Any) -> bool:
+    """Terminate, then kill and join a test callback process within fixed bounds."""
+
+    if not process.is_alive():
+        process.join(timeout=0)
+        return True
+    process.terminate()
+    process.join(timeout=TEST_ROUTER_TERMINATE_GRACE_SECONDS)
+    if process.is_alive():
+        process.kill()
+        process.join(timeout=TEST_ROUTER_TERMINATE_GRACE_SECONDS)
+    return not process.is_alive()
 
 
 def _estimated_tokens(value: str) -> int:
@@ -185,9 +239,11 @@ def _cost_accounting_receipt(
 
     model_calls = result.get("model_calls", 0)
     model_calls = model_calls if isinstance(model_calls, int) and model_calls >= 0 else 0
+    frontier_usage = result.get("frontier_usage")
+    has_frontier_usage = isinstance(frontier_usage, dict)
     dynamic_prefill = result.get("dynamic_prefill")
     model_prompt_tokens = 0
-    if model_calls:
+    if model_calls and not has_frontier_usage:
         if isinstance(dynamic_prefill, dict):
             native_prompt = dynamic_prefill.get("native_backend_prompt_tokens")
             staged_prompt = dynamic_prefill.get("model_prefill_token_count")
@@ -197,8 +253,25 @@ def _cost_accounting_receipt(
                 model_prompt_tokens = staged_prompt
         if model_prompt_tokens == 0:
             model_prompt_tokens = raw_tokens
-    model_completion_tokens = completion_tokens if model_calls else 0
-    return {
+    model_completion_tokens = completion_tokens if model_calls and not has_frontier_usage else 0
+    frontier_tokens = 0
+    frontier_prompt_tokens = 0
+    frontier_completion_tokens = 0
+    frontier_cost = None
+    if isinstance(frontier_usage, dict):
+        prompt = frontier_usage.get("prompt_tokens")
+        if isinstance(prompt, int) and prompt >= 0:
+            frontier_prompt_tokens = prompt
+        completion = frontier_usage.get("completion_tokens")
+        if isinstance(completion, int) and completion >= 0:
+            frontier_completion_tokens = completion
+        total = frontier_usage.get("total_tokens")
+        if isinstance(total, int) and total >= 0:
+            frontier_tokens = total
+        cost = frontier_usage.get("cost")
+        if isinstance(cost, (int, float)) and not isinstance(cost, bool):
+            frontier_cost = float(cost)
+    receipt = {
         "schema": "wrench.cost-accounting-receipt.v1",
         "raw_input_tokens": raw_tokens,
         "model_prompt_tokens": model_prompt_tokens,
@@ -206,12 +279,23 @@ def _cost_accounting_receipt(
         "local_model_tokens": model_prompt_tokens + model_completion_tokens,
         "input_tokens_not_sent_to_model": max(0, raw_tokens - model_prompt_tokens),
         "model_calls": model_calls,
+        "local_model_calls": 0 if has_frontier_usage else model_calls,
         "repair_passes": result.get("repair_pass_count", 0),
+        "frontier_tokens": frontier_tokens,
+        "frontier_prompt_tokens": frontier_prompt_tokens,
+        "frontier_completion_tokens": frontier_completion_tokens,
+        "frontier_cost_usd": frontier_cost,
+        "total_workflow_tokens": (
+            model_prompt_tokens + model_completion_tokens + frontier_tokens
+        ),
         "mechanical_fast_path": bool(result.get("mechanical_fast_path", False)),
         "total_local_elapsed_ms": round(elapsed_ms, 3),
         "usd_cost": None,
         "usd_cost_status": "not_priced_local_runtime",
     }
+    if isinstance(frontier_usage, dict):
+        receipt["frontier_usage"] = frontier_usage
+    return receipt
 
 
 def _completion_response(
@@ -259,9 +343,16 @@ def _completion_response(
             "backend": result.get("backend"),
             "mechanical_fast_path": result.get("mechanical_fast_path", False),
             "model_calls": result.get("model_calls", 0),
+            "repair_pass_count": result.get("repair_pass_count", 0),
             "context_gate": result.get("context_gate"),
             "dynamic_prefill": result.get("dynamic_prefill"),
             "fallback_reason": result.get("fallback_reason"),
+            "advisor_handoff": result.get("advisor_handoff"),
+            "upstream_attempts": result.get("upstream_attempts"),
+            "frontier_usage": result.get("frontier_usage"),
+            "frontier_round": result.get("frontier_round"),
+            "final_answer": result.get("final_answer", False),
+            "tool_result_sha256": result.get("tool_result_sha256"),
             "ttc": result.get("ttc"),
             "cost_accounting": _cost_accounting_receipt(
                 result,
@@ -271,6 +362,9 @@ def _completion_response(
             ),
         },
     }
+    test_router_status = result.get("test_only_router_status")
+    if isinstance(test_router_status, dict):
+        response["wrench"]["test_only_proposal_router"] = test_router_status
     return response
 
 
@@ -326,6 +420,7 @@ def _completion_stream_chunks(response: dict[str, Any]) -> list[str]:
                 "model": model,
                 "choices": [{"index": 0, "delta": {}, "finish_reason": "tool_calls"}],
                 "usage": response.get("usage"),
+                "wrench": response.get("wrench"),
             },
         ]
         return [f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n" for chunk in chunks] + ["data: [DONE]\n\n"]
@@ -351,6 +446,7 @@ def _completion_stream_chunks(response: dict[str, Any]) -> list[str]:
             "model": model,
             "choices": [{"index": 0, "delta": {}, "finish_reason": choice.get("finish_reason", "stop")}],
             "usage": response.get("usage"),
+            "wrench": response.get("wrench"),
         },
     ]
     return [f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n" for chunk in chunks] + ["data: [DONE]\n\n"]
@@ -405,7 +501,24 @@ def _normalize_anthropic_messages(request: dict[str, Any]) -> list[dict[str, Any
         elif role == "tool":
             messages.append({"role": "tool", "content": _anthropic_text(content)})
         elif role in {"user", "assistant", "system"}:
-            messages.append({"role": role, "content": _anthropic_text(content)})
+            normalized = {"role": role, "content": _anthropic_text(content)}
+            if role == "assistant" and isinstance(content, list):
+                tool_calls = []
+                for block in content:
+                    if not isinstance(block, dict) or block.get("type") != "tool_use":
+                        continue
+                    name = block.get("name")
+                    call_id = block.get("id")
+                    if isinstance(name, str) and isinstance(call_id, str):
+                        tool_calls.append(
+                            {
+                                "id": call_id,
+                                "function": {"name": name},
+                            }
+                        )
+                if tool_calls:
+                    normalized["tool_calls"] = tool_calls
+            messages.append(normalized)
         else:
             raise ValueError(f"unsupported message role: {role}")
     return messages
@@ -463,7 +576,14 @@ def _anthropic_response(
             "backend": result.get("backend"),
             "mechanical_fast_path": result.get("mechanical_fast_path", False),
             "model_calls": result.get("model_calls", 0),
+            "repair_pass_count": result.get("repair_pass_count", 0),
             "context_gate": result.get("context_gate"),
+            "advisor_handoff": result.get("advisor_handoff"),
+            "upstream_attempts": result.get("upstream_attempts"),
+            "frontier_usage": result.get("frontier_usage"),
+            "frontier_round": result.get("frontier_round"),
+            "final_answer": result.get("final_answer", False),
+            "tool_result_sha256": result.get("tool_result_sha256"),
             "cost_accounting": _cost_accounting_receipt(
                 result,
                 raw_tokens=raw_tokens,
@@ -488,6 +608,7 @@ def _anthropic_stream_chunks(response: dict[str, Any]) -> list[str]:
         "stop_reason": None,
         "stop_sequence": None,
         "usage": {"input_tokens": usage.get("input_tokens", 0), "output_tokens": 0},
+        "wrench": response.get("wrench"),
     }
     events: list[dict[str, Any]] = [
         {"event": "message_start", "data": {"type": "message_start", "message": message}},
@@ -576,9 +697,16 @@ def _ollama_response(
         "backend": result.get("backend"),
         "mechanical_fast_path": result.get("mechanical_fast_path", False),
         "model_calls": result.get("model_calls", 0),
+        "repair_pass_count": result.get("repair_pass_count", 0),
         "context_gate": result.get("context_gate"),
         "dynamic_prefill": result.get("dynamic_prefill"),
         "fallback_reason": result.get("fallback_reason"),
+        "advisor_handoff": result.get("advisor_handoff"),
+        "upstream_attempts": result.get("upstream_attempts"),
+        "frontier_usage": result.get("frontier_usage"),
+        "frontier_round": result.get("frontier_round"),
+        "final_answer": result.get("final_answer", False),
+        "tool_result_sha256": result.get("tool_result_sha256"),
         "ttc": result.get("ttc"),
         "declared_context_tokens": declared_context_tokens,
         "cost_accounting": _cost_accounting_receipt(
@@ -678,6 +806,51 @@ def _forward_upstream(
     raise ValueError("native_backend_response_missing_text")
 
 
+_UPSTREAM_RETRYABLE_REASONS = {
+    "model_output_not_text",
+    "model_output_invalid_json",
+    "model_output_not_object",
+}
+
+
+def _frontier_usage_receipt(usages: list[dict[str, Any]]) -> dict[str, Any]:
+    """Aggregate only bounded numeric usage fields from upstream attempts."""
+
+    prompt_tokens = 0
+    completion_tokens = 0
+    total_tokens = 0
+    cost = 0.0
+    cost_seen = False
+    for usage in usages:
+        if not isinstance(usage, dict):
+            continue
+        prompt = usage.get("prompt_tokens")
+        completion = usage.get("completion_tokens")
+        total = usage.get("total_tokens")
+        if isinstance(prompt, int) and not isinstance(prompt, bool):
+            prompt_tokens += prompt
+        if isinstance(completion, int) and not isinstance(completion, bool):
+            completion_tokens += completion
+        if isinstance(total, int) and not isinstance(total, bool):
+            total_tokens += total
+        elif isinstance(prompt, int) and isinstance(completion, int):
+            total_tokens += prompt + completion
+        value = usage.get("cost")
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            cost += float(value)
+            cost_seen = True
+    receipt: dict[str, Any] = {
+        "schema": "wrench.frontier-usage-receipt.v1",
+        "attempt_count": len(usages),
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+    }
+    if cost_seen:
+        receipt["cost"] = round(cost, 10)
+    return receipt
+
+
 def _latest_user_prompt(messages: list[dict[str, Any]]) -> str:
     for message in reversed(messages):
         if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str):
@@ -723,6 +896,145 @@ def _tool_result_text(content: Any) -> str:
     return json.dumps(content, ensure_ascii=False, separators=(",", ":"))
 
 
+def _bounded_tool_result(content: Any) -> str:
+    """Render one client result exactly as it is exposed to the final answer."""
+
+    raw = _tool_result_text(content)
+    bounded = raw[:MAX_FINAL_ANSWER_CHARS]
+    if not bounded:
+        bounded = "(client tool returned no displayable content)"
+    if len(raw) > len(bounded):
+        bounded += "\n[tool result truncated by Wrench]"
+    return bounded
+
+
+def _read_only_tool_call_id(call: Any) -> str | None:
+    if not isinstance(call, dict):
+        return None
+    function = call.get("function")
+    name = function.get("name") if isinstance(function, dict) else call.get("name")
+    if not isinstance(name, str) or name.casefold() not in READ_ONLY_TOOL_NAME_MARKERS:
+        return None
+    call_id = call.get("id")
+    return call_id if isinstance(call_id, str) and call_id else None
+
+
+def _read_only_tool_call_ids(messages: list[dict[str, Any]]) -> set[str]:
+    ids: set[str] = set()
+    for message in messages:
+        if not isinstance(message, dict) or message.get("role") != "assistant":
+            continue
+        calls = message.get("tool_calls")
+        if isinstance(calls, list):
+            for call in calls:
+                call_id = _read_only_tool_call_id(call)
+                if call_id is not None:
+                    ids.add(call_id)
+    return ids
+
+
+def _tool_result_call_id(message: dict[str, Any]) -> str | None:
+    call_id = message.get("tool_call_id")
+    if isinstance(call_id, str) and call_id:
+        return call_id
+    content = message.get("content")
+    if isinstance(content, list):
+        for block in content:
+            if not isinstance(block, dict) or block.get("type") != "tool_result":
+                continue
+            candidate = block.get("tool_use_id")
+            if isinstance(candidate, str) and candidate:
+                return candidate
+    return None
+
+
+def _latest_verified_tool_result(messages: list[dict[str, Any]]) -> dict[str, str] | None:
+    """Return the latest read-only result only when it matches Wrench's call."""
+
+    if not messages:
+        return None
+    allowed_call_ids = _read_only_tool_call_ids(messages)
+    for candidate in reversed(messages):
+        if not isinstance(candidate, dict):
+            continue
+        if candidate.get("role") == "user":
+            return None
+        content = candidate.get("content")
+        is_tool_message = candidate.get("role") == "tool"
+        if isinstance(content, list):
+            is_tool_message = is_tool_message or any(
+                isinstance(block, dict) and block.get("type") == "tool_result"
+                for block in content
+            )
+        if not is_tool_message:
+            continue
+        call_id = _tool_result_call_id(candidate)
+        if call_id is None or call_id not in allowed_call_ids:
+            return None
+        bounded = _bounded_tool_result(content)
+        return {
+            "text": bounded,
+            "sha256": hashlib.sha256(bounded.encode("utf-8")).hexdigest(),
+            "call_id": call_id,
+        }
+    return None
+
+
+def _add_bounded_final_answer_instruction(
+    messages: list[dict[str, Any]],
+    *,
+    tool_result_sha256: str,
+) -> list[dict[str, Any]]:
+    """Tell the upstream that this request is the one bounded final round."""
+
+    instruction = (
+        "<wrench:final-answer schema=wrench.final-answer.v1>\n"
+        "A read-only Wrench tool call was verified and executed. Return exactly one JSON object, "
+        "with only schema, answer, and tool_result_sha256 fields. The schema must be "
+        "wrench.final-answer.v1. answer must be a concise string of at most 16384 characters. "
+        f"tool_result_sha256 must equal {tool_result_sha256}. Do not return a proposal, tool call, "
+        "action, mutation, shell command, markdown, or surrounding prose.\n"
+        "</wrench:final-answer>"
+    )
+    return [*messages, {"role": "system", "content": instruction}]
+
+
+def _parse_final_answer_output(
+    model_output: Any,
+    *,
+    tool_result_sha256: str,
+) -> dict[str, Any]:
+    """Validate the only response allowed after a verified read-only result."""
+
+    if not isinstance(model_output, str) or not model_output.strip():
+        return {"status": "abstain", "fallback_reason": "final_answer_not_text"}
+    try:
+        envelope = json.loads(model_output)
+    except json.JSONDecodeError:
+        return {"status": "abstain", "fallback_reason": "final_answer_invalid_json"}
+    if not isinstance(envelope, dict):
+        return {"status": "abstain", "fallback_reason": "final_answer_not_object"}
+    if set(envelope) != {"schema", "answer", "tool_result_sha256"}:
+        return {"status": "abstain", "fallback_reason": "final_answer_fields_invalid"}
+    if envelope.get("schema") != "wrench.final-answer.v1":
+        return {"status": "abstain", "fallback_reason": "final_answer_schema_invalid"}
+    answer = envelope.get("answer")
+    if not isinstance(answer, str) or not answer.strip() or len(answer) > MAX_FINAL_ANSWER_CHARS:
+        return {"status": "abstain", "fallback_reason": "final_answer_length_invalid"}
+    if envelope.get("tool_result_sha256") != tool_result_sha256:
+        return {"status": "abstain", "fallback_reason": "final_answer_hash_mismatch"}
+    return {
+        "status": "accepted",
+        "backend": "native-upstream-final-verified",
+        "mechanical_fast_path": False,
+        "raw_model_output": answer,
+        "final_answer": True,
+        "final_answer_envelope": envelope,
+        "tool_result_sha256": tool_result_sha256,
+        "frontier_round": 2,
+    }
+
+
 def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Turn a completed client-side read tool call into one final assistant turn.
 
@@ -756,11 +1068,7 @@ def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | 
     if latest is None:
         return None
     content = latest.get("content")
-    bounded = _tool_result_text(content)[:16_384]
-    if not bounded:
-        bounded = "(client tool returned no displayable content)"
-    if len(_tool_result_text(content)) > len(bounded):
-        bounded += "\n[tool result truncated by Wrench]"
+    bounded = _bounded_tool_result(content)
     return {
         "status": "accepted",
         "backend": "embedded-mechanical-settlement",
@@ -779,14 +1087,15 @@ def _tool_settlement_result(messages: list[dict[str, Any]]) -> dict[str, Any] | 
 def _deterministic_title_result(messages: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Answer a harness session-title preflight without routing its prompt as work."""
 
+    title_prefix = "Generate the session title from this JSON array of human messages:"
+    marker = "JSON array of human messages:"
     for message in messages:
         if not isinstance(message, dict) or not isinstance(message.get("content"), str):
             continue
         content = message["content"]
-        if "generate the session title" not in content.casefold():
+        if not content.casefold().startswith(title_prefix.casefold()):
             continue
         title = "Wrench session"
-        marker = "JSON array of human messages:"
         candidate = content.split(marker, 1)[-1].strip() if marker in content else ""
         try:
             parsed = json.loads(candidate)
@@ -1026,7 +1335,9 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                 if title_result is not None or not server.use_mechanical_route
                 else _tool_settlement_result(messages)
             )
-            if title_result is not None:
+            if server.test_only_proposal_router is not None:
+                result = server.run_test_only_proposal()
+            elif title_result is not None:
                 result = title_result
             elif settlement is not None:
                 result = settlement
@@ -1061,7 +1372,16 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                             staged_messages, prefill_receipt = _dynamic_prefill_messages(
                                 messages,
                                 mechanical_index=server.worker.prefill_index,
-                                original_payload_sha256=raw_payload_sha256,
+                                original_payload_sha256=(
+                                    raw_payload_sha256
+                                    or hashlib.sha256(
+                                        json.dumps(
+                                            messages,
+                                            ensure_ascii=False,
+                                            separators=(",", ":"),
+                                        ).encode("utf-8")
+                                    ).hexdigest()
+                                ),
                             )
                             if prefill_receipt is not None:
                                 prefill_receipt["server_staging_elapsed_ms"] = round(
@@ -1069,49 +1389,141 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                     3,
                                 )
                                 prefill_receipt["cache"] = server.worker.prefill_index.stats()
-                        upstream_metadata: dict[str, Any] = {}
-                        upstream_output = _forward_upstream(
-                            server.upstream_url,
-                            request,
-                            path=route,
-                            timeout_seconds=server.upstream_timeout_seconds,
-                            messages_override=(
-                                staged_messages if prefill_receipt is not None else None
-                            ),
-                            response_metadata=upstream_metadata,
+                        upstream_messages = (
+                            staged_messages if prefill_receipt is not None else messages
                         )
-                        verified = execute_model_output(
-                            upstream_output,
-                            server.worker.allowed_root,
-                            request_prompt=_bounded_verification_prompt(messages),
-                        )
-                        if verified.get("status") == "accepted":
-                            try:
-                                upstream_proposal = json.loads(upstream_output)
-                            except json.JSONDecodeError:
-                                upstream_proposal = None
-                            verified = enforce_ttc(
-                                upstream_proposal,
-                                _bounded_verification_prompt(messages),
-                                verified,
-                                context_pressure=prefill_receipt is not None,
+                        verified_tool_result = _latest_verified_tool_result(messages)
+                        final_answer_round = verified_tool_result is not None
+                        if final_answer_round:
+                            upstream_messages = _add_bounded_final_answer_instruction(
+                                upstream_messages,
+                                tool_result_sha256=verified_tool_result["sha256"],
                             )
+                        upstream_attempts: list[dict[str, Any]] = []
+                        upstream_usages: list[dict[str, Any]] = []
+                        verified: dict[str, Any] = {}
+                        upstream_output = ""
+                        max_attempts = 1 if final_answer_round else 2
+                        for attempt_index in range(max_attempts):
+                            upstream_metadata: dict[str, Any] = {}
+                            upstream_output = _forward_upstream(
+                                server.upstream_url,
+                                request,
+                                path=route,
+                                timeout_seconds=server.upstream_timeout_seconds,
+                                messages_override=upstream_messages,
+                                response_metadata=upstream_metadata,
+                            )
+                            usage = upstream_metadata.get("usage")
+                            if isinstance(usage, dict):
+                                upstream_usages.append(usage)
+                            if final_answer_round:
+                                verified = _parse_final_answer_output(
+                                    upstream_output,
+                                    tool_result_sha256=verified_tool_result["sha256"],
+                                )
+                            else:
+                                verified = execute_model_output(
+                                    upstream_output,
+                                    server.worker.allowed_root,
+                                    request_prompt=_bounded_verification_prompt(messages),
+                                )
+                            if verified.get("status") == "accepted" and not final_answer_round:
+                                try:
+                                    upstream_proposal = json.loads(upstream_output)
+                                except json.JSONDecodeError:
+                                    upstream_proposal = None
+                                verified = enforce_ttc(
+                                    upstream_proposal,
+                                    _bounded_verification_prompt(messages),
+                                    verified,
+                                    context_pressure=prefill_receipt is not None,
+                                )
+                            upstream_attempts.append(
+                                {
+                                    "attempt": attempt_index + 1,
+                                    "status": verified.get("status"),
+                                    "fallback_reason": verified.get("fallback_reason"),
+                                    "usage": usage if isinstance(usage, dict) else {},
+                                    "frontier_round": 2 if final_answer_round else 1,
+                                    "final_answer": final_answer_round,
+                                }
+                            )
+                            retryable = (
+                                not final_answer_round
+                                and verified.get("fallback_reason") in _UPSTREAM_RETRYABLE_REASONS
+                            )
+                            if not retryable or attempt_index == 1:
+                                break
+                            upstream_messages = add_bounded_repair_instruction(
+                                upstream_messages,
+                                str(verified.get("fallback_reason")),
+                            )
+                        accepted_final_answer = (
+                            final_answer_round and verified.get("status") == "accepted"
+                        )
                         verified.update(
                             {
-                                "backend": "native-upstream-verified",
+                                "backend": (
+                                    "native-upstream-final-verified"
+                                    if accepted_final_answer
+                                    else (
+                                        "native-upstream-final-rejected"
+                                        if final_answer_round
+                                        else "native-upstream-verified"
+                                    )
+                                ),
                                 "mechanical_fast_path": False,
-                                "raw_model_output": upstream_output,
-                                "model_calls": 1,
+                                "raw_model_output": (
+                                    verified.get("raw_model_output")
+                                    if accepted_final_answer
+                                    else upstream_output
+                                ),
+                                "model_calls": len(upstream_attempts),
+                                "repair_pass_count": 0
+                                if final_answer_round
+                                else max(0, len(upstream_attempts) - 1),
+                                "upstream_attempts": upstream_attempts,
+                                "frontier_usage": _frontier_usage_receipt(upstream_usages),
+                                "frontier_round": 2 if final_answer_round else 1,
+                                "final_answer": accepted_final_answer,
                             }
                         )
+                        if final_answer_round and verified_tool_result is not None:
+                            verified["tool_result_sha256"] = verified_tool_result["sha256"]
                         if prefill_receipt is not None:
-                            usage = upstream_metadata.get("usage")
-                            if isinstance(usage, dict) and isinstance(usage.get("prompt_tokens"), int):
-                                prefill_receipt["native_backend_prompt_tokens"] = usage["prompt_tokens"]
+                            prompt_tokens = [
+                                int(usage["prompt_tokens"])
+                                for usage in upstream_usages
+                                if isinstance(usage.get("prompt_tokens"), int)
+                            ]
+                            if prompt_tokens:
+                                prefill_receipt["native_backend_prompt_tokens"] = prompt_tokens[-1]
+                                prefill_receipt["native_backend_prompt_tokens_total"] = sum(prompt_tokens)
                                 prefill_receipt["native_backend_usage_available"] = True
                             else:
                                 prefill_receipt["native_backend_usage_available"] = False
                             verified["dynamic_prefill"] = prefill_receipt
+                        if verified.get("status") == "abstain":
+                            try:
+                                verified["advisor_handoff"] = build_advisor_handoff(
+                                    messages,
+                                    result=verified,
+                                    working_messages=staged_messages,
+                                    prefill_receipt=prefill_receipt,
+                                )
+                            except Exception as exc:
+                                verified["advisor_handoff"] = {
+                                    "schema": "wrench.advisor-handoff.v1",
+                                    "handoff_required": True,
+                                    "authority": "proposal_only_no_mutation",
+                                    "frontier_policy": {
+                                        "max_frontier_calls": 2,
+                                        "return_each_result_to_wrench_verifier": True,
+                                        "preserve_raw_payload_out_of_band": True,
+                                    },
+                                    "error": type(exc).__name__,
+                                }
                         result = verified
             elapsed_ms = (time.perf_counter() - started) * 1000
             if route in {"/v1/chat/completions", "/v1/messages"}:
@@ -1134,33 +1546,38 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         raw_tokens=raw_tokens,
                         elapsed_ms=elapsed_ms,
                     )
-                server.record_trace(
-                    {
-                        "schema": "wrench.runtime-observation.v1",
-                        "timestamp": time.time(),
-                        "protocol": (
-                            "anthropic-messages"
-                            if route == "/v1/messages"
-                            else "openai-chat-completions"
-                        ),
-                        "model": model_name,
-                        "stream": bool(request.get("stream", False)),
-                        "message_roles": [
-                            item.get("role") for item in messages if isinstance(item, dict)
-                        ],
-                        "tool_names": _request_tool_names(request),
-                        "raw_input_chars": raw_chars,
-                        "raw_input_tokens_estimate": raw_tokens,
-                        "raw_payload_sha256": raw_payload_sha256,
-                        "status": result.get("status"),
-                        "backend": result.get("backend"),
-                        "mechanical_fast_path": result.get("mechanical_fast_path", False),
-                        "model_calls": result.get("model_calls", 0),
-                        "fallback_reason": result.get("fallback_reason"),
-                        "elapsed_ms": round(elapsed_ms, 3),
-                        "context_gate": result.get("context_gate"),
-                    }
-                )
+                trace_event = {
+                    "schema": "wrench.runtime-observation.v1",
+                    "timestamp": time.time(),
+                    "protocol": (
+                        "anthropic-messages"
+                        if route == "/v1/messages"
+                        else "openai-chat-completions"
+                    ),
+                    "model": model_name,
+                    "stream": bool(request.get("stream", False)),
+                    "message_roles": [
+                        item.get("role") for item in messages if isinstance(item, dict)
+                    ],
+                    "tool_names": _request_tool_names(request),
+                    "raw_input_chars": raw_chars,
+                    "raw_input_tokens_estimate": raw_tokens,
+                    "raw_payload_sha256": raw_payload_sha256,
+                    "status": result.get("status"),
+                    "backend": result.get("backend"),
+                    "mechanical_fast_path": result.get("mechanical_fast_path", False),
+                    "model_calls": result.get("model_calls", 0),
+                    "fallback_reason": result.get("fallback_reason"),
+                    "frontier_round": result.get("frontier_round"),
+                    "final_answer": result.get("final_answer", False),
+                    "tool_result_sha256": result.get("tool_result_sha256"),
+                    "elapsed_ms": round(elapsed_ms, 3),
+                    "context_gate": result.get("context_gate"),
+                }
+                test_router_status = result.get("test_only_router_status")
+                if isinstance(test_router_status, dict):
+                    trace_event["test_only_proposal_router"] = test_router_status
+                server.record_trace(trace_event)
                 if bool(request.get("stream", False)):
                     chunks = (
                         _anthropic_stream_chunks(response)
@@ -1200,6 +1617,9 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         "mechanical_fast_path": result.get("mechanical_fast_path", False),
                         "model_calls": result.get("model_calls", 0),
                         "fallback_reason": result.get("fallback_reason"),
+                        "frontier_round": result.get("frontier_round"),
+                        "final_answer": result.get("final_answer", False),
+                        "tool_result_sha256": result.get("tool_result_sha256"),
                         "elapsed_ms": round(elapsed_ms, 3),
                         "context_gate": result.get("context_gate"),
                     }
@@ -1245,7 +1665,34 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         upstream_timeout_seconds: float = 600.0,
         trace_log: Path | None = None,
         use_mechanical_route: bool = True,
+        test_only_proposal_router: ProposalRouter | None = None,
+        test_only_proposal_invoker: Callable[[], dict[str, Any]] | None = None,
+        test_only_proposal_timeout_seconds: float = 5.0,
+        test_only_cancellation_token: CancellationToken | None = None,
     ) -> None:
+        test_injection_requested = (
+            test_only_proposal_router is not None or test_only_proposal_invoker is not None
+        )
+        if test_injection_requested:
+            try:
+                loopback = ipaddress.ip_address(address[0]).is_loopback
+            except ValueError:
+                loopback = False
+            if not loopback:
+                raise ValueError("test-only ProposalRouter injection requires an IP loopback bind")
+            if upstream_url is not None:
+                raise ValueError("test-only ProposalRouter injection cannot use an upstream URL")
+            if test_only_proposal_router is None or test_only_proposal_invoker is None:
+                raise ValueError("test-only ProposalRouter and invoker must be supplied together")
+            if not callable(test_only_proposal_invoker):
+                raise ValueError("test-only ProposalRouter invoker must be callable")
+            if (
+                isinstance(test_only_proposal_timeout_seconds, bool)
+                or not isinstance(test_only_proposal_timeout_seconds, (int, float))
+                or not math.isfinite(test_only_proposal_timeout_seconds)
+                or not 0 < test_only_proposal_timeout_seconds <= 30
+            ):
+                raise ValueError("test-only ProposalRouter timeout must be in (0, 30] seconds")
         super().__init__(address, WrenchRequestHandler)
         self.worker = worker
         self.model_name = model_name
@@ -1253,9 +1700,210 @@ class WrenchHTTPServer(ThreadingHTTPServer):
         self.upstream_url = upstream_url
         self.upstream_timeout_seconds = upstream_timeout_seconds
         self.use_mechanical_route = use_mechanical_route
+        self.test_only_proposal_router = test_only_proposal_router
+        self.test_only_proposal_invoker = test_only_proposal_invoker
+        self.test_only_proposal_timeout_seconds = float(test_only_proposal_timeout_seconds)
+        self.test_only_cancellation_token = (
+            test_only_cancellation_token
+            if test_only_cancellation_token is not None
+            else CancellationToken()
+        )
+        self._test_only_router_lock = threading.Lock()
+        self._test_only_children_lock = threading.Lock()
+        self._test_only_children: dict[int, Any] = {}
+        self._test_only_shutting_down = False
+        self.test_only_child_launches = 0
         self.worker_lock = threading.Lock()
         self.trace_log = trace_log.resolve() if trace_log is not None else None
         self.trace_lock = threading.Lock()
+
+    @property
+    def test_only_active_child_pids(self) -> tuple[int, ...]:
+        with self._test_only_children_lock:
+            return tuple(
+                sorted(pid for pid, process in self._test_only_children.items() if process.is_alive())
+            )
+
+    def _test_only_child_alive(self, pid: int, process: Any) -> bool:
+        with self._test_only_children_lock:
+            if self._test_only_children.get(pid) is not process:
+                return False
+            return process.is_alive()
+
+    def _join_test_only_child(self, pid: int, process: Any, timeout: float) -> bool:
+        with self._test_only_children_lock:
+            if self._test_only_children.get(pid) is not process:
+                return True
+            process.join(timeout=timeout)
+            return not process.is_alive()
+
+    def _reap_test_only_child(self, pid: int, process: Any) -> bool:
+        with self._test_only_children_lock:
+            if self._test_only_children.get(pid) is not process:
+                return True
+            if process.is_alive() and not _terminate_test_router_process(process):
+                return False
+            process.join(timeout=0)
+            if process.is_alive():
+                return False
+            self._test_only_children.pop(pid, None)
+            process.close()
+            return True
+
+    def _run_test_only_invoker(self, deadline: float) -> dict[str, Any]:
+        assert self.test_only_proposal_invoker is not None
+        cancellation = self.test_only_cancellation_token
+        context = multiprocessing.get_context("spawn")
+        receive, send = context.Pipe(duplex=False)
+        process = context.Process(
+            target=_test_router_child_entrypoint,
+            args=(self.test_only_proposal_invoker, send),
+            name="wrench-test-proposal-router",
+        )
+        pid: int | None = None
+        try:
+            with self._test_only_children_lock:
+                if self._test_only_shutting_down:
+                    return {
+                        "status": "abstain",
+                        "fallback_reason": "server_shutdown",
+                    }
+                process.start()
+                pid = process.pid
+                if pid is not None:
+                    self._test_only_children[pid] = process
+                    self.test_only_child_launches += 1
+            send.close()
+            if pid is None:
+                return {
+                    "status": "abstain",
+                    "fallback_reason": "router_worker_exited_without_result",
+                }
+            while True:
+                if cancellation.cancelled:
+                    outcome = {"status": "abstain", "fallback_reason": "cancelled"}
+                    break
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    outcome = {"status": "abstain", "fallback_reason": "router_timeout"}
+                    break
+                if receive.poll(min(0.02, remaining)):
+                    try:
+                        kind, value = receive.recv()
+                    except (EOFError, OSError):
+                        outcome = {"status": "abstain", "fallback_reason": "router_worker_exited_without_result"}
+                        break
+                    if not self._join_test_only_child(
+                        pid, process, TEST_ROUTER_TERMINATE_GRACE_SECONDS
+                    ):
+                        outcome = {"status": "abstain", "fallback_reason": "router_worker_did_not_exit"}
+                        break
+                    if kind == "error":
+                        outcome = {
+                            "status": "abstain",
+                            "fallback_reason": "router_invocation_error",
+                            "detail": str(value),
+                        }
+                        break
+                    if kind != "result":
+                        outcome = {"status": "abstain", "fallback_reason": "router_worker_result_invalid"}
+                        break
+                    try:
+                        parsed = json.loads(value)
+                    except (TypeError, json.JSONDecodeError):
+                        outcome = {"status": "abstain", "fallback_reason": "router_worker_result_invalid"}
+                        break
+                    invalid_result = (
+                        not isinstance(parsed, dict)
+                        or parsed.get("status") not in {"accepted", "abstain"}
+                        or (
+                            parsed.get("status") == "abstain"
+                            and (
+                                not isinstance(parsed.get("fallback_reason"), str)
+                                or not parsed["fallback_reason"].strip()
+                            )
+                        )
+                    )
+                    outcome = (
+                        {
+                            "status": "abstain",
+                            "fallback_reason": "router_worker_result_invalid",
+                        }
+                        if invalid_result
+                        else parsed
+                    )
+                    break
+                if not self._test_only_child_alive(pid, process):
+                    outcome = {"status": "abstain", "fallback_reason": "router_worker_exited_without_result"}
+                    break
+        finally:
+            receive.close()
+            send.close()
+            if pid is not None:
+                if not self._reap_test_only_child(pid, process):
+                    raise RuntimeError("test-only ProposalRouter child survived terminate and kill")
+            else:
+                process.close()
+        return outcome
+
+    def run_test_only_proposal(self) -> dict[str, Any]:
+        """Exercise injected deterministic proposals through the real HTTP handler."""
+
+        router = self.test_only_proposal_router
+        if router is None:
+            raise RuntimeError("test-only ProposalRouter is not configured")
+        cancellation = self.test_only_cancellation_token
+        # max_attempts is a lifetime call ceiling, not an in-request retry
+        # count. Keep time spent waiting for the shared test router bounded by
+        # the same deadline as one invocation.
+        queue_deadline = time.monotonic() + self.test_only_proposal_timeout_seconds
+        while True:
+            if cancellation.cancelled:
+                return {
+                    "status": "abstain",
+                    "fallback_reason": "cancelled",
+                    "backend": "test-only-proposal-router",
+                    "model_calls": 0,
+                }
+            remaining = queue_deadline - time.monotonic()
+            if remaining <= 0:
+                return {
+                    "status": "abstain",
+                    "fallback_reason": "router_queue_timeout",
+                    "backend": "test-only-proposal-router",
+                    "model_calls": 0,
+                }
+            if self._test_only_router_lock.acquire(timeout=min(0.02, remaining)):
+                break
+        try:
+            deadline = time.monotonic() + self.test_only_proposal_timeout_seconds
+            result = router.run(
+                lambda: self._run_test_only_invoker(deadline),
+                cancellation=cancellation,
+            )
+            if not isinstance(result, dict):
+                result = {"status": "abstain", "fallback_reason": "router_result_invalid"}
+            return {
+                **result,
+                "backend": "test-only-proposal-router",
+                "model_calls": 0,
+                "test_only_router_status": router.status(),
+            }
+        finally:
+            self._test_only_router_lock.release()
+
+    def server_close(self) -> None:
+        with self._test_only_children_lock:
+            self._test_only_shutting_down = True
+            for pid, process in list(self._test_only_children.items()):
+                if process.is_alive() and not _terminate_test_router_process(process):
+                    raise RuntimeError("test-only ProposalRouter child survived server shutdown")
+                process.join(timeout=0)
+                if process.is_alive():
+                    raise RuntimeError("test-only ProposalRouter child survived shutdown join")
+                self._test_only_children.pop(pid, None)
+                process.close()
+        super().server_close()
 
     def record_trace(self, event: dict[str, Any]) -> None:
         """Append a metadata-only observation without persisting raw prompts."""

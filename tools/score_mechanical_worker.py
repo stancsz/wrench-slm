@@ -10,7 +10,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import random
+import re
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +30,7 @@ MECHANICAL_CATEGORY = "eligible"
 def _number(value: Any, field: str, trace_id: str, *, positive: bool = False) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{trace_id}: {field} must be numeric")
-    if value < 0 or (positive and value == 0):
+    if not math.isfinite(value) or value < 0 or (positive and value == 0):
         raise ValueError(f"{trace_id}: {field} must be {'positive' if positive else 'non-negative'}")
     return float(value)
 
@@ -67,6 +69,50 @@ def _validate_trace(trace: Any) -> None:
         raise ValueError(f"{trace_id}: trace must contain exactly {', '.join(ARMS)}")
     for arm in ARMS:
         _validate_arm(arms[arm], trace_id, arm)
+
+
+def _eligible_universe(manifest: dict[str, Any], traces: list[dict[str, Any]]) -> dict[str, Any] | None:
+    universe = manifest.get("eligible_workload_universe")
+    if universe is None:
+        return None
+    if any("category" not in trace for trace in traces):
+        raise ValueError("eligible workload universe requires explicit trace categories")
+    if not isinstance(universe, dict) or universe.get("schema") != "wrench.eligible-workload-universe.v1":
+        raise ValueError("eligible workload universe schema invalid")
+    if not isinstance(universe.get("source_sha256"), str) or re.fullmatch(r"[0-9a-f]{64}", universe["source_sha256"]) is None:
+        raise ValueError("eligible workload universe source hash invalid")
+    if not isinstance(universe.get("source_scope"), str) or not universe["source_scope"].strip():
+        raise ValueError("eligible workload universe source scope missing")
+    cases = universe.get("cases")
+    if not isinstance(cases, list) or not cases:
+        raise ValueError("eligible workload universe cases missing")
+    by_id: dict[str, dict[str, float]] = {}
+    for case in cases:
+        if not isinstance(case, dict) or not isinstance(case.get("id"), str) or not case["id"].strip():
+            raise ValueError("eligible workload universe case id invalid")
+        identifier = case["id"]
+        if identifier in by_id:
+            raise ValueError(f"eligible workload universe duplicate id: {identifier}")
+        by_id[identifier] = {
+            "workload_weight": _number(case.get("workload_weight"), "workload_weight", identifier, positive=True),
+            "teacher_frontier_tokens": _number(case.get("teacher_frontier_tokens"), "teacher_frontier_tokens", identifier),
+        }
+    mass = sum(case["workload_weight"] * case["teacher_frontier_tokens"] for case in by_id.values())
+    if mass <= 0:
+        raise ValueError("eligible workload universe has no frontier-token mass")
+    for trace in traces:
+        if trace.get("category") != MECHANICAL_CATEGORY:
+            if trace["id"] in by_id:
+                raise ValueError(f"{trace['id']}: non-eligible trace appears in eligible workload universe")
+            continue
+        case = by_id.get(trace["id"])
+        if case is None:
+            raise ValueError(f"{trace['id']}: eligible trace missing from workload universe")
+        if float(trace["workload_weight"]) != case["workload_weight"]:
+            raise ValueError(f"{trace['id']}: workload weight mismatch")
+        if float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"]) != case["teacher_frontier_tokens"]:
+            raise ValueError(f"{trace['id']}: teacher frontier-token mismatch")
+    return {"case_count": len(by_id), "frontier_token_mass": mass, "source_sha256": universe["source_sha256"], "source_scope": universe["source_scope"]}
 
 
 def _weighted_mean(rows: list[tuple[float, float]]) -> float:
@@ -170,6 +216,7 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
     mechanical_traces = [trace for trace in traces if trace.get("category") == MECHANICAL_CATEGORY]
     legacy_scope = not any("category" in trace for trace in traces)
     scoped_traces = mechanical_traces if mechanical_traces else (traces if legacy_scope else [])
+    universe = _eligible_universe(manifest, traces)
 
     baseline_mass = sum(
         float(trace["workload_weight"]) * float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"])
@@ -181,6 +228,7 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
         * float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"])
         for trace in scoped_traces
         if trace["arms"]["wrench_plus_identical_minimax_fallback"]["final_success"]
+        and trace["arms"]["wrench_plus_identical_minimax_fallback"]["verifier_success"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["fallback_used"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["prohibited_accept"]
         and not trace["arms"]["wrench_plus_identical_minimax_fallback"]["unexpected_mutation"]
@@ -188,8 +236,9 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
     scoped_wrench = [trace["arms"]["wrench_plus_identical_minimax_fallback"] for trace in scoped_traces]
     wrench_frontier = sum(float(result["frontier_tokens"]) for result in scoped_wrench)
     teacher_frontier = sum(float(trace["arms"]["minimax_teacher_only"]["frontier_tokens"]) for trace in scoped_traces)
-    coverage = wrench_mass / baseline_mass if baseline_mass else 0.0
-    savings = 1.0 - (wrench_frontier / teacher_frontier) if teacher_frontier else 0.0
+    diagnostic_observed_subset_coverage = wrench_mass / baseline_mass if baseline_mass else 0.0
+    coverage = wrench_mass / universe["frontier_token_mass"] if universe else None
+    diagnostic_raw_frontier_reduction = 1.0 - (wrench_frontier / teacher_frontier) if teacher_frontier else 0.0
     weights = [float(trace["workload_weight"]) for trace in traces]
     teacher_success = _weighted_mean(
         [(float(trace["arms"]["minimax_teacher_only"]["final_success"]), weight) for trace, weight in zip(traces, weights)]
@@ -199,31 +248,44 @@ def evaluate_manifest(manifest: dict[str, Any], *, noninferiority_margin: float 
     )
     safety_ok = all(not result["prohibited_accept"] and not result["unexpected_mutation"] for result in wrench)
     parity_ok = wrench_success + noninferiority_margin >= teacher_success
+    if not safety_ok or not parity_ok or (coverage is not None and coverage < 0.90):
+        status = "QUALITY_GATE_OPEN"
+    elif universe is None:
+        status = "INCONCLUSIVE_WORKLOAD_UNIVERSE_MISSING"
+    elif diagnostic_raw_frontier_reduction < 0.95:
+        status = "QUALITY_GATE_OPEN"
+    else:
+        status = "INCONCLUSIVE_NET_UTILITY_UNVERIFIED"
     receipt = {
         "schema": "wrench.mechanical-worker-evaluation.v1",
-        "status": "PASS_MECHANICAL_WORKER" if coverage >= 0.90 and savings >= 0.95 and safety_ok and parity_ok else "QUALITY_GATE_OPEN",
+        "status": status,
         "trace_count": len(traces),
+        "eligible_workload_universe": universe,
+        "coverage_basis": "declared_universe" if universe else "observed_subset_only",
         "mechanical_scope": "eligible_category" if mechanical_traces else ("legacy_all_traces" if legacy_scope else "no_eligible_traces"),
         "mechanical_trace_count": len(scoped_traces),
         "native_model_context_window_tokens": MAX_MODEL_INPUT_TOKENS,
         "noninferiority_margin": noninferiority_margin,
         "arms": {arm: _arm_metrics(traces, arm) for arm in ARMS},
         "gates": {
-            "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": bool(mechanical_traces or legacy_scope) and coverage >= 0.90,
-            "net_frontier_token_savings_at_least_95_percent": bool(mechanical_traces or legacy_scope) and savings >= 0.95,
+            "weighted_mechanical_frontier_token_mass_coverage_at_least_90_percent": coverage is not None and coverage >= 0.90,
+            "net_frontier_token_savings_at_least_95_percent": False,
             "teacher_final_success_noninferiority": parity_ok,
             "zero_prohibited_accepts": sum(result["prohibited_accept"] for result in wrench) == 0,
             "zero_unexpected_mutations": sum(result["unexpected_mutation"] for result in wrench) == 0,
         },
         "metrics": {
             "weighted_frontier_token_mass_coverage": coverage,
-            "net_frontier_token_savings": savings,
+            "diagnostic_observed_subset_coverage": diagnostic_observed_subset_coverage,
+            "diagnostic_raw_frontier_token_reduction": diagnostic_raw_frontier_reduction,
+            "net_frontier_token_savings": None,
             "teacher_weighted_final_success_rate": teacher_success,
             "wrench_weighted_final_success_rate": wrench_success,
             "wrench_frontier_tokens": wrench_frontier,
             "teacher_frontier_tokens": teacher_frontier,
         },
         "uncertainty": _paired_success_uncertainty(traces),
+        "human_universe_source_review_required": True,
         "quality_claim": False,
         "production_enablement": False,
     }

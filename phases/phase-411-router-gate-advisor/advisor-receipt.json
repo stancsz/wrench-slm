@@ -1,0 +1,24 @@
+{
+  "schema": "wrench.luna-advisor-consultation.v1",
+  "model": "codex-sol-advisor",
+  "question_packet": "advisor-packet.txt",
+  "decision_changed": true,
+  "usage": {
+    "prompt_tokens": 409,
+    "completion_tokens": 532,
+    "total_tokens": 941
+  },
+  "request_id": "chatcmpl-codex-advisor-e6470d04541d",
+  "elapsed_seconds": 18.546,
+  "packet_chars": 1512,
+  "advice": {
+    "verdict": "Integrate ProposalRouter into a test-only local serving path with deterministic fake callables; a standalone stress harness is insufficient Gate E evidence because it bypasses request lifecycle behavior.",
+    "next": "After human architecture approval, inject fake success/fail/sleep/hang callables through the real server path; enforce monotonic deadlines by running each invocation in an isolated subprocess, then terminate, grace-period kill, and join on timeout or cancellation; run bounded concurrent requests proving success, cancellation recovery, timeout latency, synchronized circuit transitions, and zero surviving workers.",
+    "risk_stop_conditions": [
+      "a worker survives its deadline or cancellation bound",
+      "circuit state races appear",
+      "the evidence bypasses the serving request path"
+    ]
+  },
+  "provider_or_serving_action": "none"
+}

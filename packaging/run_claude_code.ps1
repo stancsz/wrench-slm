@@ -7,6 +7,8 @@ param(
     [switch]$Print,
     [switch]$LoadModel,
     [switch]$KeepConfig,
+    [string]$UpstreamUrl = "",
+    [switch]$DisableMechanicalRoute,
     [string]$ConfigDirectory = "",
     [string]$TraceLog = "",
     [string[]]$AllowedTools = @("Read", "Glob", "Grep"),
@@ -52,6 +54,12 @@ $serverArguments = @(
 )
 if (-not $LoadModel) {
     $serverArguments += "--mechanical-only"
+}
+if ($UpstreamUrl) {
+    $serverArguments += @("--upstream-url", $UpstreamUrl, "--upstream-timeout-seconds", "60")
+}
+if ($DisableMechanicalRoute) {
+    $serverArguments += "--disable-mechanical-route"
 }
 
 $blockerProcess = $null

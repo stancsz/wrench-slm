@@ -1,0 +1,12 @@
+Decision: What is the smallest safe way to reconcile Wrench's approved one-run GPT-6 canary with OpenAI's actual aggregate Costs API export, given that the current Wrench v2 validator requires per-request provider-export rows?
+
+Observed facts:
+- The human approved one paired canary, one repetition, workload SHA-256 a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce, endpoint http://localhost:4000/v1, route identified by the human as GPT-6, and maximum spend USD 500. No child contract or provider request exists.
+- The live LiteLLM gateway lists aliases including current, openai, codex-astra, and codex-subscription. Its mounted config maps current to openai/current and codex-astra to openai/responses/gpt-6-astra. Read-only group info identifies current's provider as OpenAI but does not reveal the resolved provider model.
+- OpenAI's official Costs API is GET /v1/organization/costs. Its documented response is daily buckets with amount/currency, line_item, project_id, and api_key_id, but no per-request ID or token counts. OpenAI recommends Costs for invoice-reconciled financial totals. Its organization/project hard limits can enforce 429s but enforcement is not instantaneous and spend can slightly exceed the configured amount.
+- Wrench's current provider-cost-export.v1 validator requires one row per request with request_id, model, prompt/completion/total tokens, cost_usd, and currency. A targeted local validation of the documented Costs shape fails with provider_evidence_records_invalid.
+- The account/project hard limit, current spend, authenticated Costs export access, and provider-reported model identity remain unverified. No credentials were read or supplied.
+
+Constraints: no provider completion, credential access, gateway changes, guessed per-request charges, or weakening of the USD 500 ceiling. A LiteLLM response-cost header is not provider-authoritative billing evidence.
+
+Question: Recommend the smallest safe path: (A) require a dedicated OpenAI project/key and reconcile its isolated daily Costs total to the Wrench per-request receipts, updating the validator with explicit isolation evidence; or (B) keep the canary stopped until a genuine request-level provider cost export is available. State the minimum schema/evidence and material stop condition.

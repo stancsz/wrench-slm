@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble and score matched three-arm workflow replay receipts.
+"""Assemble and score historical matched three-arm workflow replay receipts.
 
 This tool consumes already captured arm result JSONL files. It does not call
 providers, execute tools, or mutate a repository. Authorization remains
@@ -156,7 +156,7 @@ def main() -> int:
     }
     (output_dir / "run-manifest.json").write_text(json.dumps(run_manifest, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"status": evaluation["status"], "trace_count": evaluation["trace_count"], "output_dir": str(output_dir)}))
-    return 0 if evaluation["status"] in {"PASS_WORKFLOW_ARM_METRICS", "BLOCKED_TRACE_AUTHORIZATION", "BLOCKED_TRACE_PROVENANCE"} else 1
+    return 0 if evaluation["status"] in {"BLOCKED_TRACE_AUTHORIZATION", "BLOCKED_TRACE_PROVENANCE"} else 1
 
 
 if __name__ == "__main__":

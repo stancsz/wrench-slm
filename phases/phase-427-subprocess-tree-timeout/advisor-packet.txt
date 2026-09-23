@@ -1,0 +1,12 @@
+Decision: Make `_run_bounded_subprocess` terminate the complete client process tree on timeout so timed-out canary/client work cannot leave orphaned workers.
+
+Observed facts:
+- The helper uses `subprocess.run(..., timeout=...)`; on Windows its timeout cleanup terminates the direct process but does not guarantee descendant cleanup.
+- A bounded regression spawned a Python parent that spawned a 60-second Python child with stdout/stderr detached, then slept. A one-second helper timeout returned while the child PID remained alive.
+- The regression teardown verified and terminated only that exact test child; no unrelated process was touched.
+- The helper launches `.cmd`/PowerShell wrappers for OpenCode, DSH, and hybrid client workflows, so descendant processes are possible.
+- The operational contract prohibits orphaned workers and requires timeout/cancellation recovery.
+
+Constraints: local-only implementation and tests; no provider spend; preserve bounded deadlines, captured output, and exit semantics; terminate only descendants of the helper's exact spawned process.
+
+Question: Recommend the smallest robust Windows and POSIX process-tree timeout design. Is Windows `taskkill /T` sufficient, or should the runner use a Job Object; what grace period/fallback and regression should prove no surviving child? Include a stop condition.

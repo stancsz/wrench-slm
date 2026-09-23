@@ -1,0 +1,27 @@
+{
+  "template": true,
+  "schema": "wrench.paid-cost-receipt.v2",
+  "authorization": "approved_real_workflow",
+  "source": "provider_export",
+  "paid_transaction_receipt": true,
+  "endpoint": "replace-with-provider-reported-endpoint",
+  "requested_endpoint": "replace-with-approved-child-contract-endpoint",
+  "requested_model": "replace-with-approved-child-contract-model-alias",
+  "parent_contract_sha256": "replace-with-parent-contract-sha256",
+  "child_contract_sha256": "replace-with-approved-child-contract-sha256",
+  "workload_sha256": "a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce",
+  "model": "replace-with-provider-reported-model",
+  "request_ids": ["replace-with-provider-request-id"],
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "cost_usd": 0.0,
+  "currency": "USD",
+  "provider_evidence_sha256": "replace-with-canonical-provider-export-sha256",
+  "clients": {
+    "opencode": {"correct": true},
+    "deepseek_harness": {"correct": true}
+  }
+}

@@ -7,6 +7,7 @@ from .state import load_router_state, save_router_state
 from .tier import TierSelectionError, select_experimental_tier
 from .context import ContextAdmissionError, ContextError, ContextLedger, ContextSegment, ContextSelectionError
 from .mechanical import mechanical_route
+from .handoff import build_advisor_handoff
 from .worker import WrenchWorker
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "execute_model_output",
     "execute_proposal",
     "mechanical_route",
+    "build_advisor_handoff",
     "load_router_state",
     "save_router_state",
     "select_experimental_tier",
