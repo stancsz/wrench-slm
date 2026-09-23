@@ -287,10 +287,8 @@ class WrenchWorker:
         model = None
         intent_safety_gate = None
         binary_abstain_gate = None
-        if binary_abstain_artifact is not None:
-            from .binary_abstain import BinaryAbstainGate
-
-            binary_abstain_gate = BinaryAbstainGate.from_artifact(binary_abstain_artifact)
+        if binary_abstain_artifact is not None and not load_model:
+            raise ValueError("the Qwen binary head requires the existing Qwen model")
         if load_model:
             from transformers import AutoModelForImageTextToText, AutoTokenizer
 
@@ -321,6 +319,13 @@ class WrenchWorker:
                     requested_device = "cuda" if torch.cuda.is_available() else "cpu"
                 model.to(requested_device)
             model.eval()
+            if binary_abstain_artifact is not None:
+                from .qwen_abstain import QwenAbstainGate
+
+                binary_abstain_gate = QwenAbstainGate.from_artifact(
+                    binary_abstain_artifact, model=model, tokenizer=tokenizer,
+                    model_dir=model_path,
+                )
             if os.environ.get("WRENCH_INTENT_SAFETY_GATE", "0").casefold() in {"1", "true", "on", "yes"}:
                 artifact = Path(
                     os.environ.get(
@@ -349,6 +354,21 @@ class WrenchWorker:
             binary_abstain_gate=binary_abstain_gate,
         )
 
+    def classify_abstention(self, messages: list[dict[str, str]]) -> dict[str, Any]:
+        """Classify with the shared Qwen backbone, without proposing or executing."""
+        if self.binary_abstain_gate is None:
+            return {"decision": "abstain", "reason": "binary_head_not_loaded",
+                    "authority": "abstain_only", "generated_tokens": 0}
+        try:
+            receipt = self.binary_abstain_gate.check_messages(messages)
+            if not isinstance(receipt, dict) or receipt.get("decision") not in {"abstain", "not_abstain"}:
+                raise ValueError("invalid binary head receipt")
+            return receipt
+        except Exception as exc:
+            return {"decision": "abstain", "reason": "gate_error",
+                    "error": type(exc).__name__, "authority": "abstain_only",
+                    "generated_tokens": 0}
+
     def propose(
         self,
         messages: list[dict[str, str]],
@@ -362,18 +382,17 @@ class WrenchWorker:
             return {"status": "abstain", "fallback_reason": "qwen_request_invalid"}
         binary_receipt = None
         if self.binary_abstain_gate is not None:
-            try:
-                binary_receipt = self.binary_abstain_gate.check_messages(messages)
-                if not isinstance(binary_receipt, dict) or binary_receipt.get("decision") not in {"abstain", "not_abstain"}:
-                    raise ValueError("invalid binary gate receipt")
-            except Exception as exc:
-                binary_receipt = {"decision": "abstain", "reason": "gate_error",
-                                  "error": type(exc).__name__, "authority": "abstain_only"}
+            binary_receipt = self.classify_abstention(messages)
             if binary_receipt["decision"] != "not_abstain":
                 return _attach_advisor_handoff({
                     "status": "abstain", "fallback_reason": "binary_abstain_gate_rejected",
                     "binary_abstain_gate": binary_receipt,
                 }, messages)
+        def finish(result):
+            if binary_receipt is not None:
+                result["binary_abstain_gate"] = binary_receipt
+            return _attach_advisor_handoff(result, messages)
+
         users = [item.get("content") for item in messages if item.get("role") == "user"]
         users = [content for content in users if isinstance(content, str)]
         prompt = users[-1] if users else ""
@@ -396,7 +415,7 @@ class WrenchWorker:
             # earlier message.
             route_suffix_chars = verifier_suffix_chars
             if route_suffix_chars < 1:
-                return {"status": "abstain", "fallback_reason": "qwen_route_suffix_invalid"}
+                return finish({"status": "abstain", "fallback_reason": "qwen_route_suffix_invalid"})
             # A monolithic user message may contain millions of tokens of old
             # lookup data. Only the newest suffix can define the active action.
             # The complete payload remains available to reference_lookup_route
@@ -481,19 +500,16 @@ class WrenchWorker:
                 return result
 
         if self.model is None:
-            return _attach_advisor_handoff(
+            return finish(
                 {"status": "abstain", "fallback_reason": "model_not_loaded"},
-                messages,
             )
         if self.tokenizer is None:
-            return _attach_advisor_handoff(
+            return finish(
                 {"status": "abstain", "fallback_reason": "tokenizer_not_loaded"},
-                messages,
             )
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or not 1 <= max_tokens <= 512:
-            return _attach_advisor_handoff(
+            return finish(
                 {"status": "abstain", "fallback_reason": "qwen_token_limit_invalid"},
-                messages,
             )
         request_messages = add_patch_schema_examples(messages)
         request_messages, prefill_receipt = _dynamic_prefill_messages(

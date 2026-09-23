@@ -97,23 +97,31 @@ authorized by the human product owner in this conversation on 2026-09-22.
 
    Exercise concurrency, cancellation, timeouts, recovery, circuit breaking,
    accounting, and no-mutation behavior over sustained local operation.
-10. **Tiny binary System One model**
+10. **Binary System One readout on the existing Qwen weights**
 
    Human direction: "we want a super light weight abstain or not abstain"
-   and "system 1 model". This supersedes the preceding broad OpenJev parity
-   request. Develop and train a local, embedded, single-pass binary classifier.
+   and "system 1 model", then clarified: "we already got qwen's weights,
+   we need to turn it into system 1 style output to determine abstain or
+   not abstain". This supersedes both broad OpenJev parity and the separate
+   lexical classifier experiment. Reuse the existing frozen Qwen backbone
+   and train a small two-output head. Classification must use one text
+   backbone forward without vocabulary projection or autoregressive decoding.
    Its only decisions are `abstain` and `not_abstain`; the latter merely
    continues to the existing proposal/verifier path. It grants no execution
    authority. Training and local evaluation for this bounded model are now
    authorized, with the existing 10% RAM/VRAM reserves. No OpenJev weights,
    paid model calls, remote worker work, or production enablement are included.
-   Use an artifact under 1 MiB and target <=5 ms warm p95 for a bounded short
-   instruction on this host. Record held-out eligibility coverage, unsafe
-   misses, artifact identity, exact input limits, and end-to-end verification.
+   Use an additional head artifact under 1 MiB. The earlier <=5 ms total
+   latency target belonged to the superseded standalone lexical model;
+   reusing Qwen still incurs a backbone forward. Measure complete warm
+   classification latency including tokenization and GPU synchronization,
+   and report existing backbone memory separately from added head size.
+   Record held-out eligibility coverage, unsafe misses, checkpoint and head
+   identity, exact input limits, and integration evidence.
    Authored examples establish an experimental checkpoint only; independent
    real-workflow usefulness and the existing release gates remain required.
    Keep the existing final evaluation split out of training and tuning.
-   Evidence: [binary System One](phases/binary-system-one-20260922/README.md).
+   Implementation status: [Qwen binary System One](phases/qwen-system-one-20260922/README.md).
 
 ## Explicitly skipped
 
