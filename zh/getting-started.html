@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>先跑起来 | Wrench</title><meta name="description" content="让普通人也用得起 AI。Wrench 想让你手头的硬件多干点实事，从有边界的本地开发任务开始。"><meta name="theme-color" content="#fdfcf8"><link rel="alternate" hreflang="en" href="../getting-started.html"><link rel="icon" type="image/svg+xml" href="../assets/wrench-avatar.svg"><link rel="stylesheet" href="../assets/site.css"><link rel="stylesheet" href="../assets/brand.css"><script defer src="../assets/site.js"></script></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="topbar"><div class="wrap"><a class="brand" href="index.html" aria-label="Wrench 首页"><img src="../assets/wrench-mark.svg" width="40" height="36" alt="">wrench</a><nav class="nav" aria-label="主导航"><a href="getting-started.html" aria-current="page">文档</a><a href="roadmap.html">路线图</a><a href="evidence.html">进展</a><a class="language-switch" href="../getting-started.html" lang="en" hreflang="en" aria-label="Switch this page to English">EN</a><a class="nav-cta" href="getting-started.html">认识一下 Wrench ↗</a></nav></div></header><main id="main"><div class="wrap docs-layout"><nav class="sidebar" aria-label="文档目录"><strong>Wrench 上手小册子</strong><a href="getting-started.html" aria-current="page">先跑起来</a><a href="how-it-works.html">它怎么干活</a><a href="model-story.html">这把扳手怎么造的</a><a href="integrations.html">和谁搭伙</a><a href="evidence.html">进展与证据</a><a href="roadmap.html">我们想怎么走</a><a href="faq.html">你大概会问</a><a href="author.html">作者留言</a><p class="small">开发者预览版<br>更新于 2026-09-22</p></nav><article class="article"><div class="eyebrow">01 / 先跑起来</div><h1>先跑个小的，<br>不用搬出显卡。</h1>
+<p class="intro">读一行配置，拦住一次越界，再拒绝一条 shell 命令。你会看到真正的校验器怎么工作，不用下载模型，也不用掏 API Key。</p>
+<div class="note"><strong>先说清楚入口：</strong><a href="https://github.com/stancsz/wrench-slm">源码仓库已公开</a>，可以按下面的命令从源码体验。目前没有正式安装版，具体开放许可证仍待公布。也可以先看<a href="index.html#example">网页示例</a>和<a href="../assets/demo-receipt.json">实际保存的结果</a>。</div>
+<h2 id="requirements">需要准备什么？</h2><ul><li>Python 3.11 或更高版本，以及 Git。</li><li>从公开仓库克隆的一份 Wrench 源码。</li><li>这个例子不需要 GPU、模型权重、模型服务账号或 API Key。</li></ul><p>这次只体验 Python 校验器这一小段。它能跑，不代表模型推理也适配了你的硬件。先别急着给旧显卡开香槟。</p>
+<h2 id="install">1. 给它单独留个环境</h2><p>克隆公开 GitHub 仓库，再安装本地 Python 包。安装时可能会下载 Python 构建工具；运行例子本身不联网。</p>
+<div class="code-wrap"><button class="copy" data-copy aria-label="复制克隆命令">复制</button><pre><code>git clone https://github.com/stancsz/wrench-slm.git
+cd wrench-slm
+python -m venv .venv</code></pre></div>
+<p><a href="../assets/local_first.py" download>下载示例脚本</a>，以 <code>local_first.py</code> 为名放在仓库根目录。这个下载只有示例，运行时需从上面的源码仓库安装。</p>
+<h3>Windows PowerShell</h3><div class="code-wrap"><button class="copy" data-copy aria-label="复制 Windows 命令">复制</button><pre><code>.venv\Scripts\python.exe -m pip install -e .
+.venv\Scripts\python.exe local_first.py</code></pre></div>
+<h3>macOS / Linux</h3><p>如果你电脑上的命令叫 <code>python3</code>，创建环境时就用它。示例用的是跨平台 Python 接口；这里的命令实际在 Windows 上验证过，其他平台还没替你打包票。</p><div class="code-wrap"><button class="copy" data-copy aria-label="复制 macOS 或 Linux 命令">复制</button><pre><code>.venv/bin/python -m pip install -e .
+.venv/bin/python local_first.py</code></pre></div>
+<h2 id="result">2. 看它交了什么作业</h2><p>脚本会建一个临时 <code>settings.txt</code>，写入两项配置，再把三个操作提案交给真正的校验器。最后检查文件没有被改动，退出时清理自己建的临时目录。</p>
+<div class="table-wrap"><table><thead><tr><th>试什么</th><th>应该看到什么</th><th>说明什么</th></tr></thead><tbody><tr><td>读第 1 行</td><td><code>accepted</code>，<code>timeout=30</code></td><td>范围内的读取成功。</td></tr><tr><td>读 ../outside.txt</td><td><code>path_outside_allowed_root</code></td><td>不许溜出指定目录。</td></tr><tr><td>执行 shell 命令</td><td><code>action_not_allowlisted</code></td><td>这里没有任意执行 shell 的权限。</td></tr></tbody></table></div>
+<p>最后应该有 <code>"fixture_unchanged": true</code>。意思是测试文件完好无损。<a href="../assets/demo-receipt.json">可以和这份实际结果对一下</a>。</p>
+<h2 id="api">3. 核心调用其实就这几行</h2><pre><code>from wrench_harness import execute_proposal
+
+result = execute_proposal(
+    {
+        "schema": "wrench.proposal.v1",
+        "action": "read_lines",
+        "path": "settings.txt",
+        "start": 1,
+        "end": 1,
+    },
+    allowed_root="path/to/your/fixture",
+)</code></pre><p>你指定允许访问的目录，校验器检查提案，然后返回读取结果，或者带着原因拒绝。这段调用不会启动服务器、选择模型，也不会去找云端模型接手。</p>
+<h2 id="troubleshooting">卡住了？先看这几处</h2><ul><li><strong>Repository not found：</strong>确认 GitHub 账号有仓库权限，目前不是匿名可下载的项目。</li><li><strong>No module named wrench_harness：</strong>安装和运行要用同一个虚拟环境里的 Python。别让两个 Python 互相装不认识。</li><li><strong>allowed_root_invalid：</strong>传进去的目录得先存在。</li><li><strong>missing_path：</strong>目标文件得在允许的目录里，而且确实存在。</li></ul>
+<a class="next" href="how-it-works.html">下一步：它怎么帮上整个开发流程？ →</a>
+</article></div></main><footer class="footer"><div class="wrap"><a class="brand" href="index.html" aria-label="Wrench 首页"><img src="../assets/wrench-mark.svg" width="30" height="28" alt="">wrench</a><nav class="footer-links" aria-label="页脚导航"><a href="getting-started.html" aria-current="page">使用文档</a><a href="roadmap.html">我们的想法</a><a href="author.html">作者留言</a><a href="evidence.html">进展与证据</a><a href="faq.html">常见问题</a><a href="brand.html">品牌素材</a></nav><p class="footer-note">AI，也得让咱用得起。开发者预览版，认真打磨中。<br>From Calgary with ❤️. BA Research</p></div></footer></body></html>
