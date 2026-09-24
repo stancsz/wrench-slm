@@ -62,3 +62,14 @@ complete E0 lifecycle remain open.
 The [artifact-store evaluation](../../evals/wrench-e0-artifact-store/review.md)
 records the original bounded-store evidence. A focused review for this
 retention increment is tracked separately in the lifecycle evaluation.
+
+## Follow-up regression evidence
+
+The report above records the state when the retention increment was first
+reviewed. Focused tests were subsequently added for valid v1-to-protected
+normalization, mixed shared-content eligibility, unreachable eviction targets,
+and interruption around the two eviction manifest generations. The suite
+passed **26 tests with 3 symlink-related skips** on Windows Python 3.11.16.
+Details and independent review are recorded in the [recovery regression
+report](recovery-regressions.md) and
+[evaluation](../../evals/wrench-e0-artifact-store/recovery-regressions-review.md).

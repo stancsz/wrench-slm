@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 
 import pytest
 
@@ -23,6 +24,26 @@ def _put(store, snapshot, path, data, *, disposition="protected", expires_at_uni
         disposition=disposition,
         expires_at_unix_seconds=expires_at_unix_seconds,
     )
+
+
+def _write_manifest(path, payload):
+    body = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    envelope = {"payload": payload, "sha256": hashlib.sha256(body).hexdigest()}
+    encoded = json.dumps(
+        envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    path.write_bytes(encoded)
+
+
+def _store_disk_state(store):
+    return {
+        "manifest": (store.root / "manifest.json").read_bytes(),
+        "previous": (store.root / "manifest.prev.json").read_bytes() if (store.root / "manifest.prev.json").exists() else None,
+        "objects": {item.name: item.read_bytes() for item in sorted(store.objects.iterdir())},
+        "staging": {item.name: item.read_bytes() for item in sorted(store.staging.iterdir())},
+    }
 
 
 def test_content_addressed_round_trip_and_reopen(tmp_path):
@@ -146,6 +167,138 @@ def test_eviction_is_deterministic_by_generation_then_handle_id(tmp_path):
     result = store.evict(target_bytes=1, now_unix_seconds=10)
     assert result.handles == (first,)
     assert store.read(second).status is ArtifactReadStatus.OK
+
+
+@pytest.mark.parametrize("blocked_reference", ["protected", "unexpired"])
+def test_shared_content_is_not_evicted_when_any_reference_is_ineligible(tmp_path, blocked_reference):
+    store = ArtifactStore(tmp_path / "store")
+    data = b"shared object"
+    eligible = _put(store, "snapshot", "eligible.py", data, disposition="disposable", expires_at_unix_seconds=10)
+    if blocked_reference == "protected":
+        blocked = _put(store, "snapshot", "protected.py", data)
+    else:
+        blocked = _put(store, "snapshot", "unexpired.py", data, disposition="disposable", expires_at_unix_seconds=11)
+    before = _store_disk_state(store)
+
+    result = store.evict(target_bytes=len(data), now_unix_seconds=10)
+
+    assert result.handles == ()
+    assert result.object_bytes_reclaimed == 0
+    assert _store_disk_state(store) == before
+    assert store.read(eligible).data == data
+    assert store.read(blocked).data == data
+
+
+def test_unreachable_eviction_target_leaves_all_store_state_unchanged(tmp_path):
+    store = ArtifactStore(tmp_path / "store")
+    first = _put(store, "snapshot", "first.py", b"one", disposition="disposable", expires_at_unix_seconds=10)
+    second = _put(store, "snapshot", "second.py", b"two", disposition="disposable", expires_at_unix_seconds=10)
+    protected = _put(store, "snapshot", "protected.py", b"keep")
+    before_disk = _store_disk_state(store)
+    before_payload = json.loads(json.dumps(store._payload))
+
+    result = store.evict(target_bytes=7, now_unix_seconds=10)
+
+    assert result.handles == ()
+    assert result.object_bytes_reclaimed == 0
+    assert _store_disk_state(store) == before_disk
+    assert store._payload == before_payload
+    for handle in (first, second, protected):
+        assert store.read(handle).status is ArtifactReadStatus.OK
+
+
+def test_legacy_v1_records_migrate_as_protected_without_changing_handle_identity(tmp_path):
+    root = tmp_path / "store"
+    store = ArtifactStore(root)
+    legacy_handle = _put(store, "legacy-snapshot", "src/legacy.py", b"legacy bytes")
+    legacy_payload = {
+        "schema": "wrench.artifact-store.v1",
+        "generation": store._payload["generation"],
+        "entries": [
+            {key: value for key, value in entry.items() if key not in {"disposition", "expires_at_unix_seconds"}}
+            for entry in store._payload["entries"]
+        ],
+        "evicted": store._payload["evicted"],
+    }
+    _write_manifest(root / "manifest.json", legacy_payload)
+    _write_manifest(root / "manifest.prev.json", legacy_payload)
+
+    migrated = ArtifactStore(root)
+    normalized = migrated._payload["entries"][0]
+    before = _store_disk_state(migrated)
+    attempted = migrated.evict(target_bytes=len(b"legacy bytes"), now_unix_seconds=10**9)
+
+    assert normalized["disposition"] == "protected"
+    assert normalized["expires_at_unix_seconds"] is None
+    assert migrated.read(legacy_handle).data == b"legacy bytes"
+    assert attempted.handles == ()
+    assert _store_disk_state(migrated) == before
+    with pytest.raises(ValueError, match="artifact_retention_conflict"):
+        _put(migrated, "legacy-snapshot", "src/legacy.py", b"legacy bytes", disposition="disposable", expires_at_unix_seconds=10)
+
+    new_handle = _put(migrated, "new-snapshot", "src/new.py", b"new bytes", disposition="disposable", expires_at_unix_seconds=10)
+    current = json.loads((root / "manifest.json").read_text(encoding="utf-8"))["payload"]
+    assert current["schema"] == "wrench.artifact-store.v2"
+    persisted_legacy = next(row for row in current["entries"] if row["handle_id"] == legacy_handle.handle_id)
+    assert persisted_legacy["disposition"] == "protected"
+    assert persisted_legacy["expires_at_unix_seconds"] is None
+    assert persisted_legacy["handle_id"] == legacy_handle.handle_id
+    assert ArtifactStore(root).read(legacy_handle).data == b"legacy bytes"
+    assert migrated.read(new_handle).data == b"new bytes"
+
+
+@pytest.mark.parametrize(
+    "interruption",
+    ["before_second_commit", "during_second_manifest_replace", "after_second_commit"],
+)
+def test_eviction_recovery_across_manifest_commit_interruption(tmp_path, monkeypatch, interruption):
+    root = tmp_path / "store"
+    store = ArtifactStore(root)
+    handle = _put(store, "snapshot", "a.py", b"disposable", disposition="disposable", expires_at_unix_seconds=10)
+    original_commit = store._commit
+    original_atomic_write = store._atomic_write
+    calls = 0
+    writes = 0
+
+    def interrupted_commit(payload):
+        nonlocal calls
+        calls += 1
+        if calls == 2 and interruption == "before_second_commit":
+            raise RuntimeError("simulated interruption before second manifest commit")
+        original_commit(payload)
+        if calls == 2 and interruption == "after_second_commit":
+            raise RuntimeError("simulated interruption after second manifest commit")
+
+    def interrupted_atomic_write(destination, data):
+        nonlocal writes
+        writes += 1
+        if writes == 4 and interruption == "during_second_manifest_replace":
+            raise RuntimeError("simulated interruption between manifest slot replacements")
+        original_atomic_write(destination, data)
+
+    if interruption == "during_second_manifest_replace":
+        monkeypatch.setattr(store, "_atomic_write", interrupted_atomic_write)
+    else:
+        monkeypatch.setattr(store, "_commit", interrupted_commit)
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        store.evict(target_bytes=len(b"disposable"), now_unix_seconds=10)
+
+    reopened = ArtifactStore(root)
+    assert reopened.read(handle).status is ArtifactReadStatus.EVICTED
+    object_path = reopened.objects / f"{handle.content_sha256}.blob"
+    assert object_path.exists()
+    if interruption == "before_second_commit":
+        # The prior manifest still references the object, so recovery may safely restore it.
+        (root / "manifest.json").write_bytes(b"interrupted current manifest")
+        restored = ArtifactStore(root)
+        assert restored.recovery_status == "restored_previous_manifest"
+        assert restored.read(handle).data == b"disposable"
+    else:
+        # Both slots record eviction before deletion, so corruption cannot resurrect this handle.
+        (root / "manifest.json").write_bytes(b"interrupted current manifest")
+        recovered = ArtifactStore(root)
+        assert recovered.recovery_status == "restored_previous_manifest"
+        assert recovered.read(handle).status is ArtifactReadStatus.EVICTED
 
 
 def test_corrupt_object_is_an_explicit_read_miss(tmp_path):

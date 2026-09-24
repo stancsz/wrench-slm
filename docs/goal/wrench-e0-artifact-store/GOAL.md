@@ -57,6 +57,7 @@ a model.
 | Integrate and commit this bounded store slice | Complete | Commit `c6eba5f` |
 | Connect to snapshots/context and continue E0 | Accepted for local preparation | [E0 caller-owned pipeline](../wrench-e0-context-pipeline/GOAL.md); production request manager and recovery qualification remain outside this slice |
 | Enforce safe retention eligibility in the bounded store | Implemented; caller policy remains pending | [Retention eligibility report](../../reports/wrench-e0-artifact-store/retention-eligibility.md); expiry-aware manual eviction does not set real-data retention periods |
+| Add regression evidence for migration and eviction recovery boundaries | Focused tests pass; review recorded | [Recovery regression report](../../reports/wrench-e0-artifact-store/recovery-regressions.md) and [independent evaluation](../../evals/wrench-e0-artifact-store/recovery-regressions-review.md) |
 
 ## Limits
 
