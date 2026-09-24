@@ -68,7 +68,49 @@ def normalized(path: Path) -> Path:
 
 def inventory_roots(repo: Path, storage: Path, extras: list[Path]) -> list[Path]:
     worktrees = discover_worktrees(repo)
-    required = [repo, storage, *worktrees, *extras]
+    optional_candidates = [normalized(root) for root in managed_cache_roots()]
+    optional_keys = {os.path.normcase(str(root)) for root in optional_candidates}
+    reservations, reservation_errors = load_reservations(storage)
+    if reservation_errors:
+        raise OSError("invalid active reservation inventory: " + "; ".join(reservation_errors[:10]))
+
+    recorded_required: list[Path] = []
+    recorded_roots: list[Path] = []
+    for reservation in reservations.values():
+        required_values = reservation.get("required_roots", [])
+        explicit_keys = {os.path.normcase(value) for value in required_values}
+        persisted_optional_keys = {
+            os.path.normcase(value)
+            for value in reservation.get("optional_cache_roots", [])
+        }
+        recorded_required.extend(Path(value) for value in required_values)
+        for value in reservation["included_roots"]:
+            root = Path(value)
+            root_key = os.path.normcase(str(root))
+            try:
+                root.stat()
+            except FileNotFoundError:
+                # Legacy v1 records flattened explicit and optional roots. An
+                # absent standard cache is safe to omit only when it was not
+                # recorded as an explicit required root.
+                if (
+                    root_key in (optional_keys | persisted_optional_keys)
+                    and root_key not in explicit_keys
+                ):
+                    continue
+            recorded_roots.append(root)
+
+        # Optional cache candidates are persisted by new records so later
+        # scans include them if present while preserving their optional status.
+        for value in reservation.get("optional_cache_roots", []):
+            root = Path(value)
+            try:
+                root.stat()
+            except FileNotFoundError:
+                continue
+            recorded_roots.append(root)
+
+    required = [repo, storage, *worktrees, *extras, *recorded_required, *recorded_roots]
     missing = [path for path in required if not path.exists()]
     if missing:
         locations = ", ".join(str(path) for path in missing)
@@ -198,13 +240,46 @@ def load_reservations(storage: Path) -> tuple[dict[str, dict[str, object]], list
                 not isinstance(data, dict)
                 or data.get("schema") != SCHEMA
                 or not isinstance(data.get("job_id"), str)
+                or not JOB_ID_RE.fullmatch(data["job_id"])
+                or path.name != f"{data['job_id']}.json"
                 or not isinstance(data.get("reserve_bytes"), int)
                 or data["reserve_bytes"] < 0
+                or not isinstance(data.get("included_roots"), list)
+                or any(not isinstance(root, str) or not root for root in data["included_roots"])
+                or any(not Path(root).is_absolute() for root in data["included_roots"])
+                or (("required_roots" in data) != ("optional_cache_roots" in data))
+                or (
+                    "required_roots" in data
+                    and (
+                        not isinstance(data["required_roots"], list)
+                        or any(not isinstance(root, str) or not root for root in data["required_roots"])
+                        or any(not Path(root).is_absolute() for root in data["required_roots"])
+                    )
+                )
+                or (
+                    "optional_cache_roots" in data
+                    and (
+                        not isinstance(data["optional_cache_roots"], list)
+                        or any(not isinstance(root, str) or not root for root in data["optional_cache_roots"])
+                        or any(not Path(root).is_absolute() for root in data["optional_cache_roots"])
+                    )
+                )
             ):
                 raise ValueError("invalid reservation fields")
+            if data["job_id"] in reservations:
+                raise ValueError("duplicate reservation job id")
+            data["included_roots"] = [str(normalized(Path(root))) for root in data["included_roots"]]
+            if "required_roots" in data:
+                data["required_roots"] = [str(normalized(Path(root))) for root in data["required_roots"]]
+            if "optional_cache_roots" in data:
+                data["optional_cache_roots"] = [
+                    str(normalized(Path(root))) for root in data["optional_cache_roots"]
+                ]
             reservations[data["job_id"]] = data
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-            errors.append(f"invalid reservation {path.name}: {type(exc).__name__}")
+            is_duplicate = isinstance(exc, ValueError) and str(exc) == "duplicate reservation job id"
+            detail = str(exc) if is_duplicate else type(exc).__name__
+            errors.append(f"invalid reservation {path.name}: {detail}")
     return reservations, errors
 
 
@@ -312,6 +387,11 @@ def reserve_locked(args: argparse.Namespace, storage: Path) -> int:
         "repo_root": str(args.repo_root),
         "storage_root": str(storage),
         "included_roots": [str(root) for root in roots],
+        "required_roots": [
+            str(root)
+            for root in [args.repo_root, storage, *discover_worktrees(args.repo_root), *args.include_root]
+        ],
+        "optional_cache_roots": [str(normalized(root)) for root in managed_cache_roots()],
         "limit_bytes": LIMIT_BYTES,
     }
     destination = directory / f"{args.job_id}.json"

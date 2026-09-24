@@ -33,6 +33,224 @@ class StorageBudgetTests(unittest.TestCase):
         self.addCleanup(self._temporary.cleanup)
         self.root = Path(self._temporary.name)
 
+    def write_reservation(
+        self,
+        storage: Path,
+        job_id: str,
+        included_roots: list[Path],
+        *,
+        filename: str | None = None,
+        required_roots: list[Path] | None = None,
+        optional_cache_roots: list[Path] | None = None,
+    ) -> Path:
+        directory = budget.reservation_dir(storage)
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / (filename or f"{job_id}.json")
+        record = {
+                "schema": budget.SCHEMA,
+                "job_id": job_id,
+                "reserve_bytes": 1,
+                "included_roots": [str(root.resolve()) for root in included_roots],
+            }
+        if required_roots is not None:
+            record["required_roots"] = [str(root.resolve()) for root in required_roots]
+        if optional_cache_roots is not None:
+            record["optional_cache_roots"] = [str(root.resolve()) for root in optional_cache_roots]
+        path.write_text(json.dumps(record), encoding="utf-8")
+        return path
+
+    def test_existing_reservation_roots_are_in_later_inventory(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        previously_included = self.root / "prior-external-root"
+        repo.mkdir()
+        storage.mkdir()
+        previously_included.mkdir()
+        (previously_included / "payload.bin").write_bytes(b"count me")
+        self.write_reservation(storage, "prior-job", [previously_included])
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[]
+        ):
+            roots = budget.inventory_roots(repo, storage, [])
+
+        self.assertIn(previously_included.resolve(), roots)
+        self.assertEqual(budget.directory_bytes(previously_included), (8, []))
+
+    def test_missing_root_from_existing_reservation_blocks_inventory(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        missing = self.root / "prior-external-root"
+        repo.mkdir()
+        storage.mkdir()
+        self.write_reservation(storage, "prior-job", [missing])
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[]
+        ):
+            with self.assertRaisesRegex(FileNotFoundError, "prior-external-root"):
+                budget.inventory_roots(repo, storage, [])
+
+    def test_legacy_missing_default_cache_root_is_omitted_as_optional(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        missing_cache = self.root / "legacy-cache"
+        repo.mkdir()
+        storage.mkdir()
+        self.write_reservation(storage, "prior-job", [missing_cache])
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[missing_cache]
+        ):
+            roots = budget.inventory_roots(repo, storage, [])
+
+        self.assertNotIn(missing_cache.resolve(), roots)
+
+    def test_new_record_keeps_persisted_cache_optional_after_candidate_changes(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        formerly_optional_cache = self.root / "former-cache"
+        repo.mkdir()
+        storage.mkdir()
+        formerly_optional_cache.mkdir()
+        self.write_reservation(
+            storage,
+            "prior-job",
+            [repo, storage, formerly_optional_cache],
+            required_roots=[repo, storage],
+            optional_cache_roots=[formerly_optional_cache],
+        )
+        formerly_optional_cache.rmdir()
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[]
+        ):
+            roots = budget.inventory_roots(repo, storage, [])
+
+        self.assertNotIn(formerly_optional_cache.resolve(), roots)
+
+    def test_new_reservation_explicit_root_blocks_even_if_it_matches_optional_cache(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        missing_cache = self.root / "legacy-cache"
+        repo.mkdir()
+        storage.mkdir()
+        self.write_reservation(
+            storage,
+            "prior-job",
+            [missing_cache],
+            required_roots=[missing_cache],
+            optional_cache_roots=[missing_cache],
+        )
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[missing_cache]
+        ):
+            with self.assertRaisesRegex(FileNotFoundError, "legacy-cache"):
+                budget.inventory_roots(repo, storage, [])
+
+    def test_partial_new_scope_metadata_cannot_fall_back_to_legacy(self) -> None:
+        for job_id, partial_fields in (
+            ("scope-missing-optional", {"required_roots": []}),
+            ("scope-missing-required", {"optional_cache_roots": []}),
+        ):
+            with self.subTest(job_id=job_id):
+                repo = self.root / f"repo-{job_id}"
+                storage = self.root / f"storage-{job_id}"
+                missing_cache = self.root / f"cache-{job_id}"
+                repo.mkdir()
+                storage.mkdir()
+                path = self.write_reservation(storage, job_id, [missing_cache])
+                record = json.loads(path.read_text(encoding="utf-8"))
+                record.update(partial_fields)
+                path.write_text(json.dumps(record), encoding="utf-8")
+
+                with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+                    budget, "managed_cache_roots", return_value=[missing_cache]
+                ):
+                    with self.assertRaisesRegex(OSError, "invalid active reservation inventory"):
+                        budget.inventory_roots(repo, storage, [])
+
+    def test_status_blocks_if_a_previously_included_root_cannot_be_scanned(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        previously_included = self.root / "prior-external-root"
+        repo.mkdir()
+        storage.mkdir()
+        previously_included.mkdir()
+        self.write_reservation(storage, "prior-job", [previously_included])
+        args = argparse.Namespace(
+            repo_root=repo,
+            storage_root=storage,
+            include_root=[],
+            reserve_bytes=0,
+        )
+        output = io.StringIO()
+
+        def fail_on_recorded_root(roots: list[Path]) -> tuple[int, dict[str, int], list[str]]:
+            self.assertIn(previously_included.resolve(), roots)
+            return 0, {}, [f"cannot scan {previously_included}: PermissionError"]
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[]
+        ), patch.object(budget, "current_usage", side_effect=fail_on_recorded_root), contextlib.redirect_stdout(output):
+            result = budget.status(args)
+
+        self.assertEqual(result, 3)
+        self.assertEqual(json.loads(output.getvalue())["status"], "BLOCKED_SCAN")
+
+    def test_reservation_filename_must_match_job_id(self) -> None:
+        storage = self.root / "storage"
+        storage.mkdir()
+        self.write_reservation(storage, "recorded-job", [], filename="different-job.json")
+
+        reservations, errors = budget.load_reservations(storage)
+
+        self.assertEqual(reservations, {})
+        self.assertTrue(any("invalid reservation" in error for error in errors))
+
+    def test_duplicate_reservation_ids_are_reported_instead_of_overwriting(self) -> None:
+        storage = self.root / "storage"
+        storage.mkdir()
+        path = self.write_reservation(storage, "duplicate-job", [])
+
+        with patch.object(Path, "glob", return_value=[path, path]):
+            reservations, errors = budget.load_reservations(storage)
+
+        self.assertEqual(list(reservations), ["duplicate-job"])
+        self.assertTrue(any("duplicate reservation job id" in error for error in errors))
+
+    def test_new_reservation_persists_required_and_optional_scopes(self) -> None:
+        repo = self.root / "repo"
+        storage = self.root / "storage"
+        explicit = self.root / "explicit"
+        optional_cache = self.root / "optional-cache"
+        repo.mkdir()
+        storage.mkdir()
+        explicit.mkdir()
+        optional_cache.mkdir()
+        args = argparse.Namespace(
+            job_id="scope-fields-test",
+            reserve_bytes=100,
+            repo_root=repo,
+            storage_root=storage,
+            include_root=[explicit],
+        )
+        output = io.StringIO()
+
+        with patch.object(budget, "discover_worktrees", return_value=[]), patch.object(
+            budget, "managed_cache_roots", return_value=[optional_cache]
+        ), contextlib.redirect_stdout(output):
+            self.assertEqual(budget.reserve(args), 0)
+            reservation = json.loads(
+                (budget.reservation_dir(storage) / "scope-fields-test.json").read_text(encoding="utf-8")
+            )
+            self.assertIn(str(repo.resolve()), reservation["required_roots"])
+            self.assertIn(str(storage.resolve()), reservation["required_roots"])
+            self.assertIn(str(explicit.resolve()), reservation["required_roots"])
+            self.assertEqual(reservation["optional_cache_roots"], [str(optional_cache.resolve())])
+            self.assertEqual(budget.release(args), 0)
+
     def test_inventory_fails_closed_for_each_missing_required_root(self) -> None:
         repo = self.root / "repo"
         storage = self.root / "storage"
