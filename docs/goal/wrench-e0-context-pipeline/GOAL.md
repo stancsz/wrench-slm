@@ -186,3 +186,37 @@ does not prove rights or consent, authenticate reviewers, authorize real data,
 or enter the separate production corpus/training admission process. See the
 [admission report](../../reports/wrench-e0-synthetic-matched-tasks/admission.md)
 and [evaluation](../../evals/wrench-e0-synthetic-matched-tasks/admission.md).
+
+## Follow-up: bounded retrieval pages
+
+Status: standalone in-memory W1 decision mechanics implemented; default E0
+selection is unchanged.
+
+`ContextLedger.retrieve_page` accepts a typed `ENOUGH` or `RETRIEVE_MORE`
+decision and returns at most 32 known candidate IDs per page, with a maximum
+of two pages. Continuation cursors bind to the ledger session and query, and
+the result reports stop, exhaustion, candidate/work clipping, or invalid
+cursor states. The cursor is caller-visible and replayable within the bounded
+ledger; this is not an authenticated controller decision or usefulness
+evidence. See the [report](../../reports/wrench-e0-context-pipeline/w1-retrieval-pages.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/w1-retrieval-pages.md).
+
+## Follow-up: selected snapshot and source lineage receipts
+
+Status: bounded selected-subset accounting and preparation lineage implemented.
+
+The coverage receipt binds exact reads and parser status to a validated
+snapshot, and explicitly describes only the caller-selected path subset. E0
+preparation now includes reference-only rows for selected source IDs and
+matching parser-reported structural candidates, plus explicit unavailable
+reasons. The receipt digest and reasons feed the preparation aggregate and
+outcome context hash. It emits no unselected source, source text, or claim
+that parser spans are ground truth. Artifact handle IDs do not prove a live
+pin, and summary lineage remains unavailable. See the [coverage report](../../reports/wrench-e0-context-pipeline/selected-subset-coverage.md)
+and [preparation integration evaluation](../../evals/wrench-e0-context-pipeline/preparation-source-lineage-integration.md).
+
+Standalone source-reference rows and the selected-subset coverage receipt
+remain component evidence; neither establishes whole-repository coverage.
+All additions remain offline mechanics and do not close runtime parity,
+dispatch enforcement, authenticated lifecycle accounting, independent task
+truth, or E0 acceptance.
