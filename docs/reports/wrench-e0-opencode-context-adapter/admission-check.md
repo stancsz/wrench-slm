@@ -39,6 +39,11 @@ client's final serialized request, or that callback identifiers are authentic.
 - Independent review job `W2-NS-OPENCODE-ADMISSION-REVIEW-20260924`, nonce
   `OAR-20260924-7C3A`, verified expected HEAD `d120afb` and reported the single
   malformed-receipt issue above. The fix is in `fdecaff`.
+- Final review job `W2-NS-OPENCODE-E0-FINAL-REVIEW-20260924`, nonce
+  `OFR-20260924-21BD`, found no code blocker but noted the tests did not yet
+  substantiate the report's wrong-identity coverage claim. Commit `7bc27fd`
+  adds valid-but-misbound snapshot and preparation-hash fixtures. The focused
+  suite then passed: **25 passed in 1.57s**.
 - `git diff --check` passed before commit. The exact test scratch directory was
   removed after the run and the 20 MB storage reservation was released.
 - Storage checker remained `WITHIN_LIMIT`; actual usage after the run was
