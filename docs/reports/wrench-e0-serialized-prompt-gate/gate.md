@@ -36,19 +36,20 @@ directory on `PYTHONPATH`:
 & 'C:\Users\stanc\AppData\Roaming\uv\python\cpython-3.11.16-windows-x86_64-none\python.exe' -B -m pytest -p no:cacheprovider tests/test_prompt_compiler.py
 ```
 
-Result after review-requested validation and mutation-boundary repairs was
-`13 passed`. Scoped `git diff --check` passed. Final storage status before
-commit was `WITHIN_LIMIT`: actual 590,444,675 bytes, active reservation
-20,000,000 bytes, projected 610,444,675 bytes, no checker errors. C: had
-186,301,976,576 bytes free. No packages were installed; no commit was created.
+Result after review-requested bounded traversal and mutation-boundary repairs
+was `13 passed`. Scoped `git diff --check` passed. Final storage status before
+commit was `WITHIN_LIMIT`: actual 590,461,986 bytes, no active reservation,
+projected 590,461,986 bytes, no checker errors. C: had 186,300,551,168 bytes
+free. No packages were installed; no commit was created.
 
 The input preflight accepts only built-in JSON containers and checks node,
 depth, cumulative UTF-8 string-byte, and canonical serialized-byte bounds
 before walking selected/omitted receipt rows. Final serialized text is byte
 counted and hashed in bounded chunks; no unbounded encoded copy is made.
 Regression coverage confirms custom assembly row containers are rejected
-without iteration, and caller mutation after preflight does not alter the
-validated prompt.
+without iteration, caller mutation after preflight does not alter the
+validated prompt, and container copying itself is capped to the node allowance
+plus one sentinel.
 
 ## Independent review
 
