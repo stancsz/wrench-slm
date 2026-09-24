@@ -70,20 +70,44 @@ symbols scanned; serialized bytes are not disk I/O. No candidate IDs, query,
 paths, hashes, or content are copied into metrics, which remain outside the
 aggregate receipt hash.
 
-## Follow-up: deterministic accounting companion
+## Follow-up: versioned accounting companion
 
 Status: accepted as a component slice after independent review (2026-09-24).
 
-The facade result now optionally carries a versioned canonical companion for
-the stable call-site counters. It joins the counters to `aggregate_sha256`,
-excludes elapsed wall time, preserves unmeasured values as null, and exposes a
-verifier for payload integrity and preparation-hash matching. Invalid results
-without an aggregate hash have no companion. The payload has an explicit v1
-field projection; new counters require an intentional schema update. The
-companion remains in memory and separate from the outcome receipt. It does not
-authenticate measurements, observe arbitrary callback effects, or satisfy
-complete E0 lifecycle accounting. See the [pipeline report](../../reports/wrench-e0-context-pipeline/pipeline.md).
-Independent verification and critique are recorded in the [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md).
+The facade result optionally carries a versioned canonical companion for its
+call-site counters. It joins those counters to `aggregate_sha256`, excludes
+facade elapsed wall time, preserves unavailable values as null, and verifies
+payload integrity and preparation-hash matching. Schema v2 includes the
+measured, run-specific `ArtifactRequest` pin-scope duration when the facade's
+own scope closes; an open caller-owned or unentered scope remains null. This
+is preparation pin time, not request or client latency. The companion remains
+in memory and separate from the outcome receipt. It does not authenticate
+measurements, observe arbitrary callback effects, or satisfy complete E0
+lifecycle accounting. See the [pin-scope join report](../../reports/wrench-e0-context-pipeline/pin-scope-accounting-join.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/pin-scope-accounting-join.md).
+
+## Follow-up: preserved hot evidence overflow
+
+Status: accepted as a local preparation receipt slice after independent review.
+
+When preserved evidence is also required and cannot fit the context budget,
+the E0 facade now routes an explicit omission to the prompt gate. The gate
+returns no prompt and the outcome receipt remains incomplete. The default
+low-level ledger call still raises on preserved overflow. Required and
+preserved evidence IDs are bounded together before assembly. This is local
+fail-closed accounting; it does not establish runtime parity or dispatch
+enforcement. See the [overflow report](../../reports/wrench-e0-context-pipeline/hot-region-overflow.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/hot-region-overflow.md).
+
+## Follow-up: untrusted source formatting
+
+Retrieved source is JSON-quoted and labeled as untrusted data before prompt
+serialization and token counting. The authored regression covers instruction-
+like and marker-like source bytes while confirming the route stays within the
+explicit snapshot request. This is a prompt-format and offline route-scope
+boundary only; it does not prove model resistance, dispatch enforcement, or
+client runtime behavior. See the [source-injection report](../../reports/wrench-e0-context-pipeline/source-injection-boundary.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/source-injection-boundary.md).
 
 ## Follow-up: authored synthetic composition fixture
 

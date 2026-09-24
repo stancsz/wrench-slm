@@ -18,3 +18,8 @@ ID union is rejected when it exceeds the prompt gate's 256-ID bound.
 This verifies the facade's fail-closed overflow and omission accounting only.
 The injected fixture serializer and character-count callback do not match a
 downstream client runtime and provide no utility evidence.
+
+Independent review returned **PASS** (`HOTREV3-70AF`) at repository HEAD
+`0123979281170440162972d7163510dbfdb3e1ff`. The review checked the default
+fail-closed behavior, explicit omission receipt, combined-ID bound, and the
+matching report/evaluation scope.

@@ -87,8 +87,13 @@ wire equivalence, or tool authority. See the official
 Strict E0 no-model preparation remains standalone. An adapter must bind the
 correct session/worktree root to an exact source snapshot, gate the full
 semantic request projection, and preserve the supplied tools map. Fixture
-results support mechanics only. No consented matched-task corpus or outcome
-oracle is designated, so they do not establish E4 utility.
+results support mechanics only. A proposed future corpus and outcome-oracle
+protocol is recorded in the [E4 preregistration template](../../northstar/E4_PREREGISTRATION_TEMPLATE.md):
+prospective, per-task opt-in OpenCode localization and failing-test/log tasks,
+then matched E4 workflows across all three clients, with frozen evidence/action
+checks and independent adjudication of disagreements where feasible. No real
+task corpus is admitted and no capture, transfer, evaluation, or run is
+authorized. These choices do not establish E4 utility.
 
 ## Next action
 
