@@ -61,30 +61,33 @@ The separate snapshot identity, artifact storage and roundtrip, namespace
 registry, serialized prompt gate, structural index, outcome receipt, and
 caller-owned preparation slices are now recorded in the goal index. Their
 acceptance is component evidence, not full E0 milestone acceptance. Runtime
-matched serialization, complete deterministic-baseline accounting, end-to-end
-authority checks, and POSIX-host snapshot follow-up remain E0 exit evidence.
+matched serialization, complete deterministic-baseline accounting, and
+end-to-end authority checks remain E0 exit evidence. The POSIX-host snapshot
+follow-up is complete; see the [snapshot retrieval goal](../wrench-e0-snapshot-retrieval/GOAL.md).
 Matched-task utility and full request-lifecycle accounting remain E4 gates. The
 larger product proceeds through E1-E4 only after experiment stage gates pass.
 
 ## First integration target: OpenCode V2
 
 OpenCode V2 is selected as the first client integration target; its plugin
-integration is not implemented. The documented
-`ctx.session.hook("context", ...)` hook can edit assembled semantic system
-instructions and messages immediately before a model request. OpenCode does
-not document a dispatch-veto contract for this hook, and it does not establish
-provider tokenizer or wire equivalence, or tool authority. See the official
+integration is not implemented. The bounded, uninstalled adapter contract is
+recorded in [E0 OpenCode V2 context adapter contract](../wrench-e0-opencode-context-adapter/GOAL.md).
+The documented context hook can edit assembled semantic system instructions
+and messages immediately before a model request. OpenCode does not document a
+dispatch-veto contract for this hook, and it does not establish provider
+tokenizer or wire equivalence, or tool authority. See the official
 [V2 plugin guide](https://opencode.ai/v2/docs/build/plugins) and
 [V1 migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1).
 
 Strict E0 no-model preparation remains standalone. An adapter must bind the
 correct session/worktree root to an exact source snapshot, gate the full
-semantic request projection, and preserve OpenCode-owned native tools. Fixture
+semantic request projection, and preserve the supplied tools map. Fixture
 results support mechanics only. No consented matched-task corpus or outcome
 oracle is designated, so they do not establish E4 utility.
 
 ## Next action
 
-Next: continue the integrated E0 acceptance evidence without claiming a
-production route. Keep runtime identity, full accounting, authority, and
-matched-task evidence open until their defined criteria are demonstrated.
+Next: implement and verify only after OpenCode version, provider serializer,
+tokenizer, active-session root semantics, and dispatch authority have pinned
+contracts. Until then, keep runtime identity, full accounting, authority, and
+matched-task evidence open; do not claim a production route.

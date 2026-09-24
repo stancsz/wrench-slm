@@ -29,6 +29,10 @@
 - [E0 configured-root-bound snapshot identity](wrench-e0-snapshot-root-binding/GOAL.md):
   accepted v2 snapshot hash binding to the normalized configured root path;
   it is not physical-directory identity or authorization.
+- [E0 OpenCode V2 context adapter contract](wrench-e0-opencode-context-adapter/GOAL.md):
+  bounded uninstalled integration contract for active-session location,
+  semantic context and the supplied tools map; provider wire/token equivalence and
+  dispatch veto remain unresolved.
 - [E0 bounded artifact store](wrench-e0-artifact-store/GOAL.md):
   accepted standalone content-addressed persistence with a caller-owned
   preparation facade now using it; production request lifecycle integration
