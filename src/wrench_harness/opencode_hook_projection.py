@@ -34,6 +34,16 @@ class OpenCodeProjectionStatus(str, Enum):
     INPUT_LIMIT_EXCEEDED = "input_limit_exceeded"
 
 
+class OpenCodeTransitionStatus(str, Enum):
+    READY = "ready"
+    INVALID_INPUT = "invalid_input"
+    INVALID_PROJECTION = "invalid_projection"
+    SESSION_MISMATCH = "session_mismatch"
+    PROTECTED_CONTEXT_CHANGED = "protected_context_changed"
+    MESSAGE_SEQUENCE_MISMATCH = "message_sequence_mismatch"
+    INSERTION_POSITION_INVALID = "insertion_position_invalid"
+
+
 @dataclass(frozen=True)
 class OpenCodeContextHookProjection:
     """Bounded copy of every semantic field exposed by SessionHooks.context.
@@ -60,6 +70,26 @@ class OpenCodeContextHookProjection:
 class OpenCodeProjectionResult:
     status: OpenCodeProjectionStatus
     projection: OpenCodeContextHookProjection | None
+    reason: str
+
+
+@dataclass(frozen=True)
+class OpenCodeContextTransitionReceipt:
+    """Content-free local receipt for one validated context-message insertion."""
+
+    session_id: str
+    opencode_context_hook_version: str
+    projection_schema: str
+    before_projection_sha256: str
+    after_projection_sha256: str
+    inserted_message_sha256: str
+    insertion_position: int
+
+
+@dataclass(frozen=True)
+class OpenCodeTransitionResult:
+    status: OpenCodeTransitionStatus
+    receipt: OpenCodeContextTransitionReceipt | None
     reason: str
 
 
@@ -263,6 +293,153 @@ def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
     return OpenCodeProjectionResult(OpenCodeProjectionStatus.READY, projection, "ready")
 
 
+def _validated_projection_payload(
+    projection: object,
+) -> tuple[dict[str, object], OpenCodeContextHookProjection] | None:
+    if type(projection) is not OpenCodeContextHookProjection:
+        return None
+    if (
+        type(projection.session_id) is not str
+        or type(projection.agent_id) is not str
+        or type(projection.provider_id) is not str
+        or type(projection.model_id) is not str
+        or (projection.model_variant is not None and type(projection.model_variant) is not str)
+        or type(projection.projection_schema) is not str
+        or type(projection.opencode_context_hook_version) is not str
+        or type(projection.payload_json) is not str
+        or type(projection.projection_sha256) is not str
+        or type(projection.serialized_bytes) is not int
+    ):
+        return None
+    payload_json = projection.payload_json
+    if type(payload_json) is not str or len(payload_json) > MAX_OPENCODE_CONTEXT_HOOK_BYTES:
+        return None
+    try:
+        if len(payload_json.encode("utf-8")) > MAX_OPENCODE_CONTEXT_HOOK_BYTES:
+            return None
+        payload = json.loads(payload_json)
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        return None
+    recomputed = project_opencode_context_hook(payload)
+    if (
+        recomputed.status is not OpenCodeProjectionStatus.READY
+        or recomputed.projection is None
+        or recomputed.projection != projection
+    ):
+        return None
+    return payload, recomputed.projection
+
+
+def validate_opencode_context_hook_transition(
+    before: object,
+    after: object,
+    *,
+    expected_message: object,
+    insertion_position: int,
+) -> OpenCodeTransitionResult:
+    """Validate that two caller-supplied projections differ by one message insertion.
+
+    Only the ``messages`` array may change. The declared position must contain
+    the exact bounded JSON object supplied as ``expected_message`` and all
+    original messages must remain in their original order. This validates the
+    snapshots the caller provides; it does not authenticate a client hook or
+    enforce dispatch.
+    """
+    before_validated = _validated_projection_payload(before)
+    after_validated = _validated_projection_payload(after)
+    if before_validated is None or after_validated is None:
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.INVALID_PROJECTION, None, "invalid_projection"
+        )
+    before_payload, before_projection = before_validated
+    after_payload, after_projection = after_validated
+
+    if before_projection.session_id != after_projection.session_id:
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.SESSION_MISMATCH, None, "session_mismatch"
+        )
+
+    protected_fields = ("agent", "model", "system", "tools", "options")
+    for field in protected_fields:
+        try:
+            unchanged = _bounded_canonical_json(
+                before_payload[field], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+            ) == _bounded_canonical_json(
+                after_payload[field], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+            )
+        except (TypeError, ValueError, OverflowError, RecursionError):
+            unchanged = False
+        if not unchanged:
+            return OpenCodeTransitionResult(
+                OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED,
+                None,
+                "protected_context_changed",
+            )
+
+    before_messages = before_payload["messages"]
+    after_messages = after_payload["messages"]
+    if (
+        type(before_messages) is not list
+        or type(after_messages) is not list
+        or type(insertion_position) is not int
+        or not 0 <= insertion_position <= len(before_messages)
+        or len(before_messages) >= MAX_HOOK_MESSAGES
+        or len(after_messages) != len(before_messages) + 1
+        or type(expected_message) is not dict
+    ):
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.INSERTION_POSITION_INVALID,
+            None,
+            "insertion_position_invalid",
+        )
+
+    try:
+        expected_copy = _copy_json_bounded(expected_message)
+        if type(expected_copy) is not dict:
+            raise _ProjectionFailure("expected_message_must_be_object")
+        unchanged_prefix = _bounded_canonical_json(
+            before_messages[:insertion_position], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        ) == _bounded_canonical_json(
+            after_messages[:insertion_position], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        )
+        unchanged_suffix = _bounded_canonical_json(
+            before_messages[insertion_position:], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        ) == _bounded_canonical_json(
+            after_messages[insertion_position + 1 :], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        )
+        inserted = _bounded_canonical_json(
+            expected_copy, MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        ) == _bounded_canonical_json(
+            after_messages[insertion_position], MAX_OPENCODE_CONTEXT_HOOK_BYTES
+        )
+        expected_digest = hashlib.sha256(
+            _bounded_canonical_json(expected_copy, MAX_OPENCODE_CONTEXT_HOOK_BYTES)
+        ).hexdigest()
+    except (_ProjectionFailure, TypeError, ValueError, OverflowError, RecursionError):
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.INSERTION_POSITION_INVALID,
+            None,
+            "expected_message_invalid",
+        )
+    if not unchanged_prefix or not unchanged_suffix or not inserted:
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.MESSAGE_SEQUENCE_MISMATCH,
+            None,
+            "message_sequence_mismatch",
+        )
+
+    receipt = OpenCodeContextTransitionReceipt(
+        session_id=before_projection.session_id,
+        opencode_context_hook_version=before_projection.opencode_context_hook_version,
+        projection_schema=before_projection.projection_schema,
+        before_projection_sha256=before_projection.projection_sha256,
+        after_projection_sha256=after_projection.projection_sha256,
+        inserted_message_sha256=expected_digest,
+        insertion_position=insertion_position,
+    )
+    return OpenCodeTransitionResult(OpenCodeTransitionStatus.READY, receipt, "ready")
+
+
 __all__ = [
     "MAX_HOOK_MESSAGES",
     "MAX_HOOK_SYSTEM_PARTS",
@@ -270,8 +447,12 @@ __all__ = [
     "MAX_OPENCODE_CONTEXT_HOOK_BYTES",
     "OPENCODE_CONTEXT_HOOK_VERSION",
     "PROJECTION_SCHEMA",
+    "OpenCodeContextTransitionReceipt",
     "OpenCodeContextHookProjection",
     "OpenCodeProjectionResult",
     "OpenCodeProjectionStatus",
+    "OpenCodeTransitionResult",
+    "OpenCodeTransitionStatus",
     "project_opencode_context_hook",
+    "validate_opencode_context_hook_transition",
 ]

@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -9,8 +10,10 @@ from wrench_harness.opencode_hook_projection import (
     OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
     OpenCodeProjectionStatus,
+    OpenCodeTransitionStatus,
     _bounded_canonical_json,
     project_opencode_context_hook,
+    validate_opencode_context_hook_transition,
 )
 
 
@@ -116,6 +119,129 @@ def test_every_context_field_changes_projection_identity(field, change):
     assert original is not None
     assert altered is not None
     assert altered.projection_sha256 != original.projection_sha256, field
+
+
+def test_transition_accepts_exact_single_context_message_insertion():
+    before_event = _hook_event()
+    after_event = copy.deepcopy(before_event)
+    expected = {"role": "user", "content": "Prepared repository context."}
+    position = 1
+    after_event["messages"].insert(position, copy.deepcopy(expected))
+    before = project_opencode_context_hook(before_event).projection
+    after = project_opencode_context_hook(after_event).projection
+
+    result = validate_opencode_context_hook_transition(
+        before, after, expected_message=expected, insertion_position=position
+    )
+
+    assert result.status is OpenCodeTransitionStatus.READY
+    assert result.reason == "ready"
+    assert result.receipt is not None
+    assert result.receipt.session_id == before_event["sessionID"]
+    assert result.receipt.insertion_position == position
+    assert result.receipt.before_projection_sha256 == before.projection_sha256
+    assert result.receipt.after_projection_sha256 == after.projection_sha256
+    assert len(result.receipt.inserted_message_sha256) == 64
+    assert not hasattr(result.receipt, "content")
+
+
+@pytest.mark.parametrize(
+    ("field", "change", "expected_status"),
+    [
+        ("sessionID", lambda event: event.update(sessionID="ses_other123"), OpenCodeTransitionStatus.SESSION_MISMATCH),
+        ("agent", lambda event: event.update(agent="review"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+        ("model", lambda event: event["model"].update(id="other-model"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+        ("system", lambda event: event["system"].append("Changed"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+        ("tools", lambda event: event["tools"].pop("a_search"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+        ("options", lambda event: event["options"].update(extra=True), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+    ],
+)
+def test_transition_rejects_changed_protected_context(field, change, expected_status):
+    before_event = _hook_event()
+    after_event = copy.deepcopy(before_event)
+    after_event["messages"].insert(0, {"role": "user", "content": "Prepared."})
+    change(after_event)
+
+    result = validate_opencode_context_hook_transition(
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message={"role": "user", "content": "Prepared."},
+        insertion_position=0,
+    )
+
+    assert result.status is expected_status, field
+    assert result.receipt is None
+
+
+@pytest.mark.parametrize(
+    "change_messages",
+    [
+        lambda messages: messages.__setitem__(0, {"role": "user", "content": "Changed"}),
+        lambda messages: messages.reverse(),
+        lambda messages: messages.__setitem__(1, {"role": "user", "content": "Wrong insertion"}),
+    ],
+)
+def test_transition_rejects_changed_reordered_or_wrong_inserted_messages(change_messages):
+    before_event = _hook_event()
+    after_event = copy.deepcopy(before_event)
+    expected = {"role": "user", "content": "Prepared."}
+    after_event["messages"].insert(1, copy.deepcopy(expected))
+    change_messages(after_event["messages"])
+
+    result = validate_opencode_context_hook_transition(
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected,
+        insertion_position=1,
+    )
+
+    assert result.status is OpenCodeTransitionStatus.MESSAGE_SEQUENCE_MISMATCH
+    assert result.receipt is None
+
+
+@pytest.mark.parametrize(
+    ("expected_message", "insertion_position"),
+    [
+        ({"role": "user", "content": "Prepared."}, True),
+        ({"role": "user", "content": "Prepared."}, -1),
+        ({"role": "user", "content": "Prepared."}, 3),
+        (["not", "an", "object"], 0),
+    ],
+)
+def test_transition_rejects_invalid_message_or_position(expected_message, insertion_position):
+    before_event = _hook_event()
+    after_event = copy.deepcopy(before_event)
+    expected = {"role": "user", "content": "Prepared."}
+    after_event["messages"].insert(0, expected)
+
+    result = validate_opencode_context_hook_transition(
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected_message,
+        insertion_position=insertion_position,
+    )
+
+    assert result.status is OpenCodeTransitionStatus.INSERTION_POSITION_INVALID
+    assert result.receipt is None
+
+
+def test_transition_rejects_forged_or_malformed_projection():
+    before = project_opencode_context_hook(_hook_event()).projection
+    after_event = _hook_event()
+    after_event["messages"].append({"role": "user", "content": "Prepared."})
+    after = project_opencode_context_hook(after_event).projection
+    assert before is not None and after is not None
+    forged = replace(before, projection_sha256="0" * 64)
+
+    result = validate_opencode_context_hook_transition(
+        forged,
+        after,
+        expected_message={"role": "user", "content": "Prepared."},
+        insertion_position=2,
+    )
+
+    assert result.status is OpenCodeTransitionStatus.INVALID_PROJECTION
+    assert result.receipt is None
 
 
 @pytest.mark.parametrize(
