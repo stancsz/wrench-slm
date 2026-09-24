@@ -411,3 +411,16 @@ with its byte hash in a non-loader backup. Offline JSON parsing and a static
 field allowlist passed; the OpenCode CLI was not run, so runtime loading is
 unverified. No prompt or localhost request was made. See the
 [schema reconciliation report](../../reports/wrench-e0-opencode-context-adapter/localhost-config-schema-reconciliation.md).
+
+## Follow-up: runtime fail-closed boundary readiness
+
+Independent source and E0 acceptance audits agree that the highest-value open
+gate is runtime-enforced dispatch denial. The tagged context-hook path runs
+before the primary request attempt, but has no typed veto and no documented
+failure-settlement contract. Existing Python admission and transition receipts
+remain caller-supplied and inert. The recommended next source slice is a
+project-local OpenCode v2 plugin with a fixed, bounded bridge to the Python
+preparation engine; it must reject on every bridge or preparation failure.
+This still requires a separately authorized, process-confined runtime test
+before any dispatch-denial or E0 acceptance claim. See the
+[fail-closed boundary evaluation](../../evals/wrench-e0-opencode-context-adapter/runtime-fail-closed-boundary.md).
