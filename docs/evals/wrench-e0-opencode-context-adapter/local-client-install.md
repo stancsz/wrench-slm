@@ -1,7 +1,7 @@
 # OpenCode local CLI install evaluation
 
-Job: `W2-NS-OPENCODE-LOCALHOST-INSTALL-20260925`, nonce `OPL-4D91`  
-Reviewed revision: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`  
+Job: `W2-NS-OPENCODE-LOCALHOST-INSTALL-20260925`, nonce `OPL-4D91`
+Reviewed revision: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
 Reviewer: goal supervisor, with independent install handoff evidence
 
 ## Finding

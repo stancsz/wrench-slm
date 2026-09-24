@@ -1,8 +1,8 @@
 # OpenCode local CLI install and localhost configuration
 
-Job: `W2-NS-OPENCODE-LOCALHOST-INSTALL-20260925`  
-Nonce: `OPL-4D91`  
-Date: 2026-09-24 (America/Edmonton)  
+Job: `W2-NS-OPENCODE-LOCALHOST-INSTALL-20260925`
+Nonce: `OPL-4D91`
+Date: 2026-09-24 (America/Edmonton)
 Expected repository revision: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
 
 ## Result

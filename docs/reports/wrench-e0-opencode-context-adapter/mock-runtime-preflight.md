@@ -1,8 +1,8 @@
 # OpenCode synthetic mock runtime preflight
 
-Job: `W2-NS-OPENCODE-MOCK-PREFLIGHT-20260926`  
-Nonce: `OC-MOCK-SUP-991E`  
-Prepared: 2026-09-24 (America/Edmonton)  
+Job: `W2-NS-OPENCODE-MOCK-PREFLIGHT-20260926`
+Nonce: `OC-MOCK-SUP-991E`
+Prepared: 2026-09-24 (America/Edmonton)
 Repository revision reviewed: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
 
 ## Purpose and boundary

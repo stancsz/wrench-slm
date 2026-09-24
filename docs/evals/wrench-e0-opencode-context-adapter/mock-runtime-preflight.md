@@ -1,6 +1,6 @@
 # OpenCode synthetic mock runtime preflight evaluation
 
-Job: `W2-NS-OPENCODE-MOCK-PREFLIGHT-20260926`, nonce `OC-MOCK-SUP-991E`  
+Job: `W2-NS-OPENCODE-MOCK-PREFLIGHT-20260926`, nonce `OC-MOCK-SUP-991E`
 Reviewed revision: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
 
 ## Review result
