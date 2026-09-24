@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free Wrench seams implemented; isolated OpenCode v2.0.15 CLI installed and configured for localhost, but no client prompt/task/request or Wrench hook integration has run
+Status: provider-free Wrench seams and a synthetic offline loopback request/lease boundary are implemented and independently reviewed; isolated OpenCode v2.0.15 CLI is configured, but no client prompt/task/request or Wrench hook integration has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -484,3 +484,30 @@ scope-to-source policy, artifact-store ownership, and serializer/tokenizer
 posture. No client, localhost endpoint, provider, model, or plugin was run for
 this review. See the [bridge feasibility report](../../reports/wrench-e0-opencode-context-adapter/bridge-implementation-preflight.md)
 and [independent evaluation](../../evals/wrench-e0-opencode-context-adapter/bridge-implementation-preflight.md).
+
+## Follow-up: synthetic offline loopback request boundary
+
+Status: implemented, focused tests pass, and independent read-only review
+passed. The source increment adds a reusable request/lease boundary and a
+fixture HTTP server bound only to `127.0.0.1` on an ephemeral port. It accepts
+one nonce-correlated request on the fixed Chat Completions route, validates a
+bounded text-only request with exactly one supported JSON content type, and
+serves only immutable bounded fixture bytes. It has no upstream address,
+forwarding path, or OpenCode plugin wiring. The active timeout is cooperative:
+it marks cancellation and retains the lease until stream/request cleanup.
+
+The focused command
+`.venv\Scripts\python.exe -m unittest tests.test_opencode_request_boundary -v`
+passed 17 tests. `git diff --check` passed. Independent review job
+`W2-NS-OFFLINE-REQUEST-BOUNDARY-REVIEW3-20260924`, nonce `ORB-REV3-F97A`,
+returned PASS on the frozen source, test, and report hashes. Implementation
+job `W2-NS-OFFLINE-REQUEST-BOUNDARY-20260924` and correction jobs FIX1/FIX2
+remain uncommitted pending parent integration. The detailed
+[offline request-boundary report](../../reports/wrench-e0-opencode-context-adapter/offline-request-boundary.md)
+records the bounds, test paths, and limitations.
+
+This evidence covers synthetic offline protocol and lease mechanics only. It
+does not establish OpenCode plugin registration, runtime hook invocation,
+dispatch denial, a request to `localhost:4000`, provider behavior, or tokenizer
+parity. The E0 exact-token gate remains closed, and the broader E0/E4 goals
+remain incomplete. No real-task data collection is authorized by this slice.

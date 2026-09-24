@@ -41,8 +41,10 @@
   provider-free, release-pinned session-root validation and local admission
   classification plus structural post-run session binding; OpenCode v2.0.15 is
   isolated-installed and configured for the local gateway, with version/config
-  checks and a model-list GET only. No task or prompt has run; provider wire,
-  tokenizer equivalence, and dispatch veto remain unresolved.
+  checks and a model-list GET only. A synthetic offline loopback request/lease
+  boundary is independently reviewed; no Wrench hook integration or task/prompt
+  request has run. Provider wire, tokenizer equivalence, dispatch veto, and the
+  exact-token E0 gate remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.
