@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, and a strict Wrench-owned project enrollment registry are implemented and independently reviewed; isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
+Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, and a strict Wrench-owned project enrollment registry are implemented and independently reviewed; a route-owned synthetic request/lease composition is now implemented and under independent review. Isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -626,3 +626,27 @@ This establishes only synthetic offline fixture composition. It does not
 connect OpenCode or a plugin, forward a request, prove runtime route or
 tokenizer parity, provide complete lifecycle accounting, or close E0/E4.
 Exact-token acceptance remains closed.
+
+## Follow-up: deterministic rule route through the fixture lease
+
+`prepare_offline_e0_request` now has an optional route-owned path. It runs the
+bounded rule route on the enrolled snapshot, verifies the route/preparation
+receipt, then carries that preparation through OpenCode context materialization,
+fixture request lowering, and the request lease. Its digest-only receipt joins
+the route/preparation digest with the snapshot, candidate/source joins,
+preparation, insertion, and lowered request body. A terminal finalizer binds
+the matching fixture stream outcome after cleanup has released artifact pins.
+
+The focused module passed 11 directly invoked functions under the existing
+Python 3.11 environment. New cases cover successful route-to-request identity,
+abstention, stale source, budget rejection, and terminal EOF/cancel/failure
+receipts and pin cleanup. See the [route-to-lease report](../../reports/wrench-e0-opencode-context-adapter/offline-route-to-lease.md)
+for commands, resource accounting, hashes, and limits.
+
+This remains a synthetic fixture composition. The receipt does not authenticate
+route intent or client lifecycle; it does not prove an OpenCode dispatch veto,
+final runtime serialization, tokenizer parity, or complete task accounting.
+The exact-token gate remains unavailable and broader E0/E4 acceptance remains
+open. Next: complete the independent read-only review and reconcile its
+findings. Runtime and production claims still require pinned route/model/
+serializer/tokenizer identities and an authorized dispatch-boundary trial.

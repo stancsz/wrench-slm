@@ -15,7 +15,9 @@ from wrench_harness.e0_offline_request_composition import (
     CompositionStatus,
     SYNTHETIC_SERIALIZER_ID,
     SYNTHETIC_TOKENIZER_ID,
+    finalize_offline_e0_request,
     prepare_offline_e0_request,
+    verify_offline_e0_composition_receipt,
 )
 import wrench_harness.e0_offline_request_composition as composition_module
 from wrench_harness.namespace_registry import NamespaceRegistry
@@ -24,6 +26,7 @@ from wrench_harness.opencode_request_boundary import (
     FixtureResponse,
     LoopbackFixtureServer,
     RequestLeaseBoundary,
+    StreamEnd,
 )
 
 
@@ -88,7 +91,8 @@ def _fixture(tmp_path: Path, *, fixture_response: FixtureResponse | object | Non
 
 def _prepare(tmp_path: Path, *, prompt_token_budget: int = 4096, lease_id: str = "fixture-lease",
              fixture_response: FixtureResponse | object | None = None,
-             timeout_seconds: float = 5):
+             timeout_seconds: float = 5, route_prompt: str | None = None,
+             context_token_budget: int = 128):
     source_root, data_root, registry, store, boundary, response = _fixture(
         tmp_path, fixture_response=fixture_response, timeout_seconds=timeout_seconds
     )
@@ -104,8 +108,9 @@ def _prepare(tmp_path: Path, *, prompt_token_budget: int = 4096, lease_id: str =
         boundary=boundary,
         namespace_registry=NamespaceRegistry(()),
         query="synthetic_target",
+        route_prompt=route_prompt,
         lease_id=lease_id,
-        context_token_budget=128,
+        context_token_budget=context_token_budget,
         prompt_token_budget=prompt_token_budget,
         context_position=1,
         max_candidates=8,
@@ -243,6 +248,152 @@ def test_non_ready_preparation_never_issues_request_or_retains_pins():
         assert not store._pins
         assert not boundary._pending
         assert not boundary._active
+
+
+def test_rule_route_identity_reaches_lowered_request_and_terminal_receipt():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    route_prompt = "Find the exact text 'synthetic_target' below ., capped at 10 matches."
+    with tempfile.TemporaryDirectory(prefix="route-lease-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, fixture_response = _prepare(
+            Path(scratch),
+            route_prompt=route_prompt,
+            lease_id="fixture-route-lease",
+        )
+        assert result.status is CompositionStatus.READY
+        assert result.route_status == "completed"
+        assert result.receipt is not None and result.receipt.route_preparation_sha256
+        assert result.receipt.terminal_outcome is None
+        assert verify_offline_e0_composition_receipt(result.receipt)
+        assert result.request is not None and result.ticket is not None
+        assert result.artifact_scope_active and sum(store._pins.values()) > 0
+        lowered = json.loads(result.request.body.decode("utf-8"))
+        assert hashlib.sha256(result.request.body).hexdigest() == result.receipt.request_body_sha256
+        context_matches = []
+        for message in lowered["messages"]:
+            projected_message = {
+                "role": message["role"],
+                "content": [{"type": "text", "text": message["content"]}],
+            }
+            canonical_message = json.dumps(
+                projected_message, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+            if hashlib.sha256(canonical_message).hexdigest() == result.receipt.context_message_sha256:
+                context_matches.append(message)
+        assert len(context_matches) == 1
+
+        stream = boundary.dispatch(result.request, fixture_response)
+        assert isinstance(stream, composition_module.FixtureResponseStream)
+        assert result.artifact_scope_active and sum(store._pins.values()) > 0
+        assert list(stream) == [b"data: synthetic-fixture\n\n"]
+        assert stream.end is StreamEnd.COMPLETE
+        assert not result.artifact_scope_active and not store._pins
+
+        terminal = finalize_offline_e0_request(result, stream)
+        assert terminal is not None
+        assert terminal.route_preparation_sha256 == result.receipt.route_preparation_sha256
+        assert terminal.terminal_outcome == StreamEnd.COMPLETE.value
+        assert verify_offline_e0_composition_receipt(terminal)
+        assert "def synthetic_target" not in repr(terminal)
+        assert "return value + 1" not in repr(terminal)
+
+
+def test_route_abstention_and_stale_snapshot_issue_no_ticket_or_pins():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="route-abstain-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, _ = _prepare(
+            Path(scratch), route_prompt="Summarize the repository.",
+            lease_id="fixture-route-abstain",
+        )
+        assert result.status is CompositionStatus.ROUTE_REJECTED
+        assert result.route_status == "abstain"
+        assert result.request is None and result.ticket is None and result.receipt is None
+        assert not result.artifact_scope_active and not store._pins
+        assert not boundary._pending and not boundary._active
+
+    original_route_prepare = composition_module.route_and_prepare_e0_context
+    with tempfile.TemporaryDirectory(prefix="route-stale-", dir=TEST_TMP_ROOT) as scratch:
+        root = Path(scratch)
+        source_root, _, registry, store, boundary, response = _fixture(root)
+        event = _event()
+
+        def stale_before_route(*args, **kwargs):
+            (source_root / "src" / "sample.py").write_text(
+                """def synthetic_target(value):
+    return value - 1
+""",
+                encoding="utf-8",
+            )
+            return original_route_prepare(*args, **kwargs)
+
+        with patch.object(composition_module, "route_and_prepare_e0_context", stale_before_route):
+            stale = prepare_offline_e0_request(
+                registry,
+                SESSION_ID,
+                {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+                ("src/sample.py", "README.md"),
+                event=event,
+                fixture_response=response,
+                store=store,
+                boundary=boundary,
+                namespace_registry=NamespaceRegistry(()),
+                query="synthetic_target",
+                route_prompt="Find the exact text 'synthetic_target' below ., capped at 10 matches.",
+                lease_id="fixture-route-stale",
+            )
+        assert stale.status is CompositionStatus.ROUTE_REJECTED
+        assert stale.route_status == "abstain"
+        assert stale.request is None and stale.ticket is None and stale.receipt is None
+        assert not stale.artifact_scope_active and not store._pins
+        assert not boundary._pending and not boundary._active
+
+
+def test_route_budget_rejection_releases_pins_before_request_ticket():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    route_prompt = "Find the exact text 'synthetic_target' below ., capped at 10 matches."
+    with tempfile.TemporaryDirectory(prefix="route-budget-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, _ = _prepare(
+            Path(scratch), route_prompt=route_prompt,
+            context_token_budget=1, lease_id="fixture-route-budget",
+        )
+        assert result.status is CompositionStatus.PREPARATION_REJECTED
+        assert result.route_status == "completed"
+        assert result.request is None and result.ticket is None and result.receipt is None
+        assert not result.artifact_scope_active and not store._pins
+        assert not boundary._pending and not boundary._active
+
+
+def test_terminal_cancel_and_failure_release_pins_once_and_finalize_receipt():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    route_prompt = "Find the exact text 'synthetic_target' below ., capped at 10 matches."
+    for terminal_end in (StreamEnd.CANCELLED, StreamEnd.FAILED):
+        with tempfile.TemporaryDirectory(prefix="route-terminal-", dir=TEST_TMP_ROOT) as scratch:
+            release_calls: list[int] = []
+            original_release = composition_module._PinScope.release_once
+
+            def counted_release(scope):
+                release_calls.append(id(scope))
+                return original_release(scope)
+
+            with patch.object(composition_module._PinScope, "release_once", counted_release):
+                result, store, boundary, fixture_response = _prepare(
+                    Path(scratch), route_prompt=route_prompt,
+                    lease_id=f"fixture-route-{terminal_end.value}",
+                )
+                assert result.status is CompositionStatus.READY
+                assert result.request is not None and result.receipt is not None
+                assert result.ticket is not None and result.artifact_scope_active
+                stream = boundary.dispatch(result.request, fixture_response)
+                assert isinstance(stream, composition_module.FixtureResponseStream)
+                assert result.artifact_scope_active and sum(store._pins.values()) > 0
+                stream.close(terminal_end)
+                assert stream.end is terminal_end
+                assert not result.artifact_scope_active and not store._pins
+                terminal = finalize_offline_e0_request(result, stream)
+                assert terminal is not None
+                assert terminal.terminal_outcome == terminal_end.value
+                assert verify_offline_e0_composition_receipt(terminal)
+            assert result._pin_scope is not None
+            assert release_calls == [id(result._pin_scope)]
 
 
 def test_invalid_fixture_response_fails_before_lease_creation():

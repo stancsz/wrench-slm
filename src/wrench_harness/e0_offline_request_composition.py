@@ -11,11 +11,16 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Iterable, Mapping, Sequence
 
 from .artifact_store import ArtifactStore
+from .e0_route_preparation import (
+    RoutePreparationStatus,
+    route_and_prepare_e0_context,
+    verify_route_preparation_accounting_receipt,
+)
 from .namespace_registry import NamespaceRegistry
 from .opencode_context import OpenCodePreparationJoin, prepare_opencode_e0_context
 from .opencode_prepared_context import (
@@ -59,6 +64,7 @@ class CompositionStatus(str, Enum):
     PREPARATION_REJECTED = "preparation_rejected"
     MATERIALIZATION_REJECTED = "materialization_rejected"
     LOWERING_REJECTED = "lowering_rejected"
+    ROUTE_REJECTED = "route_rejected"
 
 
 @dataclass(frozen=True)
@@ -74,9 +80,11 @@ class OfflineCompositionReceipt:
     insertion_receipt_sha256: str
     context_message_sha256: str
     request_body_sha256: str
+    route_preparation_sha256: str | None
     serializer_id: str
     tokenizer_id: str
     exact_token_gate: str
+    terminal_outcome: str | None
     receipt_sha256: str
 
 
@@ -88,11 +96,13 @@ class OfflineCompositionResult:
     reason: str
     snapshot_sha256: str | None = None
     preparation_status: str | None = None
+    route_status: str | None = None
     candidate_count: int = 0
     receipt: OfflineCompositionReceipt | None = None
     request: LoweredRequest | None = field(default=None, repr=False, compare=False)
     ticket: LeaseTicket | None = field(default=None, repr=False, compare=False)
     fixture_response: FixtureResponse | None = field(default=None, repr=False, compare=False)
+    _boundary: RequestLeaseBoundary | None = field(default=None, repr=False, compare=False)
     _pin_scope: "_PinScope | None" = field(default=None, repr=False, compare=False)
 
     @property
@@ -310,6 +320,7 @@ def prepare_offline_e0_request(
     boundary: RequestLeaseBoundary,
     namespace_registry: NamespaceRegistry,
     query: str,
+    route_prompt: str | None = None,
     lease_id: str,
     context_token_budget: int = 128,
     prompt_token_budget: int = 8_192,
@@ -339,6 +350,7 @@ def prepare_offline_e0_request(
         or type(event) is not dict
         or event.get("sessionID") != event_session_id
         or type(event.get("messages")) is not list
+        or (route_prompt is not None and (type(route_prompt) is not str or not route_prompt or len(route_prompt) > 8_192))
     ):
         return OfflineCompositionResult(CompositionStatus.PROJECT_REJECTED, "input_invalid")
 
@@ -360,29 +372,78 @@ def prepare_offline_e0_request(
     pin_scope: _PinScope | None = None
     ticket: LeaseTicket | None = None
     lowered_request: LoweredRequest | None = None
+    route_preparation = None
     try:
         pin_scope = _PinScope(store)
-        join: OpenCodePreparationJoin = prepare_opencode_e0_context(
-            event_session_id,
-            session_record,
-            snapshot=project_snapshot.snapshot,
-            paths=project_snapshot.selected_paths,
-            store=store,
-            query=query,
-            source_order_start=0,
-            context_token_budget=context_token_budget,
-            prompt_token_budget=prompt_token_budget,
-            namespace_registry=namespace_registry,
-            schema_lookups=(),
-            base_messages=event["messages"],
-            context_position=context_position,
-            serializer=_fixture_serializer,
-            tokenizer_counter=_fixture_tokenizer,
-            serializer_id=SYNTHETIC_SERIALIZER_ID,
-            tokenizer_id=SYNTHETIC_TOKENIZER_ID,
-            max_candidates=max_candidates,
-            artifact_request=pin_scope.request,
-        )
+        if route_prompt is None:
+            join: OpenCodePreparationJoin = prepare_opencode_e0_context(
+                event_session_id,
+                session_record,
+                snapshot=project_snapshot.snapshot,
+                paths=project_snapshot.selected_paths,
+                store=store,
+                query=query,
+                source_order_start=0,
+                context_token_budget=context_token_budget,
+                prompt_token_budget=prompt_token_budget,
+                namespace_registry=namespace_registry,
+                schema_lookups=(),
+                base_messages=event["messages"],
+                context_position=context_position,
+                serializer=_fixture_serializer,
+                tokenizer_counter=_fixture_tokenizer,
+                serializer_id=SYNTHETIC_SERIALIZER_ID,
+                tokenizer_id=SYNTHETIC_TOKENIZER_ID,
+                max_candidates=max_candidates,
+                artifact_request=pin_scope.request,
+            )
+        else:
+            route_preparation = route_and_prepare_e0_context(
+                route_prompt,
+                root_binding=project_snapshot.binding,
+                snapshot=project_snapshot.snapshot,
+                store=store,
+                query=query,
+                source_order_start=0,
+                context_token_budget=context_token_budget,
+                prompt_token_budget=prompt_token_budget,
+                namespace_registry=namespace_registry,
+                schema_lookups=(),
+                base_messages=event["messages"],
+                context_position=context_position,
+                message_format="opencode-2.0.15",
+                serializer=_fixture_serializer,
+                tokenizer_counter=_fixture_tokenizer,
+                serializer_id=SYNTHETIC_SERIALIZER_ID,
+                tokenizer_id=SYNTHETIC_TOKENIZER_ID,
+                max_candidates=max_candidates,
+                artifact_request=pin_scope.request,
+            )
+            if (
+                route_preparation.status is not RoutePreparationStatus.JOINED
+                or route_preparation.preparation is None
+                or route_preparation.accounting_receipt is None
+                or not verify_route_preparation_accounting_receipt(
+                    route_preparation.accounting_receipt,
+                    route_result=route_preparation.route_result,
+                    preparation=route_preparation.preparation,
+                )
+            ):
+                pin_scope.release_once()
+                return OfflineCompositionResult(
+                    CompositionStatus.ROUTE_REJECTED,
+                    route_preparation.reason,
+                    snapshot_sha256=project_snapshot.snapshot.snapshot_sha256,
+                    route_status=route_preparation.route_result.status.value,
+                )
+            join = OpenCodePreparationJoin(
+                session_id=project_snapshot.session_id,
+                configured_root=project_snapshot.binding.configured_root,
+                snapshot_sha256=project_snapshot.snapshot.snapshot_sha256,
+                root_location_sha256=project_snapshot.snapshot.root_location_sha256,
+                root_identity=project_snapshot.snapshot.root_identity,
+                preparation=route_preparation.preparation,
+            )
         preparation = join.preparation
         if (
             preparation.status.value != "ready"
@@ -402,6 +463,7 @@ def prepare_offline_e0_request(
                 preparation.reason or preparation.status.value,
                 snapshot_sha256=project_snapshot.snapshot.snapshot_sha256,
                 preparation_status=preparation.status.value,
+                route_status=(route_preparation.route_result.status.value if route_preparation else None),
                 candidate_count=(preparation.metrics.structural_index_candidate_count or 0)
                 if preparation.metrics is not None else 0,
             )
@@ -444,9 +506,15 @@ def prepare_offline_e0_request(
             "insertion_receipt_sha256": materialized.transition_receipt.receipt_sha256,
             "context_message_sha256": preparation.prompt_gate.context_message_sha256,
             "request_body_sha256": body_digest,
+            "route_preparation_sha256": (
+                route_preparation.accounting_receipt.accounting_sha256
+                if route_preparation is not None and route_preparation.accounting_receipt is not None
+                else None
+            ),
             "serializer_id": SYNTHETIC_SERIALIZER_ID,
             "tokenizer_id": SYNTHETIC_TOKENIZER_ID,
             "exact_token_gate": ExactTokenGateStatus.UNAVAILABLE.value,
+            "terminal_outcome": None,
         }
         receipt = OfflineCompositionReceipt(
             schema=receipt_payload["schema"],
@@ -458,9 +526,11 @@ def prepare_offline_e0_request(
             insertion_receipt_sha256=receipt_payload["insertion_receipt_sha256"],
             context_message_sha256=receipt_payload["context_message_sha256"],
             request_body_sha256=receipt_payload["request_body_sha256"],
+            route_preparation_sha256=receipt_payload["route_preparation_sha256"],
             serializer_id=SYNTHETIC_SERIALIZER_ID,
             tokenizer_id=SYNTHETIC_TOKENIZER_ID,
             exact_token_gate=ExactTokenGateStatus.UNAVAILABLE.value,
+            terminal_outcome=None,
             receipt_sha256=_sha256(_canonical(receipt_payload)),
         )
         # Register the lease only after all content validation, lowering, and
@@ -481,11 +551,13 @@ def prepare_offline_e0_request(
             reason="ready",
             snapshot_sha256=project_snapshot.snapshot.snapshot_sha256,
             preparation_status=preparation.status.value,
+            route_status=(route_preparation.route_result.status.value if route_preparation else None),
             candidate_count=candidate_count,
             receipt=receipt,
             request=lowered_request,
             ticket=ticket,
             fixture_response=fixture_response,
+            _boundary=boundary,
             _pin_scope=pin_scope,
         )
     except Exception as exc:
@@ -505,11 +577,90 @@ def prepare_offline_e0_request(
         )
 
 
+def _receipt_payload(
+    receipt: OfflineCompositionReceipt, *, terminal_outcome: str | None
+) -> dict[str, object]:
+    return {
+        "schema": receipt.schema,
+        "snapshot_sha256": receipt.snapshot_sha256,
+        "candidate_count": receipt.candidate_count,
+        "selected_candidate_order_sha256": receipt.selected_candidate_order_sha256,
+        "source_hash_join_sha256": receipt.source_hash_join_sha256,
+        "preparation_sha256": receipt.preparation_sha256,
+        "insertion_receipt_sha256": receipt.insertion_receipt_sha256,
+        "context_message_sha256": receipt.context_message_sha256,
+        "request_body_sha256": receipt.request_body_sha256,
+        "route_preparation_sha256": receipt.route_preparation_sha256,
+        "serializer_id": receipt.serializer_id,
+        "tokenizer_id": receipt.tokenizer_id,
+        "exact_token_gate": receipt.exact_token_gate,
+        "terminal_outcome": terminal_outcome,
+    }
+
+
+def verify_offline_e0_composition_receipt(
+    receipt: OfflineCompositionReceipt,
+) -> bool:
+    """Check canonical content-free receipt integrity and terminal value."""
+    if (
+        type(receipt) is not OfflineCompositionReceipt
+        or type(receipt.terminal_outcome) not in (str, type(None))
+        or (receipt.terminal_outcome is not None and receipt.terminal_outcome not in {item.value for item in StreamEnd})
+        or receipt.exact_token_gate != ExactTokenGateStatus.UNAVAILABLE.value
+        or receipt.serializer_id != SYNTHETIC_SERIALIZER_ID
+        or receipt.tokenizer_id != SYNTHETIC_TOKENIZER_ID
+    ):
+        return False
+    try:
+        return _sha256(_canonical(_receipt_payload(receipt, terminal_outcome=receipt.terminal_outcome))) == receipt.receipt_sha256
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        return False
+
+
+def finalize_offline_e0_request(
+    result: OfflineCompositionResult,
+    stream: FixtureResponseStream,
+) -> OfflineCompositionReceipt | None:
+    """Bind the matching fixture stream terminal outcome into a new receipt.
+
+    The caller can finalize only after stream cleanup has released its artifact
+    request pins. This captures fixture mechanics, not client dispatch or tool
+    activity.
+    """
+    if (
+        type(result) is not OfflineCompositionResult
+        or result.status is not CompositionStatus.READY
+        or type(result.receipt) is not OfflineCompositionReceipt
+        or not verify_offline_e0_composition_receipt(result.receipt)
+        or result.receipt.terminal_outcome is not None
+        or type(result.ticket) is not LeaseTicket
+        or type(result._boundary) is not RequestLeaseBoundary
+        or type(result._pin_scope) is not _PinScope
+        or type(stream) is not FixtureResponseStream
+        or stream._boundary is not result._boundary
+        or stream._lease.lease_id != result.ticket.lease_id
+        or stream._lease.nonce != result.ticket.nonce
+        or type(stream.end) is not StreamEnd
+        or result._pin_scope.active
+    ):
+        return None
+    terminal_outcome = stream.end.value
+    payload = _receipt_payload(result.receipt, terminal_outcome=terminal_outcome)
+    finalized = replace(
+        result.receipt,
+        terminal_outcome=terminal_outcome,
+        receipt_sha256=_sha256(_canonical(payload)),
+    )
+    return finalized if verify_offline_e0_composition_receipt(finalized) else None
+
+
 __all__ = [
     "CompositionStatus",
     "OfflineCompositionReceipt",
     "OfflineCompositionResult",
     "SYNTHETIC_SERIALIZER_ID",
     "SYNTHETIC_TOKENIZER_ID",
+    "finalize_offline_e0_request",
     "prepare_offline_e0_request",
+    "verify_offline_e0_composition_receipt",
 ]
