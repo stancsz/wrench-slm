@@ -67,6 +67,36 @@ with complete call accounting and the same token usage convention on both
 arms. Report local tokens, compute, latency, and amortized learning cost
 separately.
 
+## Per-task savings dashboard
+
+The intended per-task percentage is `100 * (1 - W_i / B_i)` for each complete
+same-task pair. The macro average is the arithmetic mean of the task
+percentages. Also report the ratio-of-sums percentage separately, since it
+weights tasks by baseline token count.
+
+| Fixture pair/class | Cases | Valid real frontier-usage pairs | Mean observed saving |
+| --- | ---: | ---: | ---: |
+| `loc-function-name` / localization | 2 | 0 | N/A |
+| `triage-error-type` / log error extraction | 2 | 0 | N/A |
+| `context-literal-boundary` / context selection | 2 | 0 | N/A |
+| `evidence-availability` / missing or stale evidence | 2 | 0 | N/A |
+| `evidence-specificity` / ambiguous or specific source | 2 | 0 | N/A |
+| **Total** | **10** | **0/5 pairs** | **N/A, no valid denominator** |
+
+No task has both complete baseline and Wrench-workflow downstream usage
+receipts. Therefore the average percentage and ratio-of-sums are both
+**unavailable**, not 0%. Fixture character/token counts are excluded from this
+frontier-savings dashboard.
+
+### Advisor overhead receipt
+
+One bounded planning consultation returned reported usage of 435 prompt tokens,
+181 completion tokens, and 616 total tokens. These are evaluation-planning
+overhead, not task usage or savings, and are excluded from the dashboard.
+`decision_changed: false`: the recommendation confirmed the experiment's
+existing complete, runtime-matched paired-accounting rule, so it did not alter
+the measurement or verification plan.
+
 ## Environment gate
 
 On this inspection, `C:\wrench-slm-data\weights` and `checkpoints` were
@@ -77,6 +107,15 @@ repository snapshot, but this is not a local download or verified shard
 inventory. The RTX 5060 Ti had 15,569 MiB free of 16,311 MiB and system RAM had
 about 16.9 GiB free of 31.9 GiB. Hardware headroom does not remedy the absent
 model/runtime identity.
+
+A read-only compatibility review found a possible native-Windows path through
+Transformers, but it is not pinned or installed: the [pinned Qwen model card](https://huggingface.co/Qwen/Qwen3.5-0.8B/blob/2fc06364715b967f1860aea9cf38778875588b17/README.md)
+currently instructs using Transformers from GitHub `main` and installing
+`torchvision` and Pillow. The [Transformers Qwen3.5 documentation](https://huggingface.co/docs/transformers/main/model_doc/qwen3_5)
+shows a text-only causal model class. The local environment has none of the
+required torch/Transformers/tokenizer packages, and a Git `main` branch alone
+is not a reproducible runtime identity. A local SLM run still requires a
+specific Transformers commit and locked Python/CUDA dependencies.
 
 The OpenCode profile targets `http://127.0.0.1:4000/v1`, but the latest
 read-only route audit reported the gateway in forced OpenRouter mode. A local

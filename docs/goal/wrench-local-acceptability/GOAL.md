@@ -49,6 +49,14 @@ server listening on localhost.
 6. Keep synthetic fixture results out of utility, customer, training, and
    production aggregates.
 
+For task `i`, report observed frontier-token savings as
+`100 * (1 - W_i / B_i)`, where `B_i` and `W_i` are complete baseline and
+Wrench-workflow frontier-token counts for the same task. Report the arithmetic
+mean across valid paired tasks, its valid-pair count, and unresolved/excluded
+counts. Separately report ratio-of-sums savings
+`100 * (1 - sum(W_i) / sum(B_i))`. If either count is unavailable or the
+baseline count is zero, that task's percentage is unavailable, not zero.
+
 ## Next steps
 
 1. Select and pin an already-approved local model/runtime, or record the

@@ -45,6 +45,8 @@ compute a production acceptance rate from it.
   real-outcome oracle is admitted.
 - Token savings: no paired downstream requests or complete frontier usage
   accounting; measured savings are **not established**, not zero.
+- Per-task average: **N/A**; 0 of 5 fixture pairs have complete real usage
+  receipts for both arms. Synthetic tokenizer numbers do not enter the metric.
 - Latency/throughput: not measured.
 
 This evaluation is not E0 or E4 acceptance and does not authorize model
