@@ -1,0 +1,193 @@
+from __future__ import annotations
+
+import hashlib
+import json
+
+import pytest
+
+import wrench_harness.prompt_compiler as gate_module
+from wrench_harness.context import ContextLedger
+from wrench_harness.prompt_compiler import PromptGateStatus, compile_prompt
+
+
+def _ledger_with_two_segments():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("evidence-hot", "critical evidence", 1, token_count=2, retention="hot")
+    ledger.add_segment("evidence-warm", "supporting evidence", 2, token_count=2)
+    return ledger
+
+
+def _fixture_serializer(messages):
+    return json.dumps(messages, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _fixture_counter(serialized):
+    return len(serialized)
+
+
+def _compile(assembly, messages, **overrides):
+    values = {
+        "context_position": 1,
+        "serializer": _fixture_serializer,
+        "tokenizer_counter": _fixture_counter,
+        "serializer_id": "fixture-json-chat-v1",
+        "tokenizer_id": "fixture-character-count-v1",
+        "hard_budget": 10_000,
+    }
+    values.update(overrides)
+    return compile_prompt(assembly, messages, **values)
+
+
+def test_counts_complete_serialized_messages_including_schema_and_context():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    base = [
+        {"role": "system", "content": "fixed instructions"},
+        {"role": "assistant", "tool_schema": {"name": "lookup", "parameters": {"type": "object"}}},
+    ]
+    original = json.dumps(base, sort_keys=True)
+
+    result = _compile(assembly, base, hard_budget=10_000)
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.prompt is not None
+    final_messages = json.loads(result.prompt)
+    assert [item["role"] for item in final_messages] == ["system", "user", "assistant"]
+    assert final_messages[1]["content"] == assembly["assembled_text"]
+    assert final_messages[2]["tool_schema"]["name"] == "lookup"
+    assert result.receipt.exact_token_count == len(result.prompt)
+    assert result.receipt.prompt_sha256 == hashlib.sha256(result.prompt.encode()).hexdigest()
+    assert result.receipt.serializer_id == "fixture-json-chat-v1"
+    assert result.receipt.tokenizer_id == "fixture-character-count-v1"
+    assert result.receipt.session_hash == assembly["session_hash"]
+    assert original == json.dumps(base, sort_keys=True)
+
+
+def test_over_budget_receipt_has_hash_and_no_routable_prompt():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    result = _compile(assembly, [{"role": "system", "content": "rules"}], hard_budget=1)
+
+    assert result.receipt.status is PromptGateStatus.BUDGET_EXCEEDED
+    assert result.receipt.exact_token_count > 1
+    assert result.receipt.prompt_sha256 is not None
+    assert result.prompt is None
+
+
+def test_missing_required_hot_evidence_fails_closed_with_omission_reason():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("hot-required", "must retain this hot evidence", 1, token_count=5, retention="hot")
+    assembly = ledger.assemble("unrelated", active_token_budget=1)
+
+    serializer_calls = []
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=lambda messages: serializer_calls.append(messages) or _fixture_serializer(messages),
+        required_evidence_ids=["hot-required"],
+    )
+
+    assert result.receipt.status is PromptGateStatus.REQUIRED_EVIDENCE_OMITTED
+    assert result.receipt.required_evidence_reasons == (("hot-required", "unit_exceeds_active_budget"),)
+    assert result.prompt is None
+    assert serializer_calls == []
+
+
+def test_omitted_evidence_and_reasons_are_propagated_to_receipt():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=2)
+    result = _compile(assembly, [{"role": "system", "content": "rules"}])
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.receipt.selected_evidence_ids == tuple(
+        row["segment_id"] for row in assembly["selected_segments"]
+    )
+    assert result.receipt.omitted_evidence == tuple(
+        (row["segment_id"], row["reason"]) for row in assembly["omitted_segments"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("serializer", "counter", "expected"),
+    [
+        (lambda messages: (_ for _ in ()).throw(RuntimeError("serializer failed")), _fixture_counter, PromptGateStatus.SERIALIZER_ERROR),
+        (lambda messages: object(), _fixture_counter, PromptGateStatus.INVALID_SERIALIZER_OUTPUT),
+        (_fixture_serializer, lambda output: (_ for _ in ()).throw(RuntimeError("tokenizer failed")), PromptGateStatus.TOKENIZER_ERROR),
+        (_fixture_serializer, lambda output: True, PromptGateStatus.INVALID_TOKEN_COUNT),
+        (_fixture_serializer, lambda output: -1, PromptGateStatus.INVALID_TOKEN_COUNT),
+    ],
+)
+def test_callback_errors_and_invalid_counts_fail_closed(tmp_path, serializer, counter, expected):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=serializer,
+        tokenizer_counter=counter,
+    )
+
+    assert result.receipt.status is expected
+    assert result.prompt is None
+    if expected in {PromptGateStatus.TOKENIZER_ERROR, PromptGateStatus.INVALID_TOKEN_COUNT}:
+        assert result.receipt.prompt_sha256 is not None
+
+
+def test_input_message_and_assembly_byte_bounds(monkeypatch):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    messages = [{"role": "system", "content": "rules"}]
+
+    monkeypatch.setattr(gate_module, "MAX_BASE_MESSAGES", 0)
+    assert _compile(assembly, messages).receipt.status is PromptGateStatus.INPUT_LIMIT_EXCEEDED
+
+    monkeypatch.setattr(gate_module, "MAX_BASE_MESSAGES", 128)
+    monkeypatch.setattr(gate_module, "MAX_ASSEMBLY_BYTES", 16)
+    assert _compile(assembly, messages).receipt.status is PromptGateStatus.INPUT_LIMIT_EXCEEDED
+
+
+def test_custom_assembly_container_is_rejected_before_row_iteration():
+    class ExplodingRows(list):
+        def __iter__(self):
+            raise AssertionError("custom rows must not be traversed")
+
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    assembly["selected_segments"] = ExplodingRows(assembly["selected_segments"])
+
+    result = _compile(assembly, [{"role": "system", "content": "rules"}])
+
+    assert result.receipt.status is PromptGateStatus.INVALID_ASSEMBLY
+    assert result.prompt is None
+
+
+def test_assembly_is_snapshotted_before_later_caller_mutation(monkeypatch):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    expected_text = assembly["assembled_text"]
+    original = gate_module._bounded_canonical_json
+
+    def snapshot_then_mutate(value, limit):
+        raw = original(value, limit)
+        if value is assembly:
+            value["assembled_text"] = "mutated after snapshot"
+            value["selected_segments"] = [{"segment_id": "inconsistent"}]
+        return raw
+
+    monkeypatch.setattr(gate_module, "_bounded_canonical_json", snapshot_then_mutate)
+    result = _compile(assembly, [{"role": "system", "content": "rules"}])
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.receipt.selected_evidence_ids == ("evidence-hot", "evidence-warm")
+    assert json.loads(result.prompt)[1]["content"] == expected_text
+
+
+def test_serialized_prompt_byte_limit_fails_without_prompt(monkeypatch):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    monkeypatch.setattr(gate_module, "MAX_SERIALIZED_PROMPT_BYTES", 8)
+
+    result = _compile(assembly, [{"role": "system", "content": "a longer fixed instruction"}])
+
+    assert result.receipt.status is PromptGateStatus.SERIALIZED_SIZE_EXCEEDED
+    assert result.prompt is None
