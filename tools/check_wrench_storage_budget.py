@@ -67,7 +67,45 @@ def normalized(path: Path) -> Path:
 
 
 def inventory_roots(repo: Path, storage: Path, extras: list[Path]) -> list[Path]:
-    candidates = [repo, storage, *discover_worktrees(repo), *managed_cache_roots(), *extras]
+    worktrees = discover_worktrees(repo)
+    required = [repo, storage, *worktrees, *extras]
+    missing = [path for path in required if not path.exists()]
+    if missing:
+        locations = ", ".join(str(path) for path in missing)
+        raise FileNotFoundError(f"required inventory root is missing: {locations}")
+
+    required_directories = [repo, storage, *worktrees]
+    not_directories = [path for path in required_directories if not path.is_dir()]
+    if not_directories:
+        locations = ", ".join(str(path) for path in not_directories)
+        raise NotADirectoryError(f"required inventory root is not a directory: {locations}")
+
+    # Cache locations are discovered from the environment and are often unused.
+    # They remain optional, unlike the roots explicitly selected for accounting.
+    optional_caches = []
+    for cache in managed_cache_roots():
+        try:
+            cache.stat()
+        except FileNotFoundError:
+            for parent in cache.parents:
+                try:
+                    parent.stat()
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    raise OSError(
+                        f"cannot inspect optional cache ancestor {parent}: {type(exc).__name__}"
+                    ) from exc
+                if not parent.is_dir():
+                    raise NotADirectoryError(
+                        f"optional cache root {cache} has a non-directory ancestor: {parent}"
+                    )
+                break
+            continue
+        except OSError as exc:
+            raise OSError(f"cannot inspect optional cache root {cache}: {type(exc).__name__}") from exc
+        optional_caches.append(cache)
+    candidates = [*required, *optional_caches]
     unique: dict[str, Path] = {}
     for candidate in candidates:
         path = normalized(candidate)
@@ -84,7 +122,7 @@ def inventory_roots(repo: Path, storage: Path, extras: list[Path]) -> list[Path]
 
 def directory_bytes(root: Path) -> tuple[int, list[str]]:
     if not root.exists():
-        return 0, []
+        return 0, [f"missing inventory root during scan: {root}"]
     if root.is_file():
         try:
             return root.stat().st_size, []
@@ -120,7 +158,8 @@ def reservation_dir(storage: Path) -> Path:
 @contextmanager
 def registry_lock(storage: Path) -> Iterator[None]:
     lock_path = storage / ".budget" / "reservations.lock"
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    # Do not recreate a missing storage root if it disappears after preflight.
+    lock_path.parent.mkdir(exist_ok=True)
     with lock_path.open("a+b") as handle:
         handle.seek(0, os.SEEK_END)
         if handle.tell() == 0:
@@ -185,7 +224,7 @@ def status(args: argparse.Namespace) -> int:
     try:
         roots = inventory_roots(args.repo_root, args.storage_root, args.include_root)
     except (OSError, subprocess.SubprocessError) as exc:
-        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__}))
+        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__, "detail": str(exc)}))
         return 3
     used, by_root, errors = current_usage(roots)
     reservations, reservation_errors = load_reservations(args.storage_root)
@@ -220,59 +259,74 @@ def reserve(args: argparse.Namespace) -> int:
         print("reservation must be a positive peak additional byte count", file=sys.stderr)
         return 2
     storage = args.storage_root
-    with registry_lock(storage):
-        try:
-            roots = inventory_roots(args.repo_root, storage, args.include_root)
-        except (OSError, subprocess.SubprocessError) as exc:
-            print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__}))
-            return 3
-        used, _, errors = current_usage(roots)
-        reservations, reservation_errors = load_reservations(storage)
-        errors.extend(reservation_errors)
-        if errors:
-            print(json.dumps({"status": "BLOCKED_SCAN", "errors": errors[:100]}, indent=2))
-            return 3
-        if args.job_id in reservations:
-            print(json.dumps({"status": "BLOCKED_DUPLICATE_JOB_ID", "job_id": args.job_id}))
-            return 2
-        reserved = sum(int(item["reserve_bytes"]) for item in reservations.values())
-        projected = used + reserved + args.reserve_bytes
-        if projected >= LIMIT_BYTES:
-            print(json.dumps({
-                "status": "BLOCKED_LIMIT",
-                "limit_bytes": LIMIT_BYTES,
-                "actual_bytes": used,
-                "active_reservations_bytes": reserved,
-                "requested_reserve_bytes": args.reserve_bytes,
-                "projected_bytes": projected,
-            }, indent=2))
-            return 2
+    # Validate before acquiring the registry lock because the lock helper may
+    # create .budget below storage. A missing storage root must remain missing.
+    try:
+        inventory_roots(args.repo_root, storage, args.include_root)
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__, "detail": str(exc)}))
+        return 3
+    try:
+        with registry_lock(storage):
+            return reserve_locked(args, storage)
+    except OSError as exc:
+        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__, "detail": str(exc)}))
+        return 3
 
-        directory = reservation_dir(storage)
-        directory.mkdir(parents=True, exist_ok=True)
-        reservation = {
-            "schema": SCHEMA,
-            "job_id": args.job_id,
-            "reserve_bytes": args.reserve_bytes,
-            "created_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-            "repo_root": str(args.repo_root),
-            "storage_root": str(storage),
-            "included_roots": [str(root) for root in roots],
+
+def reserve_locked(args: argparse.Namespace, storage: Path) -> int:
+    try:
+        roots = inventory_roots(args.repo_root, storage, args.include_root)
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__, "detail": str(exc)}))
+        return 3
+    used, _, errors = current_usage(roots)
+    reservations, reservation_errors = load_reservations(storage)
+    errors.extend(reservation_errors)
+    if errors:
+        print(json.dumps({"status": "BLOCKED_SCAN", "errors": errors[:100]}, indent=2))
+        return 3
+    if args.job_id in reservations:
+        print(json.dumps({"status": "BLOCKED_DUPLICATE_JOB_ID", "job_id": args.job_id}))
+        return 2
+    reserved = sum(int(item["reserve_bytes"]) for item in reservations.values())
+    projected = used + reserved + args.reserve_bytes
+    if projected >= LIMIT_BYTES:
+        print(json.dumps({
+            "status": "BLOCKED_LIMIT",
             "limit_bytes": LIMIT_BYTES,
-        }
-        destination = directory / f"{args.job_id}.json"
-        fd, temp_name = tempfile.mkstemp(prefix=f"{args.job_id}.", suffix=".tmp", dir=directory)
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-                json.dump(reservation, handle, indent=2)
-                handle.write("\n")
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(temp_name, destination)
-        finally:
-            if os.path.exists(temp_name):
-                os.unlink(temp_name)
-        print(json.dumps({"status": "RESERVED", **reservation}, indent=2))
+            "actual_bytes": used,
+            "active_reservations_bytes": reserved,
+            "requested_reserve_bytes": args.reserve_bytes,
+            "projected_bytes": projected,
+        }, indent=2))
+        return 2
+
+    directory = reservation_dir(storage)
+    directory.mkdir(parents=True, exist_ok=True)
+    reservation = {
+        "schema": SCHEMA,
+        "job_id": args.job_id,
+        "reserve_bytes": args.reserve_bytes,
+        "created_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "repo_root": str(args.repo_root),
+        "storage_root": str(storage),
+        "included_roots": [str(root) for root in roots],
+        "limit_bytes": LIMIT_BYTES,
+    }
+    destination = directory / f"{args.job_id}.json"
+    fd, temp_name = tempfile.mkstemp(prefix=f"{args.job_id}.", suffix=".tmp", dir=directory)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(reservation, handle, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_name, destination)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
+    print(json.dumps({"status": "RESERVED", **reservation}, indent=2))
     return 0
 
 
@@ -280,20 +334,24 @@ def release(args: argparse.Namespace) -> int:
     if not JOB_ID_RE.fullmatch(args.job_id):
         print("invalid job id", file=sys.stderr)
         return 2
-    with registry_lock(args.storage_root):
-        path = reservation_dir(args.storage_root) / f"{args.job_id}.json"
-        if not path.is_file():
-            print(json.dumps({"status": "NOT_FOUND", "job_id": args.job_id}))
-            return 2
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            print(json.dumps({"status": "BLOCKED_INVALID_RESERVATION", "error": type(exc).__name__}))
-            return 3
-        if not isinstance(data, dict) or data.get("schema") != SCHEMA or data.get("job_id") != args.job_id:
-            print(json.dumps({"status": "BLOCKED_INVALID_RESERVATION"}))
-            return 3
-        path.unlink()
+    try:
+        with registry_lock(args.storage_root):
+            path = reservation_dir(args.storage_root) / f"{args.job_id}.json"
+            if not path.is_file():
+                print(json.dumps({"status": "NOT_FOUND", "job_id": args.job_id}))
+                return 2
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                print(json.dumps({"status": "BLOCKED_INVALID_RESERVATION", "error": type(exc).__name__}))
+                return 3
+            if not isinstance(data, dict) or data.get("schema") != SCHEMA or data.get("job_id") != args.job_id:
+                print(json.dumps({"status": "BLOCKED_INVALID_RESERVATION"}))
+                return 3
+            path.unlink()
+    except OSError as exc:
+        print(json.dumps({"status": "BLOCKED_SCAN", "error": type(exc).__name__, "detail": str(exc)}))
+        return 3
     print(json.dumps({"status": "RELEASED", "job_id": args.job_id}))
     return 0
 

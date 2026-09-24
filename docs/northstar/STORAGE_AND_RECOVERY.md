@@ -85,9 +85,11 @@ evicted handles return explicit misses and trigger retrieval/escalation.
 scans configured roots and performs cooperative reservations. It rejects
 actual plus reserved bytes at or above 50 GB. It does not police every write,
 enforce physical-volume headroom, follow arbitrary links, diagnose disk
-health or monitor processes. Missing roots currently contribute zero bytes;
-detecting a missing expected root and blocking the job is still a manual
-admission responsibility, not behavior enforced by this checker.
+health or monitor processes. It blocks admission when the repository, approved
+storage root, a discovered Git worktree, or an explicit `--include-root` is
+missing; absent optional cache locations are omitted. Operators must still
+include every external Wrench path and link target. The checker cannot detect
+unknown roots that were never configured or confirm physical disk headroom.
 
 The v2 job runner and stores still need save-time limits, headroom checks,
 bounded retention and recovery. Until implemented, use only explicitly bounded
