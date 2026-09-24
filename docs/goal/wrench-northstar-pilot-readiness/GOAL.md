@@ -164,3 +164,11 @@ behavior, and any organizational authorization. Participant contact or data
 collection must wait for those decisions and tested handling. In parallel,
 engineering may continue reversible offline E0 work under its existing
 authority.
+
+### E4 owner decisions
+
+The concise [E4 owner decision checklist](../../reports/wrench-northstar-pilot-readiness/owner-decision-checklist.md)
+maps the unresolved preregistration fields to the current proposal and review.
+It records no approvals, participant activity, or E4 utility evidence; full E4
+remains gated on the frozen protocol, accepted upstream stages and client
+integrations, and owner-approved rights, study, and operating controls.
