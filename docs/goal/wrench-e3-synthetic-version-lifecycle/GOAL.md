@@ -90,3 +90,10 @@ source/test hashes; see the [repair evaluation](../../evals/wrench-e3-synthetic-
 and [repair report](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#repair-follow-up).
 The symlink fixture remains skipped on this Windows host. Root retains commit
 and shared-index ownership. Production E3 acceptance remains open.
+
+At base HEAD `3982b0fd1ca984da44e1adfb1100cb7b69d7c7c8`, reinspection found
+`reset_personal` already guarded by `@_serialized_writer`. A dedicated
+cross-process regression now pauses reset while holding the OS lock and proves
+a second process cannot activate from its stale generation over the reset.
+The focused regression passed; exact evidence, storage/resource readings, and
+the independent review disposition are in the [reset serialization report](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#reset-serialization-regression-follow-up).

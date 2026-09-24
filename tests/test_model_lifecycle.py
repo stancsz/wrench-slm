@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 from unittest.mock import patch
@@ -19,6 +20,9 @@ from wrench_harness import model_lifecycle as lifecycle
 
 SCRATCH_ROOT = Path(
     r"C:\wrench-slm-data\tmp\W2-NS-E3-SYNTHETIC-VERSION-LIFECYCLE-20260924\impl"
+)
+RESET_SERIALIZATION_SCRATCH_ROOT = Path(
+    r"C:\wrench-slm-data\tmp\W2-NS-E3-RESET-SERIALIZATION-20260924"
 )
 FACTORY = {
     "foundation": b"synthetic-foundation-v1",
@@ -430,6 +434,150 @@ def test_os_lock_blocks_second_process_and_stale_generation_is_rejected(store_ro
         second.stage_candidate("stale", parent_version_id="factory", payloads={
             **FACTORY, "personal": b"stale"
         })
+
+
+def test_reset_serializes_against_stale_process_activation():
+    RESET_SERIALIZATION_SCRATCH_ROOT.mkdir(parents=True, exist_ok=True)
+    job_scratch = Path(tempfile.mkdtemp(
+        prefix="case-", dir=RESET_SERIALIZATION_SCRATCH_ROOT
+    ))
+    store_root = job_scratch / "store"
+    store_root.mkdir()
+    store = _new_store(store_root)
+    _candidate(store, "personal-1")
+    store.admit_candidate("personal-1")
+    store.activate_candidate("personal-1")
+    _candidate(store, "personal-2")
+    store.admit_candidate("personal-2")
+
+    resetter = lifecycle.ModelLifecycle.open(store_root)
+    markers = job_scratch / "markers"
+    markers.mkdir()
+    ready = markers / "activation-ready"
+    attempt = markers / "activation-attempt"
+    acquired = markers / "activation-acquired"
+    result = markers / "activation-result"
+    start_activation = markers / "start-activation"
+    reset_staged = threading.Event()
+    finish_reset = threading.Event()
+    reset_errors = []
+    process = None
+    reset_thread = None
+    original_write_version = resetter._write_version
+
+    def pause_after_reset_version(version_id, **kwargs):
+        digest = original_write_version(version_id, **kwargs)
+        if version_id == "reset-race":
+            reset_staged.set()
+            if not finish_reset.wait(timeout=10):
+                raise AssertionError("test did not release the staged reset")
+        return digest
+
+    def run_reset():
+        try:
+            resetter.reset_personal("reset-race")
+        except Exception as exc:  # surfaced in the test thread below
+            reset_errors.append(exc)
+
+    code = """
+import sys
+import time
+from contextlib import contextmanager
+from pathlib import Path
+from wrench_harness.model_lifecycle import ModelLifecycle, ModelLifecycleError
+
+root, ready, start, attempt, acquired, result = map(Path, sys.argv[1:])
+store = ModelLifecycle.open(root)
+original_lock = store._writer_lock
+
+@contextmanager
+def observed_lock():
+    attempt.write_text("attempting")
+    with original_lock():
+        acquired.write_text("acquired")
+        yield
+
+store._writer_lock = observed_lock
+ready.write_text("ready")
+deadline = time.monotonic() + 10
+while not start.exists() and time.monotonic() < deadline:
+    time.sleep(0.01)
+try:
+    store.activate_candidate("personal-2")
+    outcome = "activated"
+except ModelLifecycleError as exc:
+    outcome = str(exc)
+result.write_text(outcome)
+"""
+    try:
+        process = subprocess.Popen(
+            [sys.executable, "-c", code, str(store_root), str(ready),
+             str(start_activation), str(attempt), str(acquired), str(result)],
+            cwd=Path(__file__).resolve().parents[1], env=os.environ.copy(),
+            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+        )
+        deadline = time.monotonic() + 5
+        while process.poll() is None and not ready.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert ready.exists(), "competing process did not open its generation snapshot"
+
+        resetter._write_version = pause_after_reset_version
+        reset_thread = threading.Thread(target=run_reset, daemon=True)
+        reset_thread.start()
+        assert reset_staged.wait(timeout=5), "reset did not reach the serialized staging point"
+
+        start_activation.write_text("go")
+        deadline = time.monotonic() + 5
+        while process.poll() is None and not attempt.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert attempt.exists(), "competing process did not attempt activation"
+        time.sleep(0.2)
+        assert not acquired.exists(), "activation acquired the writer lock during reset"
+        assert not result.exists(), "activation completed before the reset committed"
+
+        finish_reset.set()
+        reset_thread.join(timeout=10)
+        assert not reset_thread.is_alive(), "reset did not finish after releasing the barrier"
+        assert process.wait(timeout=10) == 0
+        assert not reset_errors, reset_errors
+        assert result.read_text(encoding="ascii") == "stale_instance"
+
+        reopened = lifecycle.ModelLifecycle.open(store_root)
+        assert reopened.active_version_id == "reset-race"
+        assert reopened.previous_version_id == "personal-1"
+        state = json.loads((store_root / "state.json").read_text(encoding="ascii"))
+        assert state["generation"] == 2
+        assert state["factory"] == "factory"
+        factory_manifest = json.loads(
+            (store_root / "versions" / "factory" / "manifest.json").read_text(encoding="ascii")
+        )
+        assert state["factory_manifest_sha256"] == lifecycle._digest(
+            lifecycle._canonical(factory_manifest)
+        )
+        active_manifest = json.loads(
+            (store_root / "versions" / "reset-race" / "manifest.json").read_text(encoding="ascii")
+        )
+        previous_manifest = json.loads(
+            (store_root / "versions" / "personal-1" / "manifest.json").read_text(encoding="ascii")
+        )
+        assert state["active_manifest_sha256"] == lifecycle._digest(
+            lifecycle._canonical(active_manifest)
+        )
+        assert state["previous_manifest_sha256"] == lifecycle._digest(
+            lifecycle._canonical(previous_manifest)
+        )
+    finally:
+        finish_reset.set()
+        start_activation.touch(exist_ok=True)
+        if reset_thread is not None:
+            reset_thread.join(timeout=10)
+        if process is not None and process.poll() is None:
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+        shutil.rmtree(job_scratch, ignore_errors=True)
 
 
 def test_rejected_admission_receipt_cannot_activate(store_root):

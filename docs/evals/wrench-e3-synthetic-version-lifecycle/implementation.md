@@ -73,3 +73,27 @@ integration and commit. No model, client, endpoint, provider, download, or real
 task data was used. This remains synthetic control-plane evidence; production
 recovery, power-loss durability, runtime compatibility, and model utility are
 not established.
+
+## Reset serialization regression evaluation
+
+Date: 2026-09-24 (America/Edmonton)
+Result: **PASS for the bounded concurrency regression**
+Base HEAD: `3982b0fd1ca984da44e1adfb1100cb7b69d7c7c8`
+Report: [reset serialization follow-up](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#reset-serialization-regression-follow-up)
+
+At the assigned base, `reset_personal` already had the serialized-writer
+decorator; the earlier missing-decorator finding did not apply to this
+revision. The new cross-process regression,
+`test_reset_serializes_against_stale_process_activation`, pauses reset while
+the OS lock is held and verifies a competing process cannot acquire it before
+reset commits. The stale activation then fails, and the test checks generation,
+active/prior IDs and their manifest digests, plus the preserved factory ID and
+digest. The focused test passed **1/1 in 5.48 seconds**; `git diff --check`
+passed. Test SHA-256:
+`008B8738D7C0BD493092CAC55F797CFD8F6913678122F38F6B5A472A20461CB3`.
+
+Storage remained within the 50 GB limit, C: retained over 5 GB free, and RAM
+and VRAM remained above 10% free. The full lifecycle suite was not rerun for
+this test-only follow-up. Independent static review passed on the exact source
+and test hashes in the [report](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#reset-serialization-regression-follow-up).
+Production E3 and power-loss recovery remain open.

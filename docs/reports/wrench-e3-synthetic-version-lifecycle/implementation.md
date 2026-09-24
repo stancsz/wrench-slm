@@ -156,3 +156,49 @@ canonical receipt checks, fallback recovery for a malformed active receipt,
 and the stale-reset regression. No client, endpoint, provider, model, download,
 or real task data was used. Power-loss, volume-loss, and non-cooperating
 filesystem-writer recovery remain unproven.
+
+## Reset serialization regression follow-up
+
+Date: 2026-09-24 (America/Edmonton)
+Job: `W2-NS-E3-RESET-SERIALIZATION-20260924`
+Nonce: `E3RS-9A24`
+Base HEAD: `3982b0fd1ca984da44e1adfb1100cb7b69d7c7c8`
+
+Reinspection confirmed `reset_personal` already carried exactly one
+`@_serialized_writer` at the assigned base. This follow-up adds a deterministic
+cross-process regression instead of changing the lifecycle source. The test
+pauses reset after its immutable version is staged while the OS lock is held,
+observes a second process attempting that lock, verifies it cannot acquire the
+lock before reset commits, then verifies its stale activation is rejected.
+Final generation, active/prior IDs and both manifest digests are checked.
+The final assertions also verify that the factory ID and its manifest digest
+remain intact.
+The test owns a temporary child under
+`C:\wrench-slm-data\tmp\W2-NS-E3-RESET-SERIALIZATION-20260924` and removes only
+that child.
+
+The focused command was:
+
+```powershell
+$env:PYTHONPATH='C:\wrench-slm-data\cache\wrench-v2-test-deps-20260923\site-packages;src'
+& 'C:\Users\stanc\AppData\Roaming\uv\python\cpython-3.11.16-windows-x86_64-none\python.exe' -m pytest -p no:cacheprovider --basetemp='C:\wrench-slm-data\tmp\W2-NS-E3-RESET-SERIALIZATION-20260924\pytest' tests/test_model_lifecycle.py -k test_reset_serializes_against_stale_process_activation -q
+```
+
+Result: **1 passed, 27 deselected in 5.48s**. `git diff --check` passed.
+Source SHA-256 remained
+`6A5C586981B26646223815BD161FA1191CB2FA0AA75CC8CAE3E2D44407680E56`; test
+SHA-256 is
+`008B8738D7C0BD493092CAC55F797CFD8F6913678122F38F6B5A472A20461CB3`.
+
+Storage after the test was `WITHIN_LIMIT`: 1,714,968,717 actual bytes plus
+2,103,000 bytes of active reservations. C: had 173,045,948,416 bytes free;
+RAM was 54.4% free and the RTX 5060 Ti had 15,602 MiB free of 16,311 MiB.
+After the job stopped and its temporary files were accounted for, its
+reservation was released. Final storage was `WITHIN_LIMIT` at 1,714,974,685
+actual bytes plus 103,000 bytes of other active reservations. No model, client,
+endpoint, provider, or real task data was used.
+Independent static review passed under job
+`W2-NS-E3-RESET-SERIALIZATION-20260924`, nonce `E3RS-9A24`, on the exact source
+and test hashes above. The reviewer confirmed the factory, active, and prior manifest
+identity assertions; it did not run tests. The current source guard predates
+this follow-up, which adds concurrency evidence for that existing behavior.
