@@ -54,6 +54,7 @@ def test_hook_observer_public_api_is_exported():
         "OpenCodeContextHookObservation",
         "OpenCodeContextHookObserver",
     }.issubset(set(hook_projection.__all__))
+    assert CONTEXT_HOOK_OBSERVATION_SCHEMA == "wrench.opencode.context-hook-observation.v2"
 
 
 def test_hook_observer_measures_returned_callback_once_and_repeatedly():
@@ -86,6 +87,62 @@ def test_hook_observer_measures_returned_callback_once_and_repeatedly():
     ]
     assert not observation.calls_capped
     assert not observation.saturated
+
+
+def test_hook_observer_hashes_only_getter_selected_session_scope():
+    event = {"sessionID": "ses_scope_fixture", "messages": [{"text": "secret"}]}
+    observer = OpenCodeContextHookObserver(
+        lambda _event: "callback-result",
+        monotonic_ns=_FakeMonotonicClock(10, 15),
+        session_id_getter=lambda supplied: supplied["sessionID"],
+    )
+
+    assert asyncio.run(observer(event)) == "callback-result"
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.calls[0].scope_sha256 == hashlib.sha256(
+        b"ses_scope_fixture"
+    ).hexdigest()
+    assert "ses_scope_fixture" not in repr(observation)
+    assert "secret" not in repr(observation)
+
+
+def test_hook_observer_getter_exception_is_swallowed_and_callback_runs():
+    observer = OpenCodeContextHookObserver(
+        lambda value: value,
+        monotonic_ns=_FakeMonotonicClock(10, 15),
+        session_id_getter=lambda _value: (_ for _ in ()).throw(ValueError("secret")),
+    )
+
+    assert asyncio.run(observer("callback-value")) == "callback-value"
+    observation = observer.observation
+    assert observation is not None
+    assert observation.calls[0].scope_sha256 is None
+    assert "secret" not in repr(observation)
+
+
+def test_hook_observer_base_exception_from_scope_getter_does_not_skip_callback():
+    class _GetterAbort(BaseException):
+        pass
+
+    calls = []
+
+    def getter(_value):
+        raise _GetterAbort("private getter failure")
+
+    observer = OpenCodeContextHookObserver(
+        lambda value: calls.append(value) or "callback-result",
+        monotonic_ns=_FakeMonotonicClock(10, 15),
+        session_id_getter=getter,
+    )
+
+    assert asyncio.run(observer("callback-value")) == "callback-result"
+    observation = observer.observation
+    assert calls == ["callback-value"]
+    assert observation is not None
+    assert observation.calls[0].scope_sha256 is None
+    assert "private getter failure" not in repr(observation)
 
 
 def test_hook_observer_records_sync_error_without_exception_content():

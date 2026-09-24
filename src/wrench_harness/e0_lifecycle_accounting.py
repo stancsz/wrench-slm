@@ -25,9 +25,13 @@ from .e0_route_preparation import (
 )
 from .opencode_context import OpenCodePreparationJoin
 from .opencode_hook_projection import (
+    CONTEXT_HOOK_OBSERVATION_SCHEMA,
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
+    MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS,
     OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
+    OpenCodeContextHookCall,
+    OpenCodeContextHookObservation,
     OpenCodeContextHookProjection,
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
@@ -45,6 +49,7 @@ from .outcome_receipt import (
 
 
 ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v4"
+ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION = "wrench.e0.partial-lifecycle-trace.v5"
 MAX_ENVELOPE_BYTES = 16 * 1024
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _ROUTE_ACTIONS = frozenset({"read_file", "read_lines", "literal_search"})
@@ -85,6 +90,7 @@ class PartialTraceStatus(str, Enum):
     INVALID_PROJECTION = "invalid_projection"
     INVALID_RECEIPT = "invalid_receipt"
     INVALID_ROUTE_RESULT = "invalid_route_result"
+    INVALID_OBSERVATION = "invalid_observation"
     JOIN_MISMATCH = "join_mismatch"
 
 
@@ -113,6 +119,7 @@ def build_partial_lifecycle_trace(
     route_preparation_result: RoutePreparationResult | None = None,
     transition_before_projection_result: OpenCodeProjectionResult | None = None,
     transition_expected_message: object | None = None,
+    context_hook_observation: OpenCodeContextHookObservation | None = None,
 ) -> PartialTraceResult:
     """Bind a READY hook projection to a valid outcome and preparation join.
 
@@ -200,6 +207,17 @@ def build_partial_lifecycle_trace(
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "receipt_join_mismatch")
     if projection.session_id != join.session_id:
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_session_mismatch")
+
+    observation_summary = None
+    if context_hook_observation is not None:
+        observation_summary = _context_hook_observation_summary(
+            context_hook_observation, join.session_id
+        )
+        if observation_summary is None:
+            return _failure(
+                PartialTraceStatus.INVALID_OBSERVATION,
+                "context_hook_observation_invalid_or_unbound",
+            )
 
     prepared_transition_summary = None
     transition_inputs_present = (
@@ -297,8 +315,13 @@ def build_partial_lifecycle_trace(
     if not _bounded_opaque_id(run_id) or not _bounded_opaque_id(task_id):
         return _failure(PartialTraceStatus.INVALID_RECEIPT, "receipt_correlation_id_invalid")
 
+    envelope_schema = (
+        ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION
+        if observation_summary is not None
+        else ENVELOPE_SCHEMA
+    )
     envelope_payload = {
-        "schema": ENVELOPE_SCHEMA,
+        "schema": envelope_schema,
         "provenance": "caller_supplied_structural_join_untrusted",
         "run_id": {"value": run_id, "meaning": "caller_correlation_only"},
         "task_id_ref": task_id,
@@ -320,6 +343,8 @@ def build_partial_lifecycle_trace(
         ],
         "unavailable_dimensions": list(_UNAVAILABLE_DIMENSIONS),
     }
+    if observation_summary is not None:
+        envelope_payload["context_hook_observation"] = observation_summary
     try:
         raw = json.dumps(
             envelope_payload,
@@ -333,11 +358,101 @@ def build_partial_lifecycle_trace(
     if len(raw) > MAX_ENVELOPE_BYTES:
         return _failure(PartialTraceStatus.INVALID_INPUT, "envelope_size_limit_exceeded")
     envelope = PartialTraceEnvelope(
-        schema=ENVELOPE_SCHEMA,
+        schema=envelope_schema,
         payload_json=raw.decode("utf-8"),
         sha256=hashlib.sha256(raw).hexdigest(),
     )
     return PartialTraceResult(PartialTraceStatus.READY, envelope, "ready")
+
+
+def _context_hook_observation_summary(
+    observation: OpenCodeContextHookObservation,
+    session_id: str,
+) -> dict[str, object] | None:
+    """Validate a complete bounded observer snapshot and retain only safe fields."""
+    max_elapsed = (1 << 63) - 1
+    if (
+        type(observation) is not OpenCodeContextHookObservation
+        or type(observation.schema) is not str
+        or observation.schema != CONTEXT_HOOK_OBSERVATION_SCHEMA
+        or type(observation.opencode_context_hook_version) is not str
+        or observation.opencode_context_hook_version != OPENCODE_CONTEXT_HOOK_VERSION
+        or type(observation.invocation_count) is not int
+        or not 1 <= observation.invocation_count <= MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS
+        or type(observation.completed_count) is not int
+        or observation.completed_count != observation.invocation_count
+        or type(observation.returned_count) is not int
+        or type(observation.error_count) is not int
+        or observation.returned_count + observation.error_count != observation.completed_count
+        or type(observation.timing_error_count) is not int
+        or not 0 <= observation.timing_error_count <= observation.invocation_count
+        or type(observation.elapsed_ns) is not int
+        or not 0 <= observation.elapsed_ns <= max_elapsed
+        or type(observation.calls) is not tuple
+        or len(observation.calls) != observation.invocation_count
+        or observation.calls_capped is not False
+        or observation.saturated is not False
+    ):
+        return None
+    try:
+        session_digest = hashlib.sha256(session_id.encode("utf-8")).hexdigest()
+    except (AttributeError, UnicodeError):
+        return None
+    row_sums = 0
+    returned = 0
+    errors = 0
+    timing_errors = 0
+    calls: list[dict[str, object]] = []
+    for expected_index, row in enumerate(observation.calls, start=1):
+        if (
+            type(row) is not OpenCodeContextHookCall
+            or type(row.invocation_index) is not int
+            or row.invocation_index != expected_index
+            or type(row.result) is not str
+            or row.result not in ("returned", "error")
+            or (row.elapsed_ns is not None and (
+                type(row.elapsed_ns) is not int
+                or not 0 <= row.elapsed_ns <= max_elapsed
+            ))
+            or type(row.scope_sha256) is not str
+            or not _DIGEST.fullmatch(row.scope_sha256)
+            or row.scope_sha256 != session_digest
+        ):
+            return None
+        if row.elapsed_ns is not None:
+            row_sums += row.elapsed_ns
+        else:
+            timing_errors += 1
+        if row.result == "returned":
+            returned += 1
+        else:
+            errors += 1
+        calls.append({
+            "invocation_index": row.invocation_index,
+            "elapsed_ns": row.elapsed_ns,
+            "result": row.result,
+        })
+    if (
+        returned != observation.returned_count
+        or errors != observation.error_count
+        or row_sums != observation.elapsed_ns
+        or timing_errors != observation.timing_error_count
+    ):
+        return None
+    return {
+        "provenance": "caller_supplied_unauthenticated_structural_observation",
+        "schema": observation.schema,
+        "opencode_context_hook_version": observation.opencode_context_hook_version,
+        "invocation_count": observation.invocation_count,
+        "completed_count": observation.completed_count,
+        "returned_count": observation.returned_count,
+        "error_count": observation.error_count,
+        "timing_error_count": observation.timing_error_count,
+        "elapsed_ns": observation.elapsed_ns,
+        "session_id_sha256": session_digest,
+        "all_rows_bound_to_session": True,
+        "calls": calls,
+    }
 
 
 def _route_summary(result: RuleRouteResult, expected_snapshot_sha256: str) -> dict[str, object] | None:
@@ -459,6 +574,7 @@ def _failure(status: PartialTraceStatus, reason: str) -> PartialTraceResult:
 
 __all__ = [
     "ENVELOPE_SCHEMA",
+    "ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION",
     "MAX_ENVELOPE_BYTES",
     "PartialTraceEnvelope",
     "PartialTraceResult",

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import json
 from dataclasses import replace
 
 from wrench_harness.artifact_store import ArtifactStore
 from wrench_harness.e0_lifecycle_accounting import (
     ENVELOPE_SCHEMA,
+    ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION,
     PartialTraceStatus,
     build_partial_lifecycle_trace,
 )
@@ -20,6 +23,9 @@ from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegi
 from wrench_harness.opencode_context import prepare_opencode_e0_context
 from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.opencode_hook_projection import (
+    CONTEXT_HOOK_OBSERVATION_SCHEMA,
+    OpenCodeContextHookObserver,
+    OPENCODE_CONTEXT_HOOK_VERSION,
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
     project_opencode_context_hook,
@@ -212,6 +218,7 @@ def test_partial_trace_joins_valid_references_without_copying_hook_content(tmp_p
     assert result.envelope is not None
     payload = json.loads(result.envelope.payload_json)
     assert result.envelope.schema == ENVELOPE_SCHEMA
+    assert payload["schema"] == ENVELOPE_SCHEMA
     assert payload["provenance"] == "caller_supplied_structural_join_untrusted"
     assert payload["run_id"] == {"value": "run-fixture-1", "meaning": "caller_correlation_only"}
     assert payload["session_id_ref"] == join.session_id
@@ -227,6 +234,111 @@ def test_partial_trace_joins_valid_references_without_copying_hook_content(tmp_p
     assert "provider_final_serialization_and_tokenizer_parity" in payload["unavailable_dimensions"]
     assert "synthetic fixture" not in result.envelope.payload_json
     assert len(result.envelope.sha256) == 64
+    assert "context_hook_observation" not in payload
+
+
+def _scoped_observation(session_id="ses_partial_trace_fixture"):
+    observer = OpenCodeContextHookObserver(
+        lambda _event: None,
+        monotonic_ns=iter((10, 15)).__next__,
+        session_id_getter=lambda event: event["sessionID"],
+    )
+    asyncio.run(observer({"sessionID": session_id, "messages": [{"text": "secret"}]}))
+    return observer.observation
+
+
+def test_partial_trace_joins_complete_scoped_hook_observation(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    observation = _scoped_observation()
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation),
+        context_hook_observation=observation,
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    assert result.envelope.schema == ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["schema"] == ENVELOPE_SCHEMA_WITH_CONTEXT_HOOK_OBSERVATION
+    summary = payload["context_hook_observation"]
+    assert summary["provenance"] == "caller_supplied_unauthenticated_structural_observation"
+    assert summary["schema"] == CONTEXT_HOOK_OBSERVATION_SCHEMA
+    assert summary["opencode_context_hook_version"] == OPENCODE_CONTEXT_HOOK_VERSION
+    assert summary["session_id_sha256"] == hashlib.sha256(
+        join.session_id.encode("utf-8")
+    ).hexdigest()
+    assert summary["all_rows_bound_to_session"] is True
+    assert summary["calls"] == [{
+        "invocation_index": 1, "elapsed_ns": 5, "result": "returned",
+    }]
+    assert "ses_partial_trace_fixture" not in json.dumps(summary)
+    assert "secret" not in result.envelope.payload_json
+
+
+def test_partial_trace_rejects_unscoped_or_mixed_session_observation(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    unscoped = _scoped_observation()
+    unscoped = replace(
+        unscoped,
+        calls=(replace(unscoped.calls[0], scope_sha256=None),),
+    )
+    mixed_observer = OpenCodeContextHookObserver(
+        lambda _event: None,
+        monotonic_ns=iter((10, 15, 20, 28)).__next__,
+        session_id_getter=lambda event: event["sessionID"],
+    )
+    asyncio.run(mixed_observer({"sessionID": join.session_id}))
+    asyncio.run(mixed_observer({"sessionID": "ses_other_session"}))
+    mixed = mixed_observer.observation
+
+    for observation in (unscoped, mixed):
+        result = build_partial_lifecycle_trace(
+            join, _projection(), _finalized(join, preparation),
+            context_hook_observation=observation,
+        )
+        assert result.status is PartialTraceStatus.INVALID_OBSERVATION
+        assert result.envelope is None
+
+
+def test_partial_trace_rejects_incomplete_capped_saturated_or_mismatched_observation(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    observation = _scoped_observation()
+
+    class _HostileEquality:
+        def __eq__(self, _other):
+            raise AssertionError("untrusted equality must not run")
+
+    invalid = (
+        replace(observation, completed_count=0),
+        replace(observation, calls_capped=True),
+        replace(observation, saturated=True),
+        replace(observation, schema="wrench.opencode.context-hook-observation.v1"),
+        replace(observation, opencode_context_hook_version="wrong-version"),
+        replace(observation, schema=_HostileEquality()),
+        replace(observation, opencode_context_hook_version=_HostileEquality()),
+    )
+
+    for candidate in invalid:
+        result = build_partial_lifecycle_trace(
+            join, _projection(), _finalized(join, preparation),
+            context_hook_observation=candidate,
+        )
+        assert result.status is PartialTraceStatus.INVALID_OBSERVATION
+        assert result.envelope is None
+
+
+def test_partial_trace_rejects_impossible_observation_timing_error_count(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    observation = _scoped_observation()
+    impossible = replace(observation, timing_error_count=3)
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation),
+        context_hook_observation=impossible,
+    )
+
+    assert result.status is PartialTraceStatus.INVALID_OBSERVATION
+    assert result.envelope is None
 
 
 def test_partial_trace_requires_ready_projection(tmp_path):

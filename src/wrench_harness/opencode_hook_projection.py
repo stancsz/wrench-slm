@@ -27,7 +27,7 @@ MAX_HOOK_SYSTEM_PARTS = 128
 MAX_HOOK_TOOLS = 256
 OPENCODE_CONTEXT_HOOK_VERSION = "2.0.15"
 PROJECTION_SCHEMA = "wrench.opencode.context-hook-projection.v1"
-CONTEXT_HOOK_OBSERVATION_SCHEMA = "wrench.opencode.context-hook-observation.v1"
+CONTEXT_HOOK_OBSERVATION_SCHEMA = "wrench.opencode.context-hook-observation.v2"
 PREPARED_TRANSITION_RECEIPT_SCHEMA = "wrench.opencode.prepared-context-transition-receipt.v1"
 MAX_PREPARED_TRANSITION_RECEIPT_BYTES = 4096
 _CONTEXT_FIELDS = frozenset({
@@ -153,6 +153,7 @@ class OpenCodeContextHookCall:
     invocation_index: int
     elapsed_ns: int | None
     result: str
+    scope_sha256: str | None = None
 
 
 _MAX_OBSERVATION_COUNT = (1 << 31) - 1
@@ -166,6 +167,10 @@ class OpenCodeContextHookObserver:
     The wrapper is async to match OpenCode's awaited Promise callback boundary.
     Synchronous callbacks are accepted too. Exceptions propagate unchanged;
     only the bounded result category is stored in the observation.
+
+    ``session_id_getter`` is caller supplied and receives the original
+    invocation arguments. It must be side-effect-free: inspect the session ID
+    without mutating or retaining the arguments or any other callback content.
     """
 
     def __init__(
@@ -173,11 +178,17 @@ class OpenCodeContextHookObserver:
         callback: Callable[..., Any],
         *,
         monotonic_ns: Callable[[], Any] = time.monotonic_ns,
+        session_id_getter: Callable[..., Any] | None = None,
     ) -> None:
-        if not callable(callback) or not callable(monotonic_ns):
+        if (
+            not callable(callback)
+            or not callable(monotonic_ns)
+            or (session_id_getter is not None and not callable(session_id_getter))
+        ):
             raise TypeError("callback_and_clock_must_be_callable")
         self._callback = callback
         self._monotonic_ns = monotonic_ns
+        self._session_id_getter = session_id_getter
         self._lock = threading.Lock()
         self._invocation_count = 0
         self._completed_count = 0
@@ -216,6 +227,8 @@ class OpenCodeContextHookObserver:
             )
             self._saturated |= did_saturate
             invocation_index = self._invocation_count
+
+        scope_sha256 = _session_scope_sha256(self._session_id_getter, args, kwargs)
 
         started_ns, timing_errors = _safe_monotonic_ns(self._monotonic_ns)
         result = "returned"
@@ -267,6 +280,7 @@ class OpenCodeContextHookObserver:
                         invocation_index=invocation_index,
                         elapsed_ns=elapsed,
                         result=result,
+                        scope_sha256=scope_sha256,
                     ))
                     self._calls.sort(key=lambda call: call.invocation_index)
                 else:
@@ -276,6 +290,26 @@ class OpenCodeContextHookObserver:
                     or error_saturated or call_elapsed_saturated
                     or aggregate_elapsed_saturated or timing_saturated
                 )
+
+
+def _session_scope_sha256(
+    getter: Callable[..., Any] | None,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> str | None:
+    """Hash only a caller-selected session ID; never retain the raw value."""
+    if getter is None:
+        return None
+    try:
+        session_id = getter(*args, **kwargs)
+        if not _valid_text(session_id) or not session_id.startswith("ses"):
+            return None
+        return hashlib.sha256(session_id.encode("utf-8")).hexdigest()
+    except BaseException:
+        # A getter failure is swallowed so it cannot prevent callback
+        # invocation. The caller is responsible for honoring the side-effect-
+        # free getter contract above.
+        return None
 
 
 def _safe_monotonic_ns(clock: Callable[[], Any]) -> tuple[int | None, int]:

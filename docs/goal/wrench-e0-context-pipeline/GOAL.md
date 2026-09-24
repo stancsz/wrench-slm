@@ -414,6 +414,21 @@ this does not prove hook execution, mutation application, dispatch enforcement,
 runtime parity, or full E0 acceptance. See the [report](../../reports/wrench-e0-opencode-context-adapter/hook-observation.md)
 and [evaluation](../../evals/wrench-e0-opencode-context-adapter/hook-observation.md).
 
+## Follow-up: join hook observation to partial lifecycle trace
+
+Status: implemented and independently reviewed; 89 focused tests passed. The
+observer now binds each invocation row to a caller-selected session ID using
+SHA-256 while retaining no raw ID or callback content. The trace builder
+accepts only a complete, ordered, uncapped, unsaturated observation with
+consistent counters, durations, schema/version, and matching session digests.
+Observation rows use schema v2; traces retain v4 when the optional observation
+is omitted and declare v5 when it is included. The getter is caller-supplied
+and must be side-effect-free. Evidence remains caller-supplied and
+unauthenticated, so runtime hook provenance, atomic capture, actual client
+execution, dispatch enforcement, provider/tokenizer parity, and full E0
+acceptance remain open. See the [report](../../reports/wrench-e0-opencode-context-adapter/hook-trace-join.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/hook-trace-join.md).
+
 ## Current client setup status (2026-09-24)
 
 OpenCode `v2.0.15` is installed in an isolated directory under
