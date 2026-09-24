@@ -59,13 +59,16 @@ spend, publish, deploy, or enable production routing.
 
 The separate snapshot identity, artifact storage and roundtrip, namespace
 registry, serialized prompt gate, structural index, outcome receipt, and
-caller-owned preparation slices are now recorded in the goal index. Their
-acceptance is component evidence, not full E0 milestone acceptance. Runtime
-matched serialization, complete deterministic-baseline accounting, and
-end-to-end authority checks remain E0 exit evidence. The POSIX-host snapshot
-follow-up is complete; see the [snapshot retrieval goal](../wrench-e0-snapshot-retrieval/GOAL.md).
-Matched-task utility and full request-lifecycle accounting remain E4 gates. The
-larger product proceeds through E1-E4 only after experiment stage gates pass.
+caller-owned preparation slices are now recorded in the goal index. The
+preparation API can now borrow an active `ArtifactRequest` so a caller can hold
+source pins beyond preparation and through its downstream lifecycle scope.
+This does not observe or enforce that lifecycle. These slices provide component
+evidence, not full E0 milestone acceptance. Runtime-matched serialization,
+complete deterministic-baseline accounting, and end-to-end authority checks
+remain E0 exit evidence. The POSIX-host snapshot follow-up is complete; see the
+[snapshot retrieval goal](../wrench-e0-snapshot-retrieval/GOAL.md). Matched-task
+utility and full request-lifecycle accounting remain E4 gates. The larger
+product proceeds through E1-E4 only after experiment stage gates pass.
 
 ## First integration target: OpenCode V2
 

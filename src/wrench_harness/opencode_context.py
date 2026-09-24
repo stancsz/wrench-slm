@@ -13,7 +13,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
-from .artifact_store import ArtifactStore
+from .artifact_store import ArtifactRequest, ArtifactStore
 from .e0_context_pipeline import PreparationResult, PreparationStatus, prepare_e0_context
 from .namespace_registry import NamespaceRegistry
 from .outcome_receipt import (
@@ -185,12 +185,16 @@ def prepare_opencode_e0_context(
     required_source_paths: Sequence[str] = (),
     preserve_source_paths: Sequence[str] = (),
     max_candidates: int = 8,
+    artifact_request: ArtifactRequest | None = None,
 ) -> OpenCodePreparationJoin:
     """Resolve one session root and prepare only against that configured root.
 
     The signature mirrors the bounded E0 preparation surface except that the
     caller cannot supply or override ``source_root``. Preparation itself
     checks that the snapshot identity matches this root during exact reads.
+    Pass an active caller-owned ``artifact_request`` to retain pins after this
+    helper returns, and keep its scope open through downstream completion or
+    failure cleanup. The default remains preparation-only.
     """
     if type(snapshot) is not SourceSnapshot:
         raise ValueError("invalid_source_snapshot")
@@ -217,6 +221,7 @@ def prepare_opencode_e0_context(
         required_source_paths=required_source_paths,
         preserve_source_paths=preserve_source_paths,
         max_candidates=max_candidates,
+        artifact_request=artifact_request,
     )
     return OpenCodePreparationJoin(
         session_id=resolved.session_id,

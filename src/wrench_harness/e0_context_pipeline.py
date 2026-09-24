@@ -12,12 +12,13 @@ import hashlib
 import json
 import os
 import time
+from contextlib import nullcontext
 from dataclasses import asdict, dataclass, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from .artifact_store import ArtifactHandle, ArtifactReadStatus, ArtifactStore, ArtifactStoreError
+from .artifact_store import ArtifactHandle, ArtifactReadStatus, ArtifactRequest, ArtifactStore, ArtifactStoreError
 from .context import ContextAdmissionError, ContextLedger, ContextSelectionError
 from .namespace_registry import NamespaceRegistry, SchemaLookupStatus
 from .outcome_receipt import ReceiptResult, ReceiptStatus, build_outcome_receipt
@@ -510,14 +511,16 @@ def _prepare_e0_context_impl(
     required_source_paths: Sequence[str] = (),
     preserve_source_paths: Sequence[str] = (),
     max_candidates: int = 8,
+    artifact_request: ArtifactRequest | None = None,
     _metrics: dict[str, object],
 ) -> PreparationResult:
     """Prepare verified, pinned context and a gated prompt; never executes it.
 
     Source snapshots bind bytes, not caller authority. Paths are finite and
     explicit. Store objects may persist after this request and are not rolled
-    back if later context/prompt admission fails. Pins last through receipt
-    construction and are process-local to the supplied ArtifactStore instance.
+    back if later context/prompt admission fails. By default pins last through
+    receipt construction; a caller-owned request may keep them through its
+    downstream lifecycle. Pins are process-local to the supplied store.
     """
     empty = PreparationResult(PreparationStatus.INVALID_INPUT, "none", None, None, None, None, (), (), (), (), (), None)
     if (
@@ -533,6 +536,10 @@ def _prepare_e0_context_impl(
         or type(context_position) is not int or not 0 <= context_position <= MAX_BASE_MESSAGES
     ):
         return empty
+    if artifact_request is not None and (
+        type(artifact_request) is not ArtifactRequest or not artifact_request.is_active_for(store)
+    ):
+        return replace(empty, reason="artifact_request_scope_invalid")
     owned_paths = _bounded_sequence(paths, MAX_PATHS)
     owned_schema_lookups = _bounded_sequence(schema_lookups, MAX_SCHEMA_LOOKUPS)
     owned_required_ids = _bounded_sequence(required_evidence_ids, MAX_REFERENCES)
@@ -601,7 +608,8 @@ def _prepare_e0_context_impl(
     reason: str | None = None
 
     # One outer scope deliberately spans source admission through receipt build.
-    with store.request() as request:
+    request_scope = store.request() if artifact_request is None else nullcontext(artifact_request)
+    with request_scope as request:
         seen: set[str] = set()
         admitted_source_bytes = 0
         for raw_path in paths:
@@ -866,8 +874,16 @@ def prepare_e0_context(
     tokenizer_id: str, required_evidence_ids: Sequence[str] = (),
     preserve_evidence_ids: Sequence[str] = (), required_source_paths: Sequence[str] = (),
     preserve_source_paths: Sequence[str] = (), max_candidates: int = 8,
+    artifact_request: ArtifactRequest | None = None,
 ) -> PreparationResult:
-    """Run local preparation and attach request-scoped non-identifying metrics."""
+    """Prepare local context and attach non-identifying preparation metrics.
+
+    The default scope is preparation-only and closes before return. To retain
+    source pins during a downstream request, pass an already active
+    ``ArtifactRequest`` and keep its surrounding ``with store.request()`` open
+    until that request succeeds, fails, times out, or is cancelled. This
+    facade never dispatches or observes downstream activity.
+    """
     started_ns = time.perf_counter_ns()
     counters: dict[str, object] = {
         "caller_path_count": len(paths) if type(paths) in (tuple, list) else None,
@@ -902,7 +918,8 @@ def prepare_e0_context(
         serializer=serializer, tokenizer_counter=tokenizer_counter, serializer_id=serializer_id,
         tokenizer_id=tokenizer_id, required_evidence_ids=required_evidence_ids,
         preserve_evidence_ids=preserve_evidence_ids, required_source_paths=required_source_paths,
-        preserve_source_paths=preserve_source_paths, max_candidates=max_candidates, _metrics=counters,
+        preserve_source_paths=preserve_source_paths, max_candidates=max_candidates,
+        artifact_request=artifact_request, _metrics=counters,
     )
     elapsed = max(0, time.perf_counter_ns() - started_ns)
     metrics = PreparationMetrics(

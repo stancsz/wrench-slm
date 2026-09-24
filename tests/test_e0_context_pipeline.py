@@ -31,7 +31,7 @@ def _registry():
 
 def _invoke(root, snapshot, store, *, paths=("sample.py",), context_budget=128,
             prompt_budget=4096, required=(), required_paths=(), preserve_paths=(), serializer=None,
-            schema=("files", "inspect"), query="target"):
+            schema=("files", "inspect"), query="target", artifact_request=None):
     registry = _registry()
     if serializer is None:
         serializer = lambda messages: json.dumps(messages, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -46,6 +46,7 @@ def _invoke(root, snapshot, store, *, paths=("sample.py",), context_budget=128,
         serializer_id="fixture-json-v1", tokenizer_id="fixture-char-count-v1",
         required_evidence_ids=required, required_source_paths=required_paths,
         preserve_source_paths=preserve_paths,
+        artifact_request=artifact_request,
     )
 
 
@@ -252,6 +253,109 @@ def test_serializer_failure_releases_pin_and_returns_no_routable_prompt(tmp_path
     assert result.metrics.tokenizer_callback_attempts == 0
     assert result.metrics.prompt_serialized_bytes is None and result.metrics.prompt_token_count is None
     assert result.metrics.process_cpu_ns is None and result.metrics.request_page_faults is None
+
+
+def test_caller_owned_request_keeps_artifact_pinned_after_preparation_until_close(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+
+    with store.request() as request:
+        assert request.is_active_for(store)
+        result = _invoke(root, snapshot, store, required_paths=("sample.py",), artifact_request=request)
+        assert result.status is PreparationStatus.READY
+        handle_id = result.sources[0].artifact_handle_id
+        assert handle_id is not None
+        handle = store._entry_handle(store._entry_map()[handle_id])
+        assert store.read(handle).data == (root / "sample.py").read_bytes()
+        assert store.evict(target_bytes=1).handles == ()
+
+    assert not request.is_active_for(store)
+    assert store._pins == {}
+    evicted = store.evict(target_bytes=1)
+    assert [item.handle_id for item in evicted.handles] == [handle_id]
+    assert store.read(handle).status.value == "evicted"
+
+
+def test_caller_owned_request_releases_pins_when_downstream_scope_raises(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+
+    with pytest.raises(RuntimeError, match="consumer failed"):
+        with store.request() as request:
+            result = _invoke(root, snapshot, store, artifact_request=request)
+            assert result.status is PreparationStatus.READY
+            assert store._pins
+            raise RuntimeError("consumer failed")
+
+    assert store._pins == {}
+    assert store.evict(target_bytes=1).handles
+
+
+def test_overlapping_request_scopes_keep_shared_artifact_pinned_until_both_close(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+    first = store.request()
+    second = store.request()
+
+    with first:
+        first_result = _invoke(root, snapshot, store, artifact_request=first)
+        handle_id = first_result.sources[0].artifact_handle_id
+        assert handle_id is not None
+        with second:
+            second_result = _invoke(root, snapshot, store, artifact_request=second)
+            assert second_result.status is PreparationStatus.READY
+            assert store._pins[handle_id] == 2
+        assert store._pins[handle_id] == 1
+        assert store.evict(target_bytes=1).handles == ()
+
+    assert store._pins == {}
+    assert store.evict(target_bytes=1).handles
+
+
+def test_inactive_or_foreign_request_scope_fails_before_artifact_write(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+    foreign_store = ArtifactStore(tmp_path / "foreign-store")
+
+    with foreign_store.request() as foreign_request:
+        foreign = _invoke(root, snapshot, store, artifact_request=foreign_request)
+    inactive = _invoke(root, snapshot, store, artifact_request=foreign_request)
+
+    assert foreign.status is PreparationStatus.INVALID_INPUT
+    assert foreign.reason == "artifact_request_scope_invalid"
+    assert inactive.status is PreparationStatus.INVALID_INPUT
+    assert inactive.reason == "artifact_request_scope_invalid"
+    assert store._entry_map() == {}
+
+
+def test_artifact_request_is_one_shot_and_double_close_does_not_underflow_pins(tmp_path):
+    from wrench_harness.artifact_store import ArtifactRequestError
+
+    store = ArtifactStore(tmp_path / "store")
+    handle = store.put(
+        snapshot_sha256="a" * 64,
+        source_path="sample.py",
+        expected_content_sha256=hashlib.sha256(b"sample").hexdigest(),
+        data=b"sample",
+    )
+    request = store.request()
+    request.__enter__()
+    assert request.pin(handle).status.value == "ok"
+    request.__exit__(None, None, None)
+    request.__exit__(None, None, None)
+
+    assert store._pins == {}
+    assert store.evict(target_bytes=1).handles == (handle,)
+    with pytest.raises(ArtifactRequestError, match="more than once"):
+        request.__enter__()
 
 
 def test_failed_artifact_put_separates_input_bytes_from_stored_bytes(tmp_path, monkeypatch):

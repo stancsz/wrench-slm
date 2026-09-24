@@ -98,6 +98,29 @@ that proves integrity, not measurement authenticity or callback completeness.
   provider call, or downstream task was exercised. This does not close E0's
   complete lifecycle accounting, authority, or client integration gates.
 - **Review record:** [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md)
-- **Next:** define the uninstalled OpenCode adapter contract over the
-  root-bound snapshot; the context hook still does not establish dispatch veto,
-  full request projection, or runtime-matched tokenization.
+- **Next:** connect the selected OpenCode preparation seam to an approved,
+  pinned client lifecycle only after request-boundary, serializer/tokenizer,
+  and dispatch contracts are established. The current helper does not install
+  or run a plugin, establish dispatch veto, or prove runtime parity.
+
+## Follow-up task: caller-owned request-lifetime pins
+
+- **Status/date:** implemented as a provider-free lifecycle seam, 2026-09-24
+- **Evidence:** `ArtifactRequest` is one-shot, checks active state under the
+  store lock, releases its pin set idempotently, and exposes a store-identity
+  check. `prepare_e0_context` and `prepare_opencode_e0_context` accept an
+  already active request scope. The default remains preparation-only; callers
+  that need request-lifetime protection must keep `with store.request()` open
+  across preparation, downstream completion, failure, timeout, or cancellation
+  cleanup. Focused fixtures check retention after return, eviction after
+  close, cleanup on an exception, overlap/refcount behavior, and rejection of
+  inactive or foreign scopes.
+- **Limits:** This provides only same-process caller-owned pin lifetime. It
+  does not observe completion, enforce dispatch, record complete lifecycle
+  activity, coordinate other processes, or qualify crash recovery. The
+  OpenCode plugin remains uninstalled and unrun; no provider, client, or
+  participant data was used.
+- **Verification:** Three independent read-only reviews passed, and bounded
+  Python 3.11 generic and OpenCode-wrapper smoke runs passed. `pytest` is not
+  installed in the available Python environments, so the new pytest fixtures
+  could not be executed; no dependency was installed. `git diff --check` passed.

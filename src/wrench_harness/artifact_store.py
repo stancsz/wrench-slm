@@ -46,6 +46,10 @@ class ArtifactStoreLimitError(ArtifactStoreError):
     """A hard object, manifest, or aggregate storage limit was reached."""
 
 
+class ArtifactRequestError(ArtifactStoreError):
+    """An artifact request scope is inactive, mismatched, or already closed."""
+
+
 class ArtifactIdentityError(ValueError):
     """The caller supplied invalid or inconsistent source identity data."""
 
@@ -629,21 +633,32 @@ class ArtifactStore:
 
 
 class ArtifactRequest:
-    """Request-scoped process-local pins released on context exit."""
+    """One-shot, request-scoped process-local pins released on context exit."""
 
     def __init__(self, store: ArtifactStore):
         self._store = store
         self._pinned: set[str] = set()
         self._entered = False
+        self._closed = False
 
     def __enter__(self) -> "ArtifactRequest":
-        self._entered = True
+        with self._store._lock:
+            if self._entered or self._closed:
+                raise ArtifactRequestError("request scope cannot be entered more than once")
+            self._entered = True
         return self
 
-    def pin(self, handle: ArtifactHandle) -> ArtifactRead:
-        if not self._entered:
-            raise RuntimeError("request scope is not active")
+    def is_active_for(self, store: ArtifactStore) -> bool:
+        """Return whether this open scope belongs to ``store``."""
+        if type(store) is not ArtifactStore:
+            return False
         with self._store._lock:
+            return self._store is store and self._entered and not self._closed
+
+    def pin(self, handle: ArtifactHandle) -> ArtifactRead:
+        with self._store._lock:
+            if not self._entered or self._closed:
+                raise ArtifactRequestError("request scope is not active")
             result = self._store.read(handle)
             if result.status is ArtifactReadStatus.OK and handle.handle_id not in self._pinned:
                 self._store._pins[handle.handle_id] = self._store._pins.get(handle.handle_id, 0) + 1
@@ -651,19 +666,24 @@ class ArtifactRequest:
             return result
 
     def read(self, handle: ArtifactHandle) -> ArtifactRead:
-        if not self._entered:
-            raise RuntimeError("request scope is not active")
-        return self._store.read(handle)
+        with self._store._lock:
+            if not self._entered or self._closed:
+                raise ArtifactRequestError("request scope is not active")
+            return self._store.read(handle)
 
     def __exit__(self, exc_type, exc, traceback) -> None:
         with self._store._lock:
-            for handle_id in self._pinned:
+            if not self._entered or self._closed:
+                return None
+            self._entered = False
+            self._closed = True
+            for handle_id in tuple(self._pinned):
                 count = self._store._pins.get(handle_id, 0) - 1
                 if count > 0:
                     self._store._pins[handle_id] = count
                 else:
                     self._store._pins.pop(handle_id, None)
-        self._entered = False
+            self._pinned.clear()
 
 
 __all__ = [
@@ -672,6 +692,7 @@ __all__ = [
     "ArtifactRead",
     "ArtifactReadStatus",
     "ArtifactRequest",
+    "ArtifactRequestError",
     "ArtifactStore",
     "ArtifactStoreCorruption",
     "ArtifactStoreError",

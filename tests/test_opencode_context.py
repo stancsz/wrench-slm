@@ -149,6 +149,67 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
     assert "source_root" not in _preparation_arguments(snapshot)
 
 
+def test_caller_owned_artifact_request_reaches_preparation(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    snapshot = SourceSnapshot("wrench.source-snapshot.v3", (), "a" * 64, "b" * 64, "posix:1:1")
+    store = ArtifactStore(tmp_path / "store")
+    prepared = Mock(status=PreparationStatus.READY)
+
+    with store.request() as request:
+        arguments = _preparation_arguments(snapshot)
+        arguments["store"] = store
+        arguments["artifact_request"] = request
+        with patch("wrench_harness.opencode_context.prepare_e0_context", return_value=prepared) as prepare:
+            result = prepare_opencode_e0_context(
+                "ses_fixture123",
+                {"id": "ses_fixture123", "location": {"directory": str(root)}},
+                **arguments,
+            )
+
+    assert result.preparation is prepared
+    assert prepare.call_args.kwargs["artifact_request"] is request
+
+
+def test_real_opencode_preparation_pins_until_caller_request_scope_closes(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "sample.py").write_text("def target():\n    return 7\n", encoding="utf-8")
+    snapshot = create_snapshot(root, ["sample.py"])
+    registry = NamespaceRegistry([NamespaceDescriptor("files", "Files", (
+        OperationDescriptor("inspect", "Inspect", {"type": "object"}),
+    ))])
+    store = ArtifactStore(tmp_path / "store")
+
+    with store.request() as request:
+        join = prepare_opencode_e0_context(
+            "ses_fixture123",
+            {"id": "ses_fixture123", "location": {"directory": str(root)}},
+            snapshot=snapshot,
+            paths=("sample.py",),
+            store=store,
+            query="target",
+            source_order_start=0,
+            context_token_budget=128,
+            prompt_token_budget=4096,
+            namespace_registry=registry,
+            schema_lookups=(),
+            base_messages=({"role": "system", "content": "fixture"},),
+            context_position=1,
+            serializer=lambda messages: json.dumps(messages, sort_keys=True),
+            tokenizer_counter=lambda serialized: len(serialized),
+            serializer_id="fixture-json-v1",
+            tokenizer_id="fixture-char-count-v1",
+            artifact_request=request,
+        )
+        assert join.preparation.status is PreparationStatus.READY
+        assert store._pins
+        assert store.evict(target_bytes=1).handles == ()
+
+    assert store._pins == {}
+    assert store.evict(target_bytes=1).handles
+
+
 def test_invalid_session_fails_before_preparation(tmp_path):
     root = tmp_path / "project"
     root.mkdir()
