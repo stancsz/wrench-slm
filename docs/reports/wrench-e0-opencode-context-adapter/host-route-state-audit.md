@@ -56,3 +56,38 @@ from a model alias, source-level route, synthetic character counter, or a
 model-list response. Measure savings only after a consented matched-task run
 with observed final request identities, paired usage accounting, and a task
 oracle.
+
+## Follow-up: live route-state snapshot
+
+- Date: 2026-09-24 (America/Edmonton)
+- Job: `W2-NS-ROUTE-READONLY-AUDIT-20260924`
+- Nonce: `RRAD-7F20`
+- Wrench repository revision: `167eb4df85110747e7ebdade02fb958eceda9166`
+- Gateway source revision: `51d262370b3de790ee97ec6b9d43c33e4b44a2ee`
+
+The route endpoint source was reviewed before making one local read-only
+`GET http://127.0.0.1:4000/api/active-model`. The live response was HTTP 200:
+`active_model=openrouter`, `mode=force`, `policy_version=4`,
+`advisor_model=codex-sol-advisor`, with both reasoning-effort fields null.
+Source `dynamic_router.py` SHA-256 is
+`D20D3DB4FD23E78A5F26991F487808441BD097841D689D5E53E93500DAF5C12E`.
+The handler returns a locked in-memory state snapshot; GET is separate from
+the POST update handler. Its source enforces loopback access and rejects a
+mismatched Origin. A gateway-wide authentication layer was not established by
+the handler audit.
+
+Docker reports the running gateway image as
+`ghcr.io/berriai/litellm-database@sha256:bd07ceb1fc7c4505f116c4eb2767956a8accba3119548dd8ae55e5356a381d56`,
+started `2026-09-23T14:22:01Z`, with the host `subroute\config` and `src`
+directories mounted into the container. The mounted `litellm.yaml` has
+SHA-256 `0DDCC4F32F7D0159913C152756172F16B6E37BC9171E860DFA2EE0F76A640AF0`
+and a write time before container start. It maps `openrouter` to
+`openrouter/minimax/minimax-m3`; the active route snapshot is consistent with
+that configured alias. The active-model state file was not treated as proof
+of runtime state; the GET supplied that state directly.
+
+This establishes the gateway's active alias and force mode at one observation
+time. It does not prove the exact upstream revision or tokenizer, the final
+OpenCode request body, a completed upstream dispatch, billed usage, or token
+savings. No prompt or upstream inference request was made. The route is not shown
+to be a local SLM. Verified Wrench token savings remain **not established**.

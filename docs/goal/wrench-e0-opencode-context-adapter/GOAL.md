@@ -654,15 +654,24 @@ authorized dispatch-boundary trial.
 
 ## Follow-up: host route-state audit
 
-The OpenCode profile targets `127.0.0.1:4000/v1`. Read-only inspection of the
-mounted gateway files found `active_model: openrouter` in force mode and a
-`current` virtual alias that resolves through the OpenRouter MiniMax M3 alias
-under that state. This is file-level configuration evidence only: the running
-gateway's non-secret `ACTIVE_MODEL_STATE_PATH` points to that mounted file,
-but the file changed after the container started and the process keeps route
-state in memory, so the live route remains unverified. No generation call or
-prompt was sent.
-Accordingly, verified Wrench token savings remain **not established** and
-local-SLM substitution is not demonstrated. See the [host route-state
+The OpenCode profile targets `127.0.0.1:4000/v1`. At the time of the initial
+file-only audit, the live route had not been queried. Inspection found a
+mounted config with `active_model: openrouter` in force mode and a `current`
+virtual alias configured through the OpenRouter MiniMax M3 alias. The running
+gateway's non-secret `ACTIVE_MODEL_STATE_PATH` points to that mounted state
+file, but its post-start write time and the process's in-memory routing state
+meant the file alone could not establish the live route. No generation call or
+prompt was sent in that audit.
+## Follow-up: live route-state snapshot
+
+A read-only loopback `GET /api/active-model` returned HTTP 200 with the running
+gateway state `active_model=openrouter`, `mode=force`, and `policy_version=4`.
+The mounted startup `litellm.yaml` has a pre-start write time and maps that
+alias to `openrouter/minimax/minimax-m3`. This observes the active
+gateway alias at one time; it does not prove a completed dispatch, immutable
+upstream model revision, tokenizer, final OpenCode request body, or billing.
+No prompt or inference was sent. The gateway is configured through an
+OpenRouter provider alias, not demonstrated local-SLM inference. Verified
+Wrench token savings remain **not established**. See the [host route-state
 report](../../reports/wrench-e0-opencode-context-adapter/host-route-state-audit.md)
 and [review](../../evals/wrench-e0-opencode-context-adapter/host-route-state-audit.md).
