@@ -61,6 +61,13 @@ capture a client lifecycle or prove verifier independence, consent, task truth,
 or E0 completion. See the [evaluation record](../../evals/wrench-e0-outcome-receipt/postrun-join-v2.md)
 for the bounded verification result and remaining gates.
 
+The v3 follow-up preserves the v1/v2 reference validators and applies compact
+ASCII syntax to all references emitted by new finalizations. See the
+[v3 receipt report](../../reports/wrench-e0-outcome-receipt/opaque-refs-v3.md).
+The OpenCode outcome join also checks the session's snapshot identity against
+the completed receipt. This syntax does not guarantee that an ID or hash is
+non-sensitive or unlinkable, and the full E0 acceptance gates remain open.
+
 Serialization first copies nested built-in dictionaries, lists, tuples, and
 strings into a bounded owned tree. The exact output size and encoding are then
 computed from that copy, so later caller mutations cannot change the measured

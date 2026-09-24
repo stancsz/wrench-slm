@@ -107,7 +107,7 @@ def test_final_outcome_joins_preparation_accounting_and_post_task_evidence(tmp_p
 
     assert result.status is ReceiptStatus.VALID
     payload = json.loads(result.receipt.payload_json)
-    assert payload["schema"] == "wrench.e0.outcome-receipt.v2"
+    assert payload["schema"] == "wrench.e0.outcome-receipt.v3"
     assert payload["context_receipt_sha256"] == preparation.aggregate_sha256
     assert payload["preparation_accounting_sha256"] == preparation.accounting_receipt.accounting_sha256
     assert payload["selected_evidence_ids"] == list(preparation.selected_evidence_ids)
@@ -162,7 +162,7 @@ def test_final_outcome_rejects_raw_post_task_content_and_bad_preparation_account
     assert result.errors == ("preparation_accounting_invalid",)
 
 
-def test_v2_requires_session_identity_for_complete_receipts(tmp_path):
+def test_v3_requires_session_identity_for_complete_receipts(tmp_path):
     preparation = _prepare(tmp_path)
     complete_without_session = _postrun(session_id=None)
     result = finalize_preparation_outcome(preparation, complete_without_session)
@@ -181,11 +181,19 @@ def test_v2_requires_session_identity_for_complete_receipts(tmp_path):
     assert json.loads(result.receipt.payload_json)["missing_fields"] == ["session_id"]
 
 
-def test_v2_rejects_prose_in_opaque_identity_fields(tmp_path):
+def test_v3_rejects_prose_in_opaque_identity_fields(tmp_path):
     preparation = _prepare(tmp_path)
     bad_task = finalize_preparation_outcome(preparation, _postrun(task_id="task with embedded raw text"))
     assert bad_task.status is ReceiptStatus.INVALID
     assert "task_id_invalid" in bad_task.errors
+
+    bad_run = finalize_preparation_outcome(preparation, _postrun(run_id="run contains private output"))
+    assert bad_run.status is ReceiptStatus.INVALID
+    assert "run_id_invalid" in bad_run.errors
+
+    bad_session = finalize_preparation_outcome(preparation, _postrun(session_id="session with private output"))
+    assert bad_session.status is ReceiptStatus.INVALID
+    assert "session_id_invalid" in bad_session.errors
 
     bad_evidence = _postrun(post_task_evidence_refs=[{
         "evidence_id": "test result contains output", "kind": "test_result",
@@ -214,6 +222,25 @@ def test_opencode_finalizer_binds_postrun_session_to_preparation_join(tmp_path):
 
     assert result.status is ReceiptStatus.VALID
     assert json.loads(result.receipt.payload_json)["session_id"] == join.session_id
+
+
+def test_opencode_finalizer_rejects_join_snapshot_mismatch(tmp_path):
+    preparation = _prepare(tmp_path)
+    join = OpenCodePreparationJoin(
+        session_id="session-fixture",
+        configured_root=tmp_path / "repo",
+        snapshot_sha256="f" * 64,
+        root_location_sha256=None,
+        root_identity=None,
+        preparation=preparation,
+    )
+
+    result = finalize_opencode_preparation_outcome(
+        join, _postrun(session_id="session-fixture")
+    )
+
+    assert result.status is ReceiptStatus.INVALID
+    assert result.errors == ("opencode_snapshot_sha256_mismatch",)
 
 
 @pytest.mark.parametrize("session_id", ["other-session", None])

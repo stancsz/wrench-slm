@@ -21,7 +21,7 @@ MAX_REFERENCES = 256
 MAX_ID_CHARS = 256
 MAX_TEXT_CHARS = 512
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
-_OPAQUE_V2_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_OPAQUE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _HEX = frozenset("0123456789abcdef")
 
 
@@ -50,9 +50,14 @@ def _is_id(value: object) -> bool:
     return type(value) is str and 1 <= len(value) <= MAX_ID_CHARS and all(ord(ch) >= 0x20 and ord(ch) != 0x7f for ch in value)
 
 
-def _is_opaque_v2_id(value: object) -> bool:
-    """Accept compact identifier syntax for caller-supplied v2 identities."""
-    return type(value) is str and _OPAQUE_V2_ID.fullmatch(value) is not None
+def _is_opaque_id(value: object) -> bool:
+    """Accept compact ASCII syntax for opaque reference identifiers."""
+    return type(value) is str and _OPAQUE_ID.fullmatch(value) is not None
+
+
+def _is_reference_id(value: object, *, strict: bool) -> bool:
+    """Use the v3 opaque-reference contract or preserve the legacy v1/v2 one."""
+    return _is_opaque_id(value) if strict else _is_id(value)
 
 
 def _is_digest(value: object, *, optional: bool = False) -> bool:
@@ -224,7 +229,7 @@ def _failures(payload: object) -> list[str]:
         "completeness", "missing_fields",
     }
     schema = payload.get("schema")
-    if schema == "wrench.e0.outcome-receipt.v2":
+    if schema in {"wrench.e0.outcome-receipt.v2", "wrench.e0.outcome-receipt.v3"}:
         required = v1_fields | {
             "session_id", "preparation_accounting_sha256", "post_task_evidence_refs",
         }
@@ -235,18 +240,23 @@ def _failures(payload: object) -> list[str]:
     if set(payload) != required:
         errors.append("top_level_fields_invalid")
         return errors
-    if schema not in {"wrench.e0.outcome-receipt.v1", "wrench.e0.outcome-receipt.v2"}:
+    if schema not in {
+        "wrench.e0.outcome-receipt.v1",
+        "wrench.e0.outcome-receipt.v2",
+        "wrench.e0.outcome-receipt.v3",
+    }:
         errors.append("schema_unsupported")
-    is_v2 = schema == "wrench.e0.outcome-receipt.v2"
+    has_post_task_scope = schema in {"wrench.e0.outcome-receipt.v2", "wrench.e0.outcome-receipt.v3"}
+    strict_references = schema == "wrench.e0.outcome-receipt.v3"
     for key in ("task_id", "run_id"):
-        if not (_is_opaque_v2_id(payload[key]) if is_v2 else _is_id(payload[key])):
+        if not (_is_opaque_id(payload[key]) if has_post_task_scope else _is_id(payload[key])):
             errors.append(f"{key}_invalid")
     for key in ("snapshot_sha256", "context_receipt_sha256"):
         if not _is_digest(payload[key], optional=True):
             errors.append(f"{key}_invalid")
     post_task_ids: set[str] = set()
-    if is_v2:
-        if payload["session_id"] is not None and not _is_opaque_v2_id(payload["session_id"]):
+    if has_post_task_scope:
+        if payload["session_id"] is not None and not _is_opaque_id(payload["session_id"]):
             errors.append("session_id_invalid")
         if not _is_digest(payload["preparation_accounting_sha256"]):
             errors.append("preparation_accounting_digest_invalid")
@@ -259,7 +269,7 @@ def _failures(payload: object) -> list[str]:
                 errors.append("post_task_evidence_ref_shape_invalid")
                 continue
             evidence_id = reference["evidence_id"]
-            if not _is_opaque_v2_id(evidence_id):
+            if not _is_opaque_id(evidence_id):
                 errors.append("post_task_evidence_ref_id_invalid")
             else:
                 post_task_ids.add(evidence_id)
@@ -272,13 +282,13 @@ def _failures(payload: object) -> list[str]:
 
     selected = payload["selected_evidence_ids"]
     omitted = payload["omitted_evidence_ids"]
-    if not _id_list(selected, "selected_evidence_ids", errors):
+    if not _id_list(selected, "selected_evidence_ids", errors, strict=strict_references):
         selected = []
-    if not _id_list(omitted, "omitted_evidence_ids", errors):
+    if not _id_list(omitted, "omitted_evidence_ids", errors, strict=strict_references):
         omitted = []
     if set(selected) & set(omitted):
         errors.append("selected_omitted_overlap")
-    if is_v2 and post_task_ids & (set(selected) | set(omitted)):
+    if has_post_task_scope and post_task_ids & (set(selected) | set(omitted)):
         errors.append("context_post_task_evidence_id_overlap")
 
     misses = payload["retrieval_misses"]
@@ -292,7 +302,7 @@ def _failures(payload: object) -> list[str]:
                 errors.append("retrieval_miss_shape_invalid")
                 continue
             evidence_id, status = row["evidence_id"], row["status"]
-            if not _is_id(evidence_id) or status not in {"missing", "stale", "unsafe", "unknown_snapshot", "unknown_source", "evicted"}:
+            if not _is_reference_id(evidence_id, strict=strict_references) or status not in {"missing", "stale", "unsafe", "unknown_snapshot", "unknown_source", "evicted"}:
                 errors.append("retrieval_miss_value_invalid")
                 continue
             if evidence_id not in omitted:
@@ -316,7 +326,7 @@ def _failures(payload: object) -> list[str]:
             errors.append("attempt_shape_invalid")
             continue
         aid = attempt["attempt_id"]
-        if not _is_id(aid):
+        if not _is_reference_id(aid, strict=strict_references):
             errors.append("attempt_id_invalid")
         else:
             attempt_ids.append(aid)
@@ -328,7 +338,7 @@ def _failures(payload: object) -> list[str]:
             errors.append("no_model_attempt_claims_call")
         if attempt["fallback"] is True and attempt["call_made"] is not True:
             errors.append("fallback_without_call")
-        if attempt["retry_of"] is not None and not _is_id(attempt["retry_of"]):
+        if attempt["retry_of"] is not None and not _is_reference_id(attempt["retry_of"], strict=strict_references):
             errors.append("retry_reference_invalid")
         usage = attempt["usage"]
         if type(usage) is not dict or set(usage) != {
@@ -338,7 +348,7 @@ def _failures(payload: object) -> list[str]:
         }:
             errors.append("usage_shape_invalid")
             continue
-        _validate_usage(usage, errors)
+        _validate_usage(usage, errors, strict_references=strict_references)
         if attempt["route"] == "local":
             unrelated = ("frontier_input_tokens", "frontier_output_tokens", "frontier_cost_microunits")
         else:
@@ -357,7 +367,7 @@ def _failures(payload: object) -> list[str]:
     attempt_position = {attempt_id: index for index, attempt_id in enumerate(attempt_ids)}
     attempt_by_id = {
         attempt["attempt_id"]: attempt
-        for attempt in attempts if type(attempt) is dict and _is_id(attempt.get("attempt_id"))
+        for attempt in attempts if type(attempt) is dict and _is_reference_id(attempt.get("attempt_id"), strict=strict_references)
     }
     for index, attempt in enumerate(attempts):
         if type(attempt) is dict and attempt.get("retry_of") is not None and attempt.get("retry_of") not in known_attempts:
@@ -366,8 +376,8 @@ def _failures(payload: object) -> list[str]:
             errors.append("retry_self_reference")
         if type(attempt) is dict and attempt.get("retry_of") is not None:
             target_id = attempt.get("retry_of")
-            target = attempt_position.get(target_id, index) if _is_id(target_id) else index
-            target_row = attempt_by_id.get(target_id) if _is_id(target_id) else None
+            target = attempt_position.get(target_id, index) if _is_reference_id(target_id, strict=strict_references) else index
+            target_row = attempt_by_id.get(target_id) if _is_reference_id(target_id, strict=strict_references) else None
             if target >= index or attempt.get("call_made") is not True or target_row is None or target_row.get("call_made") is not True:
                 errors.append("retry_order_or_call_mismatch")
 
@@ -380,7 +390,7 @@ def _failures(payload: object) -> list[str]:
         if type(work) is not dict or set(work) != {"call_id", "kind", "route", "result", "usage"}:
             errors.append("work_call_shape_invalid")
             continue
-        if not _is_id(work["call_id"]):
+        if not _is_reference_id(work["call_id"], strict=strict_references):
             errors.append("work_call_id_invalid")
         else:
             work_ids.append(work["call_id"])
@@ -398,7 +408,7 @@ def _failures(payload: object) -> list[str]:
         }:
             errors.append("work_call_usage_shape_invalid")
             continue
-        _validate_usage(usage, errors)
+        _validate_usage(usage, errors, strict_references=strict_references)
         if work["route"] == "none" and usage.get("status") != "not_applicable":
             errors.append("non_model_work_usage_must_be_not_applicable")
         if work["route"] == "none" and usage.get("cost_status") == "known" and any(
@@ -437,22 +447,22 @@ def _failures(payload: object) -> list[str]:
     if route == "unknown" and (calls["local"] or calls["frontier"]):
         errors.append("unknown_route_has_attributed_call")
 
-    evidence_scope = post_task_ids if is_v2 else set(selected)
+    evidence_scope = post_task_ids if has_post_task_scope else set(selected)
     verifier = payload["verifier"]
     if type(verifier) is not dict or set(verifier) != {"identity", "result", "evidence_ids"}:
         errors.append("verifier_shape_invalid")
         verifier = {"identity": None, "result": "unknown", "evidence_ids": []}
     else:
         if verifier["identity"] is not None and not (
-            _is_opaque_v2_id(verifier["identity"]) if is_v2 else _is_id(verifier["identity"])
+            _is_opaque_id(verifier["identity"]) if has_post_task_scope else _is_id(verifier["identity"])
         ):
             errors.append("verifier_identity_invalid")
         if verifier["result"] not in {"passed", "failed", "inconclusive", "not_run", "unknown"}:
             errors.append("verifier_result_invalid")
-        if not _id_list(verifier["evidence_ids"], "verifier_evidence_ids", errors):
+        if not _id_list(verifier["evidence_ids"], "verifier_evidence_ids", errors, strict=strict_references):
             verifier["evidence_ids"] = []
         elif any(eid not in evidence_scope for eid in verifier["evidence_ids"]):
-            errors.append("verifier_evidence_not_post_task" if is_v2 else "verifier_evidence_not_selected")
+            errors.append("verifier_evidence_not_post_task" if has_post_task_scope else "verifier_evidence_not_selected")
 
     outcome = payload["outcome"]
     if type(outcome) is not dict or set(outcome) != {"status", "provenance", "evidence_ids"}:
@@ -463,10 +473,10 @@ def _failures(payload: object) -> list[str]:
             errors.append("outcome_status_invalid")
         if outcome["provenance"] not in {"user_reported", "independently_verified", "unknown"}:
             errors.append("outcome_provenance_invalid")
-        if not _id_list(outcome["evidence_ids"], "outcome_evidence_ids", errors):
+        if not _id_list(outcome["evidence_ids"], "outcome_evidence_ids", errors, strict=strict_references):
             outcome["evidence_ids"] = []
         elif any(eid not in evidence_scope for eid in outcome["evidence_ids"]):
-            errors.append("outcome_evidence_not_post_task" if is_v2 else "outcome_evidence_not_selected")
+            errors.append("outcome_evidence_not_post_task" if has_post_task_scope else "outcome_evidence_not_selected")
         if outcome["provenance"] == "independently_verified" and (
             verifier["result"] not in {"passed", "failed", "inconclusive"} or not verifier["identity"]
             or not verifier["evidence_ids"] or not outcome["evidence_ids"]
@@ -478,7 +488,7 @@ def _failures(payload: object) -> list[str]:
                 errors.append("independent_outcome_verifier_status_mismatch")
 
     corrections = payload["correction_refs"]
-    if not _id_list(corrections, "correction_refs", errors):
+    if not _id_list(corrections, "correction_refs", errors, strict=strict_references):
         corrections = []
 
     accounting = payload["accounting"]
@@ -505,7 +515,7 @@ def _failures(payload: object) -> list[str]:
             errors.append("token_count_status_invalid")
         for route_name in ("local", "frontier"):
             identity = accounting[f"{route_name}_token_counter_id"]
-            if identity is not None and not _is_id(identity):
+            if identity is not None and not _is_reference_id(identity, strict=strict_references):
                 errors.append(f"{route_name}_token_counter_identity_invalid")
         model_calls = [
             (record, record["usage"])
@@ -521,7 +531,7 @@ def _failures(payload: object) -> list[str]:
             ]
             route_counters = {
                 usage.get("counter_id") for usage in route_usages
-                if usage.get("status") in {"exact", "estimated"} and _is_id(usage.get("counter_id"))
+                if usage.get("status") in {"exact", "estimated"} and _is_reference_id(usage.get("counter_id"), strict=strict_references)
             }
             if len(route_counters) > 1 or route_counters and accounting[f"{route_name}_token_counter_id"] not in route_counters:
                 errors.append(f"{route_name}_token_counter_identity_mismatch")
@@ -590,7 +600,7 @@ def _failures(payload: object) -> list[str]:
         derived_missing.add("snapshot_sha256")
     if payload["context_receipt_sha256"] is None:
         derived_missing.add("context_receipt_sha256")
-    if is_v2 and payload["session_id"] is None:
+    if has_post_task_scope and payload["session_id"] is None:
         derived_missing.add("session_id")
     if route == "unknown":
         derived_missing.add("actual_route")
@@ -608,7 +618,7 @@ def _failures(payload: object) -> list[str]:
             errors.append("complete_receipt_missing_snapshot_identity")
         if payload["context_receipt_sha256"] is None:
             errors.append("complete_receipt_missing_context_identity")
-        if is_v2 and payload["session_id"] is None:
+        if has_post_task_scope and payload["session_id"] is None:
             errors.append("complete_receipt_missing_session_identity")
         if route == "unknown":
             errors.append("complete_receipt_route_unknown")
@@ -653,11 +663,11 @@ def _contains_forbidden_key(value: object) -> bool:
     return False
 
 
-def _id_list(value: object, label: str, errors: list[str]) -> bool:
+def _id_list(value: object, label: str, errors: list[str], *, strict: bool = False) -> bool:
     if type(value) is not list or len(value) > MAX_REFERENCES:
         errors.append(f"{label}_invalid")
         return False
-    if any(not _is_id(item) for item in value):
+    if any(not _is_reference_id(item, strict=strict) for item in value):
         errors.append(f"{label}_item_invalid")
         return False
     if len(set(value)) != len(value):
@@ -677,19 +687,19 @@ def _count(value: object) -> bool:
     return type(value) is int and 0 <= value <= 2**63 - 1
 
 
-def _validate_usage(usage: dict[str, Any], errors: list[str]) -> None:
+def _validate_usage(usage: dict[str, Any], errors: list[str], *, strict_references: bool = False) -> None:
     if usage["status"] not in {"exact", "estimated", "unknown", "not_applicable"}:
         errors.append("attempt_usage_status_invalid")
     if usage["cost_status"] not in {"known", "unknown"}:
         errors.append("attempt_cost_status_invalid")
-    if usage["counter_id"] is not None and not _is_id(usage["counter_id"]):
+    if usage["counter_id"] is not None and not _is_reference_id(usage["counter_id"], strict=strict_references):
         errors.append("attempt_counter_id_invalid")
     token_fields = ("local_input_tokens", "local_output_tokens", "frontier_input_tokens", "frontier_output_tokens")
     cost_fields = ("local_cost_microunits", "frontier_cost_microunits")
     for name in token_fields + cost_fields:
         if usage[name] is not None and not _count(usage[name]):
             errors.append(f"attempt_{name}_invalid")
-    if usage["status"] in {"exact", "estimated"} and not _is_id(usage["counter_id"]):
+    if usage["status"] in {"exact", "estimated"} and not _is_reference_id(usage["counter_id"], strict=strict_references):
         errors.append("attempt_counter_identity_missing")
     if usage["status"] == "unknown" and (usage["counter_id"] is not None or any(usage[name] is not None for name in token_fields)):
         errors.append("attempt_unknown_usage_must_remain_null")

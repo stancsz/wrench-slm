@@ -36,7 +36,7 @@ def finalize_preparation_outcome(
 ) -> ReceiptResult:
     """Bind a ready preparation and its accounting receipt to a post-run record.
 
-    ``postrun`` is reference-only metadata conforming to the v2 outcome receipt
+    ``postrun`` is reference-only metadata conforming to the v3 outcome receipt
     fields. The final receipt copies snapshot and context evidence identities
     from the preparation output and binds the preparation-accounting digest.
     Caller-supplied attempts, verifier results, and outcome claims remain
@@ -71,7 +71,7 @@ def finalize_preparation_outcome(
         return _invalid("preparation_accounting_invalid")
 
     payload = {
-        "schema": "wrench.e0.outcome-receipt.v2",
+        "schema": "wrench.e0.outcome-receipt.v3",
         "task_id": postrun["task_id"],
         "run_id": postrun["run_id"],
         "session_id": postrun["session_id"],
@@ -115,7 +115,16 @@ def finalize_opencode_preparation_outcome(
         return _invalid("postrun_fields_invalid")
     if postrun.get("session_id") != join.session_id:
         return _invalid("opencode_session_id_mismatch")
-    return finalize_preparation_outcome(join.preparation, postrun)
+    result = finalize_preparation_outcome(join.preparation, postrun)
+    if result.receipt is None:
+        return result
+    try:
+        payload = json.loads(result.receipt.payload_json)
+    except (TypeError, ValueError, RecursionError):
+        return _invalid("opencode_outcome_receipt_invalid")
+    if payload.get("snapshot_sha256") != join.snapshot_sha256:
+        return _invalid("opencode_snapshot_sha256_mismatch")
+    return result
 
 
 def _invalid(error: str) -> ReceiptResult:

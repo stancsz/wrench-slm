@@ -88,6 +88,21 @@ def _payload():
     }
 
 
+def _v3_payload():
+    payload = _payload()
+    payload.update({
+        "schema": "wrench.e0.outcome-receipt.v3",
+        "session_id": "session-v3",
+        "preparation_accounting_sha256": "c" * 64,
+        "post_task_evidence_refs": [{
+            "evidence_id": "post-result-v3", "kind": "test_result", "sha256": "d" * 64,
+        }],
+    })
+    payload["verifier"]["evidence_ids"] = ["post-result-v3"]
+    payload["outcome"]["evidence_ids"] = ["post-result-v3"]
+    return payload
+
+
 def test_receipt_hash_binds_selected_omitted_and_snapshot_context_identities():
     result = build_outcome_receipt(_payload())
     assert result.status is ReceiptStatus.VALID
@@ -345,6 +360,126 @@ def test_tokenizer_identity_mismatch_is_rejected():
     result = build_outcome_receipt(payload)
     assert result.status is ReceiptStatus.INVALID
     assert "frontier_token_counter_identity_mismatch" in result.errors
+
+
+@pytest.mark.parametrize(("field", "expected_error"), [
+    ("selected", "selected_evidence_ids_item_invalid"),
+    ("omitted", "omitted_evidence_ids_item_invalid"),
+    ("miss", "retrieval_miss_value_invalid"),
+    ("attempt", "attempt_id_invalid"),
+    ("retry", "retry_reference_invalid"),
+    ("work_call", "work_call_id_invalid"),
+    ("usage_counter", "attempt_counter_id_invalid"),
+    ("work_usage_counter", "attempt_counter_id_invalid"),
+    ("verifier_evidence", "verifier_evidence_ids_item_invalid"),
+    ("outcome_evidence", "outcome_evidence_ids_item_invalid"),
+    ("correction", "correction_refs_item_invalid"),
+    ("accounting_counter", "frontier_token_counter_identity_invalid"),
+    ("local_accounting_counter", "local_token_counter_identity_invalid"),
+])
+def test_v3_rejects_non_opaque_reference_values(field, expected_error):
+    payload = _v3_payload()
+    if field == "selected":
+        payload["selected_evidence_ids"] = ["prompt text /tmp/private.txt"]
+    elif field == "omitted":
+        payload["omitted_evidence_ids"] = ["prompt text /tmp/private.txt"]
+        payload["retrieval_misses"] = []
+    elif field == "miss":
+        payload["omitted_evidence_ids"] = ["omitted-v3"]
+        payload["retrieval_misses"] = [{"evidence_id": "prompt text /tmp/private.txt", "status": "missing"}]
+    elif field in {"attempt", "retry", "usage_counter"}:
+        attempt = _attempt("call-1", route="none", result="not_run", usage_status="not_applicable")
+        attempt["call_made"] = False
+        attempt["usage"] = {
+            "status": "not_applicable", "counter_id": None,
+            "local_input_tokens": 0, "local_output_tokens": 0,
+            "frontier_input_tokens": 0, "frontier_output_tokens": 0,
+            "local_cost_microunits": 0, "frontier_cost_microunits": 0,
+            "cost_status": "known",
+        }
+        if field == "attempt":
+            attempt["attempt_id"] = "prompt text /tmp/private.txt"
+        elif field == "retry":
+            attempt["retry_of"] = "prompt text /tmp/private.txt"
+        else:
+            attempt["usage"]["counter_id"] = "prompt text /tmp/private.txt"
+        payload["attempts"] = [attempt]
+    elif field == "work_call":
+        payload["work_calls"][0]["call_id"] = "prompt text /tmp/private.txt"
+    elif field == "work_usage_counter":
+        payload["work_calls"][0]["usage"]["counter_id"] = "prompt text /tmp/private.txt"
+    elif field == "verifier_evidence":
+        payload["verifier"]["evidence_ids"] = ["prompt text /tmp/private.txt"]
+    elif field == "outcome_evidence":
+        payload["outcome"]["evidence_ids"] = ["prompt text /tmp/private.txt"]
+    elif field == "correction":
+        payload["correction_refs"] = ["prompt text /tmp/private.txt"]
+    elif field == "local_accounting_counter":
+        payload["accounting"]["local_token_counter_id"] = "prompt text /tmp/private.txt"
+    else:
+        payload["accounting"]["frontier_token_counter_id"] = "prompt text /tmp/private.txt"
+
+    result = build_outcome_receipt(payload)
+    assert result.status is ReceiptStatus.INVALID
+    assert expected_error in result.errors
+
+
+def test_v2_keeps_its_legacy_reference_validation_contract():
+    assert build_outcome_receipt(_legacy_reference_payload("v2")).status is ReceiptStatus.VALID
+
+
+def test_v1_keeps_its_legacy_reference_validation_contract():
+    assert build_outcome_receipt(_legacy_reference_payload("v1")).status is ReceiptStatus.VALID
+
+
+def _legacy_reference_payload(version):
+    payload = _v3_payload()
+    payload["schema"] = f"wrench.e0.outcome-receipt.{version}"
+    if version == "v1":
+        payload["task_id"] = "legacy task / α"
+        payload["run_id"] = "legacy run / β"
+    payload["selected_evidence_ids"] = ["legacy selected / γ"]
+    payload["omitted_evidence_ids"] = ["legacy omitted / δ"]
+    payload["retrieval_misses"] = [{"evidence_id": "legacy omitted / δ", "status": "missing"}]
+    payload["attempts"] = [
+        _attempt("legacy attempt / ε", counter="legacy frontier counter / ζ"),
+        _attempt("legacy retry / η", retry_of="legacy attempt / ε", counter="legacy frontier counter / ζ"),
+    ]
+    payload["work_calls"][0].update({"call_id": "legacy verifier call / θ", "route": "frontier"})
+    payload["work_calls"][0]["usage"] = {
+        "status": "exact", "counter_id": "legacy frontier counter / ζ",
+        "local_input_tokens": 0, "local_output_tokens": 0,
+        "frontier_input_tokens": 0, "frontier_output_tokens": 0,
+        "local_cost_microunits": 0, "frontier_cost_microunits": 0,
+        "cost_status": "known",
+    }
+    payload["work_calls"].append({
+        "call_id": "legacy tool call / ι", "kind": "tool", "route": "local", "result": "success",
+        "usage": {
+            "status": "exact", "counter_id": "legacy local counter / κ",
+            "local_input_tokens": 0, "local_output_tokens": 0,
+            "frontier_input_tokens": 0, "frontier_output_tokens": 0,
+            "local_cost_microunits": 0, "frontier_cost_microunits": 0,
+            "cost_status": "known",
+        },
+    })
+    payload["actual_route"] = "mixed"
+    payload["verifier"]["evidence_ids"] = ["legacy selected / γ"] if version == "v1" else ["post-result-v3"]
+    payload["outcome"]["evidence_ids"] = ["legacy selected / γ"] if version == "v1" else ["post-result-v3"]
+    payload["correction_refs"] = ["legacy correction / λ"]
+    payload["accounting"].update({
+        "local_model_calls": 1, "frontier_model_calls": 3,
+        "retries": 1, "tool_calls": 1,
+        "local_tokens": 0, "frontier_tokens": 28,
+        "local_token_counter_id": "legacy local counter / κ",
+        "frontier_token_counter_id": "legacy frontier counter / ζ",
+        "local_cost_microunits": 0, "frontier_cost_microunits": 200,
+    })
+    if version == "v1":
+        payload.pop("session_id")
+        payload.pop("preparation_accounting_sha256")
+        payload.pop("post_task_evidence_refs")
+    return payload
 
 
 @pytest.mark.parametrize("mutation", ["duplicate_id", "oversized_id", "too_many_attempts", "too_many_references", "too_large_receipt", "raw_content_key"])
