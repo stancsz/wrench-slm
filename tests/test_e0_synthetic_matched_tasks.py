@@ -8,6 +8,8 @@ from typing import Any
 
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.snapshot import bind_source_root, create_snapshot
+import wrench_harness.synthetic_fixture_admission as fixture_admission
+from wrench_harness.synthetic_fixture_admission import validate_synthetic_fixture_admission
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "e0_synthetic_matched_tasks_v1"
@@ -229,7 +231,7 @@ def test_manifest_sidecar_and_inline_source_hashes_are_frozen():
 
     assert filename == MANIFEST_PATH.name
     assert digest == hashlib.sha256(_canonical_bytes(manifest)).hexdigest()
-    assert manifest["schema"] == "wrench.synthetic-matched-tasks.v1"
+    assert manifest["schema"] == "wrench.synthetic-matched-tasks.v2"
     assert manifest["provenance"] == "wrench_authored_synthetic_only"
     assert manifest["usage"] == "open_development_fixture_only"
     assert manifest["not_a_utility_claim"] is True
@@ -244,6 +246,87 @@ def test_manifest_sidecar_and_inline_source_hashes_are_frozen():
             if mutation is not None:
                 raw = mutation["content_utf8"].encode("utf-8")
                 assert hashlib.sha256(raw).hexdigest() == mutation["sha256"]
+
+
+def test_open_synthetic_manifest_passes_only_narrow_fixture_admission():
+    manifest = _load_manifest()
+    receipt_path = manifest["admission"]["review"]["receipt_path"]
+    receipt = (Path(__file__).parents[1] / receipt_path).read_bytes()
+    digest = SIDECAR_PATH.read_text(encoding="ascii").split()[0]
+    result = validate_synthetic_fixture_admission(
+        manifest,
+        manifest_sha256=digest,
+        requested_usage="open_development_fixture_only",
+        review_receipt_path=receipt_path,
+        review_receipt_bytes=receipt,
+    )
+    assert result.admitted is True
+    assert result.usage == "open_development_fixture_only"
+    assert result.reason is None
+
+
+def test_admission_rejects_changed_fixture_contents_even_when_policy_labels_remain():
+    manifest = _load_manifest()
+    receipt_path = manifest["admission"]["review"]["receipt_path"]
+    receipt = (Path(__file__).parents[1] / receipt_path).read_bytes()
+    changed = json.loads(json.dumps(manifest))
+    changed["pairs"][0]["cases"][0]["files"][0]["content_utf8"] += "# changed\n"
+    digest = hashlib.sha256(_canonical_bytes(changed)).hexdigest()
+    result = validate_synthetic_fixture_admission(
+        changed,
+        manifest_sha256=digest,
+        requested_usage="open_development_fixture_only",
+        review_receipt_path=receipt_path,
+        review_receipt_bytes=receipt,
+    )
+    assert result.admitted is False
+    assert result.reason == "fixture_identity_mismatch"
+
+
+def test_synthetic_admission_fails_closed_for_origin_usage_seal_split_lineage_and_review(monkeypatch):
+    manifest = _load_manifest()
+    receipt_path = manifest["admission"]["review"]["receipt_path"]
+    receipt = (Path(__file__).parents[1] / receipt_path).read_bytes()
+    pinned_hash = SIDECAR_PATH.read_text(encoding="ascii").split()[0]
+
+    cases = [
+        ("unknown_origin", lambda m: m.__setitem__("provenance", "unknown"), "unknown_or_non_synthetic_origin"),
+        ("admission_origin", lambda m: m["admission"].__setitem__("origin", "public_source"), "unknown_or_non_synthetic_origin"),
+        ("usage_missing", lambda m: m["admission"].pop("declared_usage"), "usage_undeclared"),
+        ("usage_unrecognized", lambda m: m["admission"].__setitem__("declared_usage", ["training"]), "usage_disallowed"),
+        ("sealed", lambda m: m["admission"].__setitem__("sealed", True), "sealed_or_final_data"),
+        ("final", lambda m: m["admission"].__setitem__("final", True), "sealed_or_final_data"),
+        ("split", lambda m: m["admission"].__setitem__("split", "sealed_final"), "invalid_split"),
+        ("lineage", lambda m: m["admission"]["lineage"].__setitem__("parent_manifest_sha256", "0" * 64), "invalid_lineage"),
+        ("review_state", lambda m: m["admission"]["review"].__setitem__("state", "unreviewed"), "invalid_review_state"),
+        ("review_scopes", lambda m: m["admission"]["review"].__setitem__("scopes", ["rights"]), "invalid_review_scopes"),
+        ("review_hash", lambda m: m["admission"]["review"].__setitem__("receipt_sha256", "0" * 64), "review_receipt_hash_mismatch"),
+    ]
+    for _, mutate, expected_reason in cases:
+        candidate = json.loads(json.dumps(manifest))
+        mutate(candidate)
+        digest = hashlib.sha256(_canonical_bytes(candidate)).hexdigest()
+        monkeypatch.setattr(fixture_admission, "SUPPORTED_MANIFEST_SHA256", digest)
+        result = validate_synthetic_fixture_admission(
+            candidate,
+            manifest_sha256=digest,
+            requested_usage="open_development_fixture_only",
+            review_receipt_path=receipt_path,
+            review_receipt_bytes=receipt,
+        )
+        assert result.admitted is False
+        assert result.reason == expected_reason
+
+    monkeypatch.setattr(fixture_admission, "SUPPORTED_MANIFEST_SHA256", pinned_hash)
+    mismatch = validate_synthetic_fixture_admission(
+        manifest,
+        manifest_sha256=pinned_hash,
+        requested_usage="training",
+        review_receipt_path=receipt_path,
+        review_receipt_bytes=receipt,
+    )
+    assert mismatch.admitted is False
+    assert mismatch.reason == "requested_usage_disallowed_or_undeclared"
 
 
 def test_four_synthetic_groups_have_declared_single_boundary_pairs():

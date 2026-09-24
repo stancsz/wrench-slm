@@ -1,8 +1,31 @@
 {
-  "schema": "wrench.synthetic-matched-tasks.v1",
+  "schema": "wrench.synthetic-matched-tasks.v2",
   "provenance": "wrench_authored_synthetic_only",
   "usage": "open_development_fixture_only",
   "not_a_utility_claim": true,
+  "admission": {
+    "origin": "wrench_authored_synthetic_only",
+    "declared_usage": [
+      "open_development_fixture_only"
+    ],
+    "sealed": false,
+    "final": false,
+    "split": "open_development",
+    "lineage": {
+      "kind": "wrench_authored_inline_synthetic",
+      "parent_manifest_sha256": null
+    },
+    "review": {
+      "state": "fixture_mechanics_reviewed",
+      "scopes": [
+        "fixture_integrity",
+        "mechanics",
+        "oracle_consistency"
+      ],
+      "receipt_path": "docs/evals/wrench-e0-synthetic-matched-tasks/review.md",
+      "receipt_sha256": "b5c32928841b66aa679eccdbd7d88a4bffad4075b07f794f2a42d380961c1b2f"
+    }
+  },
   "pairs": [
     {
       "group": "localization",
