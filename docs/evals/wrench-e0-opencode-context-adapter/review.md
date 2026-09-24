@@ -31,6 +31,17 @@ Exact provider request serialization and tokenizer identity are not
 documented by this hook, so exact final token accounting and runtime
 equivalence remain open.
 
+The context hook precedes provider protocol lowering. A later native HTTP hook
+is the closest documented observation point for a lowered request, while
+WebSocket hooks are separate and experimental. Automatic compaction starts
+from the latest response's provider input usage when available, then adds
+output and newer content; without provider usage, OpenCode estimates text,
+media, instructions, and tools locally. It can retry a recognized overflow
+once when automatic compaction is enabled, but its estimate cannot prevent
+every provider overflow. Neither that estimate nor a provider-specific
+token-count API establishes a provider-agnostic exact gate or blocks a later
+model dispatch.
+
 ## Scope limits
 
 No plugin, dependency, client installation, provider call, benchmark, corpus,
@@ -43,3 +54,4 @@ this review supplies no E4 utility evidence. Full E0 acceptance remains open.
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)
 - [OpenCode V2 API](https://opencode.ai/v2/docs/api)
 - [V1-to-V2 plugin migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1)
+- [OpenCode V2 compaction guide](https://opencode.ai/v2/docs/compaction)

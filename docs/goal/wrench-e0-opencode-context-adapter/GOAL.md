@@ -27,6 +27,16 @@ plugin code, dependency, install, provider call, or production route.
   not specify callback failure behavior. Therefore the prompt hook's
   admission behavior cannot be generalized to the context hook or used to
   claim the complete request is blocked on preparation failure.
+- The context hook receives the semantic request before provider protocol
+  lowering. OpenCode's later `http.request` hook can observe native HTTP
+  requests; WebSocket traffic follows separate experimental hooks. Neither
+  boundary supplies a provider-agnostic tokenizer or documented dispatch
+  veto. Automatic compaction starts from the latest response's provider input
+  usage when available, then adds output and newer content; without provider
+  usage, OpenCode estimates text, media, instructions, and tools locally. It
+  can retry a recognized overflow once when automatic compaction is enabled,
+  but its heuristic estimate cannot prevent every provider-specific overflow.
+  This is not an exact E0 prompt gate.
 - A future context hook obtains the active session using its event
   `sessionID`, then reads the session record using the documented session API.
 - The adapter derives its candidate source root from the active session's
@@ -52,7 +62,9 @@ plugin code, dependency, install, provider call, or production route.
   distinguishing primary and auxiliary requests.
 - No exact final provider token budget or wire-equivalence claim is allowed
   until an OpenCode release, final request serializer, provider/model identity,
-  and tokenizer are pinned and measured at the corresponding boundary.
+  and tokenizer are pinned and measured at the corresponding boundary. Any
+  hosted token-count endpoint is a provider-specific external call and does
+  not itself block a later model dispatch.
 - Authored fixtures may verify mechanics only. No consented matched-task
   corpus or outcome oracle is designated; E4 utility remains unevaluated.
 
@@ -83,6 +95,9 @@ production fitness. The integration has not been installed or run.
 References: official [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins),
 [OpenCode V2 API](https://opencode.ai/v2/docs/api), and
 [V1-to-V2 plugin migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1).
+The [V2 compaction guide](https://opencode.ai/v2/docs/compaction) describes
+its preflight size estimates and explicitly warns heuristic estimates cannot
+prevent every provider-specific overflow.
 
 ## Next action
 
