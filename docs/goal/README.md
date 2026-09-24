@@ -48,11 +48,11 @@
   snapshot seam, covered only by synthetic tests and static review. A
   synthetic offline composition now joins candidate selection, exact retrieval
   and store roundtrip, context preparation/materialization, final-message
-  lowering, and the fixture request lease. Provider wire, tokenizer
-  equivalence, dispatch veto, and the exact-token E0 gate remain unresolved.
-  A route-owned offline path now joins deterministic rule-route evidence through
-  preparation, lowered request, and terminal fixture lease receipt; independent
-  review is pending and this remains synthetic-only evidence.
+  lowering, and the fixture request lease. A route-owned offline path joins
+  deterministic rule-route evidence through preparation, lowered request, and
+  terminal fixture lease receipt; independent review passed. This remains
+  synthetic-only evidence. Provider wire, tokenizer equivalence, dispatch veto,
+  and the exact-token E0 gate remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.

@@ -647,6 +647,7 @@ This remains a synthetic fixture composition. The receipt does not authenticate
 route intent or client lifecycle; it does not prove an OpenCode dispatch veto,
 final runtime serialization, tokenizer parity, or complete task accounting.
 The exact-token gate remains unavailable and broader E0/E4 acceptance remains
-open. Next: complete the independent read-only review and reconcile its
-findings. Runtime and production claims still require pinned route/model/
-serializer/tokenizer identities and an authorized dispatch-boundary trial.
+open. Independent read-only review and focused orchestrator verification passed
+for this synthetic route-to-lease extension. Runtime and production claims
+still require pinned route/model/serializer/tokenizer identities and an
+authorized dispatch-boundary trial.

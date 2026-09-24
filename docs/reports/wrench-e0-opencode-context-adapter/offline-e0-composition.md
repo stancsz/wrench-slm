@@ -4,7 +4,7 @@
 - Job: `W2-NS-E0-OFFLINE-COMPOSITION-20260924`
 - Nonce: `E0OC-5A80`
 - Base HEAD: `cef6947b8b892bd25fb9a85ca217fd892e013767`
-- Status: implemented and independently reviewed; uncommitted
+- Status: implemented and independently reviewed; committed as `69309d7e8312a107d2a42015e1f595ef619fc248`
 
 ## Behavioral contract
 
@@ -85,8 +85,11 @@ not separately exercised by this composition module, and a partially started
 timer thread is handled by inspection rather than a dedicated fixture. No
 commit was made by this job.
 
-## Next action
+## Follow-up
 
-Integrate and commit the reviewed source, test, and documentation slice. Keep
-runtime integration, full accounting, E0/E4 acceptance, and exact-token parity
-open.
+The source, tests, and documentation in this report were integrated in commit
+`69309d7e8312a107d2a42015e1f595ef619fc248`. The later
+[rule-route-to-lease slice](offline-route-to-lease.md) carries deterministic
+rule-route evidence through this fixture request boundary and records terminal
+cleanup. Runtime integration, full accounting, E0/E4 acceptance, and exact-token
+parity remain open.

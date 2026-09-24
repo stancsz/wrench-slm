@@ -73,7 +73,8 @@ product proceeds through E1-E4 only after experiment stage gates pass.
 ## First integration target: OpenCode V2
 
 OpenCode V2 is selected as the first client integration target; its plugin
-integration is not implemented. The bounded, uninstalled adapter contract is
+integration is not implemented. The isolated OpenCode v2.0.15 CLI is installed
+and statically configured, but has no Wrench plugin. The bounded adapter contract is
 recorded in [E0 OpenCode V2 context adapter contract](../wrench-e0-opencode-context-adapter/GOAL.md).
 The prompt-admission hook documents failure-based non-admission before durable
 inbox admission, but it does not run for each model request or expose the

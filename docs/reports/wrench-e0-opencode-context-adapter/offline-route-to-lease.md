@@ -4,7 +4,7 @@
 - Job: `W2-NS-E0-ROUTE-TO-LEASE-20260924`
 - Nonce: `R2L-94F3`
 - Base HEAD: `69309d7e8312a107d2a42015e1f595ef619fc248`
-- Status: implemented and independently reviewed; uncommitted
+- Status: implemented, independently reviewed, and committed as `a23d306baa4acc431c5ea3f3bddcd3e10e42e344`
 
 ## Behavior
 
@@ -94,6 +94,10 @@ complete task accounting, real-task utility, or E0/E4 acceptance. The test
 route operates only over the finite enrolled snapshot selection. The local
 client and prior read-only model-list check are documented separately.
 
-Next, obtain an independent source review of these changes. Keep production
-client execution and exact-token claims closed until route, model, serializer,
-tokenizer, and supported dispatch-denial behavior are pinned and authorized.
+The change was committed in `a23d306baa4acc431c5ea3f3bddcd3e10e42e344` after
+an independent read-only review and an orchestrator rerun of all 11 focused
+functions plus `git diff --check`. Keep production client execution and
+exact-token claims closed until route, model, serializer, tokenizer, and
+supported dispatch-denial behavior are pinned and authorized. The broader E0
+deterministic baseline still needs inventory-bound source selection and
+complete end-to-end accounting.
