@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 import pytest
 
 from wrench_harness.artifact_store import ArtifactStore, ArtifactStoreError
-from wrench_harness.e0_context_pipeline import PreparationStatus, prepare_e0_context
+from wrench_harness.e0_context_pipeline import (
+    PreparationStatus,
+    prepare_e0_context,
+    verify_preparation_accounting_receipt,
+)
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
 from wrench_harness.outcome_receipt import ReceiptStatus
 from wrench_harness.prompt_compiler import PromptGateStatus
@@ -26,13 +30,14 @@ def _registry():
 
 
 def _invoke(root, snapshot, store, *, paths=("sample.py",), context_budget=128,
-            prompt_budget=4096, required=(), required_paths=(), preserve_paths=(), serializer=None, schema=("files", "inspect")):
+            prompt_budget=4096, required=(), required_paths=(), preserve_paths=(), serializer=None,
+            schema=("files", "inspect"), query="target"):
     registry = _registry()
     if serializer is None:
         serializer = lambda messages: json.dumps(messages, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return prepare_e0_context(
         source_root=root, snapshot=snapshot, paths=paths, store=store,
-        query="target", source_order_start=10, context_token_budget=context_budget,
+        query=query, source_order_start=10, context_token_budget=context_budget,
         prompt_token_budget=prompt_budget, namespace_registry=registry,
         schema_lookups=(schema,) if schema else (),
         base_messages=({"role": "system", "content": "Fixed fixture instruction."},),
@@ -79,6 +84,37 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert payload["missing_fields"] == ["outcome"]
     assert result.aggregate_sha256 != result.prompt_gate.prompt_sha256
     assert result.aggregate_sha256 == payload["context_receipt_sha256"]
+    accounting = result.accounting_receipt
+    assert accounting is not None
+    assert accounting.schema == "wrench.e0.preparation-accounting.v1"
+    assert accounting.preparation_sha256 == result.aggregate_sha256
+    assert verify_preparation_accounting_receipt(accounting, aggregate_sha256=result.aggregate_sha256)
+    assert not verify_preparation_accounting_receipt(accounting, aggregate_sha256="0" * 64)
+    accounting_payload = json.loads(accounting.payload_json)
+    assert accounting_payload["preparation_sha256"] == result.aggregate_sha256
+    assert "elapsed_wall_ns" not in accounting_payload["counters"]
+    assert accounting_payload["counters"]["process_cpu_ns"] is None
+    accounting_raw = json.dumps(
+        accounting_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    assert hashlib.sha256(accounting_raw).hexdigest() == accounting.accounting_sha256
+    tampered = replace(accounting, payload_json=accounting.payload_json.replace('"facade_tool_call_sites":0', '"facade_tool_call_sites":1'))
+    assert not verify_preparation_accounting_receipt(tampered, aggregate_sha256=result.aggregate_sha256)
+    extended_payload = dict(accounting_payload)
+    extended_payload["unexpected"] = True
+    extended_raw = json.dumps(extended_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    extended = replace(accounting, payload_json=extended_raw.decode("utf-8"), accounting_sha256=hashlib.sha256(extended_raw).hexdigest())
+    assert not verify_preparation_accounting_receipt(extended, aggregate_sha256=result.aggregate_sha256)
+    malformed_payload = dict(accounting_payload)
+    malformed_payload["counters"] = dict(accounting_payload["counters"])
+    malformed_payload["counters"]["facade_tool_call_sites"] = "0"
+    malformed_raw = json.dumps(malformed_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    malformed = replace(accounting, payload_json=malformed_raw.decode("utf-8"), accounting_sha256=hashlib.sha256(malformed_raw).hexdigest())
+    assert not verify_preparation_accounting_receipt(malformed, aggregate_sha256=result.aggregate_sha256)
+    oversized = replace(accounting, payload_json=" " * (64 * 1024 + 1))
+    assert not verify_preparation_accounting_receipt(oversized, aggregate_sha256=result.aggregate_sha256)
+    nested = replace(accounting, payload_json="[" * 2_000 + "0" + "]" * 2_000)
+    assert not verify_preparation_accounting_receipt(nested, aggregate_sha256=result.aggregate_sha256)
     assert "target" in result.prompt and "inspect" in result.prompt
     assert "ignore previous instructions" in result.prompt
     assert observed and observed[0]
@@ -117,6 +153,7 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert metrics.structural_index_file_count == 1
     assert metrics.structural_index_symbol_count >= 1
     assert metrics.structural_index_serialized_bytes > 0
+    assert metrics.structural_index_candidate_count >= 1
     assert metrics.serializer_callback_attempts == metrics.tokenizer_callback_attempts == 1
     assert metrics.prompt_serialized_bytes > 0 and metrics.prompt_token_count > 0
     assert metrics.outcome_receipt_build_attempts == 1 and metrics.outcome_receipt_status == "incomplete"
@@ -126,6 +163,11 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert metrics.process_cpu_ns is None and metrics.process_rss_bytes is None
     assert metrics.energy_joules is None and metrics.os_cache_bytes is None and metrics.request_page_faults is None
     assert "sample.py" not in repr(asdict(metrics))
+
+    repeated = _invoke(root, snapshot, store, required_paths=("sample.py",), preserve_paths=("sample.py",), serializer=serializer)
+    assert repeated.aggregate_sha256 == result.aggregate_sha256
+    assert repeated.accounting_receipt is not None
+    assert repeated.accounting_receipt.accounting_sha256 == accounting.accounting_sha256
 
 
 def test_stale_source_is_omitted_and_never_written_to_artifact_store(tmp_path):
@@ -141,6 +183,8 @@ def test_stale_source_is_omitted_and_never_written_to_artifact_store(tmp_path):
     assert result.retrieval_misses[0][0] in {item[0] for item in result.omitted_evidence}
     assert store._objects_on_disk == {}
     assert result.outcome_receipt.status is ReceiptStatus.INCOMPLETE
+    assert result.accounting_receipt is not None
+    assert result.accounting_receipt.preparation_sha256 == result.aggregate_sha256
     assert result.metrics.elapsed_wall_ns > 0
     assert result.metrics.caller_path_count == 1
     assert result.metrics.exact_source_retrieval_attempts == 1
@@ -155,6 +199,7 @@ def test_stale_source_is_omitted_and_never_written_to_artifact_store(tmp_path):
     assert result.metrics.structural_index_file_count is None
     assert result.metrics.structural_index_symbol_count is None
     assert result.metrics.structural_index_serialized_bytes is None
+    assert result.metrics.structural_index_candidate_count is None
     assert result.metrics.ledger_logical_token_count is None
     assert result.metrics.ledger_selected_token_count is None
     assert result.metrics.ledger_retrieval_candidate_count is None
@@ -177,6 +222,8 @@ def test_required_evidence_omission_returns_no_prompt_and_incomplete_receipt(tmp
     ).encode("utf-8")).hexdigest()
     result = _invoke(root, snapshot, ArtifactStore(tmp_path / "store"), context_budget=1, required=(evidence_id,))
     assert result.status is PreparationStatus.PROMPT_REJECTED
+    assert result.accounting_receipt is not None
+    assert verify_preparation_accounting_receipt(result.accounting_receipt, aggregate_sha256=result.aggregate_sha256)
     assert result.prompt is None
     assert result.prompt_gate.status is PromptGateStatus.REQUIRED_EVIDENCE_OMITTED
     assert result.outcome_receipt.status is ReceiptStatus.INCOMPLETE
@@ -195,6 +242,8 @@ def test_serializer_failure_releases_pin_and_returns_no_routable_prompt(tmp_path
 
     result = _invoke(root, snapshot, store, serializer=fail_serializer)
     assert result.status is PreparationStatus.PROMPT_REJECTED
+    assert result.accounting_receipt is not None
+    assert verify_preparation_accounting_receipt(result.accounting_receipt, aggregate_sha256=result.aggregate_sha256)
     assert result.prompt is None
     assert result.prompt_gate.status is PromptGateStatus.SERIALIZER_ERROR
     assert store._pins == {}
@@ -217,6 +266,7 @@ def test_failed_artifact_put_separates_input_bytes_from_stored_bytes(tmp_path, m
     monkeypatch.setattr(store, "put", fail_put)
     result = _invoke(root, snapshot, store)
     assert result.status is PreparationStatus.STORE_FAILED
+    assert result.accounting_receipt is None
     assert result.metrics.artifact_put_attempts == 1
     assert result.metrics.artifact_put_input_bytes > 0
     assert result.metrics.artifact_put_successes == 0
@@ -230,10 +280,12 @@ def test_facade_bounds_inputs_and_has_no_execution_surface(tmp_path):
     store = ArtifactStore(tmp_path / "store")
     invalid = _invoke(root, snapshot, store, paths=tuple(f"p{i}" for i in range(17)))
     assert invalid.status is PreparationStatus.INVALID_INPUT
+    assert invalid.accounting_receipt is None
     assert invalid.route == "none" and invalid.prompt is None
     assert not hasattr(invalid, "execute")
     assert invalid.metrics.ledger_logical_token_count is None
     assert invalid.metrics.structural_index_symbol_count is None
+    assert invalid.metrics.structural_index_candidate_count is None
     oversized_messages = [{"role": "system", "content": "x"}] * 129
     invalid_messages = prepare_e0_context(
         source_root=root, snapshot=snapshot, paths=("sample.py",), store=store, query="target",
@@ -243,6 +295,19 @@ def test_facade_bounds_inputs_and_has_no_execution_surface(tmp_path):
         serializer_id="fixture", tokenizer_id="fixture",
     )
     assert invalid_messages.status is PreparationStatus.INVALID_INPUT
+
+
+def test_zero_structural_candidates_is_measured_only_after_successful_query(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    result = _invoke(root, snapshot, ArtifactStore(tmp_path / "store"), query="no-such-symbol-unique")
+    assert result.status is PreparationStatus.READY
+    assert result.metrics.structural_index_query_attempts == 1
+    assert result.metrics.structural_index_query_status == "no_matches"
+    assert result.metrics.structural_index_candidate_count == 0
+    assert result.accounting_receipt is not None
+    assert verify_preparation_accounting_receipt(result.accounting_receipt, aggregate_sha256=result.aggregate_sha256)
 
 
 def test_preparation_does_not_call_known_execution_or_network_tripwires(tmp_path, monkeypatch):

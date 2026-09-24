@@ -3,7 +3,8 @@
 - [E0 caller-owned context preparation](wrench-e0-context-pipeline/GOAL.md):
   accepted local composition of snapshot reads, structural candidates,
   request-pinned artifacts, bounded context, deferred schemas, prompt gating,
-  and an incomplete no-model receipt. This is not E0 milestone acceptance.
+  an incomplete no-model receipt, and a deterministic preparation-accounting
+  companion. This is not E0 milestone acceptance.
 - [E0 snapshot-backed structural index](wrench-e0-snapshot-structural-index/GOAL.md):
   accepted bounded candidate-index slice; it does not scan or execute code.
 - [E0 bounded outcome receipt](wrench-e0-outcome-receipt/GOAL.md):

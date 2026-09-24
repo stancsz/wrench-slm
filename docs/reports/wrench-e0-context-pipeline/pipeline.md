@@ -60,3 +60,42 @@ null unless index construction succeeds. Retrieval candidate count does not
 measure symbols scanned, and serialized payload bytes do not measure disk
 I/O. The values carry no IDs, query, paths, hashes, or content and are not
 included in the aggregate receipt digest.
+
+The result now also carries an optional deterministic companion accounting
+receipt. Its canonical JSON includes stable facade counters and explicit nulls
+for unmeasured dimensions, joins them to the existing aggregate preparation
+hash, and has its own SHA-256. The companion is omitted when no aggregate
+preparation hash exists or its bounded payload cannot be formed. Monotonic
+elapsed time is excluded from its identity. This keeps counter evidence
+verifiable without changing the existing content receipt or claiming that
+metrics are persisted, exported, callback-complete, or complete E0 lifecycle
+accounting. Its v1 counter projection is explicit so unrelated future metrics
+do not silently alter the schema. The public verifier checks canonical form,
+the field set, payload hash, and join to the caller-supplied preparation hash;
+that proves integrity, not measurement authenticity or callback completeness.
+
+## Follow-up task: deterministic preparation accounting companion
+
+- **Worker:** root agent as E0 pipeline supervisor and implementer
+- **Status/date:** accepted as a bounded component slice after independent repair review, 2026-09-24
+- **Artifact:** `src/wrench_harness/e0_context_pipeline.py`
+- **Revision:** implementation based on `52438e2`; code and evaluation committed together
+- **Verification:** focused `tests/test_e0_context_pipeline.py` on Windows
+  Python 3.11.16 with the existing cached pytest 8.4.2 dependency path: **8
+  passed**. `git diff --check` passed. Coverage includes stable hashes,
+  elapsed-time exclusion, null-versus-zero, stale and prompt-rejected results,
+  missing receipts, oversized/deep payloads, and strict schema validation.
+- **Review repair:** independent review found that verifier parsing occurred
+  before its size check and an unreached structural query looked like zero
+  candidates. The verifier now checks input size first, catches recursion,
+  validates exact v1 keys/value types, and candidate count remains null until a
+  query returns. Final read-only re-review accepted the repairs. An intermediate test run caught
+  a misplaced test block; it was corrected before the passing run.
+- **Storage:** the 50,000,000-byte reservation was released after the test
+  stopped and its 8,916-byte temporary tree was accounted; final checker status
+  was within limit with no active reservations.
+- **Limitations:** no POSIX pytest, OpenCode plugin, runtime-matched tokenizer,
+  provider call, or downstream task was exercised. This does not close E0's
+  complete lifecycle accounting, authority, or client integration gates.
+- **Review record:** [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md)
+- **Next:** continue with source-root binding and the OpenCode adapter contract.

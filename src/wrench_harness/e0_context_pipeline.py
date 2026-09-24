@@ -12,7 +12,7 @@ import hashlib
 import json
 import os
 import time
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -40,6 +40,70 @@ MAX_RECEIPT_REFERENCE_BYTES = 64 * 1024
 MAX_QUERY_CHARS = 256
 MAX_CONTEXT_TOKENS = 8192
 MAX_PROMPT_TOKENS = 8192
+PREPARATION_ACCOUNTING_SCHEMA = "wrench.e0.preparation-accounting.v1"
+PREPARATION_ACCOUNTING_COUNTER_FIELDS = (
+    "caller_path_count",
+    "exact_source_retrieval_attempts",
+    "exact_source_retrieval_successes",
+    "exact_source_retrieval_status_counts",
+    "exact_source_returned_bytes",
+    "source_exact_read_total_attempts",
+    "source_exact_read_total_successes",
+    "source_exact_read_total_returned_bytes",
+    "structural_index_build_attempts",
+    "structural_index_status",
+    "structural_index_exact_read_attempts",
+    "structural_index_exact_read_successes",
+    "structural_index_exact_read_status_counts",
+    "structural_index_returned_bytes",
+    "structural_index_query_attempts",
+    "structural_index_query_status",
+    "structural_index_candidate_count",
+    "artifact_put_attempts",
+    "artifact_put_successes",
+    "artifact_put_input_bytes",
+    "artifact_put_success_bytes",
+    "artifact_pin_attempts",
+    "artifact_pin_successes",
+    "artifact_pin_bytes",
+    "artifact_read_attempts",
+    "artifact_read_successes",
+    "artifact_read_bytes",
+    "schema_discover_attempts",
+    "schema_discover_results",
+    "schema_lookup_attempts",
+    "schema_lookup_status_counts",
+    "ledger_assembly_attempts",
+    "ledger_selected_count",
+    "ledger_omitted_count",
+    "serializer_callback_attempts",
+    "tokenizer_callback_attempts",
+    "prompt_serialized_bytes",
+    "prompt_token_count",
+    "outcome_receipt_build_attempts",
+    "outcome_receipt_status",
+    "facade_model_call_sites",
+    "facade_provider_call_sites",
+    "facade_verifier_call_sites",
+    "facade_tool_call_sites",
+    "callback_external_activity",
+    "process_cpu_ns",
+    "process_rss_bytes",
+    "energy_joules",
+    "os_cache_bytes",
+    "request_page_faults",
+    "unmeasured_dimensions",
+    "ledger_logical_token_count",
+    "ledger_selected_token_count",
+    "ledger_retrieval_candidate_count",
+    "ledger_retrieval_truncated",
+    "ledger_search_limit",
+    "ledger_token_count_mode",
+    "ledger_token_counter_name",
+    "structural_index_file_count",
+    "structural_index_symbol_count",
+    "structural_index_serialized_bytes",
+)
 
 
 class PreparationStatus(str, Enum):
@@ -79,6 +143,20 @@ class PreparationResult:
     structural_status: str | None
     reason: str | None = None
     metrics: "PreparationMetrics | None" = None
+    accounting_receipt: "PreparationAccountingReceipt | None" = None
+
+
+@dataclass(frozen=True)
+class PreparationAccountingReceipt:
+    """Canonical companion for stable facade counters, joined by preparation hash.
+
+    This does not account for time, resource use, or arbitrary callback effects.
+    """
+
+    schema: str
+    preparation_sha256: str
+    accounting_sha256: str
+    payload_json: str
 
 
 @dataclass(frozen=True)
@@ -106,7 +184,7 @@ class PreparationMetrics:
     structural_index_returned_bytes: int
     structural_index_query_attempts: int
     structural_index_query_status: str | None
-    structural_index_candidate_count: int
+    structural_index_candidate_count: int | None
     artifact_put_attempts: int
     artifact_put_successes: int
     artifact_put_input_bytes: int
@@ -151,6 +229,171 @@ class PreparationMetrics:
     structural_index_file_count: int | None = None
     structural_index_symbol_count: int | None = None
     structural_index_serialized_bytes: int | None = None
+
+
+def _accounting_receipt(
+    aggregate_sha256: str | None, metrics: PreparationMetrics
+) -> PreparationAccountingReceipt | None:
+    """Bind deterministic facade counters to the content receipt they describe.
+
+    Elapsed time is deliberately excluded because it is nondeterministic. The
+    explicit unmeasured values remain in the payload as null, distinct from a
+    measured zero.
+    """
+    if aggregate_sha256 is None:
+        return None
+    # Keep the v1 projection explicit. New PreparationMetrics fields do not
+    # silently alter this schema's identity; intentionally extend it only with
+    # a documented schema/version decision.
+    metric_values = asdict(metrics)
+    counter_values = {
+        name: metric_values[name] for name in PREPARATION_ACCOUNTING_COUNTER_FIELDS
+    }
+    payload = {
+        "schema": PREPARATION_ACCOUNTING_SCHEMA,
+        "preparation_sha256": aggregate_sha256,
+        "counters": counter_values,
+    }
+    raw = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    if len(raw) > MAX_RECEIPT_REFERENCE_BYTES:
+        return None
+    return PreparationAccountingReceipt(
+        schema=payload["schema"],
+        preparation_sha256=aggregate_sha256,
+        accounting_sha256=_sha(raw),
+        payload_json=raw.decode("utf-8"),
+    )
+
+
+def verify_preparation_accounting_receipt(
+    receipt: PreparationAccountingReceipt,
+    *,
+    aggregate_sha256: str,
+) -> bool:
+    """Check canonical payload integrity and its join to a preparation hash.
+
+    This verifies structure and accidental-change integrity only. It does not
+    authenticate who measured the counters or prove external callback effects.
+    """
+    if type(receipt) is not PreparationAccountingReceipt:
+        return False
+    if (
+        type(aggregate_sha256) is not str
+        or type(receipt.schema) is not str
+        or type(receipt.preparation_sha256) is not str
+        or type(receipt.accounting_sha256) is not str
+        or type(receipt.payload_json) is not str
+        or receipt.schema != PREPARATION_ACCOUNTING_SCHEMA
+    ):
+        return False
+    if receipt.preparation_sha256 != aggregate_sha256:
+        return False
+    # Every valid Unicode code point consumes at least one UTF-8 byte. Reject
+    # clearly oversized strings before making the encoded copy.
+    if len(receipt.payload_json) > MAX_RECEIPT_REFERENCE_BYTES:
+        return False
+    try:
+        payload_bytes = receipt.payload_json.encode("utf-8")
+    except UnicodeError:
+        return False
+    if len(payload_bytes) > MAX_RECEIPT_REFERENCE_BYTES:
+        return False
+    try:
+        payload = json.loads(receipt.payload_json)
+        raw = json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        return False
+    if len(raw) > MAX_RECEIPT_REFERENCE_BYTES or raw.decode("utf-8") != receipt.payload_json:
+        return False
+    if _sha(raw) != receipt.accounting_sha256:
+        return False
+    return (
+        isinstance(payload, dict)
+        and set(payload) == {"schema", "preparation_sha256", "counters"}
+        and payload.get("schema") == PREPARATION_ACCOUNTING_SCHEMA
+        and payload.get("preparation_sha256") == aggregate_sha256
+        and isinstance(payload.get("counters"), dict)
+        and set(payload["counters"]) == set(PREPARATION_ACCOUNTING_COUNTER_FIELDS)
+        and _valid_preparation_accounting_counters(payload["counters"])
+    )
+
+
+def _valid_preparation_accounting_counters(counters: dict[str, object]) -> bool:
+    """Validate v1 JSON value types, preserving null versus measured zero."""
+    integer_fields = {
+        "exact_source_retrieval_attempts", "exact_source_retrieval_successes",
+        "exact_source_returned_bytes", "source_exact_read_total_attempts",
+        "source_exact_read_total_successes", "source_exact_read_total_returned_bytes",
+        "structural_index_build_attempts", "structural_index_exact_read_attempts",
+        "structural_index_exact_read_successes", "structural_index_returned_bytes",
+        "structural_index_query_attempts", "artifact_put_attempts", "artifact_put_successes",
+        "artifact_put_input_bytes", "artifact_put_success_bytes", "artifact_pin_attempts",
+        "artifact_pin_successes", "artifact_pin_bytes", "artifact_read_attempts",
+        "artifact_read_successes", "artifact_read_bytes", "schema_discover_attempts",
+        "schema_lookup_attempts", "ledger_assembly_attempts", "serializer_callback_attempts",
+        "tokenizer_callback_attempts", "outcome_receipt_build_attempts", "facade_model_call_sites",
+        "facade_provider_call_sites", "facade_verifier_call_sites", "facade_tool_call_sites",
+    }
+    optional_integer_fields = {
+        "caller_path_count", "structural_index_candidate_count", "schema_discover_results",
+        "ledger_selected_count", "ledger_omitted_count", "prompt_serialized_bytes",
+        "prompt_token_count", "ledger_logical_token_count", "ledger_selected_token_count",
+        "ledger_retrieval_candidate_count", "ledger_search_limit", "structural_index_file_count",
+        "structural_index_symbol_count", "structural_index_serialized_bytes",
+    }
+    null_fields = {
+        "callback_external_activity", "process_cpu_ns", "process_rss_bytes", "energy_joules",
+        "os_cache_bytes", "request_page_faults",
+    }
+    string_fields = {
+        "structural_index_status", "structural_index_query_status", "outcome_receipt_status",
+        "ledger_token_count_mode", "ledger_token_counter_name",
+    }
+    count_fields = {
+        "exact_source_retrieval_status_counts", "structural_index_exact_read_status_counts",
+        "schema_lookup_status_counts",
+    }
+    classified = integer_fields | optional_integer_fields | null_fields | string_fields | count_fields | {
+        "structural_index_candidate_count", "ledger_retrieval_truncated", "unmeasured_dimensions",
+    }
+    if classified != set(PREPARATION_ACCOUNTING_COUNTER_FIELDS):
+        return False
+    for name in integer_fields:
+        if type(counters[name]) is not int or counters[name] < 0:
+            return False
+    for name in optional_integer_fields:
+        value = counters[name]
+        if value is not None and (type(value) is not int or value < 0):
+            return False
+    for name in null_fields:
+        if counters[name] is not None:
+            return False
+    for name in string_fields:
+        value = counters[name]
+        if value is not None and (type(value) is not str or len(value) > 128):
+            return False
+    for name in count_fields:
+        rows = counters[name]
+        if type(rows) is not list or any(
+            type(row) is not list or len(row) != 2 or type(row[0]) is not str
+            or len(row[0]) > 64 or type(row[1]) is not int or row[1] < 0
+            for row in rows
+        ):
+            return False
+        if rows != sorted(rows, key=lambda row: row[0]) or len({row[0] for row in rows}) != len(rows):
+            return False
+    truncated = counters["ledger_retrieval_truncated"]
+    if truncated is not None and type(truncated) is not bool:
+        return False
+    unmeasured = counters["unmeasured_dimensions"]
+    return unmeasured == [
+        "callback_external_activity", "process_cpu", "process_rss", "energy",
+        "os_cache", "request_page_faults",
+    ]
 
 
 def _sha(value: bytes) -> str:
@@ -634,7 +877,7 @@ def prepare_e0_context(
         "structural_index_exact_read_status_counts": {}, "structural_index_returned_bytes": 0,
         "structural_index_build_attempts": 0,
         "structural_index_status": None, "structural_index_query_attempts": 0,
-        "structural_index_query_status": None, "structural_index_candidate_count": 0,
+        "structural_index_query_status": None, "structural_index_candidate_count": None,
         "artifact_put_attempts": 0, "artifact_put_successes": 0,
         "artifact_put_input_bytes": 0, "artifact_put_success_bytes": 0,
         "artifact_pin_attempts": 0, "artifact_pin_successes": 0, "artifact_pin_bytes": 0, "artifact_read_attempts": 0,
@@ -662,7 +905,7 @@ def prepare_e0_context(
         preserve_source_paths=preserve_source_paths, max_candidates=max_candidates, _metrics=counters,
     )
     elapsed = max(0, time.perf_counter_ns() - started_ns)
-    result = replace(result, metrics=PreparationMetrics(
+    metrics = PreparationMetrics(
         elapsed_wall_ns=elapsed, caller_path_count=counters["caller_path_count"],
         exact_source_retrieval_attempts=int(counters["exact_source_retrieval_attempts"]),
         exact_source_retrieval_successes=int(counters["exact_source_retrieval_successes"]),
@@ -679,7 +922,7 @@ def prepare_e0_context(
         structural_index_returned_bytes=int(counters["structural_index_returned_bytes"]),
         structural_index_query_attempts=int(counters["structural_index_query_attempts"]),
         structural_index_query_status=counters["structural_index_query_status"],
-        structural_index_candidate_count=int(counters["structural_index_candidate_count"]),
+        structural_index_candidate_count=counters["structural_index_candidate_count"],
         artifact_put_attempts=int(counters["artifact_put_attempts"]), artifact_put_successes=int(counters["artifact_put_successes"]),
         artifact_put_input_bytes=int(counters["artifact_put_input_bytes"]),
         artifact_put_success_bytes=int(counters["artifact_put_success_bytes"]),
@@ -712,8 +955,22 @@ def prepare_e0_context(
         structural_index_file_count=counters["structural_index_file_count"],
         structural_index_symbol_count=counters["structural_index_symbol_count"],
         structural_index_serialized_bytes=counters["structural_index_serialized_bytes"],
-    ))
+    )
+    result = replace(
+        result,
+        metrics=metrics,
+        accounting_receipt=_accounting_receipt(result.aggregate_sha256, metrics),
+    )
     return result
 
 
-__all__ = ["MAX_PATHS", "MAX_SCHEMA_LOOKUPS", "PreparationResult", "PreparationStatus", "SourceIdentity", "prepare_e0_context"]
+__all__ = [
+    "MAX_PATHS",
+    "MAX_SCHEMA_LOOKUPS",
+    "PreparationAccountingReceipt",
+    "PreparationResult",
+    "PreparationStatus",
+    "SourceIdentity",
+    "prepare_e0_context",
+    "verify_preparation_accounting_receipt",
+]

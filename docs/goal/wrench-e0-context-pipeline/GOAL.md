@@ -69,3 +69,18 @@ index construction fails or is not reached. Candidate count is not a count of
 symbols scanned; serialized bytes are not disk I/O. No candidate IDs, query,
 paths, hashes, or content are copied into metrics, which remain outside the
 aggregate receipt hash.
+
+## Follow-up: deterministic accounting companion
+
+Status: accepted as a component slice after independent review (2026-09-24).
+
+The facade result now optionally carries a versioned canonical companion for
+the stable call-site counters. It joins the counters to `aggregate_sha256`,
+excludes elapsed wall time, preserves unmeasured values as null, and exposes a
+verifier for payload integrity and preparation-hash matching. Invalid results
+without an aggregate hash have no companion. The payload has an explicit v1
+field projection; new counters require an intentional schema update. The
+companion remains in memory and separate from the outcome receipt. It does not
+authenticate measurements, observe arbitrary callback effects, or satisfy
+complete E0 lifecycle accounting. See the [pipeline report](../../reports/wrench-e0-context-pipeline/pipeline.md).
+Independent verification and critique are recorded in the [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md).
