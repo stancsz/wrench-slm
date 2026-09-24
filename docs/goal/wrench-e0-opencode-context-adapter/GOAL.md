@@ -434,18 +434,20 @@ and a Wrench request boundary that owns the final request stream and source
 lease lifetime. The boundary must bind each preparation lease to exactly one
 lowered request; session identity alone cannot distinguish concurrent or
 retried attempts. Missing, duplicate, stale, or ambiguous correlation must
-fail closed. The pinned Promise API has a candidate chain from context to
-`model.request` headers to the concrete `http.request`, but no implementation
-has proved one-to-one correlation across concurrent/retried attempts or
-failures between hooks. The proxy remains a candidate, not a proven solution to
-request-lifetime pinning. The current hook alone cannot meet the existing
-pin-through-completion invariant. An offline fixture can establish body
-structure, byte-budget, correlation, and lease-release mechanics only;
-exact-token E0 remains closed while the localhost route's immutable serving
-identity and matching tokenizer are unknown. Any fixture/store job must
-reserve peak bytes under the 50 GB aggregate limit, preserve at least 5 GB
-physical-volume headroom after projected writes, and keep 10% RAM/VRAM free
-for client/runtime jobs.
+fail closed. The pinned Promise API supports a candidate single-active-ticket
+handoff from context to `model.request`, where a fresh nonce header can be
+attached, then checked at `http.request`; the runner's outer retry loop
+re-enters primary preparation, while transport retries may reuse the request.
+This algorithm is not implemented or verified. A plugin response hook can observe
+EOF/cancel for a returned response but cannot wrap the send or handle a
+pre-response failure. The proxy remains the candidate owner for request and
+stream cleanup. Any offline fixture must
+exercise concurrent tickets, retries, timeout poisoning, and nonce reuse
+before this handoff is accepted. Exact-token E0 remains closed while the
+localhost route's immutable serving identity and matching tokenizer are
+unknown. Any fixture/store job must reserve peak bytes under the 50 GB
+aggregate limit, preserve at least 5 GB physical-volume headroom after
+projected writes, and keep 10% RAM/VRAM free for client/runtime jobs.
 
 The selected future matched-task source is prospective per-task opt-in work on
 participant- and repository-authorized snapshots. E0 evidence selection and

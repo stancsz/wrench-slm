@@ -17,24 +17,58 @@ session ID alone is insufficient for concurrent or retried attempts. Missing,
 duplicate, stale, or ambiguous correlation must fail closed. Use no arbitrary
 forwarding, provider access, or prompt logging.
 
-The pinned Promise API exposes a candidate path: each
-`SessionModelRequest.prepare` runs the context hook before `session.model.request`,
-whose event has mutable headers; the later `session.http.request` event sees
-the concrete HTTP `Request`. A unique request ID could travel in a header from
-that point to the boundary. However, the context event has no attempt ID or
-`kind`, and no implementation has established one-to-one matching across
-concurrent preparation, retry, or failures between hooks. A per-key serialized
-handoff is only a design candidate until implemented and exercised. The offline
-boundary must reject requests without validated correlation. See the pinned
-[Promise session hook types](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/src/promise/session.ts)
-and [request preparation order](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/model-request.ts).
+The pinned Promise API exposes a candidate one-to-one handoff. In
+`SessionModelRequest.prepare`, the `context` shape is awaited before
+`session.model.request`; the latter has a `kind` and mutable headers, and the
+later `session.http.request` event sees the concrete request. The runner's
+outer retry loop prepares the primary context again when it re-enters primary
+preparation; internal transport retries may reuse a prepared request and are
+not established by this trace. This supports an offline
+candidate algorithm: under a per-`(sessionID, agent, model)` single-active
+ticket, the context hook prepares and records one lease, then returns without
+releasing that ticket. Same-key context callbacks wait. The immediately
+following `model.request` hook must see `kind === "primary"`, mint a unique
+one-shot nonce, attach it as a header, and release the ticket. The HTTP hook
+and Wrench boundary then require that nonce exactly once and bind it to the
+request and lease. Missing, duplicate, stale, or unknown tickets fail closed.
+Never wait for `model.request` from inside the context callback itself, because
+that would block the same preparation which must invoke it.
 
-This is the only reviewed shape that can observe the body after OpenCode's
-request lowering and provide a `try/finally` boundary around the actual stream.
+This sequence is source-supported but not implemented or tested. A failure
+between the context and model-request hooks can leave a pending ticket; cleanup
+must use a bounded timeout that poisons that key so a late callback cannot
+consume a newer lease. The mechanism also requires a pinned, controlled plugin
+registration order and must reject changes made by later hooks. Each retry
+that re-enters primary preparation must use a fresh nonce; duplicate nonce use
+is rejected. The
+[runner loop](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/runner/llm.ts),
+[Promise session hook types](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/src/promise/session.ts),
+[request preparation order](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/model-request.ts),
+and [ordered hook trigger](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/plugin/hooks.ts)
+provide the source evidence.
+
+A plugin-only `http.response` hook runs after the HTTP handler has returned,
+but before OpenCode converts the response for downstream protocol framing. It
+can replace the mutable response with one whose body wrapper releases the
+lease on EOF, cancellation, or stream error. The hook is skipped when the
+handler fails or hangs before returning a response, and it cannot wrap that
+handler in a `try/finally`. Because the policy pins through HTTP request
+completion, stream termination is a relevant release point for responses;
+model-runner settlement is separate. A fixed-upstream Wrench loopback
+boundary can own send, timeout, cancellation, and response cleanup in one
+`try/finally`, including pre-response failures. It should reject any request
+whose nonce does not match its prepared lease. This still requires the
+candidate ticket gate and separate offline verification before any client
+configuration change.
+
 OpenCode's context hook is earlier than tool reconciliation, media handling,
-protocol lowering, and HTTP overlays, and does not expose a proven settlement
-signal for the downstream attempt. Its source-level rejection behavior is
-limited to a primary attempt and is not a global veto guarantee.
+protocol lowering, and HTTP overlays, so it cannot inspect the final request.
+The `session.http.request` hook sees a concrete lowered `Request`, but later
+hooks may still change it and the hook cannot wrap the transport handler in a
+`try/finally`. The loopback boundary is preferred because it can inspect the
+request that actually reaches the fixed upstream and own send/stream cleanup.
+OpenCode's hook rejection remains source-level evidence for its callback path,
+not a durable veto guarantee for all retries and transports.
 
 The E0 exact-token gate must remain **CLOSED** for the current
 `http://127.0.0.1:4000/v1` route. The checked-in OpenCode profile identifies
