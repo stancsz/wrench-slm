@@ -26,7 +26,7 @@ from .prompt_compiler import (
     MAX_BASE_MESSAGES, MAX_BASE_MESSAGES_BYTES, PromptGateReceipt,
     PromptGateStatus, _bounded_canonical_json, compile_prompt,
 )
-from .snapshot import RetrievalStatus, SourceSnapshot, retrieve_exact
+from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
 from .snapshot_structure import (
     StructuralStatus, build_snapshot_symbol_index, query_snapshot_symbols,
 )
@@ -490,7 +490,7 @@ def _receipt_payload(
 
 def _prepare_e0_context_impl(
     *,
-    source_root: str | os.PathLike[str],
+    source_root: str | os.PathLike[str] | SourceRootBinding,
     snapshot: SourceSnapshot,
     paths: Sequence[str | os.PathLike[str]],
     store: ArtifactStore,
@@ -864,7 +864,7 @@ def _prepare_e0_context_impl(
 
 
 def prepare_e0_context(
-    *, source_root: str | os.PathLike[str], snapshot: SourceSnapshot,
+    *, source_root: str | os.PathLike[str] | SourceRootBinding, snapshot: SourceSnapshot,
     paths: Sequence[str | os.PathLike[str]], store: ArtifactStore, query: str,
     source_order_start: int, context_token_budget: int, prompt_token_budget: int,
     namespace_registry: NamespaceRegistry, schema_lookups: Sequence[tuple[str, str]],

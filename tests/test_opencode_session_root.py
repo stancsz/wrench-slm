@@ -6,6 +6,7 @@ from wrench_harness.opencode_session_root import (
     OpenCodeSessionRootError,
     resolve_opencode_session_root,
 )
+from wrench_harness.snapshot import SourceRootBinding
 
 
 def _record(session_id: str, directory: Path, **overrides):
@@ -27,6 +28,9 @@ def test_resolves_matching_session_and_absolute_source_root(tmp_path):
 
     assert resolved.session_id == "ses_fixture123"
     assert resolved.configured_root == root
+    assert type(resolved.binding) is SourceRootBinding
+    assert resolved.binding.configured_root == root
+    assert resolved.binding.root_identity.startswith(("posix:", "win:"))
 
 
 @pytest.mark.parametrize(

@@ -22,7 +22,7 @@ from .outcome_receipt import (
     ReceiptStatus,
     validate_outcome_receipt,
 )
-from .opencode_session_root import resolve_opencode_session_root
+from .opencode_session_root import OpenCodeSessionRoot, OpenCodeSessionRootError, resolve_opencode_session_root
 from .prompt_compiler import PromptGateReceipt, PromptGateStatus
 from .snapshot import SourceSnapshot
 
@@ -186,21 +186,35 @@ def prepare_opencode_e0_context(
     preserve_source_paths: Sequence[str] = (),
     max_candidates: int = 8,
     artifact_request: ArtifactRequest | None = None,
+    resolved_session_root: OpenCodeSessionRoot | None = None,
 ) -> OpenCodePreparationJoin:
-    """Resolve one session root and prepare only against that configured root.
+    """Prepare against one validated root binding and the supplied snapshot.
 
     The signature mirrors the bounded E0 preparation surface except that the
-    caller cannot supply or override ``source_root``. Preparation itself
-    checks that the snapshot identity matches this root during exact reads.
+    caller cannot supply or override ``source_root``. Pass the same
+    ``resolved_session_root`` used to create the snapshot when intervening work
+    could allow the configured path to be replaced. Exact reads require the
+    snapshot to match that captured root-object identity.
     Pass an active caller-owned ``artifact_request`` to retain pins after this
     helper returns, and keep its scope open through downstream completion or
     failure cleanup. The default remains preparation-only.
     """
     if type(snapshot) is not SourceSnapshot:
         raise ValueError("invalid_source_snapshot")
-    resolved = resolve_opencode_session_root(event_session_id, session_record)
+    if resolved_session_root is None:
+        resolved = resolve_opencode_session_root(event_session_id, session_record)
+    elif (
+        type(resolved_session_root) is not OpenCodeSessionRoot
+        or resolved_session_root.session_id != event_session_id
+    ):
+        raise OpenCodeSessionRootError("session_id_mismatch")
+    else:
+        current_root = resolve_opencode_session_root(event_session_id, session_record)
+        if current_root.binding != resolved_session_root.binding:
+            raise OpenCodeSessionRootError("session_root_binding_mismatch")
+        resolved = resolved_session_root
     result = prepare_e0_context(
-        source_root=resolved.configured_root,
+        source_root=resolved.binding,
         snapshot=snapshot,
         paths=paths,
         store=store,

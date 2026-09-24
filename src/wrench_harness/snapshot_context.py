@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .context import ContextAdmissionError, ContextLedger
-from .snapshot import RetrievalStatus, SourceSnapshot, retrieve_exact
+from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
 
 
 class SnapshotContextStatus(str, Enum):
@@ -46,7 +46,7 @@ def _segment_id(snapshot_sha256: str, source_path: str, content_sha256: str) -> 
 
 def admit_snapshot_source(
     *,
-    root: str | os.PathLike[str],
+    root: str | os.PathLike[str] | SourceRootBinding,
     snapshot: SourceSnapshot,
     path: str | os.PathLike[str],
     ledger: ContextLedger,

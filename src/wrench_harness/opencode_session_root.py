@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .snapshot import SnapshotAdmissionError, validate_source_root
+from .snapshot import SnapshotAdmissionError, SourceRootBinding, bind_source_root
 
 
 MAX_SESSION_ID_CHARS = 256
@@ -27,10 +27,14 @@ class OpenCodeSessionRootError(ValueError):
 
 @dataclass(frozen=True)
 class OpenCodeSessionRoot:
-    """Validated session identity and configured lexical source root."""
+    """Validated session identity and captured configured root binding."""
 
     session_id: str
-    configured_root: Path
+    binding: SourceRootBinding
+
+    @property
+    def configured_root(self) -> Path:
+        return self.binding.configured_root
 
 
 def _valid_session_id(value: object) -> bool:
@@ -84,13 +88,13 @@ def resolve_opencode_session_root(
             raise OpenCodeSessionRootError("session_directory_must_be_absolute")
         if any(part == ".." for part in candidate.parts):
             raise OpenCodeSessionRootError("session_directory_parent_component")
-        configured_root = validate_source_root(candidate)
+        binding = bind_source_root(candidate)
     except OpenCodeSessionRootError:
         raise
     except (SnapshotAdmissionError, OSError, TypeError, ValueError) as exc:
         raise OpenCodeSessionRootError("session_directory_not_usable") from exc
 
-    return OpenCodeSessionRoot(record_id, configured_root)
+    return OpenCodeSessionRoot(record_id, binding)
 
 
 __all__ = [

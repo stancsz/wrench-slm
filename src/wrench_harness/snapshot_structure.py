@@ -10,7 +10,7 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import Iterable
 
-from .snapshot import RetrievalStatus, SourceSnapshot, retrieve_exact
+from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
 from .toolbelt import build_symbol_index, lookup_symbols
 
 
@@ -348,7 +348,7 @@ def _validate_index(index: object) -> bool:
 
 
 def build_snapshot_symbol_index(
-    root: str | os.PathLike[str],
+    root: str | os.PathLike[str] | SourceRootBinding,
     snapshot: SourceSnapshot,
     paths: Iterable[str | os.PathLike[str]],
 ) -> SnapshotIndexResult:

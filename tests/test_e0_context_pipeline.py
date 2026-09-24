@@ -465,7 +465,7 @@ def test_preparation_does_not_call_known_execution_or_network_tripwires(tmp_path
         "schema_lookups", "base_messages", "context_position", "serializer",
         "tokenizer_counter", "serializer_id", "tokenizer_id", "required_evidence_ids",
         "preserve_evidence_ids", "required_source_paths", "preserve_source_paths",
-        "max_candidates",
+        "max_candidates", "artifact_request",
     }
     assert result.status is PreparationStatus.READY
     assert result.route == "none"

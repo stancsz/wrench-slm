@@ -16,7 +16,7 @@ from .artifact_store import (
     ArtifactStoreError,
 )
 from .context import ContextAdmissionError, ContextLedger
-from .snapshot import RetrievalStatus, SourceSnapshot, retrieve_exact
+from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
 
 
 class SnapshotArtifactContextStatus(str, Enum):
@@ -72,7 +72,7 @@ def _artifact_status(status: ArtifactReadStatus) -> SnapshotArtifactContextStatu
 
 def admit_snapshot_artifact_source(
     *,
-    source_root: str | os.PathLike[str],
+    source_root: str | os.PathLike[str] | SourceRootBinding,
     snapshot: SourceSnapshot,
     path: str | os.PathLike[str],
     store: ArtifactStore,

@@ -60,6 +60,21 @@ class SourceSnapshot:
 
 
 @dataclass(frozen=True)
+class SourceRootBinding:
+    """Configured root identity captured before caller-controlled work begins.
+
+    The binding is a replacement-detection token, not an authentication or
+    filesystem transaction guarantee. Pass the same value from root
+    validation through snapshot creation and exact retrieval when those
+    operations must refer to one selected directory object.
+    """
+
+    configured_root: Path
+    root_location_sha256: str
+    root_identity: str
+
+
+@dataclass(frozen=True)
 class RetrievalResult:
     status: RetrievalStatus
     path: str | None = None
@@ -253,38 +268,11 @@ def _prepare_root_path(root_path: Path) -> Path:
 def validate_source_root(root: str | os.PathLike[str]) -> Path:
     """Validate an existing source root without scanning or retaining its files.
 
-    The returned path preserves the caller's normalized lexical identity so a
-    later snapshot remains bound to the same configured location.
+    This compatibility helper returns only the normalized path. Call
+    ``bind_source_root`` when physical root-object continuity must be carried
+    into later snapshot or retrieval operations.
     """
-    configured_root_path = _configured_root_path(root)
-    try:
-        prepared_root = _prepare_root_path(configured_root_path)
-    except FileNotFoundError as exc:
-        raise SnapshotAdmissionError("invalid_root") from exc
-    except OSError as exc:
-        raise SnapshotAdmissionError("invalid_root") from exc
-
-    if os.name == "nt":
-        return configured_root_path
-
-    required_flags = ("O_NOFOLLOW", "O_DIRECTORY")
-    if any(not hasattr(os, flag) for flag in required_flags):
-        raise SnapshotAdmissionError("secure_open_flags_unavailable")
-    opened: list[int] = []
-    try:
-        opened, _ = _open_posix_directory_chain(
-            prepared_root,
-            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
-        )
-    except FileNotFoundError as exc:
-        raise SnapshotAdmissionError("invalid_root") from exc
-    except OSError as exc:
-        raise SnapshotAdmissionError("invalid_root") from exc
-    finally:
-        # _open_posix_directory_chain closes descriptors when it raises.
-        for descriptor in reversed(opened):
-            os.close(descriptor)
-    return configured_root_path
+    return bind_source_root(root).configured_root
 
 
 def _root_location_sha256(root_path: Path) -> str:
@@ -319,12 +307,23 @@ def _open_posix_directory_chain(path: Path, flags: int) -> tuple[list[int], list
                 raise SnapshotAdmissionError("reparse_point_forbidden")
             if not stat.S_ISDIR(named.st_mode):
                 raise SnapshotAdmissionError("root_must_be_real_directory")
-            child_fd = _open_posix_relative(component, flags, parent_fd)
+            try:
+                child_fd = _open_posix_relative(component, flags, parent_fd)
+            except (TypeError, NotImplementedError) as exc:
+                raise SnapshotAdmissionError("secure_dirfd_unavailable") from exc
             opened.append(child_fd)
             bindings.append((component, len(opened) - 2, len(opened) - 1))
             child_info = os.fstat(child_fd)
             if _has_reparse_attribute(child_info) or not stat.S_ISDIR(child_info.st_mode):
                 raise SnapshotAdmissionError("root_must_be_real_directory")
+            if (named.st_dev, named.st_ino) != (child_info.st_dev, child_info.st_ino):
+                raise SnapshotAdmissionError("root_directory_binding_changed")
+            try:
+                after_open = os.stat(component, dir_fd=parent_fd, follow_symlinks=False)
+            except (TypeError, NotImplementedError) as exc:
+                raise SnapshotAdmissionError("secure_dirfd_unavailable") from exc
+            if (after_open.st_dev, after_open.st_ino) != (child_info.st_dev, child_info.st_ino):
+                raise SnapshotAdmissionError("root_directory_binding_changed")
         return opened, bindings
     except BaseException:
         for descriptor in reversed(opened):
@@ -461,13 +460,15 @@ def _posix_read_stable_source(
 
 
 def _windows_read_stable_source(
-    root: Path, relative_path: str, expected_root_identity: str | None = None
-) -> tuple[bytes, os.stat_result, str]:
+    root: Path, relative_path: str | None, expected_root_identity: str | None = None
+) -> tuple[bytes, os.stat_result, str] | str:
     """Read through a Win32 root handle and NtCreateFile parent-relative walk.
 
     Each directory handle denies write/delete sharing and remains open until the
     file read finishes. Child opens use that directory handle as RootDirectory,
     so names are never re-resolved from the original textual root path.
+    ``relative_path`` is ``None`` only when the caller needs the root ID
+    without opening a file.
     """
     import ctypes
     import msvcrt
@@ -618,6 +619,8 @@ def _windows_read_stable_source(
         root_identity = root_identity_for(directory_handles[-1])
         if expected_root_identity is not None and root_identity != expected_root_identity:
             raise SnapshotAdmissionError("snapshot_root_identity_mismatch")
+        if relative_path is None:
+            return root_identity
         components = relative_path.split("/")
         for component in components[:-1]:
             child = open_relative(directory_handles[-1], component, directory=True)
@@ -648,9 +651,95 @@ def _windows_read_stable_source(
             close_handle(handle)
 
 
-def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathLike[str]]) -> SourceSnapshot:
-    """Hash an explicit finite path list under ``root`` without directory scans."""
+def _capture_root_identity(root: Path) -> str:
+    """Capture the identity of the securely opened root directory object."""
+    if os.name == "nt":
+        identity = _windows_read_stable_source(root, None)
+        if type(identity) is not str:
+            raise SnapshotAdmissionError("root_identity_unavailable")
+        return identity
+
+    required_flags = ("O_NOFOLLOW", "O_DIRECTORY")
+    if (
+        os.open not in os.supports_dir_fd
+        or os.stat not in os.supports_dir_fd
+        or os.stat not in os.supports_follow_symlinks
+    ):
+        raise SnapshotAdmissionError("secure_dirfd_unavailable")
+    if any(not hasattr(os, flag) for flag in required_flags):
+        raise SnapshotAdmissionError("secure_open_flags_unavailable")
+    opened: list[int] = []
+    try:
+        opened, _ = _open_posix_directory_chain(
+            root,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+        )
+        root_info = os.fstat(opened[-1])
+        if _has_reparse_attribute(root_info) or not stat.S_ISDIR(root_info.st_mode):
+            raise SnapshotAdmissionError("root_must_be_real_directory")
+        return f"posix:{root_info.st_dev}:{root_info.st_ino}"
+    except FileNotFoundError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    except (TypeError, NotImplementedError) as exc:
+        raise SnapshotAdmissionError("secure_dirfd_unavailable") from exc
+    except OSError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    finally:
+        # _open_posix_directory_chain closes descriptors when it raises.
+        for descriptor in reversed(opened):
+            os.close(descriptor)
+
+
+def _validate_root_binding(binding: SourceRootBinding) -> bool:
+    return (
+        type(binding) is SourceRootBinding
+        and isinstance(binding.configured_root, Path)
+        and binding.configured_root.is_absolute()
+        and type(binding.root_location_sha256) is str
+        and _SHA256_RE.fullmatch(binding.root_location_sha256) is not None
+        and binding.root_location_sha256 == _root_location_sha256(binding.configured_root)
+        and type(binding.root_identity) is str
+        and _ROOT_IDENTITY_RE.fullmatch(binding.root_identity) is not None
+    )
+
+
+def bind_source_root(root: str | os.PathLike[str]) -> SourceRootBinding:
+    """Validate a source root and capture its directory identity immediately.
+
+    Callers that perform more work before snapshotting can pass this binding
+    to ``create_snapshot`` and ``retrieve_exact`` so a replacement at the same
+    path fails closed instead of becoming the newly admitted root.
+    """
     configured_root_path = _configured_root_path(root)
+    try:
+        prepared_root = _prepare_root_path(configured_root_path)
+        root_identity = _capture_root_identity(prepared_root)
+    except FileNotFoundError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    except OSError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    binding = SourceRootBinding(
+        configured_root_path,
+        _root_location_sha256(configured_root_path),
+        root_identity,
+    )
+    if not _validate_root_binding(binding):
+        raise SnapshotAdmissionError("invalid_root_binding")
+    return binding
+
+
+def create_snapshot(
+    root: str | os.PathLike[str] | SourceRootBinding,
+    paths: Iterable[str | os.PathLike[str]],
+) -> SourceSnapshot:
+    """Hash explicit paths, binding the root before consuming the path iterable."""
+    if type(root) is SourceRootBinding:
+        if not _validate_root_binding(root):
+            raise SnapshotAdmissionError("invalid_root_binding")
+        binding = root
+    else:
+        binding = bind_source_root(root)
+    configured_root_path = binding.configured_root
     try:
         root_path = _prepare_root_path(configured_root_path)
     except FileNotFoundError as exc:
@@ -674,7 +763,7 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
 
     records: list[SourceRecord] = []
     total_bytes = 0
-    root_identity: str | None = None
+    root_identity = binding.root_identity
     for relative_path in sorted(normalized):
         try:
             data, file_stat, observed_root_identity = _read_stable_source(
@@ -684,9 +773,7 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
             raise SnapshotAdmissionError("source_missing") from exc
         except OSError as exc:
             raise SnapshotAdmissionError("source_read_failed") from exc
-        if root_identity is None:
-            root_identity = observed_root_identity
-        elif root_identity != observed_root_identity:
+        if root_identity != observed_root_identity:
             raise SnapshotAdmissionError("source_root_changed_during_snapshot")
         total_bytes += len(data)
         if total_bytes > MAX_SNAPSHOT_BYTES:
@@ -694,8 +781,6 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
         records.append(SourceRecord(relative_path, len(data), _sha256(data)))
 
     sources = tuple(records)
-    if root_identity is None:
-        raise SnapshotAdmissionError("source_root_identity_unavailable")
     return SourceSnapshot(
         _SCHEMA,
         sources,
@@ -706,11 +791,21 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
 
 
 def retrieve_exact(
-    root: str | os.PathLike[str], snapshot: SourceSnapshot, path: str | os.PathLike[str]
+    root: str | os.PathLike[str] | SourceRootBinding,
+    snapshot: SourceSnapshot,
+    path: str | os.PathLike[str],
 ) -> RetrievalResult:
-    """Return exact current bytes only when path, size, and SHA-256 still match."""
+    """Return exact bytes only when path, snapshot, and optional root binding match."""
     if not _validate_snapshot(snapshot):
         return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT)
+    if type(root) is SourceRootBinding:
+        if (
+            not _validate_root_binding(root)
+            or root.root_location_sha256 != snapshot.root_location_sha256
+            or root.root_identity != snapshot.root_identity
+        ):
+            return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT)
+        root = root.configured_root
     try:
         normalized = _normalize_relative_path(path)
     except (SnapshotAdmissionError, TypeError, ValueError, OSError):
@@ -749,8 +844,11 @@ __all__ = [
     "RetrievalResult",
     "RetrievalStatus",
     "SnapshotAdmissionError",
+    "SourceRootBinding",
     "SourceRecord",
     "SourceSnapshot",
+    "bind_source_root",
     "create_snapshot",
     "retrieve_exact",
+    "validate_source_root",
 ]

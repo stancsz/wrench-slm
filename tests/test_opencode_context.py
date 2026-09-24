@@ -19,13 +19,16 @@ from wrench_harness.outcome_receipt import (
     ReceiptStatus,
     build_outcome_receipt,
 )
-from wrench_harness.opencode_session_root import OpenCodeSessionRootError
+from wrench_harness.opencode_session_root import (
+    OpenCodeSessionRootError,
+    resolve_opencode_session_root,
+)
 from wrench_harness.namespace_registry import (
     NamespaceDescriptor,
     NamespaceRegistry,
     OperationDescriptor,
 )
-from wrench_harness.snapshot import SourceSnapshot, create_snapshot
+from wrench_harness.snapshot import SourceRootBinding, SourceSnapshot, create_snapshot
 from wrench_harness.prompt_compiler import PromptGateReceipt, PromptGateStatus
 
 
@@ -145,7 +148,9 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
     assert result.root_location_sha256 == snapshot.root_location_sha256
     assert result.root_identity == snapshot.root_identity
     assert result.preparation is prepared
-    assert prepare.call_args.kwargs["source_root"] == root
+    bound_root = prepare.call_args.kwargs["source_root"]
+    assert type(bound_root) is SourceRootBinding
+    assert bound_root.configured_root == root
     assert "source_root" not in _preparation_arguments(snapshot)
 
 
@@ -319,6 +324,38 @@ def test_session_root_mismatch_produces_no_prompt(tmp_path):
     assert result.preparation.prompt is None
     assert result.preparation.selected_evidence_ids == ()
     assert result.preparation.sources[0].status == "unknown_snapshot"
+    assert callback_calls == []
+
+
+def test_resolved_session_root_binding_survives_replacement_before_preparation(tmp_path):
+    root = tmp_path / "session-project"
+    root.mkdir()
+    (root / "sample.py").write_text("def target():\n    return 7\n", encoding="utf-8")
+    record = {"id": "ses_fixture123", "location": {"directory": str(root)}}
+    resolved = resolve_opencode_session_root("ses_fixture123", record)
+    snapshot = create_snapshot(resolved.binding, ["sample.py"])
+
+    replacement = tmp_path / "replacement-project"
+    replacement.mkdir()
+    (replacement / "sample.py").write_text("def target():\n    return 7\n", encoding="utf-8")
+    saved = tmp_path / "saved-session-project"
+    root.rename(saved)
+    replacement.rename(root)
+    callback_calls = []
+    arguments = _preparation_arguments(snapshot)
+    arguments["serializer"] = lambda messages: callback_calls.append("serialize") or "{}"
+    arguments["tokenizer_counter"] = lambda payload: callback_calls.append("tokenize") or len(payload)
+
+    with patch("wrench_harness.opencode_context.prepare_e0_context") as prepare:
+        with pytest.raises(OpenCodeSessionRootError, match="session_root_binding_mismatch"):
+            prepare_opencode_e0_context(
+                "ses_fixture123",
+                record,
+                **arguments,
+                resolved_session_root=resolved,
+            )
+
+    prepare.assert_not_called()
     assert callback_calls == []
 
 

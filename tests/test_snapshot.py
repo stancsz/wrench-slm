@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 from types import SimpleNamespace
 import os
 
@@ -14,11 +15,13 @@ from wrench_harness.snapshot import (
     MAX_SOURCE_PATH_CHARS,
     RetrievalStatus,
     SnapshotAdmissionError,
+    SourceRootBinding,
     SourceRecord,
     SourceSnapshot,
     _has_reparse_attribute,
     _posix_read_stable_source,
     _windows_read_stable_source,
+    bind_source_root,
     create_snapshot,
     retrieve_exact,
 )
@@ -97,6 +100,119 @@ def test_create_snapshot_rejects_root_replacement_between_source_reads(tmp_path,
     monkeypatch.setattr(snapshot_module, "_read_stable_source", swap_between_reads)
     with pytest.raises(SnapshotAdmissionError, match="snapshot_root_identity_mismatch"):
         create_snapshot(root, ["a.txt", "b.txt"])
+
+
+def test_bound_root_rejects_replacement_during_caller_path_iteration(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "source.txt").write_bytes(b"authorized root")
+    binding = bind_source_root(root)
+    assert type(binding) is SourceRootBinding
+
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    (replacement / "source.txt").write_bytes(b"replacement root")
+    saved = tmp_path / "saved-project"
+
+    def replacing_paths():
+        root.rename(saved)
+        replacement.rename(root)
+        yield "source.txt"
+
+    with pytest.raises(SnapshotAdmissionError, match="snapshot_root_identity_mismatch"):
+        create_snapshot(binding, replacing_paths())
+
+
+def test_exact_retrieval_accepts_bound_root_and_rejects_same_path_replacement(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "source.txt").write_bytes(b"same source")
+    binding = bind_source_root(root)
+    snapshot = create_snapshot(binding, ["source.txt"])
+
+    result = retrieve_exact(binding, snapshot, "source.txt")
+    assert result.status is RetrievalStatus.OK
+    assert result.data == b"same source"
+
+    saved = tmp_path / "saved-project"
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    (replacement / "source.txt").write_bytes(b"same source")
+    root.rename(saved)
+    replacement.rename(root)
+
+    replaced = retrieve_exact(binding, snapshot, "source.txt")
+    assert replaced.status is RetrievalStatus.UNKNOWN_SNAPSHOT
+    assert replaced.data is None
+
+
+def test_plain_root_is_bound_before_caller_path_iteration(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "source.txt").write_bytes(b"original root")
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    (replacement / "source.txt").write_bytes(b"replacement root")
+    saved = tmp_path / "saved-project"
+
+    def replacing_paths():
+        root.rename(saved)
+        replacement.rename(root)
+        yield "source.txt"
+
+    with pytest.raises(SnapshotAdmissionError, match="snapshot_root_identity_mismatch"):
+        create_snapshot(root, replacing_paths())
+
+
+def test_root_binding_rejects_replacement_during_directory_handle_capture(tmp_path, monkeypatch):
+    if os.name == "nt":
+        pytest.skip("POSIX directory-handle race")
+    root = tmp_path / "selected-root-race"
+    replacement = tmp_path / "replacement-root-race"
+    saved = tmp_path / "saved-root-race"
+    root.mkdir()
+    replacement.mkdir()
+    real_open = snapshot_module._open_posix_relative
+    swapped = False
+
+    def replace_before_open(name, flags, parent_fd):
+        nonlocal swapped
+        if name == root.name and not swapped:
+            swapped = True
+            root.rename(saved)
+            replacement.rename(root)
+        return real_open(name, flags, parent_fd)
+
+    monkeypatch.setattr(snapshot_module, "_open_posix_relative", replace_before_open)
+    with pytest.raises(SnapshotAdmissionError, match="root_directory_binding_changed"):
+        bind_source_root(root)
+    assert swapped
+
+
+def test_public_root_binding_requires_absolute_configured_path(tmp_path):
+    root = tmp_path / "root"
+    root.mkdir()
+    binding = bind_source_root(root)
+    relative = Path("relative-root")
+    malformed = replace(
+        binding,
+        configured_root=relative,
+        root_location_sha256=snapshot_module._root_location_sha256(relative),
+    )
+
+    with pytest.raises(SnapshotAdmissionError, match="invalid_root_binding"):
+        create_snapshot(malformed, ["source.txt"])
+
+
+def test_root_binding_maps_missing_posix_dir_fd_support_to_admission_error(tmp_path, monkeypatch):
+    if os.name == "nt":
+        pytest.skip("POSIX dir_fd capability check")
+    root = tmp_path / "root"
+    root.mkdir()
+    monkeypatch.setattr(os, "supports_dir_fd", set())
+
+    with pytest.raises(SnapshotAdmissionError, match="secure_dirfd_unavailable"):
+        bind_source_root(root)
 
 
 def test_root_pathlike_is_converted_once_for_identity_and_read(tmp_path):
