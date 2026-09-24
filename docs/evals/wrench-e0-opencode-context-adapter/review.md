@@ -100,6 +100,18 @@ once that handle is open, but the full root path is first opened by name.
 Hardening and Windows race/junction tests remain open; no code or runtime
 behavior was changed by this audit.
 
+### Handle-walk follow-up
+
+Commit `6118a12` implements the bounded component-relative root walk and adds
+Windows fixtures for normal roots, static ancestor symlinks, and a reparse
+ancestor swap before handle acquisition. Independent read-only review
+`W2-NS-WIN-ROOT-REVIEW-20260924` (nonce `WRR-6C72`) found the specific reparse
+TOCTOU gap closed. It left ordinary-directory replacement identity binding
+and UNC root behavior open. Focused tests could not run because pytest is
+unavailable in the launchable Python 3.13 runtime; the listed 3.11 runtime is
+not launchable. `git diff --check` passed. This evidence does not qualify
+Windows runtime behavior or change E0 acceptance.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)

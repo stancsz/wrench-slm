@@ -117,3 +117,22 @@ The trace follows the tagged [Promise adapter](https://github.com/anomalyco/open
 [hook trigger](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/plugin/hooks.ts),
 [model request](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/model-request.ts),
 and [LLM runner](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/runner/llm.ts).
+
+## Windows component-handle follow-up
+
+Commit `6118a12` now opens the volume anchor, walks the resolved root by
+component-relative directory handles, rejects reparse components, and retains
+the handles through the exact file read. It preserves the intentional static
+ancestor-symlink case because `_prepare_root_path` resolves that alias before
+the native walk. Fixtures cover a normal root, a static ancestor symlink, and
+a symlink replacement immediately before the handle walk.
+
+Independent read-only review job `W2-NS-WIN-ROOT-REVIEW-20260924` (nonce
+`WRR-6C72`) judged the component walk to close the specific reparse-point
+TOCTOU gap. The review also identified two remaining boundaries: ordinary
+directory replacement at the same lexical path is not compared with identities
+captured during resolution, and UNC share-root behavior is unqualified. These
+remain open. The fixtures were not executed: Python 3.13 is available without
+pytest, and the listed Python 3.11 runtime is not launchable by the host
+launcher. No dependency was installed. `git diff --check` passed after the
+change; this is not Windows runtime evidence.
