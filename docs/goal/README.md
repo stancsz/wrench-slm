@@ -49,6 +49,9 @@
   accepted standalone content-addressed persistence with a caller-owned
   preparation facade now using it; production request lifecycle integration
   and recovery qualification remain open.
+- [E1 Windows candidate identity verifier](wrench-e1-candidate-identity/GOAL.md):
+  accepted synthetic-fixture mechanics for flat manifests on the reviewed
+  Windows NTFS host; no model candidate was downloaded or evaluated.
 - [Wrench v2 realignment](wrench-v2-realignment/GOAL.md): current direction
   cleanup, v1 lessons and definition of the Layer 1 + continuous-LoRA experiment.
 - [Experiment v2](../northstar/V2_EXPERIMENT.md): planned product implementation
