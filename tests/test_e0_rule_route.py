@@ -32,6 +32,7 @@ def test_e0_rule_route_reads_exact_snapshot_source(tmp_path):
     assert [(row.path, row.status) for row in result.evidence] == [("README.md", "ok")]
     assert result.unknown_evidence == ()
     assert (result.exact_read_attempts, result.exact_read_successes, result.exact_read_bytes) == (1, 1, 11)
+    assert result.snapshot_sha256 == snapshot.snapshot_sha256
 
 
 def test_e0_rule_route_reads_bounded_lines_from_snapshot(tmp_path):

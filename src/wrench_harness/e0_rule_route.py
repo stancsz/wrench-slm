@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from pathlib import PurePosixPath
 from typing import Any
@@ -107,6 +107,7 @@ class RuleRouteResult:
     exact_read_successes: int
     exact_read_bytes: int
     reason: str | None = None
+    snapshot_sha256: str | None = None
 
 
 def run_e0_rule_route(
@@ -122,6 +123,18 @@ def run_e0_rule_route(
     snapshot and reports that scope explicitly. All other actions abstain.
     """
 
+    result = _run_e0_rule_route(prompt, root_binding=root_binding, snapshot=snapshot)
+    if type(snapshot) is SourceSnapshot and isinstance(snapshot.snapshot_sha256, str):
+        return replace(result, snapshot_sha256=snapshot.snapshot_sha256)
+    return result
+
+
+def _run_e0_rule_route(
+    prompt: str,
+    *,
+    root_binding: SourceRootBinding,
+    snapshot: SourceSnapshot,
+) -> RuleRouteResult:
     empty = _unknown("invalid_input")
     if (
         not isinstance(prompt, str)

@@ -17,6 +17,7 @@ from .e0_context_pipeline import (
     PreparationStatus,
     verify_preparation_accounting_receipt,
 )
+from .e0_rule_route import RuleRouteEvidence, RuleRouteResult, RuleRouteStatus
 from .opencode_context import OpenCodePreparationJoin
 from .opencode_hook_projection import (
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
@@ -35,9 +36,27 @@ from .outcome_receipt import (
 )
 
 
-ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v1"
+ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v2"
 MAX_ENVELOPE_BYTES = 16 * 1024
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
+_ROUTE_ACTIONS = frozenset({"read_file", "read_lines", "literal_search"})
+_ROUTE_REASONS = frozenset({
+    "invalid_input", "snapshot_manifest_invalid", "ambiguous_or_unsupported_request",
+    "read_intent_denied_or_constrained", "rule_abstained", "proposal_schema_invalid",
+    "action_not_allowlisted", "read_file_proposal_shape_invalid", "source_not_in_snapshot",
+    "file_size_limit_invalid", "file_size_limit", "non_text_source",
+    "read_lines_proposal_shape_invalid", "invalid_line_bounds", "line_end_out_of_range",
+    "literal_search_proposal_shape_invalid", "search_root_invalid", "invalid_literal",
+    "invalid_match_limit", "search_scope_has_no_snapshot_sources", "route_file_limit_exceeded",
+    "source_size_limit_exceeded", "route_byte_limit_exceeded", "match_limit_reached",
+    "search_result_line_limit_exceeded", "snapshot_read_unknown_snapshot",
+    "snapshot_read_unknown_source", "snapshot_read_missing", "snapshot_read_changed",
+    "snapshot_read_unsafe",
+})
+_ROUTE_EVIDENCE_STATUSES = frozenset({
+    "ok", "unknown", "unknown_snapshot", "unknown_source", "missing", "changed",
+    "unsafe", "non_text", "result_line_too_long", "match_limit_reached",
+})
 _UNAVAILABLE_DIMENSIONS = (
     "opencode_dispatch_and_veto",
     "provider_final_serialization_and_tokenizer_parity",
@@ -57,6 +76,7 @@ class PartialTraceStatus(str, Enum):
     INVALID_INPUT = "invalid_input"
     INVALID_PROJECTION = "invalid_projection"
     INVALID_RECEIPT = "invalid_receipt"
+    INVALID_ROUTE_RESULT = "invalid_route_result"
     JOIN_MISMATCH = "join_mismatch"
 
 
@@ -80,6 +100,8 @@ def build_partial_lifecycle_trace(
     join: OpenCodePreparationJoin,
     projection_result: OpenCodeProjectionResult,
     finalized_receipt: OutcomeReceipt,
+    *,
+    rule_route_result: RuleRouteResult | None = None,
 ) -> PartialTraceResult:
     """Bind a READY hook projection to a valid outcome and preparation join.
 
@@ -168,6 +190,12 @@ def build_partial_lifecycle_trace(
     if projection.session_id != join.session_id:
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_session_mismatch")
 
+    route_summary = None
+    if rule_route_result is not None:
+        route_summary = _route_summary(rule_route_result, join.snapshot_sha256)
+        if route_summary is None:
+            return _failure(PartialTraceStatus.INVALID_ROUTE_RESULT, "route_result_invalid_or_snapshot_mismatch")
+
     run_id = payload.get("run_id")
     task_id = payload.get("task_id")
     if not _bounded_opaque_id(run_id) or not _bounded_opaque_id(task_id):
@@ -187,6 +215,7 @@ def build_partial_lifecycle_trace(
         "opencode_context_hook_version": projection.opencode_context_hook_version,
         "projection_serialized_bytes": projection.serialized_bytes,
         "outcome_receipt_sha256": checked.receipt.sha256,
+        "rule_route": route_summary,
         "measured_dimensions": [
             "preparation_facade_counters_by_accounting_receipt_reference",
             "locally_serialized_projection_input_bytes",
@@ -211,6 +240,78 @@ def build_partial_lifecycle_trace(
         sha256=hashlib.sha256(raw).hexdigest(),
     )
     return PartialTraceResult(PartialTraceStatus.READY, envelope, "ready")
+
+
+def _route_summary(result: RuleRouteResult, expected_snapshot_sha256: str) -> dict[str, object] | None:
+    """Return a bounded, content-free route reference for an untrusted join."""
+    if (
+        type(result) is not RuleRouteResult
+        or type(result.status) is not RuleRouteStatus
+        or type(result.route) is not str
+        or result.route != "none"
+        or type(result.snapshot_sha256) is not str
+        or result.snapshot_sha256 != expected_snapshot_sha256
+        or type(result.action) not in (str, type(None))
+        or (result.action is not None and len(result.action) > 64)
+        or type(result.exact_read_attempts) is not int
+        or type(result.exact_read_successes) is not int
+        or type(result.exact_read_bytes) is not int
+        or not 0 <= result.exact_read_successes <= result.exact_read_attempts <= 16
+        or not 0 <= result.exact_read_bytes <= 512 * 1024
+        or type(result.reason) not in (str, type(None))
+        or (result.reason is not None and len(result.reason) > 128)
+        or type(result.evidence) is not tuple
+        or type(result.unknown_evidence) is not tuple
+        or len(result.evidence) > 16
+        or len(result.unknown_evidence) > 16
+    ):
+        return None
+    evidence = []
+    unknown = []
+    for source, target in ((result.evidence, evidence), (result.unknown_evidence, unknown)):
+        for item in source:
+            if (
+                type(item) is not RuleRouteEvidence
+                or type(item.path) not in (str, type(None))
+                or (item.path is not None and len(item.path) > 1024)
+                or type(item.status) is not str
+                or len(item.status) > 64
+                or type(item.content_sha256) not in (str, type(None))
+                or (item.content_sha256 is not None and not _DIGEST.fullmatch(item.content_sha256))
+                or type(item.size_bytes) not in (int, type(None))
+                or (item.size_bytes is not None and not 0 <= item.size_bytes <= 256 * 1024)
+            ):
+                return None
+            try:
+                path_ref_sha256 = (
+                    hashlib.sha256(item.path.encode("utf-8")).hexdigest()
+                    if item.path is not None else None
+                )
+            except UnicodeError:
+                return None
+            target.append({
+                "path_ref_sha256": path_ref_sha256,
+                "status": item.status if item.status in _ROUTE_EVIDENCE_STATUSES else "other",
+                "content_sha256": item.content_sha256,
+                "size_bytes": item.size_bytes,
+            })
+    summary = {
+        "provenance": "caller_supplied_component_result_untrusted",
+        "snapshot_sha256": result.snapshot_sha256,
+        "status": result.status.value,
+        "route": result.route,
+        "action": result.action if result.action in _ROUTE_ACTIONS else ("other" if result.action is not None else None),
+        "reason": result.reason if result.reason in _ROUTE_REASONS else ("other" if result.reason is not None else None),
+        "caller_reported_exact_read_attempts": result.exact_read_attempts,
+        "caller_reported_exact_read_successes": result.exact_read_successes,
+        "caller_reported_exact_read_bytes": result.exact_read_bytes,
+        "evidence": evidence,
+        "unknown_evidence": unknown,
+        "observation_included": False,
+    }
+    raw = json.dumps(summary, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    summary["summary_sha256"] = hashlib.sha256(raw).hexdigest()
+    return summary
 
 
 def _projection_is_self_consistent(projection: OpenCodeContextHookProjection) -> bool:

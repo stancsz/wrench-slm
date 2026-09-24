@@ -4,29 +4,30 @@ import json
 from dataclasses import replace
 
 from wrench_harness.artifact_store import ArtifactStore
-from wrench_harness.e0_context_pipeline import prepare_e0_context
 from wrench_harness.e0_lifecycle_accounting import (
     ENVELOPE_SCHEMA,
     PartialTraceStatus,
     build_partial_lifecycle_trace,
 )
 from wrench_harness.e0_request_record import finalize_opencode_preparation_outcome
+from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
-from wrench_harness.opencode_context import OpenCodePreparationJoin
+from wrench_harness.opencode_context import prepare_opencode_e0_context
 from wrench_harness.opencode_hook_projection import (
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
     project_opencode_context_hook,
 )
 from wrench_harness.outcome_receipt import ReceiptStatus, build_outcome_receipt
-from wrench_harness.snapshot import create_snapshot
+from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
 def _prepare(tmp_path):
     root = tmp_path / "repo"
     root.mkdir()
     (root / "sample.py").write_text("def target():\n    return 1\n", encoding="utf-8")
-    snapshot = create_snapshot(root, ["sample.py"])
+    binding = bind_source_root(root)
+    snapshot = create_snapshot(binding, ["sample.py"])
     registry = NamespaceRegistry([
         NamespaceDescriptor("files", "File metadata", (
             OperationDescriptor("inspect", "Inspect one path", {
@@ -34,8 +35,9 @@ def _prepare(tmp_path):
             }),
         )),
     ])
-    preparation = prepare_e0_context(
-        source_root=root,
+    join = prepare_opencode_e0_context(
+        "ses_partial_trace_fixture",
+        {"id": "ses_partial_trace_fixture", "location": {"directory": str(root)}},
         snapshot=snapshot,
         paths=["sample.py"],
         store=ArtifactStore(tmp_path / "store"),
@@ -52,15 +54,7 @@ def _prepare(tmp_path):
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",
     )
-    prepared_payload = json.loads(preparation.outcome_receipt.receipt.payload_json)
-    join = OpenCodePreparationJoin(
-        session_id="ses_partial_trace_fixture",
-        configured_root=root,
-        snapshot_sha256=prepared_payload["snapshot_sha256"],
-        root_location_sha256=None,
-        root_identity=None,
-        preparation=preparation,
-    )
+    preparation = join.preparation
     return preparation, join
 
 
@@ -219,3 +213,96 @@ def test_partial_trace_rejects_invalid_or_tampered_final_receipt(tmp_path):
     rejected = build_partial_lifecycle_trace(join, _projection(), invalid_receipt.receipt)
     assert rejected.status is PartialTraceStatus.JOIN_MISMATCH
     assert rejected.reason == "receipt_join_mismatch"
+
+
+def test_partial_trace_can_join_content_free_rule_route_result(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, ["sample.py"])
+    assert snapshot.snapshot_sha256 == join.snapshot_sha256
+    route = run_e0_rule_route(
+        "Read sample.py with a 64 byte limit.",
+        root_binding=binding,
+        snapshot=snapshot,
+    )
+    assert route.status is RuleRouteStatus.COMPLETED
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation), rule_route_result=route
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["rule_route"]["provenance"] == "caller_supplied_component_result_untrusted"
+    assert payload["rule_route"]["snapshot_sha256"] == join.snapshot_sha256
+    assert payload["rule_route"]["caller_reported_exact_read_bytes"] == route.exact_read_bytes
+    assert payload["rule_route"]["observation_included"] is False
+    assert "sample.py" not in result.envelope.payload_json
+    assert "def target" not in result.envelope.payload_json
+
+
+def test_partial_trace_retains_actual_rule_route_abstention(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, ["sample.py"])
+    route = run_e0_rule_route(
+        "Summarize sample.py.", root_binding=binding, snapshot=snapshot
+    )
+    assert route.status is RuleRouteStatus.ABSTAIN
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation), rule_route_result=route
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["rule_route"]["status"] == "abstain"
+    assert payload["rule_route"]["route"] == "none"
+    assert payload["rule_route"]["unknown_evidence"]
+    assert payload["rule_route"]["caller_reported_exact_read_attempts"] == 0
+
+
+def test_partial_trace_rejects_route_result_for_different_snapshot(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    (join.configured_root / "other.py").write_text("other\n", encoding="utf-8")
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, ["sample.py", "other.py"])
+    route = run_e0_rule_route(
+        "Read sample.py with a 64 byte limit.", root_binding=binding, snapshot=snapshot
+    )
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation), rule_route_result=route
+    )
+
+    assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
+    assert result.envelope is None
+
+
+def test_partial_trace_sanitizes_untrusted_route_summary_strings(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, ["sample.py"])
+    route = run_e0_rule_route(
+        "Read sample.py with a 64 byte limit.", root_binding=binding, snapshot=snapshot
+    )
+    tampered = replace(
+        route,
+        action="SECRET_ACTION",
+        reason="SECRET_REASON",
+        evidence=(replace(route.evidence[0], path="private/customer/project.py", status="SECRET_STATUS"),),
+    )
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation), rule_route_result=tampered
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["rule_route"]["action"] == "other"
+    assert payload["rule_route"]["reason"] == "other"
+    assert payload["rule_route"]["evidence"][0]["status"] == "other"
+    assert payload["rule_route"]["evidence"][0]["path_ref_sha256"]
+    assert all(secret not in result.envelope.payload_json for secret in (
+        "SECRET_ACTION", "SECRET_REASON", "SECRET_STATUS", "private/customer/project.py"
+    ))

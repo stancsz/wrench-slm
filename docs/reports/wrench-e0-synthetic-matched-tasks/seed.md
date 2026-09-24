@@ -28,7 +28,11 @@ manifest stores each source and post-snapshot mutation inline with a SHA-256;
 
 Canonical manifest SHA-256:
 
-`ba64557b95f1d0948c55a7dc97ba9e48d775124bf068e53d222f343a4399ecb4`
+`871814333d9f582df9595ec486eb59fbf5f66c397cb451f6b67d9519d2bb72c5`
+
+The manifest uses schema `wrench.synthetic-matched-tasks.v2`; see the
+[admission validator report](admission.md) for the explicit open-fixture
+provenance and use boundary.
 
 ## Oracles
 

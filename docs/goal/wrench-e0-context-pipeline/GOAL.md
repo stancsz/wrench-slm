@@ -150,3 +150,39 @@ or runtime resource use, and it does not make the outcome receipt a trusted
 measurement. Focused behavior and independent review are in the [partial-trace
 report](../../reports/wrench-e0-context-pipeline/lifecycle-trace.md) and
 [evaluation](../../evals/wrench-e0-context-pipeline/lifecycle-trace.md).
+
+## Follow-up: route result joined to the partial trace
+
+Status: synthetic offline route-to-trace join implemented as trace schema v2;
+full E0 integration remains open.
+
+`run_e0_rule_route` now returns the caller-supplied snapshot digest alongside
+its result. `build_partial_lifecycle_trace` can optionally join that result
+when its snapshot digest matches the preparation/outcome join. The v2 summary
+contains route status/action/reason, hashed path references, content hashes,
+and caller-reported exact-read counters. It excludes raw paths and observation
+text, allowlists summary strings, and labels the result as caller-supplied and
+untrusted. Synthetic coverage runs
+preparation, a real bounded route call over the same snapshot, outcome
+finalization, and trace construction, including an abstention and mismatched
+snapshot case.
+
+This is a structural record join only. A caller can construct or alter the
+route result; the snapshot digest is not an authenticated invocation record.
+The join does not establish route intent, dispatch prevention, task truth,
+runtime behavior, or customer utility. Focused evidence and independent review
+are in the [route-to-trace evaluation](../../evals/wrench-e0-context-pipeline/route-trace-join.md)
+and [report](../../reports/wrench-e0-context-pipeline/route-trace-join.md).
+
+## Follow-up: open synthetic fixture admission metadata
+
+The synthetic matched-task manifest is now v2 and carries explicit origin,
+declared use, sealed/final flags, split, root lineage, and a hash-bound fixture
+mechanics review pointer. A small fail-closed validator recognizes only this
+Wrench-authored synthetic open development fixture. It rejects missing or
+unknown provenance/use, sealed/final state, unsupported split/lineage, and
+invalid review metadata. The result is a local fixture classification only; it
+does not prove rights or consent, authenticate reviewers, authorize real data,
+or enter the separate production corpus/training admission process. See the
+[admission report](../../reports/wrench-e0-synthetic-matched-tasks/admission.md)
+and [evaluation](../../evals/wrench-e0-synthetic-matched-tasks/admission.md).
