@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free session-to-preparation seam and local admission classifier implemented; client integration remains uninstalled and unrun
+Status: provider-free session-to-preparation seam, local admission classifier, and bounded context-hook projection implemented; client integration remains uninstalled and unrun
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -110,6 +110,15 @@ dispatch gate, or production route.
   receipt finalizer. Matching, null, and mismatched session fixtures pass.
   This is structural equality over caller-supplied values; it does not
   authenticate the session or observe the client lifecycle.
+- `project_opencode_context_hook` copies all seven semantic context-hook fields
+  under a shared 1 MiB JSON bound, preserves arrays and insertion order in its
+  payload representation, and hashes canonical JSON with the schema and
+  OpenCode `v2.0.15` source version. It rejects extra/missing fields, malformed
+  model variants (including explicit null), cycles, non-JSON values, and
+  oversized structures. Its caller must provide a stable event object; same-
+  length or nested concurrent mutation cannot be detected atomically. This
+  projection is not connected to prompt preparation, serialization, or
+  dispatch.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -128,6 +137,8 @@ Implementation details and review evidence are in the
 and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md),
 plus the [local admission-check report](../../reports/wrench-e0-opencode-context-adapter/admission-check.md)
 and [session-bound outcome report](../../reports/wrench-e0-opencode-context-adapter/session-outcome-binding.md).
+Projection behavior and its bounded evidence are recorded in the
+[context-hook projection report](../../reports/wrench-e0-opencode-context-adapter/hook-projection.md).
 
 References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
 [tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),
