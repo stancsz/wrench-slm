@@ -33,7 +33,7 @@ eviction blocking and restoration of a valid previous manifest. No packages
 were installed; temporary fixtures were removed.
 
 `git diff --check` passed. Before commit, storage status was `WITHIN_LIMIT`:
-590,255,108 actual bytes plus the 32,000,000-byte reservation, below the
+590,258,742 actual bytes plus the 32,000,000-byte reservation, below the
 50,000,000,000-byte ceiling. C: had more than 5 GB free.
 
 ## Limits

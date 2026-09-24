@@ -1,6 +1,6 @@
 # E0 bounded artifact store
 
-Status: accepted standalone implementation increment; integration pending
+Status: committed standalone implementation increment; runtime integration pending
 Supervisor: root agent as goal owner
 Started: 2026-09-24
 Baseline: `36d2d1d89bd4eb3036a3bb2874866fff517d5900`
@@ -42,7 +42,8 @@ integrates with another runtime module.
 | --- | --- | --- |
 | Implement bounded content-addressed persistence | Complete | `src/wrench_harness/artifact_store.py` and focused tests |
 | Review quotas, recovery, path boundaries, pins, and eviction | Accepted with documented limits | `docs/evals/wrench-e0-artifact-store/review.md` |
-| Integrate, commit, and identify the next E0 gate | In progress | This goal and [goal index](../README.md) |
+| Integrate and commit this bounded store slice | Complete | Commit `c6eba5f` |
+| Connect to snapshots/context and continue E0 | Pending | Snapshot-backed context, namespace discovery, final prompt accounting, and outcome receipts |
 
 ## Limits
 

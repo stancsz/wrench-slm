@@ -71,8 +71,8 @@ fail-closed corruption, interrupted staging retention, and unknown user-file
 preservation, and symlinked store-ancestor rejection. The Ubuntu 24.04 WSL
 Python 3.12 stdlib smoke passed root-chain symlink rejection, exact read, and
 reopen; no packages were installed. Scoped `git diff --check` passed. Storage
-status was `WITHIN_LIMIT`; the active 32 MB reservation remains associated
-with this job.
+status was `WITHIN_LIMIT`; the final pre-commit accounting showed 590,258,742
+actual bytes plus the active 32 MB reservation.
 
 ## Limits
 
