@@ -242,3 +242,24 @@ the returned dataclass field/constructor shape now exposes `binding`. The
 remaining root identity and UNC/network limitations above are recorded in the
 [session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
 and [snapshot root-identity goal](../wrench-e0-snapshot-root-identity/GOAL.md).
+
+## Follow-up: offline context-hook transition contract
+
+Status: bounded caller-supplied projection comparison implemented; live hook
+integration remains uninstalled and unrun.
+
+The transition validator accepts only two self-consistent, pinned-version
+projections whose protected top-level fields are unchanged and whose message
+list adds exactly the expected prepared message at the declared position. Its
+bounded receipt contains projection digests and identifiers, not message
+content. Nested OpenCode message and option schemas are not fully validated.
+This records intended mutation mechanics only: it does not prove OpenCode used
+the projections, prevent dispatch, validate the complete post-hook request, or
+establish request/tokenizer parity. See the [transition contract report](../../reports/wrench-e0-opencode-context-adapter/hook-transition-contract.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/hook-transition-contract.md).
+
+The local source audit establishes the `ses` session-ID prefix and matching
+record ID but does not record the complete suffix grammar. The resolver's
+current prefix and shape checks are therefore not evidence of full pinned
+schema conformance. The [session-ID grammar audit](../../reports/wrench-e0-opencode-context-adapter/session-id-grammar-audit.md)
+records the missing local source evidence; no suffix pattern is inferred.
