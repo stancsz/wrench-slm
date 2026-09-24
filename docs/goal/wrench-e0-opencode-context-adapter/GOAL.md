@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free Wrench seams and a synthetic offline loopback request/lease boundary are implemented and independently reviewed; isolated OpenCode v2.0.15 CLI is configured, but no client prompt/task/request or Wrench hook integration has run
+Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, and a strict Wrench-owned project enrollment registry are implemented and independently reviewed; isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -511,3 +511,38 @@ does not establish OpenCode plugin registration, runtime hook invocation,
 dispatch denial, a request to `localhost:4000`, provider behavior, or tokenizer
 parity. The E0 exact-token gate remains closed, and the broader E0/E4 goals
 remain incomplete. No real-task data collection is authorized by this slice.
+
+## Follow-up: Wrench-owned OpenCode project enrollment registry
+
+The new `wrench.opencode-project-registry.v1` registry binds an opaque project
+ID to one captured local root identity, a finite explicit relative-path set,
+fixed inventory policy, hard source caps, and a store path derived below the
+configured Wrench data root. Only the explicit enrollment API writes entries;
+repository configuration and hook payloads cannot grant source access.
+Resolution requires the event and returned session IDs to match, exactly one
+enrolled root match, empty or absent `subpath`, and fresh root identity
+validation. Reads and writes reject reparse/non-directory ancestors below the
+bound data root and use bounded canonical registry data. Path checks remain
+non-transactional; adversarial concurrent filesystem swaps are not qualified.
+
+The focused synthetic suite passed **20/20** using CPython 3.11.16:
+`-B -m unittest discover -s tests -p test_opencode_project_registry.py -v`.
+Independent static review by `e0_goal_evidence` returned PASS against module
+SHA-256 `A5ABAF11DFAA6549CD0F8BDB5A64DBBB3E024CA53EF9F65F4E86A53C44562D6A`
+and test SHA-256
+`D1267DAD4E5D419EDD6A9949DB3E424BFC2C2ED25CF5DD43A95EE6FCADB84272`.
+The review confirmed the reparse-ancestor and root-alias regressions and the
+redacted `EnrolledProject` representation. Windows symlink creation was
+unavailable, so reparse behavior was simulated through `lstat` metadata.
+Storage remained within the 50 GB limit and the 10% RAM/VRAM reserves held;
+the [registry report](../../reports/wrench-e0-opencode-context-adapter/project-registry.md)
+records exact resource readings and the test command.
+
+This registry is a root/scope prerequisite, not a connected runtime. No client
+or plugin was installed, launched, loaded or invoked by this job; the
+previously installed isolated OpenCode v2.0.15 CLI remains installed. The job
+made no request to localhost:4000 or a provider and read no real project
+source. Persistent store ownership, hook integration, request-lifetime pinning,
+dispatch denial, exact request/tokenizer parity and full E0 acceptance remain
+open. The exact-token gate remains unavailable for the mutable configured
+route.
