@@ -97,6 +97,12 @@ def _copy_json_bounded(value: object) -> object:
                 raise _ProjectionFailure("nonfinite_number")
             return item
         if type(item) is str:
+            # Every Unicode code point needs at least one UTF-8 byte. Reject
+            # from that lower bound before allocating an encoded copy of an
+            # attacker-sized string. Accepted strings are therefore at most
+            # 1 MiB of characters before the exact byte count is checked.
+            if len(item) > MAX_OPENCODE_CONTEXT_HOOK_BYTES - string_bytes:
+                raise _ProjectionFailure("input_bytes_limit_exceeded", limit=True)
             try:
                 encoded_size = len(item.encode("utf-8"))
             except UnicodeEncodeError as exc:
@@ -168,7 +174,7 @@ def _validate_context_shape(payload: object) -> tuple[str, str, str, str, str | 
     if not _valid_text(model["id"]) or not _valid_text(model["providerID"]):
         raise _ProjectionFailure("model_ref_identity_invalid")
     variant = model.get("variant")
-    if variant is not None and not _valid_text(variant):
+    if "variant" in model and not _valid_text(variant):
         raise _ProjectionFailure("model_variant_invalid")
 
     system = payload["system"]
@@ -201,6 +207,9 @@ def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
 
     The projection is ephemeral data. This function does not persist, log,
     dispatch, authorize tools, or claim final provider serialization parity.
+    The caller must supply a stable event object for the duration of this call.
+    Length changes observed during container copying are rejected, but same-
+    length or nested concurrent mutations cannot be detected atomically.
     """
     try:
         payload = _copy_json_bounded(event)

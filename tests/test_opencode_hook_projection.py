@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 
 import pytest
@@ -8,6 +9,7 @@ from wrench_harness.opencode_hook_projection import (
     OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
     OpenCodeProjectionStatus,
+    _bounded_canonical_json,
     project_opencode_context_hook,
 )
 
@@ -65,7 +67,31 @@ def test_projection_preserves_every_context_field_and_tool_order():
     assert projection.opencode_context_hook_version == OPENCODE_CONTEXT_HOOK_VERSION
     assert projection.serialized_bytes == len(projection.payload_json.encode("utf-8"))
     assert len(projection.projection_sha256) == 64
+    canonical = _bounded_canonical_json(
+        {
+            "schema": PROJECTION_SCHEMA,
+            "opencode_context_hook_version": OPENCODE_CONTEXT_HOOK_VERSION,
+            "payload": original,
+        },
+        MAX_OPENCODE_CONTEXT_HOOK_BYTES,
+    )
+    assert projection.projection_sha256 == hashlib.sha256(canonical).hexdigest()
     assert event == original
+
+
+def test_projection_hash_is_canonical_across_mapping_order_but_payload_order_is_preserved():
+    first = _hook_event()
+    reordered = dict(reversed(list(first.items())))
+    reordered["options"] = dict(reversed(list(reordered["options"].items())))
+
+    first_projection = project_opencode_context_hook(first).projection
+    reordered_projection = project_opencode_context_hook(reordered).projection
+
+    assert first_projection is not None
+    assert reordered_projection is not None
+    assert first_projection.projection_sha256 == reordered_projection.projection_sha256
+    assert list(json.loads(first_projection.payload_json)) == list(first)
+    assert list(json.loads(reordered_projection.payload_json)) == list(reordered)
 
 
 @pytest.mark.parametrize(
@@ -124,6 +150,16 @@ def test_projection_accepts_missing_optional_model_variant():
 
     assert result.status is OpenCodeProjectionStatus.READY
     assert result.projection.model_variant is None
+
+
+def test_projection_rejects_explicit_null_model_variant():
+    event = _hook_event()
+    event["model"]["variant"] = None
+
+    result = project_opencode_context_hook(event)
+
+    assert result.status is OpenCodeProjectionStatus.INVALID_SHAPE
+    assert result.projection is None
 
 
 @pytest.mark.parametrize("invalid_case", ["oversized", "cycle", "non_json"])
