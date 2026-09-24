@@ -71,6 +71,30 @@ identity is enforced by the OpenCode adapter.
   callback error prevents dispatch, or that a Wrench admission result is
   enforced by OpenCode.
 
+## Follow-up: hook result and local token estimate
+
+An independent source trace of the pinned `v2.0.15` tag confirmed that the
+Promise-plugin `session.context` callback type returns `void | Promise<void>`,
+not an admission result. Separately, the core Effect hook trigger runs its
+registered callbacks in order and returns the mutated event; its event also has
+no typed admission or veto result. A thrown callback may fail request
+preparation, but the tagged source does not define that failure as a supported,
+verified dispatch veto. The context hook therefore cannot by itself enforce a
+Wrench prompt-admission decision.
+
+The same trace found that OpenCode's local compaction estimator is a heuristic:
+`Token.estimate` rounds JavaScript string `.length` (UTF-16 code units) divided
+by four, while images and PDFs use fixed estimates and prior provider usage may
+anchor later estimates. This is a context-window sizing estimate, not exact
+tokenization of the final provider request. The Wrench-side `tiktoken==0.9.0` /
+`o200k_base` pin remains a reproducible text-count candidate only; it does not
+count the full Responses request structure, tools, or media exactly.
+
+This follow-up is still source-only. It does not validate the installed client,
+exception propagation, final transport payload, tokenizer parity, or dispatch
+blocking. The `session.context` shape and post-hook request lowering remain
+documented in the tagged source references below.
+
 No OpenCode client, JavaScript package, tokenizer package, tokenizer data, or
 model was installed or downloaded. No provider call, test, inference,
 benchmark, data capture, or training run was made. Source characterization is
@@ -85,6 +109,10 @@ not E0 completion.
 - OpenCode [OpenAI Responses protocol lowerer](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/protocols/openai-responses.ts)
 - OpenCode [`RouteBody.from`, route compilation, schema validation, and transport preparation](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/route/client.ts)
 - OpenCode [`@opencode/ai` v2.0.15 package manifest](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/package.json)
+- OpenCode [Promise `session.context` hook type](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/plugin/src/promise/session.ts)
+- OpenCode [core Effect hook trigger](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/core/src/plugin/hooks.ts)
+- OpenCode [character-based token estimate](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/core/src/util/token.ts)
+- OpenCode [compaction estimate and media constants](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/core/src/session/compaction.ts)
 - OpenAI tiktoken [v0.9.0 `o200k_base` definition and expected encoding hash](https://raw.githubusercontent.com/openai/tiktoken/0.9.0/tiktoken_ext/openai_public.py)
 - OpenAI tiktoken [v0.9.0 model-to-encoding mapping](https://github.com/openai/tiktoken/blob/0.9.0/tiktoken/model.py)
 - OpenAI [input-token counting guide](https://developers.openai.com/api/docs/guides/token-counting)
