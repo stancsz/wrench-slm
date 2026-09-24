@@ -21,6 +21,7 @@ from .opencode_session_root import (
     OpenCodeSessionRootError,
     resolve_opencode_session_root,
 )
+from .opencode_context import OpenCodePreparationJoin, prepare_opencode_e0_context
 from .mechanical import mechanical_route
 from .handoff import build_advisor_handoff
 from .worker import WrenchWorker
@@ -50,6 +51,8 @@ __all__ = [
     "OpenCodeSessionRoot",
     "OpenCodeSessionRootError",
     "resolve_opencode_session_root",
+    "OpenCodePreparationJoin",
+    "prepare_opencode_e0_context",
     "build_advisor_handoff",
     "load_router_state",
     "save_router_state",

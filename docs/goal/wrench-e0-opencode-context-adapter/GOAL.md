@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free session-root boundary implemented; client integration remains uninstalled and unrun
+Status: provider-free session-to-preparation seam implemented; client integration remains uninstalled and unrun
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -86,6 +86,10 @@ dispatch gate, or production route.
 - Offline validation rejects mismatched IDs, missing/invalid roots, ambiguous
   subpaths, and unusable directories before snapshot creation; isolated resolver
   fixtures cover these cases and the pinned session-ID prefix.
+- `prepare_opencode_e0_context` injects the resolved root into the existing
+  preparation facade and carries session/root/snapshot identity with its result;
+  fixture coverage includes invalid-session short-circuiting and the real
+  preparation path. The new fixtures have not been executed in this slice.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -137,3 +141,14 @@ fixture set with a deterministic task-specific test oracle and independent
 blinded verification. This can check harness behavior but cannot establish E4
 customer utility. Real utility work still needs an approved, consented source
 and a reviewable retention/deletion process; none is designated here.
+
+The follow-on `prepare_opencode_e0_context` seam resolves the supplied session
+record and passes only its configured root to `prepare_e0_context`. It returns
+a join object containing the session ID, root, snapshot hashes, and preparation
+result. Exact retrieval still checks the snapshot's root identity. This helper
+performs no session lookup, provider request, or dispatch. A future OpenCode
+adapter must explicitly pass the `session.get` response's `data` record; the
+resolver does not accept the outer response wrapper. Optional `workspaceID`
+is not part of the current join. Windows ancestor reparse-point handling is
+not qualified as a complete root-chain policy and must be reviewed before
+relying on this boundary for hostile paths.
