@@ -6,17 +6,21 @@ Scope: tagged OpenCode `v2.0.15` source trace and explicit E0 prompt-count resea
 ## Decision
 
 Use OpenCode `v2.0.15` as the first-client target, restricted for
-characterization to the OpenAI Responses route and model
-`gpt-4.1-2025-04-14`. The source-pinned serializer candidate is
-`@opencode/ai@2.0.15`, specifically its OpenAI Responses protocol
-`OpenAIResponses.fromRequest` lowering path. The pinned local text tokenizer
-candidate is `tiktoken==0.9.0` with an explicit `o200k_base` encoding, not
-runtime model auto-detection. The encoding data file is hash-pinned by that
-release to
+characterization to the OpenAI Responses protocol and model
+`gpt-4.1-2025-04-14`. The source-pinned **provider-body serializer** candidate
+is `@opencode/ai@2.0.15`: `LLMClient.compile` calls the selected route's
+`RouteBody.from`, which for this protocol is `OpenAIResponses.fromRequest`,
+then validates the body schema before preparing the selected transport. The
+separate route transport and endpoint must also be pinned in any later
+runtime-matched gate. The pinned local text tokenizer candidate is
+`tiktoken==0.9.0` with an explicit `o200k_base` encoding, not runtime model
+auto-detection. The encoding data file is hash-pinned by that release to
 `446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d`.
 
-These pins make future offline characterization reproducible. They do not
-provide an exact Responses input-token count. OpenAI documents that local
+These pins make future offline characterization reproducible. The body
+serializer pin does not yet include the selected route transport, endpoint,
+or runtime model resolution. The text tokenizer pin does not provide an exact
+Responses input-token count. OpenAI documents that local
 tokenizers cover plain text while tools, images, files, and request structure
 add tokens that the remote input-token count endpoint accounts for. That
 endpoint accepts the Responses input format and returns the model input count.
@@ -52,9 +56,10 @@ identity is enforced by the OpenCode adapter.
 
 ## What remains open
 
-- The chosen serializer path is a candidate pin, not an installed or executed
-  dependency. Route resolution and all downstream transforms still need
-  provider-free fixture characterization against the tagged source.
+- The chosen body-serializer path is a candidate pin, not an installed or
+  executed dependency. Route resolution, endpoint, transport, and all
+  downstream transforms still need provider-free fixture characterization
+  against the tagged source.
 - The `o200k_base` encoding counts text. It cannot exactly count the full
   Responses request, especially tool schemas, media, files, and service-side
   structure. Exact count needs the Responses input-token endpoint and the same
@@ -78,6 +83,7 @@ not E0 completion.
 - OpenCode [session runner request call](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/core/src/session/runner/llm.ts)
 - OpenCode [`LLM.request` normalization](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/llm.ts)
 - OpenCode [OpenAI Responses protocol lowerer](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/protocols/openai-responses.ts)
+- OpenCode [`RouteBody.from`, route compilation, schema validation, and transport preparation](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/route/client.ts)
 - OpenCode [`@opencode/ai` v2.0.15 package manifest](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/package.json)
 - OpenAI tiktoken [v0.9.0 `o200k_base` definition and expected encoding hash](https://raw.githubusercontent.com/openai/tiktoken/0.9.0/tiktoken_ext/openai_public.py)
 - OpenAI tiktoken [model-to-encoding mapping](https://github.com/openai/tiktoken/blob/main/tiktoken/model.py)
