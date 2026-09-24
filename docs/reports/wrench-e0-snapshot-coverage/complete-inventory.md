@@ -1,6 +1,6 @@
 # Bounded snapshot inventory aggregator
 
-Job: `W2-NS-E0-INVENTORY-AGG-20260924`  
+Job: `W2-NS-E0-INVENTORY-AGG-20260924`
 Nonce: `INVAGG-942C`
 
 ## Contract
