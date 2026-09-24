@@ -82,8 +82,9 @@ independent review then found that the standalone receipt verifier accepted
 positions beyond the hook's maximum message count. The verifier now rejects
 positions at or above that bound, and a regression constructs a correctly
 hashed receipt with an impossible position. The four focused suites were
-rerun and passed 97 tests in 7.60 seconds. Targeted independent re-review is
-pending.
+rerun and passed 97 tests in 7.60 seconds. Targeted independent re-review
+passed and confirmed that the verifier and regression share the valid
+insertion-position bound. The slice was committed as `ac0e775`.
 
 This verifies the local predicate over supplied synthetic objects only. It
 does not establish actual hook execution, full nested OpenCode schema

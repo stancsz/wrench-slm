@@ -305,8 +305,8 @@ and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-orches
 
 ## Follow-up: bind the OpenCode transition to prepared context
 
-Status: offline structural binding implemented; independent review and commit
-are pending.
+Status: offline structural binding implemented, independently reviewed, and
+committed as `ac0e775`; overall E0 acceptance remains open.
 
 The prompt-gate receipt now carries a digest and insertion position for the
 exact Wrench context message produced by a READY preparation. These values are

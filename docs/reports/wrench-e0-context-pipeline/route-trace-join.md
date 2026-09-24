@@ -117,16 +117,17 @@ pytest runtime passed **97 tests** across `test_prompt_compiler.py`,
 `test_e0_lifecycle_accounting.py`. No packages were installed. The first run
 found a context-message size-limit alias issue and three lifecycle fixtures
 that had not supplied the now-required transition; those were corrected and
-the complete focused rerun passed. The 10 MB focused-test reservation remains
-active pending final output accounting; pytest scratch is under
+the complete focused rerun passed. The 10 MB focused-test reservation was
+released after final output accounting; pytest scratch is under
 `C:\wrench-slm-data\tmp\e0-prep-transition-tests-20260925\pytest`.
 
 The first independent read-only review found a P2 receipt-verifier gap: it
 accepted positions outside the hook message bound. The verifier now rejects
 positions at or above `MAX_HOOK_MESSAGES`, and a regression rehashes an
 otherwise valid receipt with an impossible position to verify rejection.
-Targeted independent re-review is pending. `git diff --check` passed after the
-code correction; source and test hashes are recorded in the evaluation.
+Targeted independent re-review passed and confirmed the position bound,
+regression, and source/test hashes. `git diff --check` passed after the code
+correction. The slice was committed as `ac0e775`.
 
 ## Limits
 
