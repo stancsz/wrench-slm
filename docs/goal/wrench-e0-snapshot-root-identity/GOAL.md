@@ -33,7 +33,8 @@ to one snapshot and during each later exact retrieval.
   and byte-identical replacement coverage.
 - Independent post-fix source review found no remaining correctness blocker;
   it requested direct retrieval coverage, which was added before final
-  verification. See the continuity evaluation for reviewer identity and scope.
+  verification. See the [continuity evaluation](../../evals/wrench-e0-snapshot-root-identity/root-binding-continuity-review.md)
+  for reviewer identity and scope.
 - Focused Windows Python 3.11.16 verification: 127 passed, 9 skipped. Focused
   Ubuntu 24.04 WSL Python 3.12.3 verification: 132 passed, 4 skipped.
 - Independent code review `W2-NS-ROOT-IDENTITY-V3-REVIEW-20260924`, nonce
