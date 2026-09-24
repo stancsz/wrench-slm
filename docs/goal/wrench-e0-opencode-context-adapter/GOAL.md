@@ -139,6 +139,8 @@ plus the [local admission-check report](../../reports/wrench-e0-opencode-context
 and [session-bound outcome report](../../reports/wrench-e0-opencode-context-adapter/session-outcome-binding.md).
 Projection behavior and its bounded evidence are recorded in the
 [context-hook projection report](../../reports/wrench-e0-opencode-context-adapter/hook-projection.md).
+The pinned request-lowering trace and selected research pins are in the
+[request-lowering source audit](../../reports/wrench-e0-opencode-context-adapter/request-lowering-source-audit.md).
 
 References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
 [tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),
@@ -165,13 +167,20 @@ verified fail-closed dispatch contract. Select a consented matched-task corpus
 and outcome oracle before measuring E4 utility; the current pilot proposal is
 not capture authorization.
 
-For bounded offline characterization, the proposed provider target is
-OpenCode's OpenAI Responses route with the fixed `gpt-4.1-2025-04-14` model
-snapshot and OpenAI's Responses input-token count endpoint. This is a candidate,
-not a production gate: it sends the prompt to OpenAI and requires separate
-provider-data and spending approval before any call. It does not establish that
-OpenCode's final request matches the count request or that a failure blocks
-dispatch.
+The selected E0 characterization target is OpenCode `v2.0.15`, the OpenAI
+Responses route, and model `gpt-4.1-2025-04-14`. Pin the candidate serializer to
+the tagged `@opencode/ai@2.0.15` `OpenAIResponses.fromRequest` path and pin the
+local text tokenizer to `tiktoken==0.9.0`, explicitly loading `o200k_base`
+(encoding-file SHA-256
+`446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d`). These
+are source/research pins only; neither dependency was installed or run. The
+local tokenizer is not an exact count of a Responses request with tools,
+images, files, or provider-specific structure. Exact input counting requires
+the Responses input-token endpoint with the final equivalent request body;
+that sends request data to OpenAI and requires separate provider-data and
+spending approval before any call. The endpoint count also does not establish
+that the hook projection matches OpenCode's later request transformations or
+that failure blocks dispatch. Therefore the E0 prompt gate remains open.
 
 For corpus mechanics, use only a small Wrench-authored synthetic matched-task
 fixture set with a deterministic task-specific test oracle and independent
