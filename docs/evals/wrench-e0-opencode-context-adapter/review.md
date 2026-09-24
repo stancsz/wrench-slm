@@ -17,6 +17,13 @@ typed context-hook rejection or dispatch-veto result, nor does the guide
 specify callback failure behavior. The plugin load location is not treated as
 the active session source root.
 
+The guide also describes a separate prompt-admission hook. It runs once before
+attachment and skill resolution and durable inbox admission, and the guide
+states failed or interrupted preparation does not admit the prompt. It does
+not run before each model request and does not provide the fully assembled
+model context. The documented admission behavior therefore does not establish
+a final-request veto.
+
 The contract requires a present valid session location directory and
 nonempty or ambiguous session subpaths to fail closed until their meaning is
 pinned for a release. The supplied tools map must be preserved unchanged.

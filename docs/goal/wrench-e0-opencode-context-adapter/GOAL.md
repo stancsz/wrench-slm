@@ -14,6 +14,19 @@ plugin code, dependency, install, provider call, or production route.
 
 ## Contract
 
+- OpenCode documents two distinct hook boundaries. The `prompt` hook runs at
+  user-prompt admission, before attachments, skill resolution, and durable
+  inbox admission. The guide says a failed or interrupted preparation does
+  not admit that prompt, but the API still has no typed rejection result; a
+  future release-pinned implementation must establish and test the supported
+  failure signal. This hook runs once per admission, not before each model
+  call, and does not expose the resolved model or assembled tool map.
+- The `context` hook runs immediately before agent-loop model dispatch,
+  including tool-driven continuations, and exposes the assembled request
+  fields below. Its documented API has no typed veto result and the docs do
+  not specify callback failure behavior. Therefore the prompt hook's
+  admission behavior cannot be generalized to the context hook or used to
+  claim the complete request is blocked on preparation failure.
 - A future context hook obtains the active session using its event
   `sessionID`, then reads the session record using the documented session API.
 - The adapter derives its candidate source root from the active session's
@@ -47,9 +60,11 @@ plugin code, dependency, install, provider call, or production route.
 
 - Official OpenCode V2 plugin and API references are recorded and checked on
   2026-09-24; their mutable documentation is not a release pin.
-- Session lookup, location/subpath handling, visible hook fields, native tool
+- Session lookup, location/subpath handling, visible hook fields, supplied tool
   preservation, hook effect, and unavailable dispatch-veto behavior are
   explicitly bounded above.
+- Prompt-admission and model-context hooks are distinguished; the documented
+  prompt failure behavior is not claimed as a final-request veto.
 - The contract names the remaining release, serializer, tokenizer, root
   semantics, and dispatch-authority prerequisites without inventing them.
 - The parent E0 goal and goal index point to this slice and retain all broader

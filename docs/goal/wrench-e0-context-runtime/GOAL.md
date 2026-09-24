@@ -72,10 +72,12 @@ larger product proceeds through E1-E4 only after experiment stage gates pass.
 OpenCode V2 is selected as the first client integration target; its plugin
 integration is not implemented. The bounded, uninstalled adapter contract is
 recorded in [E0 OpenCode V2 context adapter contract](../wrench-e0-opencode-context-adapter/GOAL.md).
-The documented context hook can edit assembled semantic system instructions
-and messages immediately before a model request. OpenCode does not document a
-dispatch-veto contract for this hook, and it does not establish provider
-tokenizer or wire equivalence, or tool authority. See the official
+The prompt-admission hook documents failure-based non-admission before durable
+inbox admission, but it does not run for each model request or expose the
+assembled model context. The context hook can edit semantic request fields
+immediately before model calls, but its dispatch-veto and callback-failure
+behavior are undocumented. Neither hook establishes provider tokenizer or
+wire equivalence, or tool authority. See the official
 [V2 plugin guide](https://opencode.ai/v2/docs/build/plugins) and
 [V1 migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1).
 
