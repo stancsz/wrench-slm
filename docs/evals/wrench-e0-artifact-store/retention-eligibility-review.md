@@ -1,8 +1,8 @@
 # Artifact-store retention eligibility review
 
-Date: 2026-09-24  
-Revision inspected: `680cc6ec7635bed4b6101756cf541e8ff836b551`  
-Implementation: `src/wrench_harness/artifact_store.py`  
+Date: 2026-09-24
+Revision inspected: `680cc6ec7635bed4b6101756cf541e8ff836b551`
+Implementation: `src/wrench_harness/artifact_store.py`
 Report: [retention eligibility](../../reports/wrench-e0-artifact-store/retention-eligibility.md)
 
 ## Independent review

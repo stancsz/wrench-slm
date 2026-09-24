@@ -1,8 +1,8 @@
 # Artifact-store retention eligibility
 
-Date: 2026-09-24  
-Goal: [E0 bounded artifact store](../../goal/wrench-e0-artifact-store/GOAL.md)  
-Implementation commit: `680cc6ec7635bed4b6101756cf541e8ff836b551`  
+Date: 2026-09-24
+Goal: [E0 bounded artifact store](../../goal/wrench-e0-artifact-store/GOAL.md)
+Implementation commit: `680cc6ec7635bed4b6101756cf541e8ff836b551`
 Status: bounded eligibility gate implemented; no real-data retention policy or
 scheduler is authorized or implemented
 
