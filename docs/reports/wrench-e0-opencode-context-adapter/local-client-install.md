@@ -69,3 +69,26 @@ published here. No credential value is included in this report. Install
 footprint is retained under the approved root and was included in the final
 storage inventory. See the [installation evaluation](../../evals/wrench-e0-opencode-context-adapter/local-client-install.md)
 and the [runtime mock preflight](mock-runtime-preflight.md).
+
+## Follow-up verification
+
+Date: 2026-09-24 (America/Edmonton). The installed wrapper was re-run from the
+repository host. It reported `opencode v2.0.15`; `debug config` resolved model
+`wrench-local/current`, provider `wrench-local`, and base URL
+`http://127.0.0.1:4000/v1`. `debug paths` placed home, data, cache, config,
+state, temporary files, logs, database, and repositories under the isolated
+job root above. The current workspace config SHA-256 is
+`BF30BF301159C947D3632640962C32ED943356D792E1CE89E5C79F715E121F4D`; the
+wrapper remains `3EA4A021C1D2B131992185B3CE75962EDABE2D71DA2DF5D5610BF1F49DB65F0F`.
+The current config hash differs from the hash captured in the original install
+record, so the intervening config history is unknown. The present config has
+no credential fields. The unisolated `opencode` command still reports
+`v2.0.12` and was not reconfigured.
+
+One read-only `GET http://127.0.0.1:4000/v1/models` returned HTTP 200 and 19
+model IDs, including `current`. This confirms local endpoint reachability and
+model-list availability only; it does not establish the route selected by the
+gateway for a model request. No prompt, chat, completion, response, or
+provider request was made. The current aggregate storage check remained
+`WITHIN_LIMIT`. The follow-up verification and review are recorded in the
+[evaluation](../../evals/wrench-e0-opencode-context-adapter/local-client-install.md).

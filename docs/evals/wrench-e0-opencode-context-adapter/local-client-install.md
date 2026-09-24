@@ -41,3 +41,24 @@ route for `wrench-local/current`; the separate E0 Responses route/model
 research pin must not be reported as tested by this setup. See the
 [installation report](../../reports/wrench-e0-opencode-context-adapter/local-client-install.md)
 and [mock runtime preflight](../../reports/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md).
+
+## Follow-up verification, 2026-09-24
+
+Reviewer: root orchestrator, with the independent subagent
+`opencode_localhost_verify`.
+
+The current isolated CLI was independently run and reported v2.0.15. Its
+effective debug config resolved `wrench-local/current` to
+`http://127.0.0.1:4000/v1`; its effective debug paths remained under the
+approved isolated job root. The present workspace config SHA-256 is
+`BF30BF301159C947D3632640962C32ED943356D792E1CE89E5C79F715E121F4D`, which
+differs from the original install report's captured hash. No source for that
+intervening config change was established. A single GET to the exact
+`/v1/models` endpoint returned HTTP 200 with 19 model IDs. This establishes
+local connectivity only. No prompt or model-generation request was made.
+
+**Follow-up result: PASS for isolated installation/configuration and local
+model-list reachability.** Still unverified: actual request dispatch and
+gateway route, Wrench hook integration, exact serialization/tokenizer parity,
+and any frontier-token savings. The unisolated CLI remains v2.0.12 and was not
+changed. No repository source or client config was changed during verification.
