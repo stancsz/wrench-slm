@@ -19,6 +19,9 @@ MAX_REQUIRED_EVIDENCE = 256
 MAX_ASSEMBLY_BYTES = 512 * 1024
 MAX_BASE_MESSAGES_BYTES = 1024 * 1024
 MAX_SERIALIZED_PROMPT_BYTES = 4 * 1024 * 1024
+# The context message is bounded by the same cap as the complete serialized
+# prompt. This module-level integer remains fixed if tests override the latter.
+MAX_CONTEXT_MESSAGE_BYTES = MAX_SERIALIZED_PROMPT_BYTES
 MAX_ID_CHARS = 256
 MAX_CALLBACK_ID_CHARS = 128
 MAX_INPUT_NODES = 30_000
@@ -67,6 +70,8 @@ class PromptGateReceipt:
     serializer_id: str | None
     serialized_bytes: int | None
     reason: str | None = None
+    context_message_sha256: str | None = None
+    context_insertion_position: int | None = None
 
 
 @dataclass(frozen=True)
@@ -393,13 +398,16 @@ def compile_prompt(
             session_hash=session_hash, selected=selected_tuple, omitted=omitted_tuple, missing=missing,
         )
 
+    context_message: dict[str, str] | None = None
+    context_message_sha256: str | None = None
     try:
         copied_messages = json.loads(base_raw.decode("utf-8"))
         if selected_tuple:
-            copied_messages.insert(
-                context_position,
-                {"role": context_role, "content": _render_untrusted_context(assembled_text)},
-            )
+            context_message = {"role": context_role, "content": _render_untrusted_context(assembled_text)}
+            context_message_sha256 = hashlib.sha256(
+                _bounded_canonical_json(context_message, MAX_CONTEXT_MESSAGE_BYTES)
+            ).hexdigest()
+            copied_messages.insert(context_position, context_message)
         serialized = serializer(copied_messages)
     except Exception as exc:
         return _empty_receipt(
@@ -451,6 +459,8 @@ def compile_prompt(
         status, session_hash, selected_tuple, omitted_tuple, (), prompt_digest, token_count,
         hard_budget, tokenizer_id, serializer_id, serialized_size,
         None if status is PromptGateStatus.READY else "serialized_prompt_over_budget",
+        context_message_sha256 if status is PromptGateStatus.READY else None,
+        context_position if status is PromptGateStatus.READY and context_message is not None else None,
     )
     return PromptGateResult(receipt, serialized if status is PromptGateStatus.READY else None)
 

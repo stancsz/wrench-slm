@@ -263,3 +263,18 @@ record ID but does not record the complete suffix grammar. The resolver's
 current prefix and shape checks are therefore not evidence of full pinned
 schema conformance. The [session-ID grammar audit](../../reports/wrench-e0-opencode-context-adapter/session-id-grammar-audit.md)
 records the missing local source evidence; no suffix pattern is inferred.
+
+## Follow-up: bind transition to E0 preparation identity
+
+The offline transition validator now requires the inserted message digest and
+position recorded by a READY E0 prompt gate. A content-free wrapper receipt
+binds the preparation aggregate digest to the before/after projection
+digests. The partial lifecycle trace requires this receipt alongside completed
+route-preparation evidence and checks its session and after-projection
+identity. See the [prepared transition report](../../reports/wrench-e0-context-pipeline/prepared-context-transition.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/prepared-context-transition.md).
+
+This is a structural check over caller-provided objects. It does not prove
+OpenCode executed the transition, validate the full nested client message
+schema, prevent dispatch, or establish final request/tokenizer parity. Runtime
+integration and overall E0 acceptance remain open.

@@ -900,12 +900,14 @@ def _prepare_e0_context_impl(
                                 )
                             )
                             aggregate_hash = _canonical_digest({
-                                "schema": "wrench.e0-preparation-refs.v1", "snapshot_sha256": snapshot.snapshot_sha256,
+                                "schema": "wrench.e0-preparation-refs.v2", "snapshot_sha256": snapshot.snapshot_sha256,
                                 "sources": [[r.evidence_id, r.path, r.content_sha256, r.artifact_handle_id, r.status] for r in source_rows],
                                 "selected": list(selected), "omitted": [list(row) for row in receipt_omitted], "misses": [list(row) for row in miss_rows],
                                 "selected_source_references_sha256": selected_source_references.receipt_sha256,
                                 "selected_source_reference_unavailable_reasons": [list(row) for row in unavailable_reasons],
                                 "assembly_session_hash": assembly.get("session_hash"),
+                                "context_message_sha256": prompt_result.receipt.context_message_sha256,
+                                "context_insertion_position": prompt_result.receipt.context_insertion_position,
                                 "schemas": [list(row) for row in schema_rows],
                                 "discovered_namespace_ids": discovered_namespace_ids,
                                 "prompt_gate": {"status": prompt_result.receipt.status.value, "prompt_sha256": prompt_result.receipt.prompt_sha256,
@@ -940,9 +942,10 @@ def _prepare_e0_context_impl(
         miss_omitted = tuple((row.evidence_id, row.status) for row in source_rows)
         receipt_misses = tuple((evidence_id, status) for evidence_id, status in misses if status in {"missing", "stale", "unsafe", "unknown_snapshot", "unknown_source", "evicted"})
         aggregate_hash = _canonical_digest({
-            "schema": "wrench.e0-preparation-refs.v1", "snapshot_sha256": snapshot.snapshot_sha256,
+            "schema": "wrench.e0-preparation-refs.v2", "snapshot_sha256": snapshot.snapshot_sha256,
             "sources": [[r.evidence_id, r.path, r.content_sha256, r.artifact_handle_id, r.status] for r in source_rows],
             "selected": [], "omitted": [list(row) for row in miss_omitted], "misses": [list(row) for row in misses],
+            "context_message_sha256": None, "context_insertion_position": None,
             "schemas": [], "prompt_gate": None,
         })
         _metrics["outcome_receipt_build_attempts"] = int(_metrics["outcome_receipt_build_attempts"]) + 1

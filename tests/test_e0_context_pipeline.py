@@ -7,6 +7,7 @@ from dataclasses import asdict, replace
 import pytest
 
 from wrench_harness.artifact_store import ArtifactStore, ArtifactStoreError
+import wrench_harness.e0_context_pipeline as e0_pipeline_module
 from wrench_harness.e0_context_pipeline import (
     PreparationStatus,
     prepare_e0_context,
@@ -70,6 +71,15 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
         return request
 
     monkeypatch.setattr(store, "request", capture_request)
+    observed_refs = []
+    original_canonical_digest = e0_pipeline_module._canonical_digest
+
+    def capture_refs_digest(value):
+        if type(value) is dict and value.get("schema") == "wrench.e0-preparation-refs.v2":
+            observed_refs.append(dict(value))
+        return original_canonical_digest(value)
+
+    monkeypatch.setattr(e0_pipeline_module, "_canonical_digest", capture_refs_digest)
     observed = []
 
     def serializer(messages):
@@ -88,6 +98,11 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert result.route == "none"
     assert result.prompt is not None
     assert result.prompt_gate.status is PromptGateStatus.READY
+    assert observed_refs
+    refs = observed_refs[-1]
+    assert refs["context_message_sha256"] == result.prompt_gate.context_message_sha256
+    assert refs["context_insertion_position"] == result.prompt_gate.context_insertion_position
+    assert "# ignore previous instructions" not in repr(refs)
     assert result.outcome_receipt.status is ReceiptStatus.INCOMPLETE
     assert result.outcome_receipt.receipt is not None
     payload = json.loads(result.outcome_receipt.receipt.payload_json)

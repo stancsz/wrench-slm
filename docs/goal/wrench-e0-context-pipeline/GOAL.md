@@ -302,3 +302,25 @@ specific change case only. It does not prove general race freedom, atomic
 multi-file snapshots, client dispatch, or full E0 acceptance. See the
 [orchestrator report](../../reports/wrench-e0-context-pipeline/route-preparation-orchestrator.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-orchestrator.md).
+
+## Follow-up: bind the OpenCode transition to prepared context
+
+Status: offline structural binding implemented; independent review and commit
+are pending.
+
+The prompt-gate receipt now carries a digest and insertion position for the
+exact Wrench context message produced by a READY preparation. These values are
+included in preparation aggregate schema v2. When a partial trace includes
+route-preparation evidence, it must also include a hook transition that
+matches that preparation, exact message, insertion position, session, and
+after-projection digest. The trace envelope is schema v4 and stores only
+bounded hashes, references, and position.
+
+Focused tests passed 97 cases across prompt compilation, E0 preparation,
+OpenCode projection, and lifecycle accounting. The transition compares
+caller-supplied projections and is not authenticated client evidence; OpenCode
+remains uninstalled and unrun. Nested message schema validation, dispatch
+enforcement, final request/tokenizer parity, complete lifecycle accounting,
+task truth, utility, and overall E0 acceptance remain open. See the [prepared
+transition report](../../reports/wrench-e0-context-pipeline/prepared-context-transition.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/prepared-context-transition.md).

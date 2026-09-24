@@ -11,6 +11,8 @@ from enum import Enum
 from .prompt_compiler import (
     MAX_INPUT_DEPTH,
     MAX_INPUT_NODES,
+    PromptGateReceipt,
+    PromptGateStatus,
     _bounded_canonical_json,
 )
 
@@ -21,6 +23,8 @@ MAX_HOOK_SYSTEM_PARTS = 128
 MAX_HOOK_TOOLS = 256
 OPENCODE_CONTEXT_HOOK_VERSION = "2.0.15"
 PROJECTION_SCHEMA = "wrench.opencode.context-hook-projection.v1"
+PREPARED_TRANSITION_RECEIPT_SCHEMA = "wrench.opencode.prepared-context-transition-receipt.v1"
+MAX_PREPARED_TRANSITION_RECEIPT_BYTES = 4096
 _CONTEXT_FIELDS = frozenset({
     "sessionID", "agent", "model", "system", "messages", "tools", "options",
 })
@@ -42,6 +46,16 @@ class OpenCodeTransitionStatus(str, Enum):
     PROTECTED_CONTEXT_CHANGED = "protected_context_changed"
     MESSAGE_SEQUENCE_MISMATCH = "message_sequence_mismatch"
     INSERTION_POSITION_INVALID = "insertion_position_invalid"
+
+
+class OpenCodePreparedTransitionStatus(str, Enum):
+    READY = "ready"
+    INVALID_PREPARATION = "invalid_preparation"
+    INVALID_PROMPT_GATE = "invalid_prompt_gate"
+    INSERTION_BINDING_MISSING = "insertion_binding_missing"
+    INSERTION_BINDING_INVALID = "insertion_binding_invalid"
+    INSERTION_BINDING_MISMATCH = "insertion_binding_mismatch"
+    TRANSITION_REJECTED = "transition_rejected"
 
 
 @dataclass(frozen=True)
@@ -90,6 +104,23 @@ class OpenCodeContextTransitionReceipt:
 class OpenCodeTransitionResult:
     status: OpenCodeTransitionStatus
     receipt: OpenCodeContextTransitionReceipt | None
+    reason: str
+
+
+@dataclass(frozen=True)
+class OpenCodePreparedTransitionReceipt:
+    """Content-free receipt joining preparation identity to a hook transition."""
+
+    preparation_sha256: str
+    transition: OpenCodeContextTransitionReceipt
+    receipt_sha256: str
+    schema: str = PREPARED_TRANSITION_RECEIPT_SCHEMA
+
+
+@dataclass(frozen=True)
+class OpenCodePreparedTransitionResult:
+    status: OpenCodePreparedTransitionStatus
+    receipt: OpenCodePreparedTransitionReceipt | None
     reason: str
 
 
@@ -440,12 +471,183 @@ def validate_opencode_context_hook_transition(
     return OpenCodeTransitionResult(OpenCodeTransitionStatus.READY, receipt, "ready")
 
 
+def _is_sha256(value: object) -> bool:
+    return (
+        type(value) is str
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+
+
+def _prepared_transition_receipt_payload(
+    preparation_sha256: str,
+    transition: OpenCodeContextTransitionReceipt,
+) -> dict[str, object]:
+    return {
+        "schema": PREPARED_TRANSITION_RECEIPT_SCHEMA,
+        "preparation_sha256": preparation_sha256,
+        "transition": {
+            "session_id": transition.session_id,
+            "opencode_context_hook_version": transition.opencode_context_hook_version,
+            "projection_schema": transition.projection_schema,
+            "before_projection_sha256": transition.before_projection_sha256,
+            "after_projection_sha256": transition.after_projection_sha256,
+            "inserted_message_sha256": transition.inserted_message_sha256,
+            "insertion_position": transition.insertion_position,
+        },
+    }
+
+
+def verify_opencode_prepared_transition_receipt(receipt: object) -> bool:
+    """Verify the canonical hash and field shape of a prepared transition receipt."""
+    if type(receipt) is not OpenCodePreparedTransitionReceipt:
+        return False
+    transition = receipt.transition
+    if type(transition) is not OpenCodeContextTransitionReceipt:
+        return False
+    if (
+        type(receipt.schema) is not str
+        or receipt.schema != PREPARED_TRANSITION_RECEIPT_SCHEMA
+        or not _is_sha256(receipt.preparation_sha256)
+        or not _is_sha256(receipt.receipt_sha256)
+        or type(transition.session_id) is not str
+        or not _valid_text(transition.session_id)
+        or type(transition.opencode_context_hook_version) is not str
+        or transition.opencode_context_hook_version != OPENCODE_CONTEXT_HOOK_VERSION
+        or type(transition.projection_schema) is not str
+        or transition.projection_schema != PROJECTION_SCHEMA
+        or not _is_sha256(transition.before_projection_sha256)
+        or not _is_sha256(transition.after_projection_sha256)
+        or not _is_sha256(transition.inserted_message_sha256)
+        or type(transition.insertion_position) is not int
+        or not 0 <= transition.insertion_position < MAX_HOOK_MESSAGES
+    ):
+        return False
+    try:
+        canonical = _bounded_canonical_json(
+            _prepared_transition_receipt_payload(receipt.preparation_sha256, transition),
+            MAX_PREPARED_TRANSITION_RECEIPT_BYTES,
+        )
+    except (TypeError, ValueError, OverflowError, RecursionError):
+        return False
+    return hashlib.sha256(canonical).hexdigest() == receipt.receipt_sha256
+
+
+def validate_opencode_preparation_context_transition(
+    preparation: object,
+    before: object,
+    after: object,
+    *,
+    expected_message: object,
+) -> OpenCodePreparedTransitionResult:
+    """Bind a single hook insertion to a READY E0 preparation and prompt gate.
+
+    The preparation type is imported locally so the context pipeline can use
+    this module without introducing an import cycle. This validates supplied
+    local snapshots and receipts; it does not authenticate client behavior or
+    enforce request dispatch.
+    """
+    # Local import avoids a cycle: e0_context_pipeline itself imports the hook
+    # projection layer for its offline join and verification helpers.
+    from .e0_context_pipeline import PreparationResult, PreparationStatus
+
+    if (
+        type(preparation) is not PreparationResult
+        or preparation.status is not PreparationStatus.READY
+        or not _is_sha256(preparation.aggregate_sha256)
+    ):
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INVALID_PREPARATION,
+            None,
+            "preparation_invalid",
+        )
+    gate = preparation.prompt_gate
+    if (
+        type(gate) is not PromptGateReceipt
+        or gate.status is not PromptGateStatus.READY
+    ):
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INVALID_PROMPT_GATE,
+            None,
+            "prompt_gate_invalid",
+        )
+    message_sha256 = gate.context_message_sha256
+    insertion_position = gate.context_insertion_position
+    if message_sha256 is None and insertion_position is None:
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INSERTION_BINDING_MISSING,
+            None,
+            "insertion_binding_missing",
+        )
+    if not _is_sha256(message_sha256) or type(insertion_position) is not int or insertion_position < 0:
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INSERTION_BINDING_INVALID,
+            None,
+            "insertion_binding_invalid",
+        )
+    try:
+        expected_copy = _copy_json_bounded(expected_message)
+        if type(expected_copy) is not dict:
+            raise _ProjectionFailure("expected_message_must_be_object")
+        expected_sha256 = hashlib.sha256(
+            _bounded_canonical_json(expected_copy, MAX_OPENCODE_CONTEXT_HOOK_BYTES)
+        ).hexdigest()
+    except (_ProjectionFailure, TypeError, ValueError, OverflowError, RecursionError):
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INSERTION_BINDING_INVALID,
+            None,
+            "expected_message_invalid",
+        )
+    if expected_sha256 != message_sha256:
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.INSERTION_BINDING_MISMATCH,
+            None,
+            "expected_message_binding_mismatch",
+        )
+
+    transition_result = validate_opencode_context_hook_transition(
+        before,
+        after,
+        expected_message=expected_copy,
+        insertion_position=insertion_position,
+    )
+    if transition_result.status is not OpenCodeTransitionStatus.READY or transition_result.receipt is None:
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.TRANSITION_REJECTED,
+            None,
+            f"transition_{transition_result.status.value}",
+        )
+    payload = _prepared_transition_receipt_payload(
+        preparation.aggregate_sha256, transition_result.receipt
+    )
+    try:
+        canonical = _bounded_canonical_json(payload, MAX_PREPARED_TRANSITION_RECEIPT_BYTES)
+    except (TypeError, ValueError, OverflowError, RecursionError):
+        return OpenCodePreparedTransitionResult(
+            OpenCodePreparedTransitionStatus.TRANSITION_REJECTED,
+            None,
+            "receipt_serialization_failed",
+        )
+    receipt = OpenCodePreparedTransitionReceipt(
+        preparation.aggregate_sha256,
+        transition_result.receipt,
+        hashlib.sha256(canonical).hexdigest(),
+    )
+    return OpenCodePreparedTransitionResult(
+        OpenCodePreparedTransitionStatus.READY,
+        receipt,
+        "ready",
+    )
+
+
 __all__ = [
     "MAX_HOOK_MESSAGES",
     "MAX_HOOK_SYSTEM_PARTS",
     "MAX_HOOK_TOOLS",
     "MAX_OPENCODE_CONTEXT_HOOK_BYTES",
+    "MAX_PREPARED_TRANSITION_RECEIPT_BYTES",
     "OPENCODE_CONTEXT_HOOK_VERSION",
+    "PREPARED_TRANSITION_RECEIPT_SCHEMA",
     "PROJECTION_SCHEMA",
     "OpenCodeContextTransitionReceipt",
     "OpenCodeContextHookProjection",
@@ -453,6 +655,11 @@ __all__ = [
     "OpenCodeProjectionStatus",
     "OpenCodeTransitionResult",
     "OpenCodeTransitionStatus",
+    "OpenCodePreparedTransitionReceipt",
+    "OpenCodePreparedTransitionResult",
+    "OpenCodePreparedTransitionStatus",
     "project_opencode_context_hook",
     "validate_opencode_context_hook_transition",
+    "validate_opencode_preparation_context_transition",
+    "verify_opencode_prepared_transition_receipt",
 ]

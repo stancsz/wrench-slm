@@ -27,10 +27,15 @@ from wrench_harness.outcome_receipt import ReceiptStatus, build_outcome_receipt
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
-def _prepare(tmp_path, *, extra_files=()):
+def _prepare(
+    tmp_path,
+    *,
+    extra_files=(),
+    sample_source="def target():\n    return 1\n",
+):
     root = tmp_path / "repo"
-    root.mkdir()
-    (root / "sample.py").write_text("def target():\n    return 1\n", encoding="utf-8")
+    root.mkdir(parents=True)
+    (root / "sample.py").write_text(sample_source, encoding="utf-8")
     for relative_path in extra_files:
         target = root / relative_path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -124,13 +129,52 @@ def _projection(session_id="ses_partial_trace_fixture"):
     return project_opencode_context_hook(event)
 
 
+def _prepared_transition(preparation, *, insertion_position=None, message_override=None):
+    """Build fixture hook projections from the exact prepared prompt message list."""
+    prompt = preparation.prompt
+    if type(prompt) is bytes:
+        prompt = prompt.decode("utf-8")
+    prepared_messages = json.loads(prompt)
+    assert type(prepared_messages) is list
+    gate = preparation.prompt_gate
+    position = gate.context_insertion_position
+    assert type(position) is int
+    assert gate.context_message_sha256 is not None
+    inserted_message = prepared_messages[position]
+    expected_message = inserted_message if message_override is None else message_override
+    before_messages = list(prepared_messages)
+    del before_messages[position]
+    after_messages = list(before_messages)
+    actual_position = position if insertion_position is None else insertion_position
+    after_messages.insert(actual_position, inserted_message)
+
+    base_event = json.loads(_projection().projection.payload_json)
+    before_event = dict(base_event)
+    before_event["messages"] = before_messages
+    after_event = dict(base_event)
+    after_event["messages"] = after_messages
+    return (
+        project_opencode_context_hook(before_event),
+        project_opencode_context_hook(after_event),
+        expected_message,
+        position,
+    )
+
+
 def _finalized(join, preparation):
     result = finalize_opencode_preparation_outcome(join, _postrun(join.session_id))
     assert result.receipt is not None
     return result.receipt
 
 
-def _route_preparation(tmp_path, join, *, prompt="Read sample.py with a 64 byte limit.", snapshot_paths=("sample.py",)):
+def _route_preparation(
+    tmp_path,
+    join,
+    *,
+    prompt="Read sample.py with a 64 byte limit.",
+    snapshot_paths=("sample.py",),
+    system_content="Use evidence.",
+):
     binding = bind_source_root(join.configured_root)
     snapshot = create_snapshot(binding, snapshot_paths)
     assert snapshot.snapshot_sha256 == join.snapshot_sha256
@@ -145,7 +189,7 @@ def _route_preparation(tmp_path, join, *, prompt="Read sample.py with a 64 byte 
         prompt_token_budget=4096,
         namespace_registry=NamespaceRegistry([]),
         schema_lookups=(),
-        base_messages=({"role": "system", "content": "Use evidence."},),
+        base_messages=({"role": "system", "content": system_content},),
         context_position=1,
         serializer=lambda messages: json.dumps(list(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
@@ -261,12 +305,15 @@ def test_partial_trace_joins_route_owned_preparation_receipt(tmp_path):
         route_result=route_preparation.route_result,
         preparation=join.preparation,
     )
+    before, after, expected_message, insertion_position = _prepared_transition(join.preparation)
 
     result = build_partial_lifecycle_trace(
         join,
-        _projection(),
+        after,
         _finalized(join, join.preparation),
         route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
     )
 
     assert result.status is PartialTraceStatus.READY
@@ -276,8 +323,145 @@ def test_partial_trace_joins_route_owned_preparation_receipt(tmp_path):
     assert payload["rule_route"]["caller_reported_exact_read_bytes"] == route_preparation.route_result.exact_read_bytes
     assert payload["route_preparation_accounting_sha256"] == route_preparation.accounting_receipt.accounting_sha256
     assert payload["rule_route"]["observation_included"] is False
+    transition = payload["prepared_context_transition"]
+    assert transition["preparation_sha256"] == join.preparation.aggregate_sha256
+    assert transition["insertion_position"] == insertion_position
+    assert transition["inserted_message_sha256"] == join.preparation.prompt_gate.context_message_sha256
+    assert transition["before_projection_sha256"] == before.projection.projection_sha256
+    assert transition["after_projection_sha256"] == after.projection.projection_sha256
+    assert len(transition["receipt_sha256"]) == 64
+    assert expected_message["content"] not in result.envelope.payload_json
     assert "sample.py" not in result.envelope.payload_json
     assert "def target" not in result.envelope.payload_json
+
+
+def test_partial_trace_rejects_route_preparation_without_transition(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+
+    result = build_partial_lifecycle_trace(
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
+    )
+
+    assert result.status is not PartialTraceStatus.READY
+    assert result.envelope is None
+
+
+def test_partial_trace_rejects_incomplete_transition_arguments(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
+    finalized = _finalized(join, join.preparation)
+
+    missing_expected = build_partial_lifecycle_trace(
+        join,
+        after,
+        finalized,
+        route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+    )
+    missing_before = build_partial_lifecycle_trace(
+        join,
+        after,
+        finalized,
+        route_preparation_result=route_preparation,
+        transition_expected_message=expected_message,
+    )
+
+    assert missing_expected.status is not PartialTraceStatus.READY
+    assert missing_expected.envelope is None
+    assert missing_before.status is not PartialTraceStatus.READY
+    assert missing_before.envelope is None
+
+
+def test_partial_trace_rejects_transition_with_wrong_prepared_message(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
+    wrong_message = dict(expected_message)
+    wrong_message["content"] += " changed"
+
+    result = build_partial_lifecycle_trace(
+        join,
+        after,
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=wrong_message,
+    )
+
+    assert result.status is not PartialTraceStatus.READY
+    assert result.envelope is None
+
+
+def test_partial_trace_rejects_transition_at_wrong_prepared_position(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    prepared_position = join.preparation.prompt_gate.context_insertion_position
+    before, after, expected_message, _ = _prepared_transition(
+        join.preparation, insertion_position=0 if prepared_position else 1
+    )
+
+    result = build_partial_lifecycle_trace(
+        join,
+        after,
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
+    )
+
+    assert result.status is not PartialTraceStatus.READY
+    assert result.envelope is None
+
+
+def test_partial_trace_rejects_after_projection_changed_after_transition(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
+    after_event = json.loads(after.projection.payload_json)
+    after_event["messages"].append({"role": "user", "content": "unaccounted addition"})
+    changed_after = project_opencode_context_hook(after_event)
+    assert changed_after.status is OpenCodeProjectionStatus.READY
+
+    result = build_partial_lifecycle_trace(
+        join,
+        changed_after,
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
+    )
+
+    assert result.status is not PartialTraceStatus.READY
+    assert result.envelope is None
+
+
+def test_partial_trace_rejects_transition_bound_to_another_preparation(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    other_preparation, _ = _prepare(
+        tmp_path / "other",
+        sample_source="def target():\n    return 'different prepared evidence with a distinct payload'\n",
+    )
+    assert other_preparation.aggregate_sha256 != join.preparation.aggregate_sha256
+    assert other_preparation.prompt_gate.context_message_sha256 != join.preparation.prompt_gate.context_message_sha256
+    before, after, expected_message, _ = _prepared_transition(other_preparation)
+
+    result = build_partial_lifecycle_trace(
+        join,
+        after,
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
+    )
+
+    assert result.status is not PartialTraceStatus.READY
+    assert result.envelope is None
 
 
 def test_partial_trace_rejects_standalone_completed_route_result(tmp_path):
@@ -375,12 +559,15 @@ def test_partial_trace_rejects_same_snapshot_route_with_mismatched_path_and_cont
     assert tuple(row.path for row in prepared_rows) == ("sample.py",)
     assert mismatched_route.evidence[0].content_sha256 != prepared_rows[0].content_sha256
     mismatched = replace(route_preparation, route_result=mismatched_route)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
 
     result = build_partial_lifecycle_trace(
         join,
-        _projection(),
+        after,
         _finalized(join, join.preparation),
         route_preparation_result=mismatched,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
     )
 
     assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
@@ -396,12 +583,15 @@ def test_partial_trace_rejects_invalid_or_tampered_route_preparation_receipts(tm
         accounting_sha256="0" * 64,
     )
     tampered = replace(route_preparation, accounting_receipt=tampered_receipt)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
 
     result = build_partial_lifecycle_trace(
         join,
-        _projection(),
+        after,
         _finalized(join, join.preparation),
         route_preparation_result=tampered,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
     )
 
     assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
@@ -412,12 +602,15 @@ def test_partial_trace_rejects_invalid_or_tampered_route_preparation_receipts(tm
 def test_partial_trace_sanitizes_route_owned_preparation_summary(tmp_path):
     _, original_join = _prepare(tmp_path)
     join, route_preparation = _route_preparation(tmp_path, original_join)
+    before, after, expected_message, _ = _prepared_transition(join.preparation)
 
     result = build_partial_lifecycle_trace(
         join,
-        _projection(),
+        after,
         _finalized(join, join.preparation),
         route_preparation_result=route_preparation,
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
     )
 
     assert result.status is PartialTraceStatus.READY
@@ -425,5 +618,6 @@ def test_partial_trace_sanitizes_route_owned_preparation_summary(tmp_path):
     assert payload["rule_route"]["provenance"] == "caller_supplied_component_result_untrusted"
     assert payload["rule_route"]["evidence"][0]["path_ref_sha256"]
     assert payload["rule_route"]["evidence"][0]["content_sha256"]
+    assert payload["prepared_context_transition"]["preparation_sha256"] == join.preparation.aggregate_sha256
     assert "sample.py" not in result.envelope.payload_json
     assert "def target" not in result.envelope.payload_json

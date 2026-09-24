@@ -6,15 +6,22 @@ from dataclasses import replace
 import pytest
 
 from wrench_harness.opencode_hook_projection import (
+    MAX_HOOK_MESSAGES,
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
+    OpenCodePreparedTransitionStatus,
     OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
     OpenCodeProjectionStatus,
     OpenCodeTransitionStatus,
     _bounded_canonical_json,
+    _prepared_transition_receipt_payload,
     project_opencode_context_hook,
     validate_opencode_context_hook_transition,
+    validate_opencode_preparation_context_transition,
+    verify_opencode_prepared_transition_receipt,
 )
+from wrench_harness.e0_context_pipeline import PreparationResult, PreparationStatus
+from wrench_harness.prompt_compiler import PromptGateReceipt, PromptGateStatus
 
 
 def _hook_event():
@@ -46,6 +53,41 @@ def _hook_event():
             },
         },
     }
+
+
+def _prepared_context(message, position):
+    gate = PromptGateReceipt(
+        status=PromptGateStatus.READY,
+        session_hash="a" * 64,
+        selected_evidence_ids=("evidence-1",),
+        omitted_evidence=(),
+        required_evidence_reasons=(),
+        prompt_sha256="b" * 64,
+        exact_token_count=10,
+        hard_budget=100,
+        tokenizer_id="tokenizer-v1",
+        serializer_id="serializer-v1",
+        serialized_bytes=64,
+        context_message_sha256=hashlib.sha256(
+            _bounded_canonical_json(message, MAX_OPENCODE_CONTEXT_HOOK_BYTES)
+        ).hexdigest(),
+        context_insertion_position=position,
+    )
+    preparation = PreparationResult(
+        status=PreparationStatus.READY,
+        route="context",
+        prompt="prepared prompt",
+        prompt_gate=gate,
+        outcome_receipt=None,
+        aggregate_sha256="c" * 64,
+        sources=(),
+        selected_evidence_ids=("evidence-1",),
+        omitted_evidence=(),
+        retrieval_misses=(),
+        schema_digests=(),
+        structural_status="ready",
+    )
+    return preparation, gate
 
 
 def test_projection_preserves_every_context_field_and_tool_order():
@@ -242,6 +284,153 @@ def test_transition_rejects_forged_or_malformed_projection():
 
     assert result.status is OpenCodeTransitionStatus.INVALID_PROJECTION
     assert result.receipt is None
+
+
+def test_prepared_transition_binds_ready_preparation_gate_and_hook_insertion():
+    before_event = _hook_event()
+    expected = {"role": "user", "content": "Prepared repository context."}
+    position = 1
+    after_event = copy.deepcopy(before_event)
+    after_event["messages"].insert(position, copy.deepcopy(expected))
+    preparation, _gate = _prepared_context(expected, position)
+
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected,
+    )
+
+    assert result.status is OpenCodePreparedTransitionStatus.READY
+    assert result.reason == "ready"
+    assert result.receipt is not None
+    assert result.receipt.preparation_sha256 == preparation.aggregate_sha256
+    assert result.receipt.transition.insertion_position == position
+    assert len(result.receipt.receipt_sha256) == 64
+    assert verify_opencode_prepared_transition_receipt(result.receipt)
+    assert not hasattr(result.receipt, "content")
+
+
+def test_prepared_transition_rejects_expected_message_that_differs_from_gate_binding():
+    expected = {"role": "user", "content": "Prepared repository context."}
+    preparation, _gate = _prepared_context(expected, 0)
+
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(_hook_event()).projection,
+        project_opencode_context_hook(_hook_event()).projection,
+        expected_message={"role": "user", "content": "different"},
+    )
+
+    assert result.status is OpenCodePreparedTransitionStatus.INSERTION_BINDING_MISMATCH
+    assert result.receipt is None
+
+
+def test_prepared_transition_rejects_gate_position_that_does_not_match_inserted_message():
+    before_event = _hook_event()
+    expected = {"role": "user", "content": "Prepared repository context."}
+    actual_position = 1
+    after_event = copy.deepcopy(before_event)
+    after_event["messages"].insert(actual_position, copy.deepcopy(expected))
+    preparation, _gate = _prepared_context(expected, 0)
+
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected,
+    )
+
+    assert result.status is OpenCodePreparedTransitionStatus.TRANSITION_REJECTED
+    assert result.reason == "transition_message_sequence_mismatch"
+    assert result.receipt is None
+
+
+@pytest.mark.parametrize("case", ["no_binding", "non_ready_preparation", "bool_position"])
+def test_prepared_transition_rejects_missing_or_invalid_preparation_binding(case):
+    expected = {"role": "user", "content": "Prepared repository context."}
+    position = 0
+    preparation, _gate = _prepared_context(expected, position)
+    if case == "no_binding":
+        preparation = replace(
+            preparation,
+            prompt_gate=replace(
+                preparation.prompt_gate,
+                context_message_sha256=None,
+                context_insertion_position=None,
+            ),
+        )
+        expected_status = OpenCodePreparedTransitionStatus.INSERTION_BINDING_MISSING
+    elif case == "non_ready_preparation":
+        preparation = replace(preparation, status=PreparationStatus.CONTEXT_FAILED)
+        expected_status = OpenCodePreparedTransitionStatus.INVALID_PREPARATION
+    else:
+        preparation = replace(
+            preparation,
+            prompt_gate=replace(preparation.prompt_gate, context_insertion_position=True),
+        )
+        expected_status = OpenCodePreparedTransitionStatus.INSERTION_BINDING_INVALID
+
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(_hook_event()).projection,
+        project_opencode_context_hook(_hook_event()).projection,
+        expected_message=expected,
+    )
+
+    assert result.status is expected_status
+    assert result.receipt is None
+
+
+def test_prepared_transition_receipt_verifier_rejects_tampering():
+    before_event = _hook_event()
+    expected = {"role": "user", "content": "Prepared repository context."}
+    after_event = copy.deepcopy(before_event)
+    after_event["messages"].insert(0, copy.deepcopy(expected))
+    preparation, _gate = _prepared_context(expected, 0)
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected,
+    )
+    assert result.receipt is not None
+
+    tampered = replace(result.receipt, preparation_sha256="d" * 64)
+
+    assert not verify_opencode_prepared_transition_receipt(tampered)
+
+
+def test_prepared_transition_receipt_verifier_rejects_position_beyond_hook_limit():
+    before_event = _hook_event()
+    expected = {"role": "user", "content": "Prepared repository context."}
+    after_event = copy.deepcopy(before_event)
+    after_event["messages"].insert(0, copy.deepcopy(expected))
+    preparation, _gate = _prepared_context(expected, 0)
+    result = validate_opencode_preparation_context_transition(
+        preparation,
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(after_event).projection,
+        expected_message=expected,
+    )
+    assert result.receipt is not None
+
+    impossible_transition = replace(
+        result.receipt.transition,
+        insertion_position=MAX_HOOK_MESSAGES,
+    )
+    payload = _prepared_transition_receipt_payload(
+        result.receipt.preparation_sha256,
+        impossible_transition,
+    )
+    canonical = _bounded_canonical_json(payload, 4096)
+    impossible = replace(
+        result.receipt,
+        transition=impossible_transition,
+        receipt_sha256=hashlib.sha256(canonical).hexdigest(),
+    )
+
+    assert not verify_opencode_prepared_transition_receipt(impossible)
 
 
 @pytest.mark.parametrize(

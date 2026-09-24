@@ -61,3 +61,31 @@ tampered receipt.
 The result remains a structural join over caller-supplied records. It does not
 authenticate route execution or establish dispatch enforcement, runtime
 parity, task truth, or full E0 acceptance.
+
+## Prepared-context transition follow-up
+
+**Result:** Focused verification passed **97 tests** across prompt compiler,
+context preparation, hook projection, and lifecycle accounting. The tests
+cover prepared message identity and position, changed messages and positions,
+changed preparations, altered after-projections, missing transition arguments,
+tampered receipts, and content-free trace output. No packages were installed.
+
+The exact message digest and insertion position are included in preparation
+aggregate schema v2. Partial lifecycle trace schema v4 records a
+preparation-bound, content-free transition receipt and requires it when
+route-preparation evidence is present. Failed/empty gates have no insertion
+binding. `git diff --check` passed before documentation edits.
+
+The initial combined run surfaced a serializer-bound compatibility issue and
+three lifecycle cases that needed valid transition fixtures. The first
+independent review then found that the standalone receipt verifier accepted
+positions beyond the hook's maximum message count. The verifier now rejects
+positions at or above that bound, and a regression constructs a correctly
+hashed receipt with an impossible position. The four focused suites were
+rerun and passed 97 tests in 7.60 seconds. Targeted independent re-review is
+pending.
+
+This verifies the local predicate over supplied synthetic objects only. It
+does not establish actual hook execution, full nested OpenCode schema
+validity, dispatch veto, final request/tokenizer parity, task outcome truth,
+or E0 acceptance. OpenCode was not installed or run.

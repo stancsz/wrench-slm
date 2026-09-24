@@ -69,6 +69,12 @@ def test_counts_complete_serialized_messages_including_schema_and_context():
     assert final_messages[2]["tool_schema"]["name"] == "lookup"
     assert result.receipt.exact_token_count == len(result.prompt)
     assert result.receipt.prompt_sha256 == hashlib.sha256(result.prompt.encode()).hexdigest()
+    inserted_message = final_messages[1]
+    assert result.receipt.context_message_sha256 == hashlib.sha256(
+        gate_module._bounded_canonical_json(inserted_message, gate_module.MAX_CONTEXT_MESSAGE_BYTES)
+    ).hexdigest()
+    assert result.receipt.context_insertion_position == 1
+    assert "critical evidence" not in repr(result.receipt)
     assert result.receipt.serializer_id == "fixture-json-chat-v1"
     assert result.receipt.tokenizer_id == "fixture-character-count-v1"
     assert result.receipt.session_hash == assembly["session_hash"]
@@ -84,6 +90,22 @@ def test_over_budget_receipt_has_hash_and_no_routable_prompt():
     assert result.receipt.exact_token_count > 1
     assert result.receipt.prompt_sha256 is not None
     assert result.prompt is None
+    assert result.receipt.context_message_sha256 is None
+    assert result.receipt.context_insertion_position is None
+
+
+def test_empty_selected_context_has_no_insertion_identity():
+    ledger = ContextLedger(max_logical_tokens=100)
+    assembly = ledger.assemble("nothing indexed", active_token_budget=10)
+    messages = [{"role": "system", "content": "rules"}]
+
+    result = _compile(assembly, messages)
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.receipt.selected_evidence_ids == ()
+    assert result.receipt.context_message_sha256 is None
+    assert result.receipt.context_insertion_position is None
+    assert result.prompt == _fixture_serializer(messages)
 
 
 def test_missing_required_hot_evidence_fails_closed_with_omission_reason():
@@ -141,6 +163,8 @@ def test_callback_errors_and_invalid_counts_fail_closed(tmp_path, serializer, co
 
     assert result.receipt.status is expected
     assert result.prompt is None
+    assert result.receipt.context_message_sha256 is None
+    assert result.receipt.context_insertion_position is None
     if expected in {PromptGateStatus.TOKENIZER_ERROR, PromptGateStatus.INVALID_TOKEN_COUNT}:
         assert result.receipt.prompt_sha256 is not None
 

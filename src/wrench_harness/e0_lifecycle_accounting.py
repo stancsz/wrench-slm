@@ -31,7 +31,10 @@ from .opencode_hook_projection import (
     OpenCodeContextHookProjection,
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
+    OpenCodePreparedTransitionStatus,
     project_opencode_context_hook,
+    validate_opencode_preparation_context_transition,
+    verify_opencode_prepared_transition_receipt,
 )
 from .outcome_receipt import (
     OutcomeReceipt,
@@ -41,7 +44,7 @@ from .outcome_receipt import (
 )
 
 
-ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v3"
+ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v4"
 MAX_ENVELOPE_BYTES = 16 * 1024
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _ROUTE_ACTIONS = frozenset({"read_file", "read_lines", "literal_search"})
@@ -108,6 +111,8 @@ def build_partial_lifecycle_trace(
     *,
     rule_route_result: RuleRouteResult | None = None,
     route_preparation_result: RoutePreparationResult | None = None,
+    transition_before_projection_result: OpenCodeProjectionResult | None = None,
+    transition_expected_message: object | None = None,
 ) -> PartialTraceResult:
     """Bind a READY hook projection to a valid outcome and preparation join.
 
@@ -196,6 +201,52 @@ def build_partial_lifecycle_trace(
     if projection.session_id != join.session_id:
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_session_mismatch")
 
+    prepared_transition_summary = None
+    transition_inputs_present = (
+        transition_before_projection_result is not None
+        or transition_expected_message is not None
+    )
+    if transition_inputs_present:
+        if (
+            type(transition_before_projection_result) is not OpenCodeProjectionResult
+            or transition_before_projection_result.status is not OpenCodeProjectionStatus.READY
+            or type(transition_before_projection_result.projection) is not OpenCodeContextHookProjection
+            or transition_expected_message is None
+        ):
+            return _failure(
+                PartialTraceStatus.INVALID_PROJECTION,
+                "prepared_context_transition_inputs_invalid",
+            )
+        transition = validate_opencode_preparation_context_transition(
+            preparation,
+            transition_before_projection_result.projection,
+            projection,
+            expected_message=transition_expected_message,
+        )
+        if (
+            transition.status is not OpenCodePreparedTransitionStatus.READY
+            or transition.receipt is None
+            or not verify_opencode_prepared_transition_receipt(transition.receipt)
+            or transition.receipt.preparation_sha256 != preparation.aggregate_sha256
+            or transition.receipt.transition.session_id != join.session_id
+            or transition.receipt.transition.after_projection_sha256
+            != projection.projection_sha256
+        ):
+            return _failure(
+                PartialTraceStatus.INVALID_PROJECTION,
+                "prepared_context_transition_invalid",
+            )
+        prepared_transition_summary = {
+            "schema": transition.receipt.schema,
+            "receipt_sha256": transition.receipt.receipt_sha256,
+            "preparation_sha256": transition.receipt.preparation_sha256,
+            "session_id_ref": transition.receipt.transition.session_id,
+            "before_projection_sha256": transition.receipt.transition.before_projection_sha256,
+            "after_projection_sha256": transition.receipt.transition.after_projection_sha256,
+            "inserted_message_sha256": transition.receipt.transition.inserted_message_sha256,
+            "insertion_position": transition.receipt.transition.insertion_position,
+        }
+
     route_summary = None
     route_preparation_accounting_sha256 = None
     if rule_route_result is not None and route_preparation_result is not None:
@@ -235,6 +286,11 @@ def build_partial_lifecycle_trace(
         route_summary = _route_summary(rule_route_result, join.snapshot_sha256)
         if route_summary is None:
             return _failure(PartialTraceStatus.INVALID_ROUTE_RESULT, "route_result_invalid_or_snapshot_mismatch")
+    if route_preparation_result is not None and not transition_inputs_present:
+        return _failure(
+            PartialTraceStatus.INVALID_PROJECTION,
+            "prepared_context_transition_missing",
+        )
 
     run_id = payload.get("run_id")
     task_id = payload.get("task_id")
@@ -257,6 +313,7 @@ def build_partial_lifecycle_trace(
         "outcome_receipt_sha256": checked.receipt.sha256,
         "rule_route": route_summary,
         "route_preparation_accounting_sha256": route_preparation_accounting_sha256,
+        "prepared_context_transition": prepared_transition_summary,
         "measured_dimensions": [
             "preparation_facade_counters_by_accounting_receipt_reference",
             "locally_serialized_projection_input_bytes",

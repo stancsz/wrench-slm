@@ -93,3 +93,47 @@ Independent read-only review passed with no blocking findings
 run tests. The reviewed source and test SHA-256 values were respectively
 `82895E4179EE039CB9F44542FE8A22F548E1D4061F9EE4FC7710B19D72C2E19B` and
 `7DCC9E8730F0C24F8F017A88724AFAE6A08CD19B24E19A205EE8E5BB93984212`.
+
+## Follow-up: bind transition to prepared context
+
+The prompt-gate receipt now records the SHA-256 of the exact context message
+and its insertion position when a nonempty READY context is produced. Both
+fields are included in preparation aggregate schema
+`wrench.e0-preparation-refs.v2`; failed, empty, and non-ready gates carry null
+insertion identity. The lifecycle envelope is now
+`wrench.e0.partial-lifecycle-trace.v4`.
+
+The prepared-transition validator requires a READY preparation and prompt
+gate, matches the expected message digest and position, validates the exact
+insertion across bounded before/after projections, and emits a content-free
+receipt linked to the preparation aggregate. Lifecycle accounting verifies
+the receipt and binds its session and after-projection digest to the trace. A
+trace containing route-preparation evidence now requires this transition.
+Route-validation failures retain their existing error classification.
+
+Focused verification on Windows Python 3.11.16 with the existing cached
+pytest runtime passed **97 tests** across `test_prompt_compiler.py`,
+`test_e0_context_pipeline.py`, `test_opencode_hook_projection.py`, and
+`test_e0_lifecycle_accounting.py`. No packages were installed. The first run
+found a context-message size-limit alias issue and three lifecycle fixtures
+that had not supplied the now-required transition; those were corrected and
+the complete focused rerun passed. The 10 MB focused-test reservation remains
+active pending final output accounting; pytest scratch is under
+`C:\wrench-slm-data\tmp\e0-prep-transition-tests-20260925\pytest`.
+
+The first independent read-only review found a P2 receipt-verifier gap: it
+accepted positions outside the hook message bound. The verifier now rejects
+positions at or above `MAX_HOOK_MESSAGES`, and a regression rehashes an
+otherwise valid receipt with an impossible position to verify rejection.
+Targeted independent re-review is pending. `git diff --check` passed after the
+code correction; source and test hashes are recorded in the evaluation.
+
+## Limits
+
+The validator accepts caller-supplied projections and expected message data.
+It does not authenticate the OpenCode hook, validate every nested client
+message or option schema, prove dispatch prevention, reconstruct the final
+provider request, or establish tokenizer parity. The transition receipt is
+local structural evidence only. Runtime installation/execution, provider
+calls, real-task collection, customer utility, and overall E0 acceptance are
+outside this slice.
