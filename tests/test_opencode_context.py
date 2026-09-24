@@ -14,6 +14,7 @@ from wrench_harness.opencode_context import (
     check_opencode_preparation_admission,
     prepare_opencode_e0_context,
 )
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.outcome_receipt import (
     ReceiptResult,
     ReceiptStatus,
@@ -205,7 +206,7 @@ def test_real_opencode_preparation_pins_until_caller_request_scope_closes(tmp_pa
             schema_lookups=(),
             base_messages=(_opencode_text_message("system", "fixture"),),
             context_position=1,
-            serializer=lambda messages: json.dumps(messages, sort_keys=True),
+            serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True),
             tokenizer_counter=lambda serialized: len(serialized),
             serializer_id="fixture-json-v1",
             tokenizer_id="fixture-char-count-v1",
@@ -262,7 +263,7 @@ def test_resolved_root_and_snapshot_identity_reach_real_preparation(tmp_path):
         schema_lookups=(("files", "inspect"),),
         base_messages=(_opencode_text_message("system", "fixture"),),
         context_position=1,
-        serializer=lambda messages: json.dumps(messages, sort_keys=True),
+        serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True),
         tokenizer_counter=lambda serialized: len(serialized),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",
@@ -312,7 +313,7 @@ def test_opencode_preparation_rejects_invalid_base_message_shape(tmp_path, base_
         schema_lookups=(),
         base_messages=(base_message,),
         context_position=1,
-        serializer=lambda messages: callback_calls.append("serialize") or json.dumps(messages),
+        serializer=lambda messages: callback_calls.append("serialize") or json.dumps(materialize_prompt_messages(messages)),
         tokenizer_counter=lambda serialized: callback_calls.append("tokenize") or len(serialized),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",
@@ -336,7 +337,7 @@ def test_session_root_mismatch_produces_no_prompt(tmp_path):
 
     def serializer(messages):
         callback_calls.append("serialize")
-        return json.dumps(messages, sort_keys=True)
+        return json.dumps(materialize_prompt_messages(messages), sort_keys=True)
 
     def tokenizer_counter(serialized):
         callback_calls.append("tokenize")

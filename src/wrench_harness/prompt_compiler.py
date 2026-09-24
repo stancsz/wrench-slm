@@ -9,7 +9,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from itertools import islice
-from typing import Any
+from types import MappingProxyType
+from typing import Any, cast
 
 
 MAX_BASE_MESSAGES = 128
@@ -81,67 +82,45 @@ class PromptGateResult:
     prompt: str | bytes | None
 
 
-class _SerializerInputMutation(RuntimeError):
-    pass
-
-
-class _ReadOnlySerializerDict(dict):
-    def __init__(self, value: dict[str, object], mutation_attempted: list[bool]):
-        self._mutation_attempted = mutation_attempted
-        dict.__init__(
-            self,
-            {
-                key: _read_only_serializer_input(item, mutation_attempted)
-                for key, item in value.items()
-            },
-        )
-
-    def _reject_mutation(self, *args: object, **kwargs: object) -> None:
-        self._mutation_attempted[0] = True
-        raise _SerializerInputMutation("serializer_input_is_read_only")
-
-    __setitem__ = _reject_mutation
-    __delitem__ = _reject_mutation
-    clear = _reject_mutation
-    pop = _reject_mutation
-    popitem = _reject_mutation
-    setdefault = _reject_mutation
-    update = _reject_mutation
-    __ior__ = _reject_mutation
-
-
-class _ReadOnlySerializerList(list):
-    def __init__(self, value: list[object], mutation_attempted: list[bool]):
-        self._mutation_attempted = mutation_attempted
-        list.__init__(
-            self,
-            [_read_only_serializer_input(item, mutation_attempted) for item in value],
-        )
-
-    def _reject_mutation(self, *args: object, **kwargs: object) -> None:
-        self._mutation_attempted[0] = True
-        raise _SerializerInputMutation("serializer_input_is_read_only")
-
-    __setitem__ = _reject_mutation
-    __delitem__ = _reject_mutation
-    __iadd__ = _reject_mutation
-    __imul__ = _reject_mutation
-    append = _reject_mutation
-    clear = _reject_mutation
-    extend = _reject_mutation
-    insert = _reject_mutation
-    pop = _reject_mutation
-    remove = _reject_mutation
-    reverse = _reject_mutation
-    sort = _reject_mutation
-
-
-def _read_only_serializer_input(value: object, mutation_attempted: list[bool]) -> object:
+def _read_only_serializer_input(value: object) -> object:
     if type(value) is dict:
-        return _ReadOnlySerializerDict(value, mutation_attempted)
+        copied = {key: _read_only_serializer_input(item) for key, item in value.items()}
+        return MappingProxyType(copied)
     if type(value) is list:
-        return _ReadOnlySerializerList(value, mutation_attempted)
+        return tuple(_read_only_serializer_input(item) for item in value)
     return value
+
+
+def materialize_prompt_messages(
+    value: Sequence[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    """Copy the read-only serializer tree to built-in JSON containers.
+
+    Callbacks using serializers such as ``json.dumps`` can call this helper
+    inside their callback. The returned copy is bounded and can be mutated
+    without changing the prompt compiler's prepared input.
+    """
+    nodes = 0
+
+    def copy(item: object, depth: int) -> object:
+        nonlocal nodes
+        nodes += 1
+        if nodes > MAX_INPUT_NODES or depth > MAX_INPUT_DEPTH:
+            raise ValueError("serializer_materialization_limit_exceeded")
+        if isinstance(item, Mapping):
+            return {key: copy(child, depth + 1) for key, child in item.items()}
+        if isinstance(item, Sequence) and not isinstance(item, (str, bytes, bytearray)):
+            return [copy(child, depth + 1) for child in item]
+        if item is None or type(item) in (bool, int, str):
+            return item
+        if type(item) is float and math.isfinite(item):
+            return item
+        raise TypeError("serializer_input_contains_non_json_value")
+
+    materialized = copy(value, 0)
+    if type(materialized) is not list or any(type(item) is not dict for item in materialized):
+        raise TypeError("serializer_input_must_be_message_sequence")
+    return cast(list[dict[str, object]], materialized)
 
 
 def _valid_id(value: object) -> bool:
@@ -352,9 +331,18 @@ def compile_prompt(
     """Serialize complete chat messages, count final serialization, and gate.
 
     The base messages must include every fixed instruction and deferred schema
-    intended for the call. The supplied serializer and tokenizer counter must
-    match the eventual target runtime. Fixture callbacks do not establish
-    production tokenization accuracy.
+    intended for the call. The serializer receives a read-only sequence of
+    read-only mappings and tuple sequences. It can inspect them through the standard
+    Sequence/Mapping interfaces; serializers that need built-in list/dict
+    containers must materialize their own serialization copy. Its str or bytes
+    result may use any format, including a target-specific suffix. These
+    containers block mutation through the supported interfaces and built-in
+    dict/list mutators. Serializer callbacks remain in-process Python code and
+    can use reflection or return an unrelated representation. The gate cannot
+    prove that arbitrary output faithfully represents the supplied messages;
+    the serializer identity remains caller-declared. The supplied serializer
+    and tokenizer counter must match the eventual target runtime. Fixture
+    callbacks do not establish production tokenization accuracy.
     """
     if (
         not _valid_callback_id(serializer_id)
@@ -483,7 +471,7 @@ def compile_prompt(
             session_hash=session_hash, selected=selected_tuple, omitted=omitted_tuple, missing=missing,
         )
 
-    context_message: dict[str, str] | None = None
+    context_message: dict[str, object] | None = None
     context_message_sha256: str | None = None
     try:
         copied_messages = json.loads(base_raw.decode("utf-8"))
@@ -500,36 +488,13 @@ def compile_prompt(
                 _bounded_canonical_json(context_message, MAX_CONTEXT_MESSAGE_BYTES)
             ).hexdigest()
             copied_messages.insert(context_position, context_message)
-        mutation_attempted = [False]
-        read_only_messages = _read_only_serializer_input(copied_messages, mutation_attempted)
+        read_only_messages = _read_only_serializer_input(copied_messages)
         serialized = serializer(read_only_messages)
-    except _SerializerInputMutation:
-        return _empty_receipt(
-            PromptGateStatus.SERIALIZER_MUTATED_INPUT,
-            hard_budget=hard_budget,
-            tokenizer_id=tokenizer_id,
-            serializer_id=serializer_id,
-            reason="serializer_mutated_input",
-            session_hash=session_hash,
-            selected=selected_tuple,
-            omitted=omitted_tuple,
-        )
     except Exception as exc:
         return _empty_receipt(
             PromptGateStatus.SERIALIZER_ERROR, hard_budget=hard_budget, tokenizer_id=tokenizer_id,
             serializer_id=serializer_id, reason=type(exc).__name__, session_hash=session_hash,
             selected=selected_tuple, omitted=omitted_tuple,
-        )
-    if mutation_attempted[0]:
-        return _empty_receipt(
-            PromptGateStatus.SERIALIZER_MUTATED_INPUT,
-            hard_budget=hard_budget,
-            tokenizer_id=tokenizer_id,
-            serializer_id=serializer_id,
-            reason="serializer_mutated_input",
-            session_hash=session_hash,
-            selected=selected_tuple,
-            omitted=omitted_tuple,
         )
     if type(serialized) not in (str, bytes):
         return _empty_receipt(
@@ -593,4 +558,5 @@ __all__ = [
     "PromptGateResult",
     "PromptGateStatus",
     "compile_prompt",
+    "materialize_prompt_messages",
 ]

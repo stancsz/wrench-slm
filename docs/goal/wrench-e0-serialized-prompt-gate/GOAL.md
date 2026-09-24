@@ -44,15 +44,27 @@ serialization, evidence-omission accounting, and token-budget gates. It does
 not establish production tokenizer accuracy or complete the integrated E0
 baseline.
 
-## Follow-up: serializer input mutation guard
+## Historical follow-up: serializer input mutation guard
 
-The serializer receives a recursive copy of the bounded message list.
-Ordinary mutation attempts now fail with `SERIALIZER_MUTATED_INPUT`, no prompt,
-and no context-message insertion identity. Focused tests passed 98 cases
-across the prompt compiler, preparation, hook projection, and lifecycle trace. See the
-[task report](../../reports/wrench-e0-context-pipeline/serializer-input-mutation.md)
+The earlier list/dict subclass implementation is retained in the
+[historical report](../../reports/wrench-e0-context-pipeline/serializer-input-mutation.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-mutation.md).
+Its mutation-status claims describe that superseded implementation.
 
-The callback remains caller supplied. Python base-class mutation calls can
-alter its private copy, and arbitrary output is not checked against the input
-messages or an installed runtime. Overall E0 acceptance remains open.
+## Follow-up: recursively immutable serializer input
+
+`compile_prompt` now gives the serializer recursively detached
+`MappingProxyType` mappings and tuple sequences. Direct built-in dict/list
+mutators cannot change this input. A caught `TypeError` is safe because the
+prepared message tree remains unchanged; an uncaught callback error fails
+closed with `SERIALIZER_ERROR`. JSON serializers can use the bounded
+`materialize_prompt_messages` helper to create their own built-in list/dict
+copy. Arbitrary serialized `str` or `bytes` output remains supported, including
+target-specific suffixes. See the [implementation report](../../reports/wrench-e0-context-pipeline/serializer-input-immutability-v2.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-immutability-v2.md).
+
+This is an in-process mutation guard, not a Python sandbox. A callback can use
+reflection to reach a mapping proxy's backing dictionary or return output that
+does not represent its input. Serializer identity remains caller-declared, and
+runtime serializer/tokenizer parity, dispatch enforcement, full lifecycle
+accounting, and overall E0 acceptance remain open.

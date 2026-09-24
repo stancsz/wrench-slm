@@ -18,6 +18,7 @@ from wrench_harness.e0_route_preparation import (
 from wrench_harness.e0_rule_route import RuleRouteStatus
 from wrench_harness.namespace_registry import NamespaceRegistry
 from wrench_harness.prompt_compiler import PromptGateStatus
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
@@ -65,7 +66,7 @@ def _run(tmp_path, *, context_budget=512, prompt=_ROUTE_PROMPT):
         base_messages=({"role": "system", "content": "Authored synthetic fixture."},),
         context_position=1,
         serializer=lambda messages: json.dumps(
-            list(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            materialize_prompt_messages(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
@@ -143,7 +144,7 @@ def test_stale_snapshot_abstention_does_not_prepare_sources(tmp_path):
         schema_lookups=(),
         base_messages=({"role": "system", "content": "Authored synthetic fixture."},),
         context_position=1,
-        serializer=lambda messages: json.dumps(list(messages), sort_keys=True, separators=(",", ":")),
+        serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",

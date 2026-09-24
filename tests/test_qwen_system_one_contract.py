@@ -16,6 +16,7 @@ from wrench_harness.qwen_abstain import (
 )
 from wrench_harness.worker import WrenchWorker
 from wrench_harness.system_one_preflight import WrenchBinaryRouter, explicit_abstain_reason
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 
 
 class ForbiddenVocabularyHead(torch.nn.Module):
@@ -74,8 +75,9 @@ class TinyTokenizer:
         assert kwargs == {
             "tokenize": False, "add_generation_prompt": True, "enable_thinking": False,
         }
-        self.rendered_messages = json.loads(json.dumps(messages))
-        return json.dumps(messages, ensure_ascii=False) + " ASSISTANT"
+        materialized = materialize_prompt_messages(messages)
+        self.rendered_messages = json.loads(json.dumps(materialized))
+        return json.dumps(materialized, ensure_ascii=False) + " ASSISTANT"
 
     def __call__(self, text, **kwargs):
         assert kwargs == {

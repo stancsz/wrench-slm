@@ -13,6 +13,7 @@ from wrench_harness.e0_request_record import (
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
 from wrench_harness.opencode_context import OpenCodePreparationJoin
 from wrench_harness.outcome_receipt import ReceiptStatus
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.snapshot import create_snapshot
 
 
@@ -41,7 +42,7 @@ def _prepare(tmp_path):
         schema_lookups=(),
         base_messages=({"role": "system", "content": "Use evidence."},),
         context_position=1,
-        serializer=lambda messages: json.dumps(messages, sort_keys=True, separators=(",", ":")),
+        serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",

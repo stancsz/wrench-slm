@@ -9,6 +9,7 @@ from wrench_harness.artifact_store import ArtifactStore
 from wrench_harness.e0_context_pipeline import PreparationStatus, prepare_e0_context
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.namespace_registry import NamespaceRegistry
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.snapshot import bind_source_root, create_snapshot, retrieve_exact
 
 
@@ -90,7 +91,7 @@ def test_injected_source_stays_quoted_data_across_route_and_preparation(tmp_path
         base_messages=({"role": "system", "content": "Fixed fixture instruction."},),
         context_position=1,
         serializer=lambda messages: json.dumps(
-            list(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            materialize_prompt_messages(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",

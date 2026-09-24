@@ -10,7 +10,7 @@ from wrench_harness.e0_context_pipeline import PreparationStatus, prepare_e0_con
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.namespace_registry import NamespaceRegistry
 from wrench_harness.outcome_receipt import ReceiptStatus
-from wrench_harness.prompt_compiler import PromptGateStatus
+from wrench_harness.prompt_compiler import PromptGateStatus, materialize_prompt_messages
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
@@ -90,7 +90,7 @@ def _compose(tmp_path, *, context_budget: int):
         ),
         context_position=1,
         serializer=lambda messages: json.dumps(
-            list(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            materialize_prompt_messages(messages), ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",

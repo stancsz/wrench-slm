@@ -18,6 +18,7 @@ from wrench_harness.e0_route_preparation import (
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
 from wrench_harness.opencode_context import prepare_opencode_e0_context
+from wrench_harness.prompt_compiler import materialize_prompt_messages
 from wrench_harness.opencode_hook_projection import (
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
@@ -63,7 +64,7 @@ def _prepare(
         schema_lookups=(),
         base_messages=({"role": "system", "content": [{"type": "text", "text": "Use evidence."}]},),
         context_position=1,
-        serializer=lambda messages: json.dumps(messages, sort_keys=True, separators=(",", ":")),
+        serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",
@@ -192,7 +193,7 @@ def _route_preparation(
         base_messages=({"role": "system", "content": [{"type": "text", "text": system_content}]},),
         context_position=1,
         message_format="opencode-2.0.15",
-        serializer=lambda messages: json.dumps(list(messages), sort_keys=True, separators=(",", ":")),
+        serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",

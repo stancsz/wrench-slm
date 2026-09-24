@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 
 import pytest
 
 import wrench_harness.prompt_compiler as gate_module
 from wrench_harness.context import ContextLedger
-from wrench_harness.prompt_compiler import PromptGateStatus, compile_prompt
+from wrench_harness.prompt_compiler import (
+    PromptGateStatus,
+    compile_prompt,
+    materialize_prompt_messages,
+)
 
 
 def _ledger_with_two_segments():
@@ -18,7 +23,12 @@ def _ledger_with_two_segments():
 
 
 def _fixture_serializer(messages):
-    return json.dumps(messages, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return json.dumps(
+        materialize_prompt_messages(messages),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def _fixture_counter(serialized):
@@ -127,16 +137,15 @@ def test_opencode_message_format_inserts_typed_text_part_and_binds_that_shape():
     ).hexdigest()
 
 
-def test_serializer_cannot_mutate_prepared_context_even_if_it_catches_error():
+def test_caught_serializer_mutation_error_leaves_prepared_context_unchanged():
     ledger = _ledger_with_two_segments()
     assembly = ledger.assemble("critical", active_token_budget=4)
 
     def mutate_context(messages):
         try:
             messages[1]["content"] = "serializer mutation"
-        except RuntimeError:
-            # The callback may catch the immutable-input exception, but the
-            # compiler still records the mutation attempt and fails closed.
+        except TypeError:
+            # A caught assignment error is safe because the supplied tree is immutable.
             pass
         return _fixture_serializer(messages)
 
@@ -146,12 +155,115 @@ def test_serializer_cannot_mutate_prepared_context_even_if_it_catches_error():
         serializer=mutate_context,
     )
 
-    assert result.receipt.status is PromptGateStatus.SERIALIZER_MUTATED_INPUT
-    assert result.receipt.reason == "serializer_mutated_input"
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.prompt is not None
+    inserted = json.loads(result.prompt)[1]
+    assert result.receipt.context_message_sha256 == hashlib.sha256(
+        gate_module._bounded_canonical_json(inserted, gate_module.MAX_CONTEXT_MESSAGE_BYTES)
+    ).hexdigest()
+
+
+@pytest.mark.parametrize("attack", ["mapping", "sequence"])
+def test_unbound_builtin_mutators_cannot_change_serializer_input(attack):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    serialized_inputs = []
+
+    def serializer(messages):
+        if attack == "mapping":
+            dict.__setitem__(messages[1], "content", "serializer mutation")
+        else:
+            list.__setitem__(messages, 1, {"role": "user", "content": "serializer mutation"})
+        serialized_inputs.append(_fixture_serializer(messages))
+        return serialized_inputs[-1]
+
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=serializer,
+    )
+
+    assert result.receipt.status is PromptGateStatus.SERIALIZER_ERROR
     assert result.prompt is None
-    assert result.receipt.prompt_sha256 is None
     assert result.receipt.context_message_sha256 is None
     assert result.receipt.context_insertion_position is None
+    assert serialized_inputs == []
+
+
+@pytest.mark.parametrize("target", ["mapping", "sequence"])
+def test_builtin_container_state_cannot_be_replaced(target):
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+
+    def serializer(messages):
+        try:
+            if target == "mapping":
+                object.__setattr__(messages[1], "_items", (("role", "user"), ("content", "forged")))
+            else:
+                object.__setattr__(messages, "_values", ({"role": "user", "content": "forged"},))
+        except (AttributeError, TypeError):
+            # Mapping proxies and tuples have no replaceable instance state.
+            pass
+        return _fixture_serializer(messages)
+
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=serializer,
+    )
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.prompt is not None
+    inserted = json.loads(result.prompt)[1]
+    assert result.receipt.context_message_sha256 == hashlib.sha256(
+        gate_module._bounded_canonical_json(inserted, gate_module.MAX_CONTEXT_MESSAGE_BYTES)
+    ).hexdigest()
+
+
+def test_read_only_mapping_sequence_callback_keeps_arbitrary_serialized_suffix():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+    seen = []
+
+    def serializer(messages):
+        assert isinstance(messages, Sequence)
+        assert isinstance(messages[0], Mapping)
+        assert not isinstance(messages, (list, dict))
+        materialized = materialize_prompt_messages(messages)
+        seen.append(materialized)
+        return json.dumps(materialized, ensure_ascii=False) + " ASSISTANT"
+
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=serializer,
+    )
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert result.prompt is not None and result.prompt.endswith(" ASSISTANT")
+    assert seen and seen[0][1]["role"] == "user"
+
+
+def test_read_only_mapping_sequence_callback_keeps_arbitrary_bytes_output():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+
+    def serializer(messages):
+        serialized_messages = json.dumps(
+            materialize_prompt_messages(messages), ensure_ascii=False
+        ).encode("utf-8")
+        return serialized_messages + b"\x00ASSISTANT"
+
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=serializer,
+        tokenizer_counter=len,
+    )
+
+    assert result.receipt.status is PromptGateStatus.READY
+    assert isinstance(result.prompt, bytes)
+    assert result.prompt.endswith(b"\x00ASSISTANT")
 
 
 def test_missing_required_hot_evidence_fails_closed_with_omission_reason():
