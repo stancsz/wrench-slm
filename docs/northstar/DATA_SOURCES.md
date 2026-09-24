@@ -10,10 +10,15 @@ After explicit human approval, build the primary dataset from **opt-in,
 outcome-verified Wrench workflows on participant-authorized local repository
 snapshots**, supplemented by **bounded local-teacher proposals** and
 deterministic fixtures. This is a future protocol choice, not permission to
-capture or use real data. Until then, authored synthetic fixtures are the only
-admitted corpus. Keep public benchmarks as external challenge or evaluation
-sets unless their exact task/repository lineage is deliberately cleared for
-training. Do not start from a large general code dump.
+capture or use real data. No training or utility corpus is admitted today. The
+only admitted data are the fixed [Wrench-authored synthetic regression
+fixture](../../tests/fixtures/e0_synthetic_matched_tasks_v1/manifest.json),
+classified solely for open-development fixture use by the
+[synthetic admission boundary](../../src/wrench_harness/synthetic_fixture_admission.py).
+That classification does not admit training data or establish task utility.
+Keep public benchmarks as external challenge or evaluation sets unless their
+exact task/repository lineage is deliberately cleared for training. Do not
+start from a large general code dump.
 
 This ordering matches the North Star: decide whether context preparation helps
 real developers, and whether a small controller makes better evidence choices
