@@ -52,13 +52,14 @@ publish, deploy, collect user traces, or mutate source files through the runtime
 | Implement bounded source manifest and verified exact reads | Complete | `src/wrench_harness/snapshot.py` and focused tests |
 | Review path, hash, and resource failure cases | Accepted with POSIX pytest caveat | `docs/evals/wrench-e0-snapshot-retrieval/review.md` |
 | Integrate and commit this increment | Complete | Commit `b23f925` |
-| Run POSIX pytest fixtures and continue E0 | Pending | POSIX-host verification, then bounded artifact store and remaining E0 requirements |
+| Run POSIX pytest fixtures | Pending | Native POSIX-host verification of snapshot-specific branches |
 
 ## Next E0 work after this slice
 
-The bounded artifact store now exists as a standalone primitive, but it is not
-connected to snapshots or context assembly. POSIX pytest follow-up, integrated
-snapshot-backed context, namespace discovery, exact serialized-prompt
-accounting, and verified outcome receipts remain open. Continue the full E0
-baseline before considering E1 model work. Keep E1-E4 adapter, learning,
+The bounded artifact store, snapshot/context bridges, namespace registry,
+serialized prompt gate, structural index, outcome receipt, and caller-owned
+preparation facade now exist as separately accepted slices. POSIX pytest
+follow-up and full E0 acceptance remain open: runtime-matched prompt/tokenizer
+identity, complete lifecycle accounting, end-to-end authority evidence, and
+matched-task utility still need evidence. Keep E1-E4 adapter, learning,
 recovery, and matched-utility gates open until their evidence exists.

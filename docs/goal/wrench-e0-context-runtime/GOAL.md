@@ -57,14 +57,17 @@ spend, publish, deploy, or enable production routing.
 
 ## E0 work still outside this goal
 
-The complete E0 milestone still needs durable snapshot/source identity,
-reversible bounded artifact storage, namespace discovery, final serialized
-prompt accounting, and verified outcome receipts. Those are separate slices
-with their own limits and recovery evidence. The larger product proceeds
-through E1-E4 only after experiment stage gates pass.
+The separate snapshot identity, artifact storage and roundtrip, namespace
+registry, serialized prompt gate, structural index, outcome receipt, and
+caller-owned preparation slices are now recorded in the goal index. Their
+acceptance is component evidence, not full E0 milestone acceptance. Runtime
+matched serialization, complete lifecycle accounting, end-to-end authority
+checks, POSIX-host follow-up, and matched-task utility evidence remain open.
+The larger product proceeds through E1-E4 only after experiment stage gates
+pass.
 
 ## Next action
 
-Next: implement a bounded snapshot identity and exact-source retrieval slice,
-with explicit stale/missing behavior. Keep full-E0 and production claims open
-until their defined evidence exists.
+Next: continue the integrated E0 acceptance evidence without claiming a
+production route. Keep runtime identity, full accounting, authority, and
+matched-task evidence open until their defined criteria are demonstrated.

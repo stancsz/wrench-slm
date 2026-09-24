@@ -1,6 +1,6 @@
 # E0 bounded artifact store
 
-Status: committed standalone implementation increment; runtime integration pending
+Status: committed bounded store increment; used by an accepted caller-owned preparation slice; production lifecycle and recovery qualification pending
 Supervisor: root agent as goal owner
 Started: 2026-09-24
 Baseline: `36d2d1d89bd4eb3036a3bb2874866fff517d5900`
@@ -43,7 +43,7 @@ integrates with another runtime module.
 | Implement bounded content-addressed persistence | Complete | `src/wrench_harness/artifact_store.py` and focused tests |
 | Review quotas, recovery, path boundaries, pins, and eviction | Accepted with documented limits | `docs/evals/wrench-e0-artifact-store/review.md` |
 | Integrate and commit this bounded store slice | Complete | Commit `c6eba5f` |
-| Connect to snapshots/context and continue E0 | Pending | Snapshot-backed context, namespace discovery, final prompt accounting, and outcome receipts |
+| Connect to snapshots/context and continue E0 | Accepted for local preparation | [E0 caller-owned pipeline](../wrench-e0-context-pipeline/GOAL.md); production request manager and recovery qualification remain outside this slice |
 
 ## Limits
 
