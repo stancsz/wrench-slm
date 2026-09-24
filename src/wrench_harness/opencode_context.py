@@ -7,14 +7,17 @@ query the OpenCode API, or authorize downstream dispatch.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from os import PathLike
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 from .artifact_store import ArtifactStore
-from .e0_context_pipeline import PreparationResult, prepare_e0_context
+from .e0_context_pipeline import PreparationResult, PreparationStatus, prepare_e0_context
 from .namespace_registry import NamespaceRegistry
+from .outcome_receipt import ReceiptResult, ReceiptStatus
 from .opencode_session_root import resolve_opencode_session_root
+from .prompt_compiler import PromptGateReceipt, PromptGateStatus
 from .snapshot import SourceSnapshot
 
 
@@ -28,6 +31,95 @@ class OpenCodePreparationJoin:
     root_location_sha256: str | None
     root_identity: str | None
     preparation: PreparationResult
+
+
+class OpenCodeAdmissionStatus(str, Enum):
+    """Local preparation classification, not an OpenCode dispatch decision."""
+
+    READY = "ready"
+    INVALID_JOIN = "invalid_join"
+    SESSION_MISMATCH = "session_mismatch"
+    PREPARATION_NOT_READY = "preparation_not_ready"
+    ROUTE_UNEXPECTED = "route_unexpected"
+    PROMPT_MISSING = "prompt_missing"
+    PROMPT_GATE_NOT_READY = "prompt_gate_not_ready"
+    RECEIPT_NOT_VALID = "receipt_not_valid"
+    RETRIEVAL_MISSES = "retrieval_misses"
+
+
+@dataclass(frozen=True)
+class OpenCodePreparationAdmission:
+    """Result of checking whether a local preparation join is internally ready.
+
+    A READY result carries the original join for inspection. It does not bind
+    an OpenCode hook, prevent dispatch, authenticate caller-supplied callback
+    identities, or establish prompt/tokenizer parity with a client runtime.
+    """
+
+    status: OpenCodeAdmissionStatus
+    join: OpenCodePreparationJoin | None
+    reason: str
+
+
+def check_opencode_preparation_admission(
+    event_session_id: str,
+    join: OpenCodePreparationJoin,
+) -> OpenCodePreparationAdmission:
+    """Fail closed on an incomplete or mismatched offline preparation join.
+
+    This typed predicate is an inert local check. A caller can ignore its
+    result, so it is not a client dispatch veto or runtime authority boundary.
+    """
+    if (
+        type(event_session_id) is not str
+        or not event_session_id
+        or type(join) is not OpenCodePreparationJoin
+    ):
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.INVALID_JOIN, None, "invalid_join"
+        )
+    if type(join.session_id) is not str or join.session_id != event_session_id:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.SESSION_MISMATCH, None, "session_mismatch"
+        )
+    preparation = join.preparation
+    if type(preparation) is not PreparationResult:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.INVALID_JOIN, None, "invalid_preparation"
+        )
+    if type(preparation.status) is not PreparationStatus or preparation.status is not PreparationStatus.READY:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PREPARATION_NOT_READY, None, "preparation_not_ready"
+        )
+    if type(preparation.route) is not str or preparation.route != "none":
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.ROUTE_UNEXPECTED, None, "route_unexpected"
+        )
+    if type(preparation.prompt) not in (str, bytes) or not preparation.prompt:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PROMPT_MISSING, None, "prompt_missing"
+        )
+    if (
+        type(preparation.prompt_gate) is not PromptGateReceipt
+        or type(preparation.prompt_gate.status) is not PromptGateStatus
+        or preparation.prompt_gate.status is not PromptGateStatus.READY
+    ):
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PROMPT_GATE_NOT_READY, None, "prompt_gate_not_ready"
+        )
+    if (
+        type(preparation.outcome_receipt) is not ReceiptResult
+        or type(preparation.outcome_receipt.status) is not ReceiptStatus
+        or preparation.outcome_receipt.status is not ReceiptStatus.VALID
+    ):
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.RECEIPT_NOT_VALID, None, "receipt_not_valid"
+        )
+    if type(preparation.retrieval_misses) is not tuple or preparation.retrieval_misses:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.RETRIEVAL_MISSES, None, "retrieval_misses"
+        )
+    return OpenCodePreparationAdmission(OpenCodeAdmissionStatus.READY, join, "ready")
 
 
 def prepare_opencode_e0_context(
@@ -97,4 +189,10 @@ def prepare_opencode_e0_context(
     )
 
 
-__all__ = ["OpenCodePreparationJoin", "prepare_opencode_e0_context"]
+__all__ = [
+    "OpenCodeAdmissionStatus",
+    "OpenCodePreparationAdmission",
+    "OpenCodePreparationJoin",
+    "check_opencode_preparation_admission",
+    "prepare_opencode_e0_context",
+]

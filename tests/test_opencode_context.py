@@ -1,14 +1,20 @@
 import json
+from dataclasses import replace
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
 from wrench_harness.artifact_store import ArtifactStore
-from wrench_harness.e0_context_pipeline import PreparationStatus
+from wrench_harness.e0_context_pipeline import PreparationResult, PreparationStatus
 from wrench_harness.opencode_context import (
+    OpenCodeAdmissionStatus,
+    OpenCodePreparationAdmission,
     OpenCodePreparationJoin,
+    check_opencode_preparation_admission,
     prepare_opencode_e0_context,
 )
+from wrench_harness.outcome_receipt import OutcomeReceipt, ReceiptResult, ReceiptStatus
 from wrench_harness.opencode_session_root import OpenCodeSessionRootError
 from wrench_harness.namespace_registry import (
     NamespaceDescriptor,
@@ -16,6 +22,51 @@ from wrench_harness.namespace_registry import (
     OperationDescriptor,
 )
 from wrench_harness.snapshot import SourceSnapshot, create_snapshot
+from wrench_harness.prompt_compiler import PromptGateReceipt, PromptGateStatus
+
+
+def _admission_fixture():
+    prompt_hash = "c" * 64
+    gate = PromptGateReceipt(
+        status=PromptGateStatus.READY,
+        session_hash="d" * 64,
+        selected_evidence_ids=(),
+        omitted_evidence=(),
+        required_evidence_reasons=(),
+        prompt_sha256=prompt_hash,
+        exact_token_count=1,
+        hard_budget=8,
+        tokenizer_id="fixture-tokenizer",
+        serializer_id="fixture-serializer",
+        serialized_bytes=2,
+    )
+    receipt = ReceiptResult(
+        ReceiptStatus.VALID,
+        OutcomeReceipt(payload_json="{}", sha256="e" * 64),
+    )
+    preparation = PreparationResult(
+        status=PreparationStatus.READY,
+        route="none",
+        prompt="{}",
+        prompt_gate=gate,
+        outcome_receipt=receipt,
+        aggregate_sha256="a" * 64,
+        sources=(),
+        selected_evidence_ids=(),
+        omitted_evidence=(),
+        retrieval_misses=(),
+        schema_digests=(),
+        structural_status="ready",
+    )
+    join = OpenCodePreparationJoin(
+        session_id="ses_fixture123",
+        configured_root=Path("C:/fixture"),
+        snapshot_sha256="a" * 64,
+        root_location_sha256="b" * 64,
+        root_identity="posix:1:1",
+        preparation=preparation,
+    )
+    return join
 
 
 def _preparation_arguments(snapshot):
@@ -172,3 +223,49 @@ def test_session_root_mismatch_produces_no_prompt(tmp_path):
     assert result.preparation.selected_evidence_ids == ()
     assert result.preparation.sources[0].status == "unknown_snapshot"
     assert callback_calls == []
+
+
+def test_preparation_admission_returns_join_only_when_all_local_gates_are_ready():
+    join = _admission_fixture()
+
+    admitted = check_opencode_preparation_admission(join.session_id, join)
+
+    assert admitted == OpenCodePreparationAdmission(
+        OpenCodeAdmissionStatus.READY, join, "ready"
+    )
+
+
+@pytest.mark.parametrize(
+    ("event_session_id", "preparation_changes", "expected"),
+    [
+        ("ses_other123", {}, OpenCodeAdmissionStatus.SESSION_MISMATCH),
+        ("ses_fixture123", {"status": PreparationStatus.SOURCE_MISSES}, OpenCodeAdmissionStatus.PREPARATION_NOT_READY),
+        ("ses_fixture123", {"route": "frontier"}, OpenCodeAdmissionStatus.ROUTE_UNEXPECTED),
+        ("ses_fixture123", {"prompt": None}, OpenCodeAdmissionStatus.PROMPT_MISSING),
+        ("ses_fixture123", {"prompt_gate": None}, OpenCodeAdmissionStatus.PROMPT_GATE_NOT_READY),
+        (
+            "ses_fixture123",
+            {"prompt_gate": replace(_admission_fixture().preparation.prompt_gate, status=PromptGateStatus.BUDGET_EXCEEDED)},
+            OpenCodeAdmissionStatus.PROMPT_GATE_NOT_READY,
+        ),
+        (
+            "ses_fixture123",
+            {"outcome_receipt": ReceiptResult(ReceiptStatus.INCOMPLETE, None)},
+            OpenCodeAdmissionStatus.RECEIPT_NOT_VALID,
+        ),
+        (
+            "ses_fixture123",
+            {"retrieval_misses": (("src/missing.py", "unknown_snapshot"),)},
+            OpenCodeAdmissionStatus.RETRIEVAL_MISSES,
+        ),
+    ],
+)
+def test_preparation_admission_fails_closed(event_session_id, preparation_changes, expected):
+    join = _admission_fixture()
+    preparation = replace(join.preparation, **preparation_changes)
+    candidate = replace(join, preparation=preparation)
+
+    result = check_opencode_preparation_admission(event_session_id, candidate)
+
+    assert result.status is expected
+    assert result.join is None
