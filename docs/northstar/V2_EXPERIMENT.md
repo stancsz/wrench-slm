@@ -41,6 +41,11 @@ navigation. Compare actual supported workflows, not published percentages.
 | E3 promotion/recovery | Atomic active manifest, request version pinning, retained prior/factory state, delete/reset and core-version compatibility | Failed/incomplete candidates never activate; missing/corrupt files fail closed; restart, interruption and rollback restore expected outputs |
 | E4 integrated utility | Matched replays across the three named clients, real tasks, cold/warm caches, concurrency, cancellation/timeouts and sustained use | All authority, quality, accounting, resource and operational gates; human production decision follows evidence |
 
+Use the [E4 preregistration template](E4_PREREGISTRATION_TEMPLATE.md) to
+freeze any future matched-task study. The template is protocol-only: completing
+it does not admit data or authorize capture, transfer, or a run. The authored
+synthetic seed remains mechanics-only and is excluded from utility aggregates.
+
 This realignment prepares these stages. It does not run them. The initial
 architecture builds E0 before fitting and replaces heuristics one decision
 at a time: rerank, retrieve/stop, tool selection, routing, then compression
