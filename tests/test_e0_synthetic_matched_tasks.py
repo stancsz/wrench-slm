@@ -352,6 +352,75 @@ def test_four_synthetic_groups_have_declared_single_boundary_pairs():
         assert _canonical_bytes(normalized[0]) == _canonical_bytes(normalized[1]), pair["pair_id"]
 
 
+def test_declared_pair_boundaries_match_source_oracle_consequences():
+    """Check synthetic fixture mechanics; this is not task utility or training evidence."""
+    manifest = _load_manifest()
+    for pair in manifest["pairs"]:
+        boundary = pair["boundary"]
+        boundary_values = boundary["values"]
+        for case in pair["cases"]:
+            case_id = case["case_id"]
+            value = boundary_values[case_id]
+            expected = case["answer_oracle"]["expected"]
+            derived = _derive_fixture_answer(case)
+            files = {item["path"]: item["content_utf8"] for item in case["files"]}
+
+            assert _canonical_bytes(derived) == _canonical_bytes(expected), pair["pair_id"]
+
+            if pair["pair_id"] == "loc-function-name":
+                rule = case["answer_oracle"]["rule"]
+                found = _extract_function(files[rule["source_path"]], rule["attribute"])
+                assert found is not None
+                assert value == expected["symbol"] == found[0]
+                evidence = expected["evidence"][0]
+                source_lines = files[evidence["path"]].splitlines()
+                assert evidence["path"] == rule["source_path"]
+                assert source_lines[evidence["line"] - 1].startswith(f"def {expected['symbol']}(")
+
+            elif pair["pair_id"] == "triage-error-type":
+                rule = case["answer_oracle"]["rule"]
+                evidence = expected["evidence"][0]
+                source_lines = files[evidence["path"]].splitlines()
+                assert value == expected["reported_error_type"]
+                assert evidence["path"] == rule["source_path"]
+                assert re.match(rule["pattern"], source_lines[evidence["line"] - 1]).group(1) == value
+
+            elif pair["pair_id"] == "context-literal-boundary":
+                rule = case["answer_oracle"]["rule"]
+                selected = expected["selected_evidence"]
+                boundary_path = boundary["path"]
+                assert (value == rule["literal"]) == (boundary_path in selected)
+                for path in selected:
+                    assert path.startswith(rule["root"].rstrip("/") + "/")
+                    assert rule["literal"] in files[path]
+
+            elif pair["pair_id"] == "evidence-availability":
+                expected_state = boundary["values"][case_id]
+                assert expected_state in {"missing", "stale"}
+                assert expected == {"status": "unknown", "evidence": []}
+                assert derived == {"status": "unknown", "evidence": []}
+                assert case["expected_mechanics"]["reason"] == {
+                    "missing": "source_not_in_snapshot",
+                    "stale": "snapshot_read_changed",
+                }[expected_state]
+
+            elif pair["pair_id"] == "evidence-specificity":
+                if value == "the relevant config file":
+                    assert expected == {"status": "unknown", "evidence": []}
+                    assert case["expected_mechanics"]["status"] == "abstain"
+                else:
+                    assert value == case["answer_oracle"]["rule"]["source_path"]
+                    assert expected["status"] == "known"
+                    evidence = expected["evidence"][0]
+                    source_lines = files[evidence["path"]].splitlines()
+                    assert evidence["path"] == value
+                    assert source_lines[evidence["line"] - 1] == "mode = 'safe'"
+                    assert expected["mode"] == "safe"
+
+            else:
+                raise AssertionError(f"unreviewed pair oracle boundary: {pair['pair_id']}")
+
+
 def test_mechanics_and_task_oracles_match_each_frozen_case(tmp_path):
     manifest = _load_manifest()
     count = 0
