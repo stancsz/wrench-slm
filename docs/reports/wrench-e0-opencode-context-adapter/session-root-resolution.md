@@ -149,6 +149,27 @@ it on retrieval, and requires consistent root identities across all reads
 during snapshot creation. Windows could use volume identity plus
 `FILE_ID_INFO`; POSIX could use `st_dev` and `st_ino`. These are replacement
 detection signals, not permanent globally unique IDs. This follow-up would
-change snapshot hashes and downstream derived identities. It is not
-implemented; UNC and network-filesystem identity semantics still need
-qualification.
+change snapshot hashes and downstream derived identities. It was not
+implemented at the time of this review; UNC and network-filesystem identity
+semantics still need qualification.
+
+## Snapshot-v3 root-object identity implementation
+
+The bounded follow-up emits `wrench.source-snapshot.v3` and includes a tagged
+root object identity in the canonical hash. POSIX reads device/inode from the
+retained root directory descriptor; Windows reads volume serial and the 128-bit
+file ID from the retained root handle with `GetFileInformationByHandleEx` and
+`FileIdInfo`. Unsupported Windows identity queries and all-zero IDs fail
+closed. Retrieval compares the saved identity before returning exact bytes,
+and creation requires it to remain consistent across all selected files. V2
+snapshots are rejected by v3 validation. The OpenCode preparation join exposes
+the object identity alongside the existing configured-root and snapshot
+digests.
+
+Focused suites passed on Windows Python 3.11.16 (127 passed, 9 skipped) and
+Ubuntu 24.04 WSL Python 3.12.3 (132 passed, 4 skipped). The independent review
+`W2-NS-ROOT-IDENTITY-V3-REVIEW-20260924` (nonce `RIV3-1B6F`) found no blocking
+issues. The IDs can be reused, this is not an atomic multi-file snapshot, and
+UNC/network filesystem behavior remains unqualified. See the current
+[root-identity increment](../../goal/wrench-e0-snapshot-root-identity/GOAL.md)
+for the acceptance boundary.

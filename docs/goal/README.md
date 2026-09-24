@@ -33,6 +33,9 @@
 - [E0 configured-root-bound snapshot identity](wrench-e0-snapshot-root-binding/GOAL.md):
   accepted v2 snapshot hash binding to the normalized configured root path;
   it is not physical-directory identity or authorization.
+- [E0 snapshot root-object identity](wrench-e0-snapshot-root-identity/GOAL.md):
+  accepted v3 binding to the root filesystem object as well as its configured
+  path; IDs are replacement signals, not authentication or transaction proof.
 - [E0 OpenCode V2 context adapter contract](wrench-e0-opencode-context-adapter/GOAL.md):
   provider-free, release-pinned session-root validation seam; the client remains
   uninstalled and provider wire/token equivalence and dispatch veto remain unresolved.

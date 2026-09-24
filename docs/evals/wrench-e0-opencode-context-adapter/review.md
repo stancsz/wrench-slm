@@ -123,6 +123,17 @@ checked during retrieval. It affects public snapshot compatibility and
 hash-derived IDs, so it remains a scoped follow-up rather than a silent v2
 canonicalization change. No code or tests changed from this design-only review.
 
+### Snapshot-v3 implementation follow-up
+
+The follow-up is implemented: schema v3 commits the tagged root object ID into
+the snapshot hash, checks it across selected source reads and before retrieval,
+and exposes it through `OpenCodePreparationJoin`. Independent review
+`W2-NS-ROOT-IDENTITY-V3-REVIEW-20260924` (nonce `RIV3-1B6F`) found no blocking
+issues. Focused verification passed on Windows (127 passed, 9 skipped) and
+Ubuntu 24.04 WSL (132 passed, 4 skipped). Object-ID reuse, non-atomic
+multi-file reads, and unqualified UNC/network filesystems remain limits. This
+does not change the E0 milestone decision.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)
