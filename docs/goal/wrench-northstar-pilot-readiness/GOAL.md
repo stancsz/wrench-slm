@@ -140,7 +140,27 @@ Before any real-task capture, a human-approved protocol must specify:
 
 See [protocol design report](../../reports/wrench-northstar-pilot-readiness/protocol-design.md)
 and [independent evaluation](../../evals/wrench-northstar-pilot-readiness/review.md).
-Next: owner reviews the proposed discovery gate and consent/retention terms.
-Only after that decision may participant recruitment or capture begin. In
-parallel, engineering may continue reversible offline E0 work without
-installing or running a client.
+
+### Customer-discovery interview kit
+
+The proposed six-interview screen now has a concrete [moderator packet](../../reports/wrench-northstar-pilot-readiness/customer-discovery-interview-kit.md)
+and [evaluation](../../evals/wrench-northstar-pilot-readiness/customer-discovery-interview-kit.md).
+The packet fixes selection to the two most recent eligible tasks, uses neutral
+walkthrough questions, records cumulative screening counts and two separate
+episodes per participant, preserves counterevidence, and defines coding and
+adjudication. Its consent/privacy opening is explicitly a draft requiring owner
+approval. Independent prompt, privacy, and QA reviews found issues in the first
+draft; those were repaired and the final artifact passed review at the recorded
+hash.
+
+This acceptance is for a reviewable instrument only. The goal remains
+proposal-only: it does not approve recruitment, participant-facing use,
+recording, note retention, repository/task capture, external transfer,
+evaluation, training, publication, or a market/utility claim. Next, the owner
+reviews and decides on the six-completed-interview screen, eligibility and
+directional threshold, recruitment and compensation, approved note fields and
+audience, consent wording, storage/access, retention, withdrawal and deletion
+behavior, and any organizational authorization. Participant contact or data
+collection must wait for those decisions and tested handling. In parallel,
+engineering may continue reversible offline E0 work under its existing
+authority.
