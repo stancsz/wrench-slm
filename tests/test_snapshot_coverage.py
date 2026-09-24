@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import replace
 
 import wrench_harness.snapshot_coverage as coverage
-from wrench_harness.snapshot import create_snapshot
+from wrench_harness.snapshot import SourceSnapshot, bind_source_root, create_snapshot
 from wrench_harness.snapshot_coverage import (
     CoverageFileStatus,
     build_snapshot_coverage_receipt,
+    build_snapshot_inventory_receipt,
 )
 
 
@@ -145,3 +148,120 @@ def test_selected_coverage_bounds_display_of_overlong_path(tmp_path):
 
     assert receipt.files[0].status is CoverageFileStatus.ERROR
     assert len(receipt.files[0].requested_path) == coverage.MAX_PATH_CHARS
+
+
+def test_inventory_pages_entire_snapshot_and_is_order_independent(tmp_path):
+    paths = []
+    for index in range(37):
+        name = f"src/file_{index:02}.py"
+        (tmp_path / "src").mkdir(exist_ok=True)
+        (tmp_path / name).write_text(f"def item_{index}(): return {index}\n", encoding="utf-8")
+        paths.append(name)
+    binding = bind_source_root(tmp_path)
+    first = create_snapshot(binding, paths)
+    reverse_order = create_snapshot(binding, reversed(paths))
+
+    receipt = build_snapshot_inventory_receipt(first, binding)
+    reordered = build_snapshot_inventory_receipt(reverse_order, binding)
+
+    assert receipt == reordered
+    assert receipt.supplied_manifest_only is True
+    assert receipt.complete is True
+    assert receipt.entry_count == 37
+    assert [page.entry_count for page in receipt.pages] == [16, 16, 5]
+    assert [page.page_index for page in receipt.pages] == [0, 1, 2]
+    assert sum(dict(receipt.status_counts).values()) == 37
+    assert dict(receipt.status_counts)[CoverageFileStatus.INDEXED.value] == 37
+    assert receipt.exact_read_attempts == receipt.exact_read_successes == 37
+    assert len(receipt.receipt_sha256) == len(receipt.page_hash_chain_sha256) == 64
+    assert len(receipt.pages) <= 16
+
+    def chain_for(pages):
+        chain = "0" * 64
+        for page in pages:
+            chain = hashlib.sha256(json.dumps(
+                {"previous": chain, "page_sha256": page.page_sha256},
+                sort_keys=True, separators=(",", ":"),
+            ).encode("ascii")).hexdigest()
+        return chain
+
+    assert chain_for(receipt.pages) == receipt.page_hash_chain_sha256
+    assert chain_for(tuple(reversed(receipt.pages))) != receipt.page_hash_chain_sha256
+
+
+def test_inventory_rejects_duplicate_or_omitted_snapshot_manifest_rows(tmp_path):
+    (tmp_path / "a.py").write_text("a = 1\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("b = 2\n", encoding="utf-8")
+    binding = bind_source_root(tmp_path)
+    snapshot = create_snapshot(binding, ["a.py", "b.py"])
+
+    duplicate = SourceSnapshot(
+        snapshot.schema,
+        (snapshot.sources[0], snapshot.sources[0]),
+        snapshot.snapshot_sha256,
+        snapshot.root_location_sha256,
+        snapshot.root_identity,
+    )
+    omitted = SourceSnapshot(
+        snapshot.schema,
+        snapshot.sources[:1],
+        snapshot.snapshot_sha256,
+        snapshot.root_location_sha256,
+        snapshot.root_identity,
+    )
+
+    for invalid in (duplicate, omitted):
+        try:
+            build_snapshot_inventory_receipt(invalid, binding)
+        except ValueError as exc:
+            assert str(exc) == "inventory_snapshot_invalid"
+        else:
+            raise AssertionError("invalid manifest accepted")
+
+
+def test_inventory_stale_source_is_counted_and_marks_receipt_incomplete(tmp_path):
+    (tmp_path / "stale.py").write_text("before = 1\n", encoding="utf-8")
+    (tmp_path / "ok.py").write_text("ok = 1\n", encoding="utf-8")
+    binding = bind_source_root(tmp_path)
+    snapshot = create_snapshot(binding, ["ok.py", "stale.py"])
+    (tmp_path / "stale.py").write_text("after = 2\n", encoding="utf-8")
+
+    receipt = build_snapshot_inventory_receipt(snapshot, binding)
+
+    assert receipt.complete is False
+    assert receipt.entry_count == 2
+    assert dict(receipt.status_counts)[CoverageFileStatus.INDEXED.value] == 1
+    assert dict(receipt.status_counts)[CoverageFileStatus.STALE.value] == 1
+    assert receipt.exact_read_attempts == 2
+    assert dict(receipt.exact_read_status_counts)["changed"] == 1
+
+
+def test_inventory_rejects_changed_root_binding(tmp_path):
+    (tmp_path / "one.py").write_text("one = 1\n", encoding="utf-8")
+    binding = bind_source_root(tmp_path)
+    snapshot = create_snapshot(binding, ["one.py"])
+    other_root = tmp_path / "other"
+    other_root.mkdir()
+    (other_root / "one.py").write_text("one = 1\n", encoding="utf-8")
+
+    try:
+        build_snapshot_inventory_receipt(snapshot, bind_source_root(other_root))
+    except ValueError as exc:
+        assert str(exc) == "inventory_root_binding_mismatch"
+    else:
+        raise AssertionError("changed root accepted")
+
+
+def test_inventory_output_is_bounded(tmp_path, monkeypatch):
+    for index in range(20):
+        (tmp_path / f"file_{index:02}.py").write_text("x = 1\n", encoding="utf-8")
+    binding = bind_source_root(tmp_path)
+    snapshot = create_snapshot(binding, [f"file_{index:02}.py" for index in range(20)])
+    monkeypatch.setattr(coverage, "MAX_INVENTORY_RECEIPT_BYTES", 300)
+
+    try:
+        build_snapshot_inventory_receipt(snapshot, binding)
+    except ValueError as exc:
+        assert str(exc) == "coverage_inventory_output_limit_exceeded"
+    else:
+        raise AssertionError("oversized receipt accepted")

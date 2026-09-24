@@ -13,7 +13,15 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Iterable
 
-from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, _validate_snapshot, retrieve_exact
+from .snapshot import (
+    MAX_SNAPSHOT_FILES,
+    RetrievalStatus,
+    SourceRootBinding,
+    SourceSnapshot,
+    _validate_snapshot,
+    bind_source_root,
+    retrieve_exact,
+)
 from .snapshot_structure import (
     MAX_AGGREGATE_BYTES,
     MAX_FILE_BYTES,
@@ -26,6 +34,8 @@ from .toolbelt import parse_source_ast
 MAX_RECEIPT_BYTES = 64 * 1024
 MAX_PATH_CHARS = 1024
 MAX_SYNTAX_ERROR_CHARS = 1024
+INVENTORY_PAGE_SIZE = MAX_FILES
+MAX_INVENTORY_RECEIPT_BYTES = 64 * 1024
 
 
 class CoverageFileStatus(str, Enum):
@@ -69,6 +79,37 @@ class SnapshotCoverageReceipt:
     exact_read_returned_bytes: int
     exact_read_status_counts: tuple[tuple[str, int], ...]
     files: tuple[SelectedFileCoverage, ...]
+    receipt_sha256: str
+
+
+@dataclass(frozen=True)
+class SnapshotInventoryPage:
+    page_index: int
+    entry_count: int
+    first_path: str
+    last_path: str
+    coverage_sha256: str
+    page_sha256: str
+    status_counts: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True)
+class SnapshotInventoryReceipt:
+    schema: str
+    snapshot_sha256: str
+    root_location_sha256: str
+    root_identity: str
+    supplied_manifest_only: bool
+    complete: bool
+    entry_count: int
+    page_size: int
+    pages: tuple[SnapshotInventoryPage, ...]
+    page_hash_chain_sha256: str
+    status_counts: tuple[tuple[str, int], ...]
+    exact_read_attempts: int
+    exact_read_successes: int
+    exact_read_returned_bytes: int
+    exact_read_status_counts: tuple[tuple[str, int], ...]
     receipt_sha256: str
 
 
@@ -280,10 +321,154 @@ def build_snapshot_coverage_receipt(
     )
 
 
+def _inventory_payload(receipt: SnapshotInventoryReceipt) -> dict[str, object]:
+    value = asdict(receipt)
+    value.pop("receipt_sha256")
+    value["pages"] = [
+        {
+            **asdict(page),
+            "status_counts": [list(row) for row in page.status_counts],
+        }
+        for page in receipt.pages
+    ]
+    value["status_counts"] = [list(row) for row in receipt.status_counts]
+    value["exact_read_status_counts"] = [list(row) for row in receipt.exact_read_status_counts]
+    return value
+
+
+def _canonical_digest(value: object, limit: int) -> str:
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")
+    if len(encoded) > limit:
+        raise ValueError("coverage_inventory_output_limit_exceeded")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def build_snapshot_inventory_receipt(
+    snapshot: SourceSnapshot,
+    root_binding: SourceRootBinding,
+) -> SnapshotInventoryReceipt:
+    """Account for every entry in one validated snapshot using fixed pages.
+
+    The snapshot's canonical source tuple is the supplied manifest. This does
+    not discover or prove completeness against an external filesystem tree.
+    The receipt describes only those manifest entries and their bound root.
+    """
+    if not _validate_snapshot(snapshot):
+        raise ValueError("inventory_snapshot_invalid")
+    if type(root_binding) is not SourceRootBinding:
+        raise ValueError("inventory_root_binding_required")
+    try:
+        current_binding = bind_source_root(root_binding.configured_root)
+    except (OSError, TypeError, ValueError) as exc:
+        raise ValueError("inventory_root_binding_unavailable") from exc
+    if (
+        current_binding.root_location_sha256 != snapshot.root_location_sha256
+        or current_binding.root_identity != snapshot.root_identity
+        or root_binding.root_location_sha256 != snapshot.root_location_sha256
+        or root_binding.root_identity != snapshot.root_identity
+    ):
+        raise ValueError("inventory_root_binding_mismatch")
+    sources = snapshot.sources
+    if not sources or len(sources) > MAX_SNAPSHOT_FILES:
+        raise ValueError("inventory_manifest_size_invalid")
+    paths = tuple(source.path for source in sources)
+    if paths != tuple(sorted(paths)) or len(set(paths)) != len(paths):
+        raise ValueError("inventory_manifest_not_canonical")
+
+    all_statuses = tuple(sorted(status.value for status in CoverageFileStatus))
+    totals = {name: 0 for name in all_statuses}
+    pages: list[SnapshotInventoryPage] = []
+    attempts = successes = returned_bytes = 0
+    read_statuses: dict[str, int] = {}
+    chain = "0" * 64
+    complete = True
+    for page_index, offset in enumerate(range(0, len(sources), INVENTORY_PAGE_SIZE)):
+        page_sources = sources[offset:offset + INVENTORY_PAGE_SIZE]
+        page_paths = tuple(source.path for source in page_sources)
+        coverage = build_snapshot_coverage_receipt(root_binding, snapshot, page_paths)
+        if (
+            coverage.snapshot_sha256 != snapshot.snapshot_sha256
+            or coverage.requested_count_complete is not True
+            or coverage.requested_count != len(page_sources)
+            or len(coverage.files) != len(page_sources)
+            or tuple(row.requested_path for row in coverage.files) != page_paths
+        ):
+            raise ValueError("inventory_page_manifest_mismatch")
+        page_counts = {name: 0 for name in all_statuses}
+        for row in coverage.files:
+            page_counts[row.status.value] += 1
+            totals[row.status.value] += 1
+            if row.status is not CoverageFileStatus.INDEXED:
+                complete = False
+        attempts += coverage.exact_read_attempts
+        successes += coverage.exact_read_successes
+        returned_bytes += coverage.exact_read_returned_bytes
+        for name, count in coverage.exact_read_status_counts:
+            read_statuses[name] = read_statuses.get(name, 0) + count
+        page_payload = {
+            "schema": "wrench.snapshot-inventory-page.v1",
+            "snapshot_sha256": snapshot.snapshot_sha256,
+            "root_location_sha256": snapshot.root_location_sha256,
+            "root_identity": snapshot.root_identity,
+            "page_index": page_index,
+            "first_path": page_paths[0],
+            "last_path": page_paths[-1],
+            "entry_count": len(page_sources),
+            "coverage_sha256": coverage.receipt_sha256,
+            "status_counts": [[name, page_counts[name]] for name in all_statuses],
+        }
+        page_digest = _canonical_digest(page_payload, MAX_INVENTORY_RECEIPT_BYTES)
+        chain = hashlib.sha256(
+            json.dumps(
+                {"previous": chain, "page_sha256": page_digest},
+                sort_keys=True, separators=(",", ":"),
+            ).encode("ascii")
+        ).hexdigest()
+        pages.append(SnapshotInventoryPage(
+            page_index, len(page_sources), page_paths[0], page_paths[-1],
+            coverage.receipt_sha256, page_digest,
+            tuple((name, page_counts[name]) for name in all_statuses),
+        ))
+
+    try:
+        final_binding = bind_source_root(root_binding.configured_root)
+    except (OSError, TypeError, ValueError) as exc:
+        raise ValueError("inventory_root_changed_during_read") from exc
+    if (
+        final_binding.root_location_sha256 != snapshot.root_location_sha256
+        or final_binding.root_identity != snapshot.root_identity
+    ):
+        raise ValueError("inventory_root_changed_during_read")
+
+    partial = SnapshotInventoryReceipt(
+        "wrench.snapshot-inventory.v1", snapshot.snapshot_sha256,
+        snapshot.root_location_sha256 or "", snapshot.root_identity or "", True,
+        complete, len(sources), INVENTORY_PAGE_SIZE, tuple(pages), chain,
+        tuple((name, totals[name]) for name in all_statuses), attempts, successes,
+        returned_bytes, tuple(sorted(read_statuses.items())), "0" * 64,
+    )
+    digest = _canonical_digest(_inventory_payload(partial), MAX_INVENTORY_RECEIPT_BYTES)
+    return SnapshotInventoryReceipt(
+        partial.schema, partial.snapshot_sha256, partial.root_location_sha256,
+        partial.root_identity, partial.supplied_manifest_only, partial.complete,
+        partial.entry_count, partial.page_size, partial.pages,
+        partial.page_hash_chain_sha256, partial.status_counts,
+        partial.exact_read_attempts, partial.exact_read_successes,
+        partial.exact_read_returned_bytes, partial.exact_read_status_counts, digest,
+    )
+
+
 __all__ = [
     "CoverageFileStatus",
     "MAX_RECEIPT_BYTES",
+    "INVENTORY_PAGE_SIZE",
+    "MAX_INVENTORY_RECEIPT_BYTES",
     "SelectedFileCoverage",
+    "SnapshotInventoryPage",
+    "SnapshotInventoryReceipt",
     "SnapshotCoverageReceipt",
+    "build_snapshot_inventory_receipt",
     "build_snapshot_coverage_receipt",
 ]
