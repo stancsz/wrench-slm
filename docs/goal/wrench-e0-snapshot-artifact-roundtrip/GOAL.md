@@ -1,8 +1,8 @@
 # E0 snapshot to artifact store to context roundtrip
 
 Status: bounded implementation slice accepted; E0 remains incomplete
-Job: `W2-E0-SNAPSHOT-ARTIFACT-ROUNDTRIP-20260924`  
-Nonce: `SAR-8d02ce`  
+Job: `W2-E0-SNAPSHOT-ARTIFACT-ROUNDTRIP-20260924`
+Nonce: `SAR-8d02ce`
 Baseline: `103f6bd440c819e1df3f23be9b901705fa013422`
 
 ## Outcome
