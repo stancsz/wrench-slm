@@ -1,13 +1,17 @@
 import copy
 import hashlib
 import json
+import asyncio
 from dataclasses import replace
 
 import pytest
 
 from wrench_harness.opencode_hook_projection import (
+    CONTEXT_HOOK_OBSERVATION_SCHEMA,
     MAX_HOOK_MESSAGES,
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
+    MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS,
+    OpenCodeContextHookObserver,
     OpenCodePreparedTransitionStatus,
     OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
@@ -20,8 +24,238 @@ from wrench_harness.opencode_hook_projection import (
     validate_opencode_preparation_context_transition,
     verify_opencode_prepared_transition_receipt,
 )
+from wrench_harness import opencode_hook_projection as hook_projection
 from wrench_harness.e0_context_pipeline import PreparationResult, PreparationStatus
 from wrench_harness.prompt_compiler import PromptGateReceipt, PromptGateStatus
+
+
+class _FakeMonotonicClock:
+    def __init__(self, *values):
+        self._values = iter(values)
+
+    def __call__(self):
+        value = next(self._values)
+        if isinstance(value, BaseException):
+            raise value
+        return value
+
+
+def test_hook_observer_has_no_observation_before_any_callback_invocation():
+    observer = OpenCodeContextHookObserver(lambda: None, monotonic_ns=lambda: 10)
+
+    assert observer.observation is None
+
+
+def test_hook_observer_public_api_is_exported():
+    assert {
+        "CONTEXT_HOOK_OBSERVATION_SCHEMA",
+        "MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS",
+        "OpenCodeContextHookCall",
+        "OpenCodeContextHookObservation",
+        "OpenCodeContextHookObserver",
+    }.issubset(set(hook_projection.__all__))
+
+
+def test_hook_observer_measures_returned_callback_once_and_repeatedly():
+    calls = []
+
+    def callback(value):
+        calls.append(value)
+        return "callback-result"
+
+    observer = OpenCodeContextHookObserver(
+        callback, monotonic_ns=_FakeMonotonicClock(10, 15, 20, 32)
+    )
+
+    assert observer.observation is None
+    assert asyncio.run(observer("first")) == "callback-result"
+    assert asyncio.run(observer("second")) == "callback-result"
+
+    observation = observer.observation
+    assert calls == ["first", "second"]
+    assert observation is not None
+    assert observation.schema == CONTEXT_HOOK_OBSERVATION_SCHEMA
+    assert observation.opencode_context_hook_version == OPENCODE_CONTEXT_HOOK_VERSION
+    assert observation.invocation_count == 2
+    assert observation.completed_count == 2
+    assert observation.returned_count == 2
+    assert observation.error_count == 0
+    assert observation.elapsed_ns == 17
+    assert [(row.invocation_index, row.elapsed_ns, row.result) for row in observation.calls] == [
+        (1, 5, "returned"), (2, 12, "returned")
+    ]
+    assert not observation.calls_capped
+    assert not observation.saturated
+
+
+def test_hook_observer_records_sync_error_without_exception_content():
+    def callback():
+        raise RuntimeError("secret callback text")
+
+    observer = OpenCodeContextHookObserver(
+        callback, monotonic_ns=_FakeMonotonicClock(100, 107)
+    )
+
+    with pytest.raises(RuntimeError, match="secret callback text"):
+        asyncio.run(observer())
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.invocation_count == observation.completed_count == 1
+    assert observation.returned_count == 0
+    assert observation.error_count == 1
+    assert observation.elapsed_ns == 7
+    assert observation.calls[0].result == "error"
+    assert not hasattr(observation.calls[0], "exception")
+    assert "secret callback text" not in repr(observation)
+
+
+def test_hook_observer_records_async_rejection_and_rethrows_original_error():
+    error = ValueError("secret rejection text")
+
+    async def callback():
+        raise error
+
+    observer = OpenCodeContextHookObserver(
+        callback, monotonic_ns=_FakeMonotonicClock(200, 211)
+    )
+
+    with pytest.raises(ValueError) as raised:
+        asyncio.run(observer())
+
+    assert raised.value is error
+    observation = observer.observation
+    assert observation is not None
+    assert observation.invocation_count == observation.completed_count == 1
+    assert observation.returned_count == 0
+    assert observation.error_count == 1
+    assert observation.elapsed_ns == 11
+    assert observation.calls[0].result == "error"
+    assert "secret rejection text" not in repr(observation)
+
+
+def test_hook_observer_caps_ordered_per_call_rows_without_storing_content():
+    clock_values = []
+    for index in range(MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS + 1):
+        clock_values.extend((index * 10, index * 10 + 2))
+    observer = OpenCodeContextHookObserver(
+        lambda secret: None, monotonic_ns=_FakeMonotonicClock(*clock_values)
+    )
+
+    for index in range(MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS + 1):
+        asyncio.run(observer(f"private-{index}"))
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.invocation_count == MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS + 1
+    assert len(observation.calls) == MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS
+    assert [row.invocation_index for row in observation.calls] == list(
+        range(1, MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS + 1)
+    )
+    assert observation.calls_capped
+    assert "private-" not in repr(observation)
+
+
+def test_hook_observer_clamps_large_per_call_elapsed_value():
+    observer = OpenCodeContextHookObserver(
+        lambda: None, monotonic_ns=_FakeMonotonicClock(0, 1 << 63)
+    )
+
+    asyncio.run(observer())
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.elapsed_ns == (1 << 63) - 1
+    assert observation.calls[0].elapsed_ns == (1 << 63) - 1
+    assert observation.saturated
+
+
+def test_hook_observer_saturates_aggregate_when_bounded_rows_overflow_sum():
+    maximum = (1 << 63) - 1
+    observer = OpenCodeContextHookObserver(
+        lambda: None,
+        monotonic_ns=_FakeMonotonicClock(0, maximum, maximum, maximum + 1),
+    )
+
+    asyncio.run(observer())
+    asyncio.run(observer())
+
+    observation = observer.observation
+    assert observation is not None
+    assert [row.elapsed_ns for row in observation.calls] == [maximum, 1]
+    assert observation.elapsed_ns == maximum
+    assert observation.saturated
+
+
+def test_hook_observer_calls_callback_when_start_clock_raises():
+    calls = []
+    observer = OpenCodeContextHookObserver(
+        lambda: calls.append("called") or "returned",
+        monotonic_ns=_FakeMonotonicClock(RuntimeError("private clock failure")),
+    )
+
+    assert asyncio.run(observer()) == "returned"
+
+    observation = observer.observation
+    assert calls == ["called"]
+    assert observation is not None
+    assert observation.returned_count == 1
+    assert observation.timing_error_count == 1
+    assert observation.elapsed_ns == 0
+    assert observation.calls[0].elapsed_ns is None
+    assert "private clock failure" not in repr(observation)
+
+
+def test_hook_observer_end_clock_failure_does_not_replace_callback_return():
+    observer = OpenCodeContextHookObserver(
+        lambda: "returned",
+        monotonic_ns=_FakeMonotonicClock(10, RuntimeError("private clock failure")),
+    )
+
+    assert asyncio.run(observer()) == "returned"
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.returned_count == 1
+    assert observation.timing_error_count == 1
+    assert observation.calls[0].elapsed_ns is None
+    assert "private clock failure" not in repr(observation)
+
+
+def test_hook_observer_end_clock_failure_preserves_original_callback_error():
+    callback_error = ValueError("callback failure")
+
+    def callback():
+        raise callback_error
+
+    observer = OpenCodeContextHookObserver(
+        callback,
+        monotonic_ns=_FakeMonotonicClock(20, RuntimeError("private clock failure")),
+    )
+
+    with pytest.raises(ValueError) as raised:
+        asyncio.run(observer())
+
+    assert raised.value is callback_error
+    observation = observer.observation
+    assert observation is not None
+    assert observation.error_count == 1
+    assert observation.timing_error_count == 1
+    assert observation.calls[0].elapsed_ns is None
+    assert "private clock failure" not in repr(observation)
+
+
+def test_hook_observer_treats_non_integer_clock_sample_as_unavailable():
+    observer = OpenCodeContextHookObserver(
+        lambda: "returned", monotonic_ns=_FakeMonotonicClock(1.5)
+    )
+
+    assert asyncio.run(observer()) == "returned"
+
+    observation = observer.observation
+    assert observation is not None
+    assert observation.timing_error_count == 1
+    assert observation.calls[0].elapsed_ns is None
 
 
 def _hook_event():

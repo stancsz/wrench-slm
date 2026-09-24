@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import math
+import threading
+import time
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable
 
 from .prompt_compiler import (
     MAX_INPUT_DEPTH,
@@ -23,6 +27,7 @@ MAX_HOOK_SYSTEM_PARTS = 128
 MAX_HOOK_TOOLS = 256
 OPENCODE_CONTEXT_HOOK_VERSION = "2.0.15"
 PROJECTION_SCHEMA = "wrench.opencode.context-hook-projection.v1"
+CONTEXT_HOOK_OBSERVATION_SCHEMA = "wrench.opencode.context-hook-observation.v1"
 PREPARED_TRANSITION_RECEIPT_SCHEMA = "wrench.opencode.prepared-context-transition-receipt.v1"
 MAX_PREPARED_TRANSITION_RECEIPT_BYTES = 4096
 _CONTEXT_FIELDS = frozenset({
@@ -122,6 +127,170 @@ class OpenCodePreparedTransitionResult:
     status: OpenCodePreparedTransitionStatus
     receipt: OpenCodePreparedTransitionReceipt | None
     reason: str
+
+
+@dataclass(frozen=True)
+class OpenCodeContextHookObservation:
+    """Content-free local counters for observed callback executions."""
+
+    schema: str
+    opencode_context_hook_version: str
+    invocation_count: int
+    completed_count: int
+    returned_count: int
+    error_count: int
+    timing_error_count: int
+    elapsed_ns: int
+    calls: tuple["OpenCodeContextHookCall", ...]
+    calls_capped: bool
+    saturated: bool
+
+
+@dataclass(frozen=True)
+class OpenCodeContextHookCall:
+    """One bounded, content-free callback completion row."""
+
+    invocation_index: int
+    elapsed_ns: int | None
+    result: str
+
+
+_MAX_OBSERVATION_COUNT = (1 << 31) - 1
+_MAX_OBSERVATION_ELAPSED_NS = (1 << 63) - 1
+MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS = 128
+
+
+class OpenCodeContextHookObserver:
+    """Measure callback execution locally without retaining callback content.
+
+    The wrapper is async to match OpenCode's awaited Promise callback boundary.
+    Synchronous callbacks are accepted too. Exceptions propagate unchanged;
+    only the bounded result category is stored in the observation.
+    """
+
+    def __init__(
+        self,
+        callback: Callable[..., Any],
+        *,
+        monotonic_ns: Callable[[], Any] = time.monotonic_ns,
+    ) -> None:
+        if not callable(callback) or not callable(monotonic_ns):
+            raise TypeError("callback_and_clock_must_be_callable")
+        self._callback = callback
+        self._monotonic_ns = monotonic_ns
+        self._lock = threading.Lock()
+        self._invocation_count = 0
+        self._completed_count = 0
+        self._returned_count = 0
+        self._error_count = 0
+        self._timing_error_count = 0
+        self._elapsed_ns = 0
+        self._calls: list[OpenCodeContextHookCall] = []
+        self._calls_capped = False
+        self._saturated = False
+
+    @property
+    def observation(self) -> OpenCodeContextHookObservation | None:
+        """Return an immutable summary, or ``None`` before any invocation."""
+        with self._lock:
+            if self._invocation_count == 0:
+                return None
+            return OpenCodeContextHookObservation(
+                schema=CONTEXT_HOOK_OBSERVATION_SCHEMA,
+                opencode_context_hook_version=OPENCODE_CONTEXT_HOOK_VERSION,
+                invocation_count=self._invocation_count,
+                completed_count=self._completed_count,
+                returned_count=self._returned_count,
+                error_count=self._error_count,
+                timing_error_count=self._timing_error_count,
+                elapsed_ns=self._elapsed_ns,
+                calls=tuple(self._calls),
+                calls_capped=self._calls_capped,
+                saturated=self._saturated,
+            )
+
+    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        with self._lock:
+            self._invocation_count, did_saturate = _saturating_add(
+                self._invocation_count, 1, _MAX_OBSERVATION_COUNT
+            )
+            self._saturated |= did_saturate
+            invocation_index = self._invocation_count
+
+        started_ns, timing_errors = _safe_monotonic_ns(self._monotonic_ns)
+        result = "returned"
+        try:
+            callback_result = self._callback(*args, **kwargs)
+            if inspect.isawaitable(callback_result):
+                callback_result = await callback_result
+            return callback_result
+        except BaseException:
+            result = "error"
+            raise
+        finally:
+            elapsed: int | None = None
+            call_elapsed_saturated = False
+            if started_ns is not None:
+                ended_ns, end_timing_errors = _safe_monotonic_ns(self._monotonic_ns)
+                timing_errors += end_timing_errors
+                if ended_ns is not None:
+                    if ended_ns < started_ns:
+                        timing_errors += 1
+                    else:
+                        raw_elapsed = ended_ns - started_ns
+                        elapsed = min(raw_elapsed, _MAX_OBSERVATION_ELAPSED_NS)
+                        call_elapsed_saturated = raw_elapsed > _MAX_OBSERVATION_ELAPSED_NS
+            with self._lock:
+                self._completed_count, completed_saturated = _saturating_add(
+                    self._completed_count, 1, _MAX_OBSERVATION_COUNT
+                )
+                if result == "returned":
+                    self._returned_count, returned_saturated = _saturating_add(
+                        self._returned_count, 1, _MAX_OBSERVATION_COUNT
+                    )
+                    error_saturated = False
+                else:
+                    self._error_count, error_saturated = _saturating_add(
+                        self._error_count, 1, _MAX_OBSERVATION_COUNT
+                    )
+                    returned_saturated = False
+                aggregate_elapsed_saturated = False
+                if elapsed is not None:
+                    self._elapsed_ns, aggregate_elapsed_saturated = _saturating_add(
+                        self._elapsed_ns, elapsed, _MAX_OBSERVATION_ELAPSED_NS
+                    )
+                self._timing_error_count, timing_saturated = _saturating_add(
+                    self._timing_error_count, timing_errors, _MAX_OBSERVATION_COUNT
+                )
+                if invocation_index <= MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS:
+                    self._calls.append(OpenCodeContextHookCall(
+                        invocation_index=invocation_index,
+                        elapsed_ns=elapsed,
+                        result=result,
+                    ))
+                    self._calls.sort(key=lambda call: call.invocation_index)
+                else:
+                    self._calls_capped = True
+                self._saturated |= (
+                    completed_saturated or returned_saturated
+                    or error_saturated or call_elapsed_saturated
+                    or aggregate_elapsed_saturated or timing_saturated
+                )
+
+
+def _safe_monotonic_ns(clock: Callable[[], Any]) -> tuple[int | None, int]:
+    try:
+        value = clock()
+    except Exception:
+        return None, 1
+    if type(value) is not int:
+        return None, 1
+    return value, 0
+
+
+def _saturating_add(current: int, increment: int, maximum: int) -> tuple[int, bool]:
+    total = current + increment
+    return (maximum, True) if total > maximum else (total, False)
 
 
 class _ProjectionFailure(Exception):
@@ -676,15 +845,20 @@ def validate_opencode_preparation_context_transition(
 
 
 __all__ = [
+    "CONTEXT_HOOK_OBSERVATION_SCHEMA",
     "MAX_HOOK_MESSAGES",
     "MAX_HOOK_SYSTEM_PARTS",
     "MAX_HOOK_TOOLS",
     "MAX_OPENCODE_CONTEXT_HOOK_BYTES",
+    "MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS",
     "MAX_PREPARED_TRANSITION_RECEIPT_BYTES",
     "OPENCODE_CONTEXT_HOOK_VERSION",
     "PREPARED_TRANSITION_RECEIPT_SCHEMA",
     "PROJECTION_SCHEMA",
     "OpenCodeContextTransitionReceipt",
+    "OpenCodeContextHookCall",
+    "OpenCodeContextHookObservation",
+    "OpenCodeContextHookObserver",
     "OpenCodeContextHookProjection",
     "OpenCodeProjectionResult",
     "OpenCodeProjectionStatus",
