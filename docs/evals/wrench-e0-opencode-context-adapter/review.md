@@ -91,6 +91,15 @@ before source bytes are accepted. The fixture expects no prompt and no selected
 evidence. It now also asserts that serializer and tokenizer callbacks are not
 invoked. This is source and fixture evidence only; tests remain unrun.
 
+## Windows root-chain audit
+
+Read-only audit job `W2-NS-WIN-ROOT-AUDIT-20260924` (nonce `WRA-9C20`)
+identified a time-of-check gap between resolving the Windows source root and
+opening the root handle. The existing parent-relative child walk is bounded
+once that handle is open, but the full root path is first opened by name.
+Hardening and Windows race/junction tests remain open; no code or runtime
+behavior was changed by this audit.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)

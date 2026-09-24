@@ -75,12 +75,33 @@ Reviewed file hashes:
 - `src/wrench_harness/opencode_context.py`:
   `11DE4430FEBA5C346717E10B53FFB4295CA91EAA7CB188190E15216280E6336E`
 - `tests/test_opencode_context.py`:
-  `1CCB0ABDD77764C0258029BBF8FD11CC53F6463F372802B9EBEACA5A9C5040E5`
+  `8E4879AFD2A5EA268A7E3064DD8E071ED901147A356FB8E6D421508D2C106844`
 
 Windows ancestor reparse-point handling and `workspaceID` are not part of the
 current join. The resolver must not be treated as a complete hostile-path
 boundary until those semantics are reviewed. No client install, runtime test,
 provider request, or participant/repository capture occurred.
+
+## Windows ancestor-path review
+
+Read-only audit job `W2-NS-WIN-ROOT-AUDIT-20260924` (nonce `WRA-9C20`)
+confirmed a narrower Windows gap. `_prepare_root_path` checks the final root
+component and resolves it, while `_windows_read_stable_source` opens the
+resolved root by name with `FILE_FLAG_OPEN_REPARSE_POINT`; that flag protects
+the final component. Its subsequent child walk is parent-relative, rejects
+reparse children, and holds those handles through the read. A replacement or
+redirect of an ancestor between root resolution and root-handle open is not
+ruled out by the current sequence. This is a source-level threat analysis, not
+a demonstrated exploit or runtime test.
+
+Do not solve this by blindly rejecting every lexical ancestor reparse point:
+that would reject intentionally redirected directories. A bounded hardening
+design is to open the resolved root from its volume/share anchor using
+component-relative directory handles, reject reparse points in that resolved
+chain, and retain handles through the exact read. Required Windows fixtures
+include a normal temp root, a static ancestor junction, and an ancestor swap
+between resolution and root opening. UNC roots need separate coverage before
+making a support claim. This hardening is not implemented.
 
 ## Tagged source failure-path trace
 
