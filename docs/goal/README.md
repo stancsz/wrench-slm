@@ -33,6 +33,9 @@
   bounded uninstalled integration contract for active-session location,
   semantic context and the supplied tools map; provider wire/token equivalence and
   dispatch veto remain unresolved.
+- [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
+  read-only review of the proposed public retrieval diagnostic; release metadata
+  is pinned, while licensing and expanded-size evidence still block acquisition.
 - [E0 bounded artifact store](wrench-e0-artifact-store/GOAL.md):
   accepted standalone content-addressed persistence with a caller-owned
   preparation facade now using it; production request lifecycle integration
