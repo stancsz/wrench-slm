@@ -82,6 +82,15 @@ preparation path against a snapshot made from the resolved root. No tests were
 run. Session lookup, provider dispatch, callback/tokenizer identity, Windows
 ancestor reparse policy, and full E0 acceptance remain unresolved.
 
+## Root/snapshot mismatch review
+
+Read-only review job `W2-NS-OC-MISMATCH-REVIEW-20260924` (nonce `OMR-6F10`)
+confirmed that a byte-identical second directory has a different lexical-root
+hash, so the preparation path returns `SOURCE_MISSES` / `unknown_snapshot`
+before source bytes are accepted. The fixture expects no prompt and no selected
+evidence. It now also asserts that serializer and tokenizer callbacks are not
+invoked. This is source and fixture evidence only; tests remain unrun.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)

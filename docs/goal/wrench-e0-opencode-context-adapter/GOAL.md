@@ -28,6 +28,12 @@ dispatch gate, or production route.
   not specify callback failure behavior. Therefore the prompt hook's
   admission behavior cannot be generalized to the context hook or used to
   claim the complete request is blocked on preparation failure.
+- A source trace against tagged OpenCode `v2.0.15` connects the Promise hook
+  adapter, uncaught context-hook trigger, awaited request preparation, and
+  later `llm.stream` call. It supports that a thrown/rejected context hook
+  callback prevents `llm.stream` for that attempt. This is source evidence,
+  not a typed veto or runtime proof; session settlement, user-visible errors,
+  scheduler retries, and the installed client's behavior remain unknown.
 - The context hook receives the semantic request before provider protocol
   lowering. OpenCode's later `http.request` hook can observe native HTTP
   requests; WebSocket traffic follows separate experimental hooks. Neither
@@ -89,7 +95,8 @@ dispatch gate, or production route.
 - `prepare_opencode_e0_context` injects the resolved root into the existing
   preparation facade and carries session/root/snapshot identity with its result;
   fixture coverage includes invalid-session short-circuiting and the real
-  preparation path. The new fixtures have not been executed in this slice.
+  preparation path plus a mismatched-root case that expects no prompt. The new
+  fixtures have not been executed in this slice.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -110,6 +117,10 @@ and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md).
 References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
 [tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),
 [tagged context hook type](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/plugin/src/promise/session.ts),
+[tagged hook adapter](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/src/promise/adapter.ts),
+[tagged hook trigger](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/plugin/hooks.ts),
+[tagged model request](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/model-request.ts),
+[tagged model runner](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/runner/llm.ts),
 [tagged session schema](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/schema/src/session.ts),
 [tagged location schema](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/schema/src/location.ts),
 official [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins),

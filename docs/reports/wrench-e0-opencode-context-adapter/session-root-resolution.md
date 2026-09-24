@@ -63,8 +63,12 @@ Independent review job `W2-NS-OC-BIND-SUP-20260924` (nonce `OCB-SUP-E812`)
 accepted the seam. The review confirmed that the fixture set covers root
 forwarding, ID-mismatch short-circuiting, and an actual call through preparation
 with a matching session and snapshot root. A wrong-root fixture was suggested
-as optional follow-up. The test files were not executed, so this is source and
-fixture review only.
+as optional follow-up; a fixture has now been added that points the session at
+a different root containing byte-identical source and expects `unknown_snapshot`
+with no prompt or selected evidence and without invoking serializer/tokenizer
+callbacks. Independent review confirmed the source path supports those
+expectations. The test files were not executed, so this is source and fixture
+review only.
 
 Reviewed file hashes:
 
@@ -77,3 +81,18 @@ Windows ancestor reparse-point handling and `workspaceID` are not part of the
 current join. The resolver must not be treated as a complete hostile-path
 boundary until those semantics are reviewed. No client install, runtime test,
 provider request, or participant/repository capture occurred.
+
+## Tagged source failure-path trace
+
+The tagged `v2.0.15` Promise adapter wraps plugin callbacks in an Effect
+Promise; the hook trigger does not catch callback rejection. The model request
+awaits the context hook before the LLM runner proceeds to the step that calls
+`llm.stream`. This source trace supports that a thrown/rejected context callback
+prevents dispatch for that attempt. The callback has no explicit typed veto,
+and this trace does not establish visible error handling, session settlement,
+scheduler retries, or behavior in an installed runtime. No client was run.
+
+The trace follows the tagged [Promise adapter](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/src/promise/adapter.ts),
+[hook trigger](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/plugin/hooks.ts),
+[model request](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/model-request.ts),
+and [LLM runner](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/core/src/session/runner/llm.ts).
