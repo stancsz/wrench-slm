@@ -34,12 +34,20 @@ handle-relative primitives fail closed. Windows currently returns
 The focused synthetic tests passed on both available runtimes:
 
 - Windows Python 3.13.15, offline cached pytest 8.4.2:
-  `9 passed, 9 skipped`. POSIX traversal tests are skipped because Windows
+  `9 passed, 10 skipped`. POSIX traversal tests are skipped because Windows
   fails closed by design.
 - Ubuntu 24.04 /mnt/c Python 3.12.3, same offline cached pytest:
-  `17 passed, 1 skipped`. Symlink creation was unavailable on the mounted
+  `18 passed, 1 skipped`. Symlink creation was unavailable on the mounted
   filesystem; all other synthetic traversal, root identity, child inode,
   bounded metadata, and digest checks ran.
+
+These later runs collected 19 items and supersede the earlier 18-item run
+counts. The captured pytest stdout is in the task transcript; no separate
+run receipt or source-tree hash was saved. Tests ran with `HEAD` at
+`5f5806a5583883310122b42ebfa50ac68dbc697a` and the verifier/test files in the
+working tree. That implementation was later committed as
+`5310bb502aec24fd6adf22b0add8d7a9feda1812`; the captured output does not
+independently bind the run to a content hash.
 
 Commands used `PYTHONDONTWRITEBYTECODE=1`, disabled pytest's cache provider,
 and placed `--basetemp` under `C:\wrench-slm-data\tmp`. The Windows command

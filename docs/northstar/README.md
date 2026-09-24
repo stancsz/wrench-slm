@@ -75,9 +75,12 @@ Wrench evidence. [Reference review](REFERENCES.md) records what was checked.
 The [training and evaluation source plan](DATA_SOURCES.md) proposes consented
 real workflows, reviewed local-teacher candidates and exact fixtures for
 separate purposes. Real workflow capture is not authorized; authored synthetic
-fixtures remain the only admitted corpus. Public benchmarks are limited
-challenge sets, and raw web/code dumps do not stand in for verified Wrench
-outcomes.
+fixtures remain the only admitted development corpus. The fixed matched-task
+seed is the only fixture admitted to that corpus; later edge-case bundles are
+standalone regression tests, not corpus, training, or utility data. No training
+or utility corpus is admitted today. Public benchmarks are limited challenge
+sets, and raw web/code dumps do not stand in for verified Wrench outcomes.
+See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture.md).
 
 ## Durable standards
 

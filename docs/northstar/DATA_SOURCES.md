@@ -16,6 +16,8 @@ fixture](../../tests/fixtures/e0_synthetic_matched_tasks_v1/manifest.json),
 classified solely for open-development fixture use by the
 [synthetic admission boundary](../../src/wrench_harness/synthetic_fixture_admission.py).
 That classification does not admit training data or establish task utility.
+The later [edge-case fixture bundle](../reports/wrench-e0-pilot-edge-cases/fixture.md)
+is a separate regression test input and is not admitted to this corpus.
 Keep public benchmarks as external challenge or evaluation sets unless their
 exact task/repository lineage is deliberately cleared for training. Do not
 start from a large general code dump.
