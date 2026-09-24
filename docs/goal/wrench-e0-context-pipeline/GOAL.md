@@ -364,6 +364,31 @@ remain outside the guarantee. Qwen contract tests could not collect because
 `torch` is unavailable. See the [v2 report](../../reports/wrench-e0-context-pipeline/serializer-input-immutability-v2.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-immutability-v2.md).
 
+## Follow-up: bounded request and version scope
+
+Status: implemented and committed as `277d3de`; eight focused synthetic tests
+passed and independent review closed the request/run identity gap. The scope
+joins one artifact request, a lifecycle version pin, READY context preparation,
+its accounting and incomplete preparation receipt, and a separate terminal
+outcome receipt. It emits a bounded reference envelope only when the joins
+validate. Early artifact-pin closure fails closed, and the terminal run ID must
+match the caller-supplied request ID. This equality is correlation only, not
+authentication. The model pin does not retain version files, and the
+coordinator is not an atomic transaction across stores. See the [request-scope
+report](../../reports/wrench-e0-context-pipeline/request-version-scope.md) and
+[evaluation](../../evals/wrench-e0-context-pipeline/request-version-scope.md).
+
+## Follow-up: OpenCode-compatible SSE fixture
+
+Status: socket-free encoder fixture and evidence committed as `d8dcad1`;
+documentation whitespace cleanup followed in `1684bc6`. The focused server
+suite passed 18 tests. A synthetic non-tool completion checks role, content,
+stop, SSE framing, and `[DONE]`; production code did not change. This checks
+one local success shape only. It does not establish OpenCode runtime parsing,
+port routing, hook behavior, provider or tokenizer parity, dispatch enforcement,
+or full E0 acceptance. See the [report](../../reports/wrench-e0-opencode-context-adapter/sse-contract.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/sse-contract.md).
+
 ## Current client setup status (2026-09-24)
 
 OpenCode `v2.0.15` is installed in an isolated directory under
