@@ -21,10 +21,13 @@ MAX_SNAPSHOT_FILES = 256
 MAX_SOURCE_BYTES = 256 * 1024
 MAX_SNAPSHOT_BYTES = 4 * 1024 * 1024
 MAX_SOURCE_PATH_CHARS = 1_024
-_SCHEMA = "wrench.source-snapshot.v2"
+_SCHEMA = "wrench.source-snapshot.v3"
 _ROOT_LOCATION_SCHEMA = "wrench.source-root-location.v1"
 _REPARSE_POINT = 0x400
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_ROOT_IDENTITY_RE = re.compile(
+    r"^(?:posix:(?:0|[1-9][0-9]*):(?:0|[1-9][0-9]*)|win:[0-9a-f]{16}:[0-9a-f]{32})$"
+)
 
 
 class SnapshotAdmissionError(ValueError):
@@ -53,6 +56,7 @@ class SourceSnapshot:
     sources: tuple[SourceRecord, ...]
     snapshot_sha256: str
     root_location_sha256: str | None = None
+    root_identity: str | None = None
 
 
 @dataclass(frozen=True)
@@ -127,7 +131,7 @@ def _safe_file(root: Path, relative_path: str) -> Path:
 
 
 def _canonical_snapshot_payload(
-    sources: tuple[SourceRecord, ...], root_location_sha256: str
+    sources: tuple[SourceRecord, ...], root_location_sha256: str, root_identity: str
 ) -> bytes:
     rows = [
         {"path": item.path, "size_bytes": item.size_bytes, "sha256": item.sha256}
@@ -137,6 +141,7 @@ def _canonical_snapshot_payload(
         {
             "schema": _SCHEMA,
             "root_location_sha256": root_location_sha256,
+            "root_identity": root_identity,
             "sources": rows,
         },
         ensure_ascii=False,
@@ -154,6 +159,12 @@ def _validate_snapshot(snapshot: object) -> bool:
     if (
         not isinstance(snapshot.root_location_sha256, str)
         or not _SHA256_RE.fullmatch(snapshot.root_location_sha256)
+    ):
+        return False
+    if (
+        not isinstance(snapshot.root_identity, str)
+        or len(snapshot.root_identity) > 128
+        or not _ROOT_IDENTITY_RE.fullmatch(snapshot.root_identity)
     ):
         return False
     sources = snapshot.sources
@@ -187,7 +198,11 @@ def _validate_snapshot(snapshot: object) -> bool:
         return False
     try:
         return (
-            _sha256(_canonical_snapshot_payload(sources, snapshot.root_location_sha256))
+            _sha256(
+                _canonical_snapshot_payload(
+                    sources, snapshot.root_location_sha256, snapshot.root_identity
+                )
+            )
             == snapshot.snapshot_sha256
         )
     except (TypeError, ValueError, OverflowError):
@@ -317,16 +332,20 @@ def _open_posix_directory_chain(path: Path, flags: int) -> tuple[list[int], list
         raise
 
 
-def _read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os.stat_result]:
+def _read_stable_source(
+    root: Path, relative_path: str, expected_root_identity: str | None = None
+) -> tuple[bytes, os.stat_result, str]:
     if os.name == "nt":
         # Early classification only. The actual read and containment are done
         # again through the pinned native-handle walk below.
         _safe_file(root, relative_path)
-        return _windows_read_stable_source(root, relative_path)
-    return _posix_read_stable_source(root, relative_path)
+        return _windows_read_stable_source(root, relative_path, expected_root_identity)
+    return _posix_read_stable_source(root, relative_path, expected_root_identity)
 
 
-def _posix_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os.stat_result]:
+def _posix_read_stable_source(
+    root: Path, relative_path: str, expected_root_identity: str | None = None
+) -> tuple[bytes, os.stat_result, str]:
     """Bounded read using only pinned, parent-relative POSIX directory handles."""
     required_flags = ("O_NOFOLLOW", "O_DIRECTORY", "O_NONBLOCK")
     if (
@@ -373,6 +392,9 @@ def _posix_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os
         root_info = os.fstat(root_fd)
         if _has_reparse_attribute(root_info) or not stat.S_ISDIR(root_info.st_mode):
             raise SnapshotAdmissionError("root_must_be_real_directory")
+        root_identity = f"posix:{root_info.st_dev}:{root_info.st_ino}"
+        if expected_root_identity is not None and root_identity != expected_root_identity:
+            raise SnapshotAdmissionError("snapshot_root_identity_mismatch")
 
         components = relative_path.split("/")
         for component in components[:-1]:
@@ -430,7 +452,7 @@ def _posix_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os
         verify_binding(file_name, parent_fd, final_fd)
         for component, parent_index, handle_index in reversed(directory_bindings):
             verify_binding(component, opened_directories[parent_index], opened_directories[handle_index])
-        return data, after
+        return data, after, root_identity
     finally:
         if final_fd is not None:
             os.close(final_fd)
@@ -438,7 +460,9 @@ def _posix_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os
             os.close(directory_fd)
 
 
-def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, os.stat_result]:
+def _windows_read_stable_source(
+    root: Path, relative_path: str, expected_root_identity: str | None = None
+) -> tuple[bytes, os.stat_result, str]:
     """Read through a Win32 root handle and NtCreateFile parent-relative walk.
 
     Each directory handle denies write/delete sharing and remains open until the
@@ -485,6 +509,12 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
     class FILE_ATTRIBUTE_TAG_INFO(ctypes.Structure):
         _fields_ = [("FileAttributes", wintypes.DWORD), ("ReparseTag", wintypes.DWORD)]
 
+    class FILE_ID_INFO(ctypes.Structure):
+        _fields_ = [
+            ("VolumeSerialNumber", ctypes.c_ulonglong),
+            ("FileId", ctypes.c_ubyte * 16),
+        ]
+
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     ntdll = ctypes.WinDLL("ntdll")
     create_file = kernel32.CreateFileW
@@ -529,6 +559,16 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
         if info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT:
             raise SnapshotAdmissionError("reparse_point_forbidden")
         return info.FileAttributes
+
+    def root_identity_for(handle: int) -> str:
+        info = FILE_ID_INFO()
+        if not get_info(handle, 0x12, ctypes.byref(info), ctypes.sizeof(info)):
+            error = ctypes.WinError(ctypes.get_last_error())
+            raise SnapshotAdmissionError("root_identity_unavailable") from error
+        file_id = bytes(info.FileId)
+        if not any(file_id):
+            raise SnapshotAdmissionError("root_identity_unavailable")
+        return f"win:{info.VolumeSerialNumber:016x}:{file_id.hex()}"
 
     def open_relative(parent: int, component: str, *, directory: bool) -> int:
         name_buffer = ctypes.create_unicode_buffer(component)
@@ -575,6 +615,9 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
         for component in root.parts[1:]:
             child = open_relative(directory_handles[-1], component, directory=True)
             directory_handles.append(child)
+        root_identity = root_identity_for(directory_handles[-1])
+        if expected_root_identity is not None and root_identity != expected_root_identity:
+            raise SnapshotAdmissionError("snapshot_root_identity_mismatch")
         components = relative_path.split("/")
         for component in components[:-1]:
             child = open_relative(directory_handles[-1], component, directory=True)
@@ -597,7 +640,7 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
             raise SnapshotAdmissionError("source_changed_during_read")
         if len(data) > MAX_SOURCE_BYTES or len(data) != after.st_size:
             raise SnapshotAdmissionError("source_changed_during_read")
-        return data, after
+        return data, after, root_identity
     finally:
         if file_object is not None:
             file_object.close()
@@ -631,24 +674,34 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
 
     records: list[SourceRecord] = []
     total_bytes = 0
+    root_identity: str | None = None
     for relative_path in sorted(normalized):
         try:
-            data, file_stat = _read_stable_source(root_path, relative_path)
+            data, file_stat, observed_root_identity = _read_stable_source(
+                root_path, relative_path, root_identity
+            )
         except FileNotFoundError as exc:
             raise SnapshotAdmissionError("source_missing") from exc
         except OSError as exc:
             raise SnapshotAdmissionError("source_read_failed") from exc
+        if root_identity is None:
+            root_identity = observed_root_identity
+        elif root_identity != observed_root_identity:
+            raise SnapshotAdmissionError("source_root_changed_during_snapshot")
         total_bytes += len(data)
         if total_bytes > MAX_SNAPSHOT_BYTES:
             raise SnapshotAdmissionError("snapshot_size_limit_exceeded")
         records.append(SourceRecord(relative_path, len(data), _sha256(data)))
 
     sources = tuple(records)
+    if root_identity is None:
+        raise SnapshotAdmissionError("source_root_identity_unavailable")
     return SourceSnapshot(
         _SCHEMA,
         sources,
-        _sha256(_canonical_snapshot_payload(sources, root_location_sha256)),
+        _sha256(_canonical_snapshot_payload(sources, root_location_sha256, root_identity)),
         root_location_sha256,
+        root_identity,
     )
 
 
@@ -670,11 +723,19 @@ def retrieve_exact(
         if _root_location_sha256(configured_root_path) != snapshot.root_location_sha256:
             return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT)
         root_path = _prepare_root_path(configured_root_path)
-        data, _ = _read_stable_source(root_path, normalized)
+        data, _, observed_root_identity = _read_stable_source(
+            root_path, normalized, snapshot.root_identity
+        )
     except FileNotFoundError:
         return RetrievalResult(RetrievalStatus.MISSING, normalized)
-    except (OSError, SnapshotAdmissionError, TypeError, ValueError):
+    except SnapshotAdmissionError as exc:
+        if str(exc) == "snapshot_root_identity_mismatch":
+            return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT, normalized)
         return RetrievalResult(RetrievalStatus.UNSAFE, normalized)
+    except (OSError, TypeError, ValueError):
+        return RetrievalResult(RetrievalStatus.UNSAFE, normalized)
+    if observed_root_identity != snapshot.root_identity:
+        return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT, normalized)
     if len(data) != record.size_bytes or len(data) > MAX_SOURCE_BYTES or _sha256(data) != record.sha256:
         return RetrievalResult(RetrievalStatus.CHANGED, normalized)
     return RetrievalResult(RetrievalStatus.OK, normalized, data)

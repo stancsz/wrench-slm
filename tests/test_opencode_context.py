@@ -41,7 +41,7 @@ def _preparation_arguments(snapshot):
 def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
     root = tmp_path / "project"
     root.mkdir()
-    snapshot = SourceSnapshot("wrench.source-snapshot.v2", (), "a" * 64, "b" * 64)
+    snapshot = SourceSnapshot("wrench.source-snapshot.v3", (), "a" * 64, "b" * 64, "posix:1:1")
     prepared = Mock(status=PreparationStatus.READY)
 
     with patch("wrench_harness.opencode_context.prepare_e0_context", return_value=prepared) as prepare:
@@ -56,6 +56,7 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
     assert result.configured_root == root
     assert result.snapshot_sha256 == snapshot.snapshot_sha256
     assert result.root_location_sha256 == snapshot.root_location_sha256
+    assert result.root_identity == snapshot.root_identity
     assert result.preparation is prepared
     assert prepare.call_args.kwargs["source_root"] == root
     assert "source_root" not in _preparation_arguments(snapshot)
@@ -64,7 +65,7 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
 def test_invalid_session_fails_before_preparation(tmp_path):
     root = tmp_path / "project"
     root.mkdir()
-    snapshot = SourceSnapshot("wrench.source-snapshot.v2", (), "a" * 64, "b" * 64)
+    snapshot = SourceSnapshot("wrench.source-snapshot.v3", (), "a" * 64, "b" * 64, "posix:1:1")
 
     with patch("wrench_harness.opencode_context.prepare_e0_context") as prepare:
         with pytest.raises(OpenCodeSessionRootError):
@@ -115,6 +116,7 @@ def test_resolved_root_and_snapshot_identity_reach_real_preparation(tmp_path):
     assert result.configured_root == root
     assert result.snapshot_sha256 == snapshot.snapshot_sha256
     assert result.root_location_sha256 == snapshot.root_location_sha256
+    assert result.root_identity == snapshot.root_identity
     assert "target" in result.preparation.prompt
 
 

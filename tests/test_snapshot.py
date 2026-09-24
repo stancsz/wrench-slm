@@ -58,6 +58,47 @@ def test_snapshot_is_bound_to_its_normalized_configured_root(tmp_path):
     assert retrieve_exact(first_root / ".", first, "source.txt").status is RetrievalStatus.OK
 
 
+def test_snapshot_rejects_byte_identical_replacement_at_same_root_path(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "source.txt").write_bytes(b"same bytes")
+    snapshot = create_snapshot(root, ["source.txt"])
+
+    saved = tmp_path / "saved-project"
+    replacement = tmp_path / "replacement-project"
+    replacement.mkdir()
+    (replacement / "source.txt").write_bytes(b"same bytes")
+    root.rename(saved)
+    replacement.rename(root)
+
+    result = retrieve_exact(root, snapshot, "source.txt")
+    assert result.status is RetrievalStatus.UNKNOWN_SNAPSHOT
+    assert result.data is None
+
+
+def test_create_snapshot_rejects_root_replacement_between_source_reads(tmp_path, monkeypatch):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "a.txt").write_bytes(b"same root")
+    (root / "b.txt").write_bytes(b"same root")
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    (replacement / "a.txt").write_bytes(b"same root")
+    (replacement / "b.txt").write_bytes(b"same root")
+    saved = tmp_path / "saved-project"
+    real_read = snapshot_module._read_stable_source
+
+    def swap_between_reads(path, relative_path, expected_root_identity=None):
+        if relative_path == "b.txt":
+            root.rename(saved)
+            replacement.rename(root)
+        return real_read(path, relative_path, expected_root_identity)
+
+    monkeypatch.setattr(snapshot_module, "_read_stable_source", swap_between_reads)
+    with pytest.raises(SnapshotAdmissionError, match="snapshot_root_identity_mismatch"):
+        create_snapshot(root, ["a.txt", "b.txt"])
+
+
 def test_root_pathlike_is_converted_once_for_identity_and_read(tmp_path):
     root = tmp_path / "root"
     other = tmp_path / "other"
@@ -131,14 +172,17 @@ def test_malformed_public_snapshot_handles_return_unknown_snapshot(tmp_path):
     )
     malformed = [
         replace(valid, sources=[]),
-        replace(valid, schema="wrench.source-snapshot.v1"),
+        replace(valid, schema="wrench.source-snapshot.v2"),
         replace(valid, root_location_sha256="0" * 64),
+        replace(valid, root_identity=None),
+        replace(valid, root_identity="invalid"),
+        replace(valid, root_identity="win:0000000000000000:00000000000000000000000000000001"),
         replace(valid, sources=(SourceRecord("../escape", 1, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", True, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", MAX_SOURCE_BYTES + 1, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", 1, "not-a-digest"),)),
-        SourceSnapshot(valid.schema, too_many, valid_digest, valid.root_location_sha256),
-        SourceSnapshot(valid.schema, too_large, valid_digest, valid.root_location_sha256),
+        SourceSnapshot(valid.schema, too_many, valid_digest, valid.root_location_sha256, valid.root_identity),
+        SourceSnapshot(valid.schema, too_large, valid_digest, valid.root_location_sha256, valid.root_identity),
     ]
     for snapshot in malformed:
         result = retrieve_exact(tmp_path, snapshot, "source.txt")
@@ -166,9 +210,10 @@ def test_windows_parent_relative_handle_walk_reads_exact_bytes(tmp_path):
     nested = tmp_path / "nested"
     nested.mkdir()
     (nested / "source.txt").write_bytes(b"pinned exact bytes")
-    data, info = _windows_read_stable_source(tmp_path, "nested/source.txt")
+    data, info, identity = _windows_read_stable_source(tmp_path, "nested/source.txt")
     assert data == b"pinned exact bytes"
     assert info.st_size == len(data)
+    assert identity.startswith("win:")
 
 
 def test_windows_resolved_root_through_static_ancestor_symlink(tmp_path):
@@ -208,7 +253,7 @@ def test_windows_root_ancestor_swap_before_handle_walk_fails_closed(tmp_path, mo
     saved_parent = tmp_path / "saved-parent"
     real_read = snapshot_module._windows_read_stable_source
 
-    def swap_before_root_open(path, relative_path):
+    def swap_before_root_open(path, relative_path, expected_root_identity=None):
         assert path == root.resolve()
         parent.rename(saved_parent)
         try:
@@ -217,7 +262,7 @@ def test_windows_root_ancestor_swap_before_handle_walk_fails_closed(tmp_path, mo
             saved_parent.rename(parent)
             pytest.skip("directory symlink creation is unavailable")
         try:
-            return real_read(path, relative_path)
+            return real_read(path, relative_path, expected_root_identity)
         finally:
             parent.unlink()
             saved_parent.rename(parent)
@@ -245,9 +290,10 @@ def test_posix_nested_dirfd_walk_and_symlink_rejection(tmp_path, monkeypatch):
         return real_open(path, flags, parent_fd)
 
     monkeypatch.setattr(snapshot_module, "_open_posix_relative", tracking_open)
-    data, info = _posix_read_stable_source(tmp_path, "nested/source.txt")
+    data, info, identity = _posix_read_stable_source(tmp_path, "nested/source.txt")
     assert data == b"dirfd exact bytes"
     assert info.st_size == len(data)
+    assert identity.startswith("posix:")
     assert len(dirfd_calls) >= 2
     assert dirfd_calls[-1][0] == "source.txt"
     assert all(flags & os.O_NOFOLLOW for _, flags, _ in dirfd_calls)

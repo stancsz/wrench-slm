@@ -26,6 +26,7 @@ class OpenCodePreparationJoin:
     configured_root: Path
     snapshot_sha256: str
     root_location_sha256: str | None
+    root_identity: str | None
     preparation: PreparationResult
 
 
@@ -91,6 +92,7 @@ def prepare_opencode_e0_context(
         configured_root=resolved.configured_root,
         snapshot_sha256=snapshot.snapshot_sha256,
         root_location_sha256=snapshot.root_location_sha256,
+        root_identity=snapshot.root_identity,
         preparation=result,
     )
 
