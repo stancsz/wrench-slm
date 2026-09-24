@@ -25,6 +25,7 @@ MAX_CANDIDATE_BYTES = 4_000_000_000
 MAX_PATH_CHARS = 512
 MAX_TREE_ENTRIES = 256
 HASH_BUFFER_BYTES = 64 * 1024
+WINDOWS_DIRECTORY_BUFFER_BYTES = 1024 * 1024
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _GIT_BLOB_SHA1 = re.compile(r"^[0-9a-f]{40}$")
 _REVISION = re.compile(r"^[0-9a-f]{40}$")
@@ -283,6 +284,441 @@ def _inventory_exact(root: Path, files: list[dict[str, Any]]) -> tuple[dict[str,
         raise
 
 
+def _windows_verify_flat_files(
+    absolute_root: Path, files: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Verify a flat snapshot through retained Windows directory handles.
+
+    Root and child names are opened relative to already-open handles with
+    NtCreateFile and FILE_OPEN_REPARSE_POINT. Directory handles allow read
+    sharing only, preventing rename, deletion, or write opens for the duration
+    of inventory and hashing. Directory enumeration is performed from the
+    pinned root handle with GetFileInformationByHandleEx.
+    """
+    import ctypes
+    import msvcrt
+    import ntpath
+
+    from ctypes import wintypes
+
+    if ctypes.sizeof(ctypes.c_void_p) != 8:
+        raise CandidateIdentityError("handle_relative_no_follow_unavailable")
+    if not re.fullmatch(r"[A-Za-z]:\\", absolute_root.anchor):
+        raise CandidateIdentityError("windows_drive_root_required")
+    expected_files, expected_dirs = _expected_tree(files)
+    if expected_dirs:
+        raise CandidateIdentityError("directory_manifest_requires_handle_relative_traversal")
+
+    GENERIC_READ = 0x80000000
+    FILE_LIST_DIRECTORY = 0x0001
+    FILE_READ_ATTRIBUTES = 0x0080
+    SYNCHRONIZE = 0x00100000
+    FILE_SHARE_READ = 0x00000001
+    OPEN_EXISTING = 3
+    FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+    FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
+    FILE_ATTRIBUTE_DIRECTORY = 0x00000010
+    FILE_ATTRIBUTE_REPARSE_POINT = _REPARSE_POINT
+    FILE_OPEN = 1
+    FILE_DIRECTORY_FILE = 0x00000001
+    FILE_NON_DIRECTORY_FILE = 0x00000040
+    FILE_SYNCHRONOUS_IO_NONALERT = 0x00000020
+    FILE_OPEN_REPARSE_POINT = 0x00200000
+    OBJ_CASE_INSENSITIVE = 0x00000040
+    FileBasicInfo = 0
+    FileStandardInfo = 1
+    FileAttributeTagInfo = 9
+    FileIdBothDirectoryInfo = 0x0A
+
+    class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ("FileAttributes", wintypes.DWORD),
+            ("CreationTime", wintypes.FILETIME),
+            ("LastAccessTime", wintypes.FILETIME),
+            ("LastWriteTime", wintypes.FILETIME),
+            ("VolumeSerialNumber", wintypes.DWORD),
+            ("FileSizeHigh", wintypes.DWORD),
+            ("FileSizeLow", wintypes.DWORD),
+            ("NumberOfLinks", wintypes.DWORD),
+            ("FileIndexHigh", wintypes.DWORD),
+            ("FileIndexLow", wintypes.DWORD),
+        ]
+
+    class UNICODE_STRING(ctypes.Structure):
+        _fields_ = [
+            ("Length", wintypes.USHORT),
+            ("MaximumLength", wintypes.USHORT),
+            ("Buffer", wintypes.LPWSTR),
+        ]
+
+    class OBJECT_ATTRIBUTES(ctypes.Structure):
+        _fields_ = [
+            ("Length", wintypes.ULONG),
+            ("RootDirectory", wintypes.HANDLE),
+            ("ObjectName", ctypes.POINTER(UNICODE_STRING)),
+            ("Attributes", wintypes.ULONG),
+            ("SecurityDescriptor", wintypes.LPVOID),
+            ("SecurityQualityOfService", wintypes.LPVOID),
+        ]
+
+    class IO_STATUS_BLOCK(ctypes.Structure):
+        _fields_ = [("Status", ctypes.c_void_p), ("Information", ctypes.c_size_t)]
+
+    class FILE_ATTRIBUTE_TAG_INFO(ctypes.Structure):
+        _fields_ = [("FileAttributes", wintypes.DWORD), ("ReparseTag", wintypes.DWORD)]
+
+    class FILE_STANDARD_INFO(ctypes.Structure):
+        _fields_ = [
+            ("AllocationSize", ctypes.c_longlong),
+            ("EndOfFile", ctypes.c_longlong),
+            ("NumberOfLinks", wintypes.DWORD),
+            ("DeletePending", wintypes.BOOLEAN),
+            ("Directory", wintypes.BOOLEAN),
+        ]
+
+    class FILE_BASIC_INFO(ctypes.Structure):
+        _fields_ = [
+            ("CreationTime", ctypes.c_longlong),
+            ("LastAccessTime", ctypes.c_longlong),
+            ("LastWriteTime", ctypes.c_longlong),
+            ("ChangeTime", ctypes.c_longlong),
+            ("FileAttributes", wintypes.DWORD),
+        ]
+
+    class FILE_ID_BOTH_DIR_INFO(ctypes.Structure):
+        _fields_ = [
+            ("NextEntryOffset", wintypes.DWORD),
+            ("FileIndex", wintypes.DWORD),
+            ("CreationTime", ctypes.c_longlong),
+            ("LastAccessTime", ctypes.c_longlong),
+            ("LastWriteTime", ctypes.c_longlong),
+            ("ChangeTime", ctypes.c_longlong),
+            ("EndOfFile", ctypes.c_longlong),
+            ("AllocationSize", ctypes.c_longlong),
+            ("FileAttributes", wintypes.DWORD),
+            ("FileNameLength", wintypes.DWORD),
+            ("EaSize", wintypes.DWORD),
+            ("ShortNameLength", ctypes.c_byte),
+            ("ShortName", wintypes.WCHAR * 12),
+            ("FileId", ctypes.c_longlong),
+            ("FileName", wintypes.WCHAR * 1),
+        ]
+
+    if (ctypes.sizeof(wintypes.WCHAR) != 2
+            or ctypes.sizeof(UNICODE_STRING) != 16
+            or ctypes.sizeof(OBJECT_ATTRIBUTES) != 48
+            or ctypes.sizeof(IO_STATUS_BLOCK) != 16
+            or ctypes.sizeof(BY_HANDLE_FILE_INFORMATION) != 52
+            or FILE_ID_BOTH_DIR_INFO.FileName.offset != 104):
+        raise CandidateIdentityError("handle_relative_no_follow_unavailable")
+
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        ntdll = ctypes.WinDLL("ntdll")
+        create_file = kernel32.CreateFileW
+        create_file.argtypes = [
+            wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+            wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE,
+        ]
+        create_file.restype = wintypes.HANDLE
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [wintypes.HANDLE]
+        close_handle.restype = wintypes.BOOL
+        get_info = kernel32.GetFileInformationByHandleEx
+        get_info.argtypes = [wintypes.HANDLE, ctypes.c_int, wintypes.LPVOID, wintypes.DWORD]
+        get_info.restype = wintypes.BOOL
+        get_legacy_info = kernel32.GetFileInformationByHandle
+        get_legacy_info.argtypes = [
+            wintypes.HANDLE, ctypes.POINTER(BY_HANDLE_FILE_INFORMATION)
+        ]
+        get_legacy_info.restype = wintypes.BOOL
+        get_volume_info = kernel32.GetVolumeInformationByHandleW
+        get_volume_info.argtypes = [
+            wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD),
+            ctypes.POINTER(wintypes.DWORD), ctypes.POINTER(wintypes.DWORD),
+            wintypes.LPWSTR, wintypes.DWORD,
+        ]
+        get_volume_info.restype = wintypes.BOOL
+        nt_create_file = ntdll.NtCreateFile
+        nt_create_file.argtypes = [
+            ctypes.POINTER(wintypes.HANDLE), wintypes.DWORD, ctypes.POINTER(OBJECT_ATTRIBUTES),
+            ctypes.POINTER(IO_STATUS_BLOCK), ctypes.c_void_p, wintypes.ULONG, wintypes.ULONG,
+            wintypes.ULONG, wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG,
+        ]
+        nt_create_file.restype = ctypes.c_long
+        ntstatus_to_error = ntdll.RtlNtStatusToDosError
+        ntstatus_to_error.argtypes = [ctypes.c_long]
+        ntstatus_to_error.restype = wintypes.ULONG
+    except (AttributeError, OSError) as exc:
+        raise CandidateIdentityError("handle_relative_no_follow_unavailable") from exc
+
+    invalid_handle = ctypes.c_void_p(-1).value
+    directory_handles: list[int] = []
+    verified: list[dict[str, Any]] = []
+
+    def query(handle: int, info_class: int, structure: Any) -> Any:
+        value = structure()
+        if not get_info(handle, info_class, ctypes.byref(value), ctypes.sizeof(value)):
+            raise CandidateIdentityError("snapshot_handle_metadata_unavailable") from ctypes.WinError(
+                ctypes.get_last_error()
+            )
+        return value
+
+    def attributes(handle: int) -> int:
+        info = query(handle, FileAttributeTagInfo, FILE_ATTRIBUTE_TAG_INFO)
+        if info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT:
+            raise CandidateIdentityError("snapshot_link_forbidden")
+        return info.FileAttributes
+
+    def legacy_file_identity(handle: int) -> tuple[int, int]:
+        info = BY_HANDLE_FILE_INFORMATION()
+        if not get_legacy_info(handle, ctypes.byref(info)):
+            raise CandidateIdentityError("snapshot_file_identity_unavailable") from ctypes.WinError(
+                ctypes.get_last_error()
+            )
+        file_id = (int(info.FileIndexHigh) << 32) | int(info.FileIndexLow)
+        if not file_id:
+            raise CandidateIdentityError("snapshot_file_identity_unavailable")
+        return int(info.VolumeSerialNumber), file_id
+
+    def filesystem_name(handle: int) -> str:
+        name = ctypes.create_unicode_buffer(64)
+        if not get_volume_info(
+            handle, None, 0, None, None, None, name, len(name)
+        ):
+            raise CandidateIdentityError("snapshot_volume_metadata_unavailable") from ctypes.WinError(
+                ctypes.get_last_error()
+            )
+        return name.value
+
+    def open_relative(parent: int, component: str, *, directory: bool) -> int:
+        name_buffer = ctypes.create_unicode_buffer(component)
+        encoded_length = len(component.encode("utf-16-le"))
+        name = UNICODE_STRING(
+            encoded_length, encoded_length + ctypes.sizeof(wintypes.WCHAR),
+            ctypes.cast(name_buffer, wintypes.LPWSTR),
+        )
+        object_attributes = OBJECT_ATTRIBUTES(
+            ctypes.sizeof(OBJECT_ATTRIBUTES), parent, ctypes.pointer(name),
+            OBJ_CASE_INSENSITIVE, None, None,
+        )
+        io_status = IO_STATUS_BLOCK()
+        handle = wintypes.HANDLE()
+        options = FILE_OPEN_REPARSE_POINT | FILE_SYNCHRONOUS_IO_NONALERT
+        desired = FILE_READ_ATTRIBUTES | SYNCHRONIZE
+        if directory:
+            options |= FILE_DIRECTORY_FILE
+            desired |= FILE_LIST_DIRECTORY
+        else:
+            options |= FILE_NON_DIRECTORY_FILE
+            desired |= GENERIC_READ
+        status = nt_create_file(
+            ctypes.byref(handle), desired, ctypes.byref(object_attributes), ctypes.byref(io_status),
+            None, 0, FILE_SHARE_READ, FILE_OPEN, options, None, 0,
+        )
+        if status < 0:
+            raise CandidateIdentityError("snapshot_entry_unreadable") from ctypes.WinError(
+                ntstatus_to_error(status)
+            )
+        value = handle.value
+        try:
+            attributes(value)
+            return value
+        except BaseException:
+            close_handle(value)
+            raise
+
+    def enumerate_root(root_handle: int) -> dict[str, tuple[int, bytes]]:
+        result: dict[str, tuple[int, bytes]] = {}
+        seen_casefolded: set[str] = set()
+        header_bytes = FILE_ID_BOTH_DIR_INFO.FileName.offset
+        batches_seen = 0
+        while True:
+            batches_seen += 1
+            if batches_seen > MAX_TREE_ENTRIES + 2:
+                raise CandidateIdentityError("snapshot_tree_limit_exceeded")
+            buffer = ctypes.create_string_buffer(WINDOWS_DIRECTORY_BUFFER_BYTES)
+            if not get_info(
+                root_handle, FileIdBothDirectoryInfo, buffer, WINDOWS_DIRECTORY_BUFFER_BYTES
+            ):
+                error = ctypes.get_last_error()
+                if error == 18:  # ERROR_NO_MORE_FILES proves enumeration completion.
+                    break
+                raise CandidateIdentityError("snapshot_directory_unreadable") from ctypes.WinError(error)
+            offset = 0
+            batch_entries = 0
+            while True:
+                if offset + header_bytes > WINDOWS_DIRECTORY_BUFFER_BYTES:
+                    raise CandidateIdentityError("snapshot_directory_unreadable")
+                entry = ctypes.cast(
+                    ctypes.addressof(buffer) + offset, ctypes.POINTER(FILE_ID_BOTH_DIR_INFO)
+                ).contents
+                name_bytes = int(entry.FileNameLength)
+                name_start = offset + header_bytes
+                next_offset = int(entry.NextEntryOffset)
+                record_limit = (offset + next_offset) if next_offset else WINDOWS_DIRECTORY_BUFFER_BYTES
+                if (name_bytes % 2 or name_bytes > MAX_PATH_CHARS * 2
+                        or name_start + name_bytes > record_limit
+                        or name_start + name_bytes > WINDOWS_DIRECTORY_BUFFER_BYTES
+                        or (next_offset and (next_offset < header_bytes or next_offset % 8))):
+                    raise CandidateIdentityError("snapshot_directory_unreadable")
+                try:
+                    name = ctypes.string_at(ctypes.addressof(buffer) + name_start, name_bytes).decode(
+                        "utf-16-le", errors="strict"
+                    )
+                except UnicodeDecodeError as exc:
+                    raise CandidateIdentityError("snapshot_directory_unreadable") from exc
+                batch_entries += 1
+                if batch_entries > MAX_TREE_ENTRIES + 2:
+                    raise CandidateIdentityError("snapshot_tree_limit_exceeded")
+                if name not in {".", ".."}:
+                    if len(result) >= MAX_TREE_ENTRIES:
+                        raise CandidateIdentityError("snapshot_tree_limit_exceeded")
+                    folded = name.casefold()
+                    if folded in seen_casefolded:
+                        raise CandidateIdentityError("snapshot_duplicate_entry")
+                    seen_casefolded.add(folded)
+                    if entry.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT:
+                        raise CandidateIdentityError("snapshot_link_forbidden")
+                    if entry.FileAttributes & FILE_ATTRIBUTE_DIRECTORY:
+                        raise CandidateIdentityError("snapshot_unexpected_entry")
+                    entry_id = int(entry.FileId) & ((1 << 64) - 1)
+                    if not entry_id:
+                        raise CandidateIdentityError("snapshot_file_identity_unavailable")
+                    result[name] = (int(entry.EndOfFile), entry_id.to_bytes(8, "little"))
+                if not next_offset:
+                    break
+                offset += next_offset
+            if not batch_entries:
+                raise CandidateIdentityError("snapshot_directory_unreadable")
+        return result
+
+    def open_root() -> int:
+        handle = create_file(
+            absolute_root.anchor, FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY | SYNCHRONIZE,
+            FILE_SHARE_READ, None, OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, None,
+        )
+        if handle == invalid_handle:
+            raise CandidateIdentityError("snapshot_root_unavailable") from ctypes.WinError(
+                ctypes.get_last_error()
+            )
+        return int(handle)
+
+    try:
+        directory_handles.append(open_root())
+        if not attributes(directory_handles[0]) & FILE_ATTRIBUTE_DIRECTORY:
+            raise CandidateIdentityError("snapshot_root_unsafe")
+        parts = absolute_root.parts
+        if not parts or ntpath.normcase(parts[0]) != ntpath.normcase(absolute_root.anchor):
+            raise CandidateIdentityError("snapshot_root_unavailable")
+        for component in parts[1:]:
+            if component in {"", ".", ".."} or component.endswith((".", " ")):
+                raise CandidateIdentityError("snapshot_root_unsafe")
+            directory_handles.append(
+                open_relative(directory_handles[-1], component, directory=True)
+            )
+        root_handle = directory_handles[-1]
+        root_identity = legacy_file_identity(root_handle)
+        if filesystem_name(root_handle).upper() != "NTFS":
+            raise CandidateIdentityError("snapshot_filesystem_unsupported")
+        enumerated = enumerate_root(root_handle)
+        if set(enumerated) - expected_files:
+            raise CandidateIdentityError("snapshot_unexpected_entry")
+        if expected_files - set(enumerated):
+            raise CandidateIdentityError("snapshot_file_set_mismatch")
+
+        for row in sorted(files, key=lambda value: value["path"]):
+            relative = row["path"]
+            enum_size, enum_file_id = enumerated[relative]
+            if enum_size != row["size_bytes"]:
+                raise CandidateIdentityError("snapshot_file_size_mismatch")
+            file_handle = open_relative(root_handle, relative, directory=False)
+            descriptor = None
+            try:
+                opened_identity = legacy_file_identity(file_handle)
+                # FILE_ID_BOTH_DIR_INFO carries the legacy 64-bit file ID.
+                # Compare it with BY_HANDLE_FILE_INFORMATION's file index and
+                # require the volume serial to match the pinned NTFS root.
+                enum_file_index = int.from_bytes(enum_file_id, "little")
+                if (opened_identity[0] != root_identity[0]
+                        or opened_identity[1] != enum_file_index):
+                    raise CandidateIdentityError("snapshot_entry_changed")
+                standard_before = query(file_handle, FileStandardInfo, FILE_STANDARD_INFO)
+                basic_before = query(file_handle, FileBasicInfo, FILE_BASIC_INFO)
+                if (standard_before.Directory or standard_before.DeletePending
+                        or standard_before.EndOfFile != row["size_bytes"]):
+                    raise CandidateIdentityError("snapshot_entry_type_invalid")
+                descriptor = msvcrt.open_osfhandle(
+                    file_handle, os.O_RDONLY | getattr(os, "O_BINARY", 0)
+                )
+                file_handle = 0  # descriptor now owns the handle
+                digest = hashlib.sha256()
+                git_blob = hashlib.sha1()
+                git_blob.update(f"blob {row['size_bytes']}\0".encode("ascii"))
+                read_bytes = 0
+                with os.fdopen(descriptor, "rb", buffering=0) as stream:
+                    descriptor = None
+                    file_handle = 0
+                    while True:
+                        block = stream.read(HASH_BUFFER_BYTES)
+                        if not block:
+                            break
+                        read_bytes += len(block)
+                        if read_bytes > row["size_bytes"]:
+                            raise CandidateIdentityError("snapshot_file_size_mismatch")
+                        digest.update(block)
+                        git_blob.update(block)
+                    stream_handle = msvcrt.get_osfhandle(stream.fileno())
+                    standard_after = query(stream_handle, FileStandardInfo, FILE_STANDARD_INFO)
+                    basic_after = query(stream_handle, FileBasicInfo, FILE_BASIC_INFO)
+                    if (read_bytes != row["size_bytes"]
+                            or standard_after.EndOfFile != standard_before.EndOfFile
+                            or standard_after.Directory or standard_after.DeletePending
+                            or basic_after.LastWriteTime != basic_before.LastWriteTime
+                            or basic_after.ChangeTime != basic_before.ChangeTime
+                            or legacy_file_identity(stream_handle) != opened_identity):
+                        raise CandidateIdentityError("snapshot_file_changed")
+                    post_path_handle = open_relative(root_handle, relative, directory=False)
+                    try:
+                        if legacy_file_identity(post_path_handle) != opened_identity:
+                            raise CandidateIdentityError("snapshot_path_changed")
+                    finally:
+                        close_handle(post_path_handle)
+                    file_handle = 0
+                if row["upstream_sha256"] is not None:
+                    identity_kind = "upstream_sha256"
+                    actual_identity = digest.hexdigest()
+                    expected_identity = row["upstream_sha256"]
+                else:
+                    identity_kind = "git_blob_id"
+                    actual_identity = git_blob.hexdigest()
+                    expected_identity = row["git_blob_id"]
+                if actual_identity != expected_identity:
+                    raise CandidateIdentityError("snapshot_identity_mismatch")
+                verified.append({
+                    "path": relative,
+                    "size_bytes": row["size_bytes"],
+                    "identity_kind": identity_kind,
+                    "identity": actual_identity,
+                })
+            finally:
+                if descriptor is not None:
+                    os.close(descriptor)
+                if file_handle:
+                    close_handle(file_handle)
+        if legacy_file_identity(root_handle) != root_identity:
+            raise CandidateIdentityError("snapshot_path_changed")
+        return verified
+    except CandidateIdentityError:
+        raise
+    except OSError as exc:
+        raise CandidateIdentityError("snapshot_directory_unreadable") from exc
+    finally:
+        for handle in reversed(directory_handles):
+            close_handle(handle)
+
+
 def _opened_path(fd: int) -> Path:
     """Resolve the path attached to the open file handle where supported."""
     proc_fd = Path(f"/proc/self/fd/{fd}")
@@ -360,36 +796,39 @@ def verify_candidate_identity(metadata: Mapping[str, Any], snapshot_root: str | 
         raise CandidateIdentityError("metadata_size_limit_exceeded")
     files = _validate_metadata(metadata)
     root = Path(snapshot_root)
-    local_files, root_real, root_fd = _inventory_exact(root, files)
-    verified: list[dict[str, Any]] = []
-    try:
-        for row in sorted(files, key=lambda value: value["path"]):
-            relative, enumerated_stat = local_files[row["path"]]
-            actual_sha256, actual_git_blob = _hash_file(
-                root_fd, relative, root_real, enumerated_stat, row["size_bytes"]
-            )
-            if row["upstream_sha256"] is not None:
-                identity_kind = "upstream_sha256"
-                expected_identity = row["upstream_sha256"]
-                actual_identity = actual_sha256
-            else:
-                identity_kind = "git_blob_id"
-                expected_identity = row["git_blob_id"]
-                actual_identity = actual_git_blob
-            if actual_identity != expected_identity:
-                raise CandidateIdentityError("snapshot_identity_mismatch")
-            verified.append({
-                "path": row["path"],
-                "size_bytes": row["size_bytes"],
-                "identity_kind": identity_kind,
-                "identity": actual_identity,
-            })
-        final_root_stat = os.fstat(root_fd)
-        if (not stat.S_ISDIR(final_root_stat.st_mode)
-                or os.path.normcase(os.path.abspath(_opened_path(root_fd))) != os.path.normcase(str(root_real))):
-            raise CandidateIdentityError("snapshot_path_changed")
-    finally:
-        os.close(root_fd)
+    if os.name == "nt":
+        verified = _windows_verify_flat_files(Path(os.path.abspath(root)), files)
+    else:
+        local_files, root_real, root_fd = _inventory_exact(root, files)
+        verified = []
+        try:
+            for row in sorted(files, key=lambda value: value["path"]):
+                relative, enumerated_stat = local_files[row["path"]]
+                actual_sha256, actual_git_blob = _hash_file(
+                    root_fd, relative, root_real, enumerated_stat, row["size_bytes"]
+                )
+                if row["upstream_sha256"] is not None:
+                    identity_kind = "upstream_sha256"
+                    expected_identity = row["upstream_sha256"]
+                    actual_identity = actual_sha256
+                else:
+                    identity_kind = "git_blob_id"
+                    expected_identity = row["git_blob_id"]
+                    actual_identity = actual_git_blob
+                if actual_identity != expected_identity:
+                    raise CandidateIdentityError("snapshot_identity_mismatch")
+                verified.append({
+                    "path": row["path"],
+                    "size_bytes": row["size_bytes"],
+                    "identity_kind": identity_kind,
+                    "identity": actual_identity,
+                })
+            final_root_stat = os.fstat(root_fd)
+            if (not stat.S_ISDIR(final_root_stat.st_mode)
+                    or os.path.normcase(os.path.abspath(_opened_path(root_fd))) != os.path.normcase(str(root_real))):
+                raise CandidateIdentityError("snapshot_path_changed")
+        finally:
+            os.close(root_fd)
     receipt: dict[str, Any] = {
         "schema": RECEIPT_SCHEMA,
         "status": "VERIFIED_LOCAL_FILES",
