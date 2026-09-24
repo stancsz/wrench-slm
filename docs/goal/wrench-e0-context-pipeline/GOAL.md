@@ -389,6 +389,18 @@ port routing, hook behavior, provider or tokenizer parity, dispatch enforcement,
 or full E0 acceptance. See the [report](../../reports/wrench-e0-opencode-context-adapter/sse-contract.md)
 and [evaluation](../../evals/wrench-e0-opencode-context-adapter/sse-contract.md).
 
+## Follow-up: paged snapshot inventory coverage
+
+Status: implemented and committed as `719d38e`; a report-whitespace cleanup
+followed in `7b29cfa`. Twelve focused tests passed, including a 37-entry
+snapshot, deterministic paging, stale-source and root mismatch cases, exact
+status totals, output bounds, and direct verification that reversing page
+hashes changes the chain. The receipt processes every entry in a validated
+snapshot in fixed pages of 16. Its claim is limited to that caller-supplied
+snapshot: it does not enumerate a repository or detect omissions from a newly
+created manifest. See the [report](../../reports/wrench-e0-snapshot-coverage/complete-inventory.md)
+and [evaluation](../../evals/wrench-e0-snapshot-coverage/complete-inventory.md).
+
 ## Current client setup status (2026-09-24)
 
 OpenCode `v2.0.15` is installed in an isolated directory under
