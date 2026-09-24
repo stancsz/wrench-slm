@@ -32,3 +32,18 @@ entry points. It checks that this fixture run calls none of them while the
 facade has no execution parameter. This is scoped evidence for these patched
 ports and inert callbacks, not universal proof about arbitrary caller
 callbacks, future integrations, or every possible process/network path.
+
+The returned `PreparationMetrics` object is local to one facade result and
+is neither persisted nor exported. It records monotonic wall duration and
+facade call-site counters without paths, evidence/artifact IDs, hashes, or
+content. Artifact put input bytes count bytes offered to a put call; put
+success bytes increment only after a successful put return. The zero
+model/provider/verifier/tool counters describe direct call sites owned by the
+facade and are not totals for the whole request. Caller supplied
+serializer/tokenizer callbacks may be arbitrary code, and their external
+effects are unmeasured (`callback_external_activity` is null). Exact reads
+performed internally by structural-index construction
+are unobserved and exposed as null rather than being confused with the
+separate admission reads. Process CPU, RSS, energy, OS cache, and
+request-local page faults are likewise null/unmeasured. This is preparation
+scope only, not complete E0 accounting or an E0 acceptance claim.

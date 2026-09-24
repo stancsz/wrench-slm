@@ -11,7 +11,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, replace
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -77,6 +78,64 @@ class PreparationResult:
     schema_digests: tuple[tuple[str, str, str], ...]
     structural_status: str | None
     reason: str | None = None
+    metrics: "PreparationMetrics | None" = None
+
+
+@dataclass(frozen=True)
+class PreparationMetrics:
+    """Facade call-site counters; external callback effects are unmeasured.
+
+    Resource dimensions without a trustworthy request-scoped source are
+    explicitly unmeasured (None).
+    """
+
+    elapsed_wall_ns: int
+    caller_path_count: int | None
+    exact_source_retrieval_attempts: int
+    exact_source_retrieval_status_counts: tuple[tuple[str, int], ...]
+    exact_source_returned_bytes: int
+    structural_index_build_attempts: int
+    structural_index_status: str | None
+    structural_index_exact_read_attempts: int | None
+    structural_index_exact_read_successes: int | None
+    structural_index_returned_bytes: int | None
+    structural_index_query_attempts: int
+    structural_index_query_status: str | None
+    structural_index_candidate_count: int
+    artifact_put_attempts: int
+    artifact_put_successes: int
+    artifact_put_input_bytes: int
+    artifact_put_success_bytes: int
+    artifact_pin_attempts: int
+    artifact_pin_successes: int
+    artifact_pin_bytes: int
+    artifact_read_attempts: int
+    artifact_read_successes: int
+    artifact_read_bytes: int
+    schema_discover_attempts: int
+    schema_discover_results: int | None
+    schema_lookup_attempts: int
+    schema_lookup_status_counts: tuple[tuple[str, int], ...]
+    ledger_assembly_attempts: int
+    ledger_selected_count: int | None
+    ledger_omitted_count: int | None
+    serializer_callback_attempts: int
+    tokenizer_callback_attempts: int
+    prompt_serialized_bytes: int | None
+    prompt_token_count: int | None
+    outcome_receipt_build_attempts: int
+    outcome_receipt_status: str | None
+    facade_model_call_sites: int
+    facade_provider_call_sites: int
+    facade_verifier_call_sites: int
+    facade_tool_call_sites: int
+    callback_external_activity: None
+    process_cpu_ns: None
+    process_rss_bytes: None
+    energy_joules: None
+    os_cache_bytes: None
+    request_page_faults: None
+    unmeasured_dimensions: tuple[str, ...]
 
 
 def _sha(value: bytes) -> str:
@@ -170,7 +229,7 @@ def _receipt_payload(
     }
 
 
-def prepare_e0_context(
+def _prepare_e0_context_impl(
     *,
     source_root: str | os.PathLike[str],
     snapshot: SourceSnapshot,
@@ -193,6 +252,7 @@ def prepare_e0_context(
     required_source_paths: Sequence[str] = (),
     preserve_source_paths: Sequence[str] = (),
     max_candidates: int = 8,
+    _metrics: dict[str, object],
 ) -> PreparationResult:
     """Prepare verified, pinned context and a gated prompt; never executes it.
 
@@ -287,7 +347,13 @@ def prepare_e0_context(
         seen: set[str] = set()
         admitted_source_bytes = 0
         for raw_path in paths:
+            _metrics["exact_source_retrieval_attempts"] = int(_metrics["exact_source_retrieval_attempts"]) + 1
             retrieved = retrieve_exact(source_root, snapshot, raw_path)
+            status_counts = _metrics["exact_source_retrieval_status_counts"]
+            assert isinstance(status_counts, dict)
+            status_counts[retrieved.status.value] = status_counts.get(retrieved.status.value, 0) + 1
+            if type(retrieved.data) is bytes:
+                _metrics["exact_source_returned_bytes"] = int(_metrics["exact_source_returned_bytes"]) + len(retrieved.data)
             path = retrieved.path or raw_path
             if path in seen:
                 return PreparationResult(PreparationStatus.INVALID_INPUT, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), (), None, "duplicate_normalized_path")
@@ -315,14 +381,27 @@ def prepare_e0_context(
                 source_rows.append(SourceIdentity(evidence_id, path, digest, None, "non_text"))
                 continue
             try:
+                _metrics["artifact_put_attempts"] = int(_metrics["artifact_put_attempts"]) + 1
+                _metrics["artifact_put_input_bytes"] = int(_metrics["artifact_put_input_bytes"]) + len(raw)
                 handle = store.put(snapshot_sha256=snapshot.snapshot_sha256, source_path=path, expected_content_sha256=digest, data=raw)
+                _metrics["artifact_put_successes"] = int(_metrics["artifact_put_successes"]) + 1
+                _metrics["artifact_put_success_bytes"] = int(_metrics["artifact_put_success_bytes"]) + len(raw)
                 if (
                     handle.snapshot_sha256 != snapshot.snapshot_sha256 or handle.source_path != path
                     or handle.content_sha256 != digest or handle.size_bytes != len(raw)
                 ):
                     raise ArtifactStoreError("artifact_handle_identity_mismatch")
+                _metrics["artifact_pin_attempts"] = int(_metrics["artifact_pin_attempts"]) + 1
                 pinned = request.pin(handle)
+                if pinned.status is ArtifactReadStatus.OK:
+                    _metrics["artifact_pin_successes"] = int(_metrics["artifact_pin_successes"]) + 1
+                if type(pinned.data) is bytes:
+                    _metrics["artifact_pin_bytes"] = int(_metrics["artifact_pin_bytes"]) + len(pinned.data)
+                _metrics["artifact_read_attempts"] = int(_metrics["artifact_read_attempts"]) + 1
                 roundtrip = request.read(handle)
+                if roundtrip.status is ArtifactReadStatus.OK and type(roundtrip.data) is bytes:
+                    _metrics["artifact_read_successes"] = int(_metrics["artifact_read_successes"]) + 1
+                    _metrics["artifact_read_bytes"] = int(_metrics["artifact_read_bytes"]) + len(roundtrip.data)
                 if (
                     pinned.status is not ArtifactReadStatus.OK or roundtrip.status is not ArtifactReadStatus.OK
                     or pinned.data != raw or roundtrip.data != raw or _sha(roundtrip.data or b"") != digest
@@ -340,13 +419,18 @@ def prepare_e0_context(
             final_status = PreparationStatus.SOURCE_MISSES
             reason = "no_exact_text_sources"
         else:
+            _metrics["structural_index_build_attempts"] = int(_metrics["structural_index_build_attempts"]) + 1
             indexed = build_snapshot_symbol_index(source_root, snapshot, valid_paths)
             structural_status = indexed.status.value
+            _metrics["structural_index_status"] = structural_status
             if indexed.status is not StructuralStatus.OK or indexed.index is None:
                 final_status = PreparationStatus.STRUCTURE_FAILED
                 reason = indexed.status.value
             else:
+                _metrics["structural_index_query_attempts"] = int(_metrics["structural_index_query_attempts"]) + 1
                 candidate_result = query_snapshot_symbols(indexed.index, query, limit=max_candidates)
+                _metrics["structural_index_query_status"] = candidate_result.status.value
+                _metrics["structural_index_candidate_count"] = len(candidate_result.candidates)
                 if candidate_result.status not in (StructuralStatus.OK, StructuralStatus.NO_MATCHES):
                     final_status = PreparationStatus.STRUCTURE_FAILED
                     reason = candidate_result.status.value
@@ -374,11 +458,17 @@ def prepare_e0_context(
                         messages = base_messages_owned
                         # Discovery is descriptive metadata only. It is deliberately
                         # not transformed into capabilities or executable handlers.
+                        _metrics["schema_discover_attempts"] = int(_metrics["schema_discover_attempts"]) + 1
                         discovered = namespace_registry.discover()
+                        _metrics["schema_discover_results"] = len(discovered)
                         discovered_namespace_ids = [item.namespace_id for item in discovered]
                         schema_data: list[dict[str, object]] = []
                         for namespace_id, operation_id in schema_lookups:
+                            _metrics["schema_lookup_attempts"] = int(_metrics["schema_lookup_attempts"]) + 1
                             lookup = namespace_registry.lookup(namespace_id, operation_id)
+                            lookup_counts = _metrics["schema_lookup_status_counts"]
+                            assert isinstance(lookup_counts, dict)
+                            lookup_counts[lookup.status.value] = lookup_counts.get(lookup.status.value, 0) + 1
                             if lookup.status is not SchemaLookupStatus.OK or lookup.schema is None or lookup.sha256 is None:
                                 final_status = PreparationStatus.SCHEMA_FAILED
                                 reason = lookup.status.value
@@ -408,10 +498,26 @@ def prepare_e0_context(
                                 reason = "preserved_evidence_unknown"
                         if final_status is PreparationStatus.READY:
                             try:
+                                _metrics["ledger_assembly_attempts"] = int(_metrics["ledger_assembly_attempts"]) + 1
                                 assembly = ledger.assemble(query, active_token_budget=context_token_budget, preserve_ids=preserve_ids, search_limit=32, receipt_detail="full")
-                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, serializer=serializer, tokenizer_counter=tokenizer_counter, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
+                                _metrics["ledger_selected_count"] = len(assembly.get("selected_segments", ()))
+                                _metrics["ledger_omitted_count"] = int(assembly.get("omitted_segment_count", 0))
+
+                                def measured_serializer(value):
+                                    _metrics["serializer_callback_attempts"] = int(_metrics["serializer_callback_attempts"]) + 1
+                                    return serializer(value)
+
+                                def measured_tokenizer(value):
+                                    _metrics["tokenizer_callback_attempts"] = int(_metrics["tokenizer_callback_attempts"]) + 1
+                                    return tokenizer_counter(value)
+
+                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, serializer=measured_serializer, tokenizer_counter=measured_tokenizer, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
                             except (ContextSelectionError, ContextAdmissionError, TypeError, ValueError, OverflowError, UnicodeError) as exc:
                                 return PreparationResult(PreparationStatus.CONTEXT_FAILED, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), tuple(schema_rows), structural_status, type(exc).__name__)
+                            if prompt_result.receipt.serialized_bytes is not None:
+                                _metrics["prompt_serialized_bytes"] = prompt_result.receipt.serialized_bytes
+                            if prompt_result.receipt.exact_token_count is not None:
+                                _metrics["prompt_token_count"] = prompt_result.receipt.exact_token_count
                             selected = prompt_result.receipt.selected_evidence_ids
                             omitted = prompt_result.receipt.omitted_evidence
                             miss_rows = list(misses)
@@ -440,7 +546,9 @@ def prepare_e0_context(
                                     "exact_token_count": prompt_result.receipt.exact_token_count, "budget": prompt_result.receipt.hard_budget,
                                     "serializer_id": prompt_result.receipt.serializer_id, "tokenizer_id": prompt_result.receipt.tokenizer_id},
                             })
+                            _metrics["outcome_receipt_build_attempts"] = int(_metrics["outcome_receipt_build_attempts"]) + 1
                             receipt_result = build_outcome_receipt(_receipt_payload(snapshot_hash=snapshot.snapshot_sha256, aggregate_hash=aggregate_hash, selected=selected, omitted=receipt_omitted, misses=receipt_misses))
+                            _metrics["outcome_receipt_status"] = receipt_result.status.value
                             if receipt_result.status not in (ReceiptStatus.VALID, ReceiptStatus.INCOMPLETE):
                                 final_status = PreparationStatus.RECEIPT_FAILED
                                 reason = ";".join(receipt_result.errors[:4])
@@ -463,12 +571,94 @@ def prepare_e0_context(
             "selected": [], "omitted": [list(row) for row in miss_omitted], "misses": [list(row) for row in misses],
             "schemas": [], "prompt_gate": None,
         })
+        _metrics["outcome_receipt_build_attempts"] = int(_metrics["outcome_receipt_build_attempts"]) + 1
         receipt_result = build_outcome_receipt(_receipt_payload(
             snapshot_hash=snapshot.snapshot_sha256, aggregate_hash=aggregate_hash,
             selected=(), omitted=miss_omitted, misses=receipt_misses,
         ))
+        _metrics["outcome_receipt_status"] = receipt_result.status.value
         return PreparationResult(final_status, "none", None, None, receipt_result, aggregate_hash, tuple(source_rows), (), miss_omitted, tuple(misses), (), structural_status, reason)
     return PreparationResult(final_status, "none", None, None, None, None, tuple(source_rows), selected, omitted, tuple(misses), tuple(schema_rows), structural_status, reason)
+
+
+def prepare_e0_context(
+    *, source_root: str | os.PathLike[str], snapshot: SourceSnapshot,
+    paths: Sequence[str | os.PathLike[str]], store: ArtifactStore, query: str,
+    source_order_start: int, context_token_budget: int, prompt_token_budget: int,
+    namespace_registry: NamespaceRegistry, schema_lookups: Sequence[tuple[str, str]],
+    base_messages: Sequence[Mapping[str, object]], context_position: int,
+    serializer: Callable[[Sequence[Mapping[str, object]]], str | bytes],
+    tokenizer_counter: Callable[[str | bytes], int], serializer_id: str,
+    tokenizer_id: str, required_evidence_ids: Sequence[str] = (),
+    preserve_evidence_ids: Sequence[str] = (), required_source_paths: Sequence[str] = (),
+    preserve_source_paths: Sequence[str] = (), max_candidates: int = 8,
+) -> PreparationResult:
+    """Run local preparation and attach request-scoped non-identifying metrics."""
+    started_ns = time.perf_counter_ns()
+    counters: dict[str, object] = {
+        "caller_path_count": len(paths) if type(paths) in (tuple, list) else None,
+        "exact_source_retrieval_attempts": 0, "exact_source_retrieval_status_counts": {},
+        "exact_source_returned_bytes": 0, "structural_index_build_attempts": 0,
+        "structural_index_status": None, "structural_index_query_attempts": 0,
+        "structural_index_query_status": None, "structural_index_candidate_count": 0,
+        "artifact_put_attempts": 0, "artifact_put_successes": 0,
+        "artifact_put_input_bytes": 0, "artifact_put_success_bytes": 0,
+        "artifact_pin_attempts": 0, "artifact_pin_successes": 0, "artifact_pin_bytes": 0, "artifact_read_attempts": 0,
+        "artifact_read_successes": 0, "artifact_read_bytes": 0,
+        "schema_discover_attempts": 0, "schema_discover_results": None,
+        "schema_lookup_attempts": 0, "schema_lookup_status_counts": {},
+        "ledger_assembly_attempts": 0, "ledger_selected_count": None, "ledger_omitted_count": None,
+        "serializer_callback_attempts": 0, "tokenizer_callback_attempts": 0,
+        "prompt_serialized_bytes": None, "prompt_token_count": None,
+        "outcome_receipt_build_attempts": 0, "outcome_receipt_status": None,
+    }
+    result = _prepare_e0_context_impl(
+        source_root=source_root, snapshot=snapshot, paths=paths, store=store, query=query,
+        source_order_start=source_order_start, context_token_budget=context_token_budget,
+        prompt_token_budget=prompt_token_budget, namespace_registry=namespace_registry,
+        schema_lookups=schema_lookups, base_messages=base_messages, context_position=context_position,
+        serializer=serializer, tokenizer_counter=tokenizer_counter, serializer_id=serializer_id,
+        tokenizer_id=tokenizer_id, required_evidence_ids=required_evidence_ids,
+        preserve_evidence_ids=preserve_evidence_ids, required_source_paths=required_source_paths,
+        preserve_source_paths=preserve_source_paths, max_candidates=max_candidates, _metrics=counters,
+    )
+    elapsed = max(0, time.perf_counter_ns() - started_ns)
+    result = replace(result, metrics=PreparationMetrics(
+        elapsed_wall_ns=elapsed, caller_path_count=counters["caller_path_count"],
+        exact_source_retrieval_attempts=int(counters["exact_source_retrieval_attempts"]),
+        exact_source_retrieval_status_counts=tuple(sorted(counters["exact_source_retrieval_status_counts"].items())),
+        exact_source_returned_bytes=int(counters["exact_source_returned_bytes"]),
+        structural_index_build_attempts=int(counters["structural_index_build_attempts"]),
+        structural_index_status=counters["structural_index_status"],
+        structural_index_exact_read_attempts=None, structural_index_exact_read_successes=None,
+        structural_index_returned_bytes=None,
+        structural_index_query_attempts=int(counters["structural_index_query_attempts"]),
+        structural_index_query_status=counters["structural_index_query_status"],
+        structural_index_candidate_count=int(counters["structural_index_candidate_count"]),
+        artifact_put_attempts=int(counters["artifact_put_attempts"]), artifact_put_successes=int(counters["artifact_put_successes"]),
+        artifact_put_input_bytes=int(counters["artifact_put_input_bytes"]),
+        artifact_put_success_bytes=int(counters["artifact_put_success_bytes"]),
+        artifact_pin_attempts=int(counters["artifact_pin_attempts"]),
+        artifact_pin_successes=int(counters["artifact_pin_successes"]), artifact_pin_bytes=int(counters["artifact_pin_bytes"]),
+        artifact_read_attempts=int(counters["artifact_read_attempts"]),
+        artifact_read_successes=int(counters["artifact_read_successes"]), artifact_read_bytes=int(counters["artifact_read_bytes"]),
+        schema_discover_attempts=int(counters["schema_discover_attempts"]), schema_discover_results=counters["schema_discover_results"],
+        schema_lookup_attempts=int(counters["schema_lookup_attempts"]),
+        schema_lookup_status_counts=tuple(sorted(counters["schema_lookup_status_counts"].items())),
+        ledger_assembly_attempts=int(counters["ledger_assembly_attempts"]), ledger_selected_count=counters["ledger_selected_count"],
+        ledger_omitted_count=counters["ledger_omitted_count"],
+        serializer_callback_attempts=int(counters["serializer_callback_attempts"]),
+        tokenizer_callback_attempts=int(counters["tokenizer_callback_attempts"]),
+        prompt_serialized_bytes=counters["prompt_serialized_bytes"], prompt_token_count=counters["prompt_token_count"],
+        outcome_receipt_build_attempts=int(counters["outcome_receipt_build_attempts"]),
+        outcome_receipt_status=counters["outcome_receipt_status"],
+        facade_model_call_sites=0, facade_provider_call_sites=0,
+        facade_verifier_call_sites=0, facade_tool_call_sites=0,
+        callback_external_activity=None, process_cpu_ns=None, process_rss_bytes=None,
+        energy_joules=None, os_cache_bytes=None, request_page_faults=None,
+        unmeasured_dimensions=("structural_index_exact_reads", "callback_external_activity", "process_cpu", "process_rss", "energy", "os_cache", "request_page_faults"),
+    ))
+    return result
 
 
 __all__ = ["MAX_PATHS", "MAX_SCHEMA_LOOKUPS", "PreparationResult", "PreparationStatus", "SourceIdentity", "prepare_e0_context"]

@@ -41,3 +41,19 @@ The outcome receipt reports no model calls, no verifier/tool work, route
 `none`, unknown downstream task outcome, and incomplete coverage. It makes no
 claim that a later task succeeded. Fixture tests use a local JSON serializer
 and character counter only.
+
+Each result also carries an in-memory-only metrics record for that facade
+call. It records monotonic elapsed wall time and counters at the facade's
+retrieval, artifact, structural index, schema, ledger, serializer/tokenizer,
+and receipt call sites. Put input bytes count bytes offered to `store.put`;
+put success bytes count only bytes accepted by a successful return. The
+structural index performs its own exact source
+rereads internally, but this version does not observe those reads; attempts,
+successes, and returned bytes remain null and explicitly unmeasured. Process
+CPU, RSS, energy, OS cache, and request-local page faults are also null, not
+estimated as zero. Metrics contain no paths, IDs, hashes, or content and are
+not persisted or exported. The zero model/provider/verifier/tool fields count
+only call sites owned by this facade, not total request activity. Caller
+serializer and tokenizer callbacks are arbitrary code; any external effects
+they cause are not observed, so `callback_external_activity` is null. This is
+preparation-scope measurement, not complete E0 accounting or acceptance.
