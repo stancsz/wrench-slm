@@ -1,6 +1,6 @@
 # E0 snapshot identity and exact-source retrieval
 
-Status: committed bounded implementation increment; POSIX pytest follow-up pending
+Status: committed bounded implementation increment; POSIX pytest follow-up complete
 Supervisor: root agent as goal owner
 Started: 2026-09-23 (America/Edmonton)
 Baseline: `380c799f3199e08404908ecd6f7faa7496992367`
@@ -50,16 +50,17 @@ publish, deploy, collect user traces, or mutate source files through the runtime
 | Task | Status | Evidence |
 | --- | --- | --- |
 | Implement bounded source manifest and verified exact reads | Complete | `src/wrench_harness/snapshot.py` and focused tests |
-| Review path, hash, and resource failure cases | Accepted with POSIX pytest caveat | `docs/evals/wrench-e0-snapshot-retrieval/review.md` |
+| Review path, hash, and resource failure cases | Accepted | `docs/evals/wrench-e0-snapshot-retrieval/review.md` |
 | Integrate and commit this increment | Complete | Commit `b23f925` |
-| Run POSIX pytest fixtures | Pending | Native POSIX-host verification of snapshot-specific branches |
+| Run POSIX pytest fixtures | Complete | Ubuntu 24.04 WSL: snapshot and artifact-store suites, 42 passed, 2 skipped |
 
 ## Next E0 work after this slice
 
 The bounded artifact store, snapshot/context bridges, namespace registry,
 serialized prompt gate, structural index, outcome receipt, and caller-owned
-preparation facade now exist as separately accepted slices. POSIX pytest
-follow-up and full E0 acceptance remain open: runtime-matched prompt/tokenizer
-identity, complete lifecycle accounting, end-to-end authority evidence, and
-matched-task utility still need evidence. Keep E1-E4 adapter, learning,
-recovery, and matched-utility gates open until their evidence exists.
+preparation facade now exist as separately accepted slices. Full E0 acceptance
+remains open: runtime-matched prompt/tokenizer identity, complete lifecycle
+accounting, and end-to-end authority evidence still need evidence. E4
+matched-task utility across the three clients remains a separate open gate.
+Keep E1-E4 adapter, learning, and recovery gates open until their evidence
+exists.

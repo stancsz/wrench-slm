@@ -71,14 +71,17 @@ $env:PYTHONPATH='C:\wrench-slm-data\cache\wrench-v2-test-deps-20260923\site-pack
 
 Current Windows-host result after the root-chain change: `18 passed, 4
 skipped`. The three POSIX-specific tests and OS symlink-creation fixture were
-skipped by Windows pytest. A stdlib-only smoke check ran under the existing
-Ubuntu-24.04 WSL runtime against temporary fixtures under
-`C:\wrench-slm-data\tmp`; it passed exact nested dirfd retrieval, deterministic
-final symlink replacement rejection, and root-ancestor symlink replacement at
-the root-acquisition seam. The temporary fixture directory was removed. The
-Windows native nested handle-walk test, deterministic reparse-bit test, and
-Windows case-alias rejection ran. Scoped `git diff --check` passed for the
-three delivered paths.
+skipped by Windows pytest. On Ubuntu 24.04 WSL (Python 3.12.3), the snapshot
+and artifact-store suites ran using cached pytest 8.4.2 and pluggy 1.6.0 from
+the approved data root, with no package installation: snapshot **20 passed, 2
+skipped** and artifact store **22 passed**. The snapshot skips are Windows
+case-alias and native Windows handle-walk tests.
+`PYTHONDONTWRITEBYTECODE=1` and `-p no:cacheprovider` were set. A separate
+stdlib-only smoke check had already passed exact nested dirfd retrieval,
+deterministic final symlink replacement rejection, and root-ancestor symlink
+replacement at the root-acquisition seam. The Windows native nested handle-walk
+test, deterministic reparse-bit test, and Windows case-alias rejection ran.
+Scoped `git diff --check` passed for the three delivered paths.
 
 ## Limits and follow-up
 
@@ -100,10 +103,10 @@ the process current directory when converted to an absolute lexical path.
 POSIX does not provide the Windows-style share-deny-write/delete lock here;
 in-place concurrent writers may use preexisting descriptors. Metadata and
 SHA-256 checks reject detected mutation and never return bytes that fail the
-admitted hash. The POSIX path received a bounded WSL smoke check, but its pytest
-fixtures were not run because pytest is unavailable in the existing POSIX
-runtime and installs are out of scope. Neither implementation provides
-power-loss durability. Root discovery, artifact storage, retention, and
-request-lifetime pinning remain separate E0 work. Independent review accepted
-this bounded increment with the POSIX pytest caveat recorded in
-`docs/evals/wrench-e0-snapshot-retrieval/review.md`.
+admitted hash. POSIX pytest fixtures have now run in WSL using cached
+dependencies, with two Windows-specific skips. Neither implementation provides
+power-loss durability. The bounded artifact store and artifact roundtrip are
+implemented in separate accepted slices. Root binding/discovery, production
+retention and recovery, and request-lifetime pinning remain open E0 work.
+Independent review accepted this bounded increment; POSIX pytest follow-up is
+recorded in `docs/evals/wrench-e0-snapshot-retrieval/review.md`.
