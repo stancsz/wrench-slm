@@ -112,6 +112,17 @@ unavailable in the launchable Python 3.13 runtime; the listed 3.11 runtime is
 not launchable. `git diff --check` passed. This evidence does not qualify
 Windows runtime behavior or change E0 acceptance.
 
+### Snapshot root identity design review
+
+Read-only job `W2-NS-WIN-IDENTITY-DESIGN-20260924` (nonce `WID-1A8C`)
+identified a same-path ordinary-directory replacement case that the
+component-relative handle walk does not distinguish when source bytes match.
+The recommendation is a separate v3 snapshot schema with required root object
+identity committed into `snapshot_sha256`, consistent across source reads and
+checked during retrieval. It affects public snapshot compatibility and
+hash-derived IDs, so it remains a scoped follow-up rather than a silent v2
+canonicalization change. No code or tests changed from this design-only review.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)

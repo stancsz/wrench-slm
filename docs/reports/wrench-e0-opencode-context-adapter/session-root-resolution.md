@@ -136,3 +136,19 @@ remain open. The fixtures were not executed: Python 3.13 is available without
 pytest, and the listed Python 3.11 runtime is not launchable by the host
 launcher. No dependency was installed. `git diff --check` passed after the
 change; this is not Windows runtime evidence.
+
+### Same-path object identity follow-up
+
+Read-only design review `W2-NS-WIN-IDENTITY-DESIGN-20260924` (nonce
+`WID-1A8C`) found that the component walk can still read a replacement ordinary
+directory at the same lexical path if it contains byte-identical source. The
+current snapshot binds the configured path and source bytes, not the directory
+object. The reviewer recommends a separate snapshot-schema-v3 change that
+records a tagged root object identity in the canonical snapshot hash, compares
+it on retrieval, and requires consistent root identities across all reads
+during snapshot creation. Windows could use volume identity plus
+`FILE_ID_INFO`; POSIX could use `st_dev` and `st_ino`. These are replacement
+detection signals, not permanent globally unique IDs. This follow-up would
+change snapshot hashes and downstream derived identities. It is not
+implemented; UNC and network-filesystem identity semantics still need
+qualification.
