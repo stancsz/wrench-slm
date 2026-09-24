@@ -44,6 +44,9 @@ client's final serialized request, or that callback identifiers are authentic.
   substantiate the report's wrong-identity coverage claim. Commit `7bc27fd`
   adds valid-but-misbound snapshot and preparation-hash fixtures. The focused
   suite then passed: **25 passed in 1.57s**.
+- Final integrated verification of the OpenCode adapter, context pipeline, and
+  post-run receipt suites passed: **34 passed in 2.70s**. The exact basetemp
+  was removed and its storage reservation released.
 - `git diff --check` passed before commit. The exact test scratch directory was
   removed after the run and the 20 MB storage reservation was released.
 - Storage checker remained `WITHIN_LIMIT`; actual usage after the run was

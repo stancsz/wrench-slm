@@ -26,6 +26,8 @@ caller-supplied and unauthenticated.
 - `git diff --check` passed before commit. The exact test scratch directory was
   removed after the run and the 20 MB reservation was released.
 - Storage remained `WITHIN_LIMIT`; actual usage was approximately 614 MB.
+- The final combined OpenCode context, E0 context-pipeline, and request-record
+  verification passed **34 tests in 2.70s**; see the [admission-check report](admission-check.md).
 
 ## Limits
 
