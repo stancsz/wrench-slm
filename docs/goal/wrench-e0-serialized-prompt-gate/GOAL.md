@@ -43,3 +43,16 @@ Independent review accepted the bounded snapshot, complete-message
 serialization, evidence-omission accounting, and token-budget gates. It does
 not establish production tokenizer accuracy or complete the integrated E0
 baseline.
+
+## Follow-up: serializer input mutation guard
+
+The serializer receives a recursive copy of the bounded message list.
+Ordinary mutation attempts now fail with `SERIALIZER_MUTATED_INPUT`, no prompt,
+and no context-message insertion identity. Focused tests passed 98 cases
+across the prompt compiler, preparation, hook projection, and lifecycle trace. See the
+[task report](../../reports/wrench-e0-context-pipeline/serializer-input-mutation.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-mutation.md).
+
+The callback remains caller supplied. Python base-class mutation calls can
+alter its private copy, and arbitrary output is not checked against the input
+messages or an installed runtime. Overall E0 acceptance remains open.

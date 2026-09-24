@@ -108,6 +108,33 @@ def test_empty_selected_context_has_no_insertion_identity():
     assert result.prompt == _fixture_serializer(messages)
 
 
+def test_serializer_cannot_mutate_prepared_context_even_if_it_catches_error():
+    ledger = _ledger_with_two_segments()
+    assembly = ledger.assemble("critical", active_token_budget=4)
+
+    def mutate_context(messages):
+        try:
+            messages[1]["content"] = "serializer mutation"
+        except RuntimeError:
+            # The callback may catch the immutable-input exception, but the
+            # compiler still records the mutation attempt and fails closed.
+            pass
+        return _fixture_serializer(messages)
+
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": "rules"}],
+        serializer=mutate_context,
+    )
+
+    assert result.receipt.status is PromptGateStatus.SERIALIZER_MUTATED_INPUT
+    assert result.receipt.reason == "serializer_mutated_input"
+    assert result.prompt is None
+    assert result.receipt.prompt_sha256 is None
+    assert result.receipt.context_message_sha256 is None
+    assert result.receipt.context_insertion_position is None
+
+
 def test_missing_required_hot_evidence_fails_closed_with_omission_reason():
     ledger = ContextLedger(max_logical_tokens=100)
     ledger.add_segment("hot-required", "must retain this hot evidence", 1, token_count=5, retention="hot")

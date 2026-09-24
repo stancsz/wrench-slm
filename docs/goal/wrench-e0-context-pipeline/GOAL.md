@@ -324,3 +324,17 @@ enforcement, final request/tokenizer parity, complete lifecycle accounting,
 task truth, utility, and overall E0 acceptance remain open. See the [prepared
 transition report](../../reports/wrench-e0-context-pipeline/prepared-context-transition.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/prepared-context-transition.md).
+
+## Follow-up: serializer mutation and context identity
+
+Status: implemented and focused verification passed; independent review pending.
+
+The prompt gate gives the serializer a recursive copy and rejects ordinary
+mutation attempts, including attempts caught by the callback. This protects
+the compiler-owned message digest from callback writes. Python base-class
+mutators can change the serializer copy, and arbitrary callback output is not
+verified against its input. Four focused suites passed 98 tests; the initial
+run's 43 setup errors came from a missing reserved scratch parent, which was
+created before the successful rerun. See the [task report](../../reports/wrench-e0-context-pipeline/serializer-input-mutation.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-mutation.md).
+Runtime parity and callback serialization correctness remain open.

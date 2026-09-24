@@ -51,6 +51,7 @@ class PromptGateStatus(str, Enum):
     INPUT_LIMIT_EXCEEDED = "input_limit_exceeded"
     SERIALIZED_SIZE_EXCEEDED = "serialized_size_exceeded"
     SERIALIZER_ERROR = "serializer_error"
+    SERIALIZER_MUTATED_INPUT = "serializer_mutated_input"
     INVALID_SERIALIZER_OUTPUT = "invalid_serializer_output"
     TOKENIZER_ERROR = "tokenizer_error"
     INVALID_TOKEN_COUNT = "invalid_token_count"
@@ -78,6 +79,69 @@ class PromptGateReceipt:
 class PromptGateResult:
     receipt: PromptGateReceipt
     prompt: str | bytes | None
+
+
+class _SerializerInputMutation(RuntimeError):
+    pass
+
+
+class _ReadOnlySerializerDict(dict):
+    def __init__(self, value: dict[str, object], mutation_attempted: list[bool]):
+        self._mutation_attempted = mutation_attempted
+        dict.__init__(
+            self,
+            {
+                key: _read_only_serializer_input(item, mutation_attempted)
+                for key, item in value.items()
+            },
+        )
+
+    def _reject_mutation(self, *args: object, **kwargs: object) -> None:
+        self._mutation_attempted[0] = True
+        raise _SerializerInputMutation("serializer_input_is_read_only")
+
+    __setitem__ = _reject_mutation
+    __delitem__ = _reject_mutation
+    clear = _reject_mutation
+    pop = _reject_mutation
+    popitem = _reject_mutation
+    setdefault = _reject_mutation
+    update = _reject_mutation
+    __ior__ = _reject_mutation
+
+
+class _ReadOnlySerializerList(list):
+    def __init__(self, value: list[object], mutation_attempted: list[bool]):
+        self._mutation_attempted = mutation_attempted
+        list.__init__(
+            self,
+            [_read_only_serializer_input(item, mutation_attempted) for item in value],
+        )
+
+    def _reject_mutation(self, *args: object, **kwargs: object) -> None:
+        self._mutation_attempted[0] = True
+        raise _SerializerInputMutation("serializer_input_is_read_only")
+
+    __setitem__ = _reject_mutation
+    __delitem__ = _reject_mutation
+    __iadd__ = _reject_mutation
+    __imul__ = _reject_mutation
+    append = _reject_mutation
+    clear = _reject_mutation
+    extend = _reject_mutation
+    insert = _reject_mutation
+    pop = _reject_mutation
+    remove = _reject_mutation
+    reverse = _reject_mutation
+    sort = _reject_mutation
+
+
+def _read_only_serializer_input(value: object, mutation_attempted: list[bool]) -> object:
+    if type(value) is dict:
+        return _ReadOnlySerializerDict(value, mutation_attempted)
+    if type(value) is list:
+        return _ReadOnlySerializerList(value, mutation_attempted)
+    return value
 
 
 def _valid_id(value: object) -> bool:
@@ -408,12 +472,36 @@ def compile_prompt(
                 _bounded_canonical_json(context_message, MAX_CONTEXT_MESSAGE_BYTES)
             ).hexdigest()
             copied_messages.insert(context_position, context_message)
-        serialized = serializer(copied_messages)
+        mutation_attempted = [False]
+        read_only_messages = _read_only_serializer_input(copied_messages, mutation_attempted)
+        serialized = serializer(read_only_messages)
+    except _SerializerInputMutation:
+        return _empty_receipt(
+            PromptGateStatus.SERIALIZER_MUTATED_INPUT,
+            hard_budget=hard_budget,
+            tokenizer_id=tokenizer_id,
+            serializer_id=serializer_id,
+            reason="serializer_mutated_input",
+            session_hash=session_hash,
+            selected=selected_tuple,
+            omitted=omitted_tuple,
+        )
     except Exception as exc:
         return _empty_receipt(
             PromptGateStatus.SERIALIZER_ERROR, hard_budget=hard_budget, tokenizer_id=tokenizer_id,
             serializer_id=serializer_id, reason=type(exc).__name__, session_hash=session_hash,
             selected=selected_tuple, omitted=omitted_tuple,
+        )
+    if mutation_attempted[0]:
+        return _empty_receipt(
+            PromptGateStatus.SERIALIZER_MUTATED_INPUT,
+            hard_budget=hard_budget,
+            tokenizer_id=tokenizer_id,
+            serializer_id=serializer_id,
+            reason="serializer_mutated_input",
+            session_hash=session_hash,
+            selected=selected_tuple,
+            omitted=omitted_tuple,
         )
     if type(serialized) not in (str, bytes):
         return _empty_receipt(
