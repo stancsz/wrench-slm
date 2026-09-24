@@ -1,6 +1,6 @@
 # E0 root-object identity in source snapshots
 
-Status: bounded snapshot-v3 increment implemented and independently reviewed
+Status: bounded snapshot-v3 identity and continuity increments implemented
 Updated: 2026-09-24 (America/Edmonton)
 
 ## Outcome
@@ -22,6 +22,18 @@ to one snapshot and during each later exact retrieval.
   expose the identity through the OpenCode preparation join.
 - Reject byte-identical directory replacement at the same path and root
   replacement between selected file reads.
+- Carry the captured root binding across validation, snapshot creation, and
+  exact retrieval when a caller needs continuity across intervening work.
+- During POSIX root capture, verify the named directory identity before and
+  after opening it relative to the pinned parent handle. Reject relative or
+  malformed public bindings and report missing dir-fd support as an admission
+  error.
+- Focused Windows Python 3.11.16 suite for root binding and E0 preparation:
+  75 passed, 8 skipped with pytest 8.3.5, including direct bound retrieval
+  and byte-identical replacement coverage.
+- Independent post-fix source review found no remaining correctness blocker;
+  it requested direct retrieval coverage, which was added before final
+  verification. See the continuity evaluation for reviewer identity and scope.
 - Focused Windows Python 3.11.16 verification: 127 passed, 9 skipped. Focused
   Ubuntu 24.04 WSL Python 3.12.3 verification: 132 passed, 4 skipped.
 - Independent code review `W2-NS-ROOT-IDENTITY-V3-REVIEW-20260924`, nonce
@@ -45,3 +57,11 @@ defines its volume serial and 128-bit file identifier.
 This remains a local E0 component. It does not qualify the installed OpenCode
 runtime, provider serializer/tokenizer parity, request-lifecycle accounting,
 outcome authority, or E4 task utility.
+
+Callers must retain and pass the `SourceRootBinding` returned by
+`bind_source_root` across validation and snapshot creation, then pass that
+same binding to `retrieve_exact` when continuity is required. OpenCode callers
+can carry `OpenCodeSessionRoot.binding` into both snapshot creation and
+`prepare_opencode_e0_context(..., resolved_session_root=...)`. A binding is a
+local replacement-detection token, not authenticated session identity, an
+atomic multi-file snapshot, or a client dispatch veto.

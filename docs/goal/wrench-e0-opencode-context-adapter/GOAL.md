@@ -224,13 +224,21 @@ real utility work still needs owner-approved consent, use, access, retention,
 withdrawal, and deletion processes before collection.
 
 The follow-on `prepare_opencode_e0_context` seam resolves the supplied session
-record and passes only its configured root to `prepare_e0_context`. It returns
-a join object containing the session ID, root, snapshot-v3 digest, root
-location, and root-object identity. Exact retrieval checks the captured root
-identity. This helper performs no session lookup, provider request, or
-dispatch. A future OpenCode adapter must explicitly pass the `session.get`
-response's `data` record; the resolver does not accept the outer response
-wrapper. Optional `workspaceID` is not part of the current join. The remaining
-root identity and UNC/network limitations above are recorded in the
+record and carries its `SourceRootBinding` into `prepare_e0_context`. To keep
+the selected directory continuous across intervening work, a future adapter
+should use the resolved token for both snapshot creation and preparation:
+`resolved = resolve_opencode_session_root(...)`, then
+`create_snapshot(resolved.binding, paths)`, then
+`prepare_opencode_e0_context(..., resolved_session_root=resolved)`. Preparation
+re-resolves the session record and rejects a changed binding before composing
+context; exact retrieval also checks the captured root identity. This detects
+same-path directory replacement locally, but does not authenticate the session
+record or provide an atomic multi-file snapshot. The helper performs no session
+lookup, provider request, or dispatch. A future OpenCode adapter must explicitly
+pass the `session.get` response's `data` record; the resolver does not accept
+the outer response wrapper. Optional `workspaceID` is not part of the current
+join. `OpenCodeSessionRoot.configured_root` remains a readable property, while
+the returned dataclass field/constructor shape now exposes `binding`. The
+remaining root identity and UNC/network limitations above are recorded in the
 [session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
 and [snapshot root-identity goal](../wrench-e0-snapshot-root-identity/GOAL.md).
