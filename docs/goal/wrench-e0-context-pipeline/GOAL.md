@@ -485,3 +485,17 @@ this inventory does not claim whole-repository completeness.
 
 See the [root inventory report](../../reports/wrench-e0-context-pipeline/root-inventory.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/root-inventory.md).
+
+## Follow-up: supplied-manifest baseline accounting
+
+A content-free schema-v2 receipt now joins the root-bound selected snapshot
+manifest, rebuilt inventory, route-owned synthetic request composition,
+seven-field post-insertion projection, and terminal fixture outcome. It
+reports exact-read and synthetic envelope/lowered-body accounting. Its
+accounted/unaccounted fields apply only to the supplied snapshot manifest;
+they do not establish whole-filesystem completeness. Context-selected and
+context-omitted candidate counts and enrolled-path omissions remain
+unavailable. The current report records fixture and review evidence:
+[supplied-manifest baseline accounting](../../reports/wrench-e0-context-pipeline/supplied-manifest-baseline-accounting.md).
+This does not close E0 or establish OpenCode runtime, provider, dispatch,
+tokenizer, or real-task evidence.
