@@ -59,6 +59,7 @@ a model.
 | Enforce safe retention eligibility in the bounded store | Implemented; caller policy remains pending | [Retention eligibility report](../../reports/wrench-e0-artifact-store/retention-eligibility.md); expiry-aware manual eviction does not set real-data retention periods |
 | Add regression evidence for migration and eviction recovery boundaries | Focused tests pass; review recorded | [Recovery regression report](../../reports/wrench-e0-artifact-store/recovery-regressions.md) and [independent evaluation](../../evals/wrench-e0-artifact-store/recovery-regressions-review.md) |
 | Enforce physical-volume headroom before bounded object and manifest staging writes | Cooperative per-write guard and focused suite reviewed; hard 5 GB guarantee remains open | [Headroom guard report](../../reports/wrench-e0-artifact-store/headroom-guard.md) and [evaluation](../../evals/wrench-e0-artifact-store/headroom-guard-review.md) |
+| Recover a valid previous generation when the current manifest exceeds its configured size limit | Implemented and reviewed; bounded test module passes with three existing symlink-permission skips | [Recovery hardening report](../../reports/wrench-e0-artifact-store/recovery-hardening.md) and [evaluation](../../evals/wrench-e0-artifact-store/recovery-hardening.md); commit `ef1fa3b` |
 
 ## Limits
 
