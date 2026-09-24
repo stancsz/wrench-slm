@@ -16,7 +16,7 @@ from contextlib import nullcontext
 from dataclasses import asdict, dataclass, replace
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence
 
 from .artifact_store import ArtifactHandle, ArtifactReadStatus, ArtifactRequest, ArtifactStore, ArtifactStoreError
 from .context import ContextAdmissionError, ContextLedger, ContextSelectionError
@@ -30,6 +30,11 @@ from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrie
 from .snapshot_structure import (
     StructuralStatus, build_snapshot_symbol_index, query_snapshot_symbols,
 )
+
+if TYPE_CHECKING:
+    from .selected_segment_sources import SelectedSourceReferenceReceipt
+else:
+    SelectedSourceReferenceReceipt = Any
 
 
 MAX_PATHS = 16
@@ -145,6 +150,8 @@ class PreparationResult:
     reason: str | None = None
     metrics: "PreparationMetrics | None" = None
     accounting_receipt: "PreparationAccountingReceipt | None" = None
+    selected_source_references: SelectedSourceReferenceReceipt | None = None
+    selected_source_reference_unavailable_reasons: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -817,10 +824,53 @@ def _prepare_e0_context_impl(
                                     receipt_omitted.append((row.evidence_id, "non_text"))
                                     omitted_ids.add(row.evidence_id)
                             receipt_misses = [(evidence_id, status) for evidence_id, status in miss_rows if status in {"missing", "stale", "unsafe", "unknown_snapshot", "unknown_source", "evicted"}]
+                            # Import lazily: the helper's public SourceIdentity
+                            # type is declared in this module. These validated
+                            # source and candidate rows are the only lineage
+                            # inputs used; no ledger internals are inspected.
+                            from .selected_segment_sources import (
+                                SelectedSourceReferenceError,
+                                build_selected_segment_source_references,
+                            )
+                            try:
+                                selected_source_references = build_selected_segment_source_references(
+                                    snapshot_sha256=snapshot.snapshot_sha256,
+                                    selected_segment_ids=selected,
+                                    sources=tuple(source_rows),
+                                    candidates=(
+                                        candidate_result.candidates
+                                        if candidate_result.status is StructuralStatus.OK
+                                        else ()
+                                    ),
+                                )
+                            except (SelectedSourceReferenceError, TypeError, ValueError, OverflowError) as exc:
+                                return PreparationResult(
+                                    PreparationStatus.RECEIPT_FAILED, "none", None,
+                                    prompt_result.receipt, None, None, tuple(source_rows),
+                                    selected, tuple(receipt_omitted), tuple(miss_rows),
+                                    tuple(schema_rows), structural_status,
+                                    "selected_source_references_" + type(exc).__name__,
+                                )
+
+                            unavailable_reasons = tuple(
+                                (str(row["segment_id"]), reason)
+                                for row in selected_source_references.references
+                                for reason in (
+                                    ("source_or_symbol_lineage_unavailable",)
+                                    if row["segment_kind"] == "unresolved"
+                                    else ()
+                                ) + (
+                                    ("summary_lineage_not_exposed_by_preparation",)
+                                    if row["summary_lineage_status"] == "unavailable"
+                                    else ()
+                                )
+                            )
                             aggregate_hash = _canonical_digest({
                                 "schema": "wrench.e0-preparation-refs.v1", "snapshot_sha256": snapshot.snapshot_sha256,
                                 "sources": [[r.evidence_id, r.path, r.content_sha256, r.artifact_handle_id, r.status] for r in source_rows],
                                 "selected": list(selected), "omitted": [list(row) for row in receipt_omitted], "misses": [list(row) for row in miss_rows],
+                                "selected_source_references_sha256": selected_source_references.receipt_sha256,
+                                "selected_source_reference_unavailable_reasons": [list(row) for row in unavailable_reasons],
                                 "assembly_session_hash": assembly.get("session_hash"),
                                 "schemas": [list(row) for row in schema_rows],
                                 "discovered_namespace_ids": discovered_namespace_ids,
@@ -840,7 +890,15 @@ def _prepare_e0_context_impl(
                             elif misses:
                                 final_status = PreparationStatus.SOURCE_MISSES
                                 reason = "some_sources_missed"
-                            return PreparationResult(final_status, "none", prompt_result.prompt if prompt_result.receipt.status is PromptGateStatus.READY else None, prompt_result.receipt, receipt_result, aggregate_hash, tuple(source_rows), selected, tuple(receipt_omitted), tuple(miss_rows), tuple(schema_rows), structural_status, reason)
+                            return PreparationResult(
+                                final_status, "none",
+                                prompt_result.prompt if prompt_result.receipt.status is PromptGateStatus.READY else None,
+                                prompt_result.receipt, receipt_result, aggregate_hash,
+                                tuple(source_rows), selected, tuple(receipt_omitted),
+                                tuple(miss_rows), tuple(schema_rows), structural_status, reason,
+                                selected_source_references=selected_source_references,
+                                selected_source_reference_unavailable_reasons=unavailable_reasons,
+                            )
 
     # Even a fully stale/missing request gets a reference-only incomplete
     # receipt. No content object or prompt is created for retrieval misses.

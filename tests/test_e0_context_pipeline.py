@@ -15,6 +15,7 @@ from wrench_harness.e0_context_pipeline import (
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
 from wrench_harness.outcome_receipt import ReceiptStatus
 from wrench_harness.prompt_compiler import PromptGateStatus
+import wrench_harness.selected_segment_sources as selected_segment_sources
 from wrench_harness.snapshot import create_snapshot
 
 
@@ -165,10 +166,98 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert metrics.energy_joules is None and metrics.os_cache_bytes is None and metrics.request_page_faults is None
     assert "sample.py" not in repr(asdict(metrics))
 
+    lineage = result.selected_source_references
+    assert lineage is not None
+    lineage_payload = lineage.as_dict()
+    assert lineage_payload["snapshot_sha256"] == snapshot.snapshot_sha256
+    assert lineage_payload["selected_segment_ids"] == list(result.selected_evidence_ids)
+    lineage_rows = lineage_payload["references"]
+    assert {row["segment_id"] for row in lineage_rows} == set(result.selected_evidence_ids)
+    source_reference = next(row for row in lineage_rows if row["segment_kind"] == "source")
+    assert source_reference["source_path"] == "sample.py"
+    assert source_reference["content_sha256"] == result.sources[0].content_sha256
+    assert source_reference["artifact_handle_id"] == result.sources[0].artifact_handle_id
+    assert source_reference["span_status"] == "whole_file"
+    assert source_reference["start_line"] is None and source_reference["end_line"] is None
+    symbol_reference = next(row for row in lineage_rows if row["segment_kind"] == "symbol")
+    assert symbol_reference["source_path"] == "sample.py"
+    assert symbol_reference["span_status"] == "parser_reported_exact"
+    assert (symbol_reference["start_line"], symbol_reference["end_line"]) == (2, 3)
+    assert symbol_reference["parser"] == "python_ast"
+    assert all(row["summary_lineage_status"] == "unavailable" for row in lineage_rows)
+    assert all(
+        (segment_id, "summary_lineage_not_exposed_by_preparation")
+        in result.selected_source_reference_unavailable_reasons
+        for segment_id in result.selected_evidence_ids
+    )
+    assert not any(
+        reason == "source_or_symbol_lineage_unavailable"
+        for _, reason in result.selected_source_reference_unavailable_reasons
+    )
+
     repeated = _invoke(root, snapshot, store, required_paths=("sample.py",), preserve_paths=("sample.py",), serializer=serializer)
     assert repeated.aggregate_sha256 == result.aggregate_sha256
     assert repeated.accounting_receipt is not None
     assert repeated.accounting_receipt.accounting_sha256 == accounting.accounting_sha256
+    assert repeated.selected_source_references is not None
+    assert repeated.selected_source_references.receipt_sha256 == lineage.receipt_sha256
+
+
+def test_selected_source_reference_receipt_excludes_unselected_source_and_symbols(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    (root / "sample.py").write_text("def target():\n    return 'selected fixture'\n", encoding="utf-8")
+    (root / "unused.py").write_text("def unrelated():\n    return 'unselected fixture'\n", encoding="utf-8")
+    snapshot = create_snapshot(root, ["sample.py", "unused.py"])
+    store = ArtifactStore(tmp_path / "store")
+
+    result = _invoke(
+        root,
+        snapshot,
+        store,
+        paths=("sample.py", "unused.py"),
+        context_budget=5,
+        required_paths=("sample.py",),
+        preserve_paths=("sample.py",),
+    )
+
+    assert result.status is PreparationStatus.READY
+    assert result.selected_source_references is not None
+    selected = set(result.selected_evidence_ids)
+    rows = result.selected_source_references.references
+    assert {row["segment_id"] for row in rows} == selected
+    unused_id = next(row.evidence_id for row in result.sources if row.path == "unused.py")
+    assert unused_id not in selected
+    assert all(row["source_path"] != "unused.py" for row in rows)
+
+
+def test_preparation_aggregate_binds_selected_source_reference_digest(tmp_path, monkeypatch):
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+    baseline = _invoke(root, snapshot, store, required_paths=("sample.py",))
+    assert baseline.selected_source_references is not None
+
+    original_builder = selected_segment_sources.build_selected_segment_source_references
+
+    def changed_digest(**kwargs):
+        receipt = original_builder(**kwargs)
+        return replace(receipt, receipt_sha256="f" * 64)
+
+    monkeypatch.setattr(
+        selected_segment_sources,
+        "build_selected_segment_source_references",
+        changed_digest,
+    )
+    altered = _invoke(root, snapshot, store, required_paths=("sample.py",))
+
+    assert altered.selected_source_references is not None
+    assert altered.selected_source_references.receipt_sha256 == "f" * 64
+    assert altered.aggregate_sha256 != baseline.aggregate_sha256
+    baseline_payload = json.loads(baseline.outcome_receipt.receipt.payload_json)
+    altered_payload = json.loads(altered.outcome_receipt.receipt.payload_json)
+    assert baseline_payload["context_receipt_sha256"] != altered_payload["context_receipt_sha256"]
 
 
 def test_authored_synthetic_composition_keeps_valid_prompt_and_records_non_text_omission(tmp_path):
