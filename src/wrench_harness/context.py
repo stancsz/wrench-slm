@@ -14,10 +14,24 @@ import math
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from typing import Callable, Iterable
+from itertools import islice
+from types import MappingProxyType
+from typing import Callable, Iterable, Mapping
 
 
 MAX_LOGICAL_CONTEXT_TOKENS = 2_000_000
+MAX_CONTEXT_SEGMENTS = 10_000
+MAX_CONTEXT_TEXT_BYTES = 4 * 1024 * 1024
+MAX_CONTEXT_SEGMENT_BYTES = 256 * 1024
+MAX_CONTEXT_AUX_BYTES = 16 * 1024 * 1024
+MAX_CONTEXT_SUMMARY_REFS = 256
+MAX_CONTEXT_METADATA_FIELDS = 64
+MAX_CONTEXT_METADATA_BYTES = 1024
+MAX_CONTEXT_ID_CHARS = 256
+MAX_CONTEXT_LABEL_CHARS = 64
+MAX_SEARCH_QUERY_CHARS = 4_096
+MAX_SEARCH_QUERY_TERMS = 256
+MAX_SEARCH_TERM_DOCUMENT_CHECKS = 100_000
 RETENTION_TIERS = {"hot", "warm", "reference", "cold"}
 _TOKEN_RE = re.compile(r"\w+", re.UNICODE)
 
@@ -56,7 +70,10 @@ class ContextSegment:
     unit_id: str | None = None
     summary_of: tuple[str, ...] = ()
     counts_toward_logical_limit: bool = True
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: Mapping[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
     @property
     def text_sha256(self) -> str:
@@ -105,6 +122,8 @@ class ContextLedger:
         self._units: dict[str, list[str]] = defaultdict(list)
         self._inverted_index: dict[str, dict[str, int]] = defaultdict(dict)
         self._logical_token_count = 0
+        self._stored_text_bytes = 0
+        self._stored_aux_bytes = 0
         self._token_count_modes: set[str] = set()
         self._session_hash: str | None = None
         self._indexed_token_total = 0
@@ -167,27 +186,75 @@ class ContextLedger:
 
         if not isinstance(segment_id, str) or not segment_id:
             raise ContextAdmissionError("segment_id must be a non-empty string")
+        if len(segment_id) > MAX_CONTEXT_ID_CHARS:
+            raise ContextAdmissionError("context_identifier_limit_exceeded")
         if segment_id in self._segments:
             raise ContextAdmissionError("duplicate segment_id")
         if not isinstance(text, str) or not text:
             raise ContextAdmissionError("text must be a non-empty string")
-        if not isinstance(source_order, int) or isinstance(source_order, bool) or source_order < 0:
+        if len(text) > MAX_CONTEXT_SEGMENT_BYTES:
+            raise ContextAdmissionError("context_segment_byte_limit_exceeded")
+        text_bytes = len(text.encode("utf-8"))
+        if text_bytes > MAX_CONTEXT_SEGMENT_BYTES:
+            raise ContextAdmissionError("context_segment_byte_limit_exceeded")
+        if len(self._segments) >= MAX_CONTEXT_SEGMENTS:
+            raise ContextAdmissionError("context_segment_count_limit_exceeded")
+        if self._stored_text_bytes + text_bytes > MAX_CONTEXT_TEXT_BYTES:
+            raise ContextAdmissionError("context_text_byte_limit_exceeded")
+        if (
+            not isinstance(source_order, int)
+            or isinstance(source_order, bool)
+            or not 0 <= source_order <= (2**63 - 1)
+        ):
             raise ContextAdmissionError("source_order must be a non-negative integer")
         if source_order in self._source_orders:
             raise ContextAdmissionError("duplicate source_order")
         if not isinstance(role, str) or not role or not isinstance(kind, str) or not kind:
             raise ContextAdmissionError("role and kind must be non-empty strings")
-        if retention not in RETENTION_TIERS:
+        if len(role) > MAX_CONTEXT_LABEL_CHARS or len(kind) > MAX_CONTEXT_LABEL_CHARS:
+            raise ContextAdmissionError("context_label_limit_exceeded")
+        if not isinstance(retention, str) or retention not in RETENTION_TIERS:
             raise ContextAdmissionError("invalid_retention_tier")
         if unit_id is not None and (not isinstance(unit_id, str) or not unit_id):
             raise ContextAdmissionError("unit_id must be null or a non-empty string")
+        if unit_id is not None and len(unit_id) > MAX_CONTEXT_ID_CHARS:
+            raise ContextAdmissionError("context_identifier_limit_exceeded")
         if not isinstance(counts_toward_logical_limit, bool):
             raise ContextAdmissionError("counts_toward_logical_limit must be boolean")
-        references = tuple(summary_of)
+        if isinstance(summary_of, (str, bytes)):
+            raise ContextAdmissionError("summary_of must be an iterable of identifiers")
+        try:
+            references = tuple(islice(iter(summary_of), MAX_CONTEXT_SUMMARY_REFS + 1))
+        except TypeError as exc:
+            raise ContextAdmissionError("summary_of must be iterable") from exc
+        if len(references) > MAX_CONTEXT_SUMMARY_REFS:
+            raise ContextAdmissionError("summary_reference_limit_exceeded")
         if any(not isinstance(item, str) or not item for item in references):
             raise ContextAdmissionError("summary_of must contain non-empty strings")
+        if any(len(item) > MAX_CONTEXT_ID_CHARS for item in references):
+            raise ContextAdmissionError("context_identifier_limit_exceeded")
         if len(set(references)) != len(references):
             raise ContextAdmissionError("summary_of contains duplicates")
+        if metadata is not None and not isinstance(metadata, dict):
+            raise ContextAdmissionError("metadata must be a dictionary")
+        metadata_values = {} if metadata is None else metadata
+        if len(metadata_values) > MAX_CONTEXT_METADATA_FIELDS:
+            raise ContextAdmissionError("context_metadata_field_limit_exceeded")
+        metadata_bytes = 0
+        for key, value in metadata_values.items():
+            if not isinstance(key, str) or not isinstance(value, str):
+                raise ContextAdmissionError("metadata keys and values must be strings")
+            if len(key) > MAX_CONTEXT_METADATA_BYTES or len(value) > MAX_CONTEXT_METADATA_BYTES:
+                raise ContextAdmissionError("context_metadata_byte_limit_exceeded")
+            metadata_bytes += len(key.encode("utf-8")) + len(value.encode("utf-8"))
+        if metadata_bytes > MAX_CONTEXT_METADATA_BYTES:
+            raise ContextAdmissionError("context_metadata_byte_limit_exceeded")
+        aux_strings = (segment_id, role, kind, retention, *references)
+        if unit_id is not None:
+            aux_strings += (unit_id,)
+        aux_bytes = sum(len(value.encode("utf-8")) for value in aux_strings) + metadata_bytes
+        if self._stored_aux_bytes + aux_bytes > MAX_CONTEXT_AUX_BYTES:
+            raise ContextAdmissionError("context_auxiliary_byte_limit_exceeded")
         counts, mode = self._count_tokens(text, token_count)
         if counts_toward_logical_limit and self._logical_token_count + counts > self.max_logical_tokens:
             raise ContextAdmissionError("logical_context_limit_exceeded")
@@ -203,9 +270,11 @@ class ContextLedger:
             unit_id=unit_id,
             summary_of=references,
             counts_toward_logical_limit=counts_toward_logical_limit,
-            metadata=dict(metadata or {}),
+            metadata=dict(metadata_values),
         )
         self._segments[segment_id] = segment
+        self._stored_text_bytes += text_bytes
+        self._stored_aux_bytes += aux_bytes
         self._source_orders[source_order] = segment_id
         if counts_toward_logical_limit:
             self._logical_token_count += counts
@@ -259,22 +328,34 @@ class ContextLedger:
     def _unit_segments(self, unit_id: str) -> list[ContextSegment]:
         return sorted((self._segments[item] for item in self._units[unit_id]), key=lambda item: item.source_order)
 
-    def search(self, query: str, *, limit: int = 32) -> list[ContextSegment]:
-        """Return BM25-ranked indexed lexical matches without rescanning text."""
-
+    def _search_candidates(
+        self, query: str, *, limit: int
+    ) -> tuple[list[ContextSegment], bool]:
+        """Return bounded BM25 candidates and whether posting work was clipped."""
         if not isinstance(query, str):
             raise ContextSelectionError("query must be a string")
+        if len(query) > MAX_SEARCH_QUERY_CHARS:
+            raise ContextSelectionError("query_character_limit_exceeded")
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 10_000:
             raise ContextSelectionError("invalid search limit")
         terms = Counter(_tokens(query))
+        if len(terms) > MAX_SEARCH_QUERY_TERMS:
+            raise ContextSelectionError("query_term_limit_exceeded")
         if not terms:
-            return []
+            return [], False
         document_count = len(self._segments)
         average_length = self._indexed_token_total / max(1, document_count)
         k1 = 1.2
         b = 0.75
         scores: dict[str, float] = defaultdict(float)
-        for term, query_frequency in terms.items():
+        term_document_checks = 0
+        truncated = False
+        recent_segment_ids = sorted(
+            self._segments,
+            key=lambda segment_id: (-self._segments[segment_id].source_order, segment_id),
+        )
+        for term in sorted(terms):
+            query_frequency = terms[term]
             posting = self._inverted_index.get(term, {})
             document_frequency = len(posting)
             if not document_frequency:
@@ -282,17 +363,35 @@ class ContextLedger:
             inverse_document_frequency = math.log1p(
                 (document_count - document_frequency + 0.5) / (document_frequency + 0.5)
             )
-            for segment_id, term_frequency in posting.items():
+            # Scan segments in source recency order so truncation keeps newer
+            # evidence even when ingestion order differs from source order.
+            for segment_id in recent_segment_ids:
+                if term_document_checks >= MAX_SEARCH_TERM_DOCUMENT_CHECKS:
+                    truncated = True
+                    break
+                term_document_checks += 1
+                term_frequency = posting.get(segment_id)
+                if term_frequency is None:
+                    continue
                 document_length = self._indexed_lengths[segment_id]
                 normalization = k1 * (1.0 - b + b * document_length / max(1.0, average_length))
                 term_score = inverse_document_frequency * (
                     term_frequency * (k1 + 1.0) / (term_frequency + normalization)
                 )
                 scores[segment_id] += query_frequency * term_score
-        return sorted(
+            if truncated:
+                break
+        candidates = sorted(
             (self._segments[segment_id] for segment_id in scores),
             key=lambda item: (-scores[item.segment_id], -item.source_order, item.segment_id),
         )[:limit]
+        return candidates, truncated
+
+    def search(self, query: str, *, limit: int = 32) -> list[ContextSegment]:
+        """Return BM25-ranked candidates under the configured posting-work cap."""
+
+        candidates, _ = self._search_candidates(query, limit=limit)
+        return candidates
 
     def session_hash(self) -> str:
         if self._session_hash is not None:
@@ -343,16 +442,31 @@ class ContextLedger:
             if unit_id not in ordered_unit_set:
                 ordered_units.append(unit_id)
                 ordered_unit_set.add(unit_id)
-        # Recent hot/warm context is the default working set. Reference and
-        # cold material remains queryable in the ledger but is not silently
-        # forwarded to the model. Callers must explicitly preserve a reference
-        # segment when it is needed for the current task.
-        active_segments = [
-            segment
-            for segment in self._segments.values()
-            if segment.retention in {"hot", "warm"}
+        # Preserve hot evidence first, then add query-ranked candidates. This
+        # makes reference/cold material retrievable without forwarding
+        # unrelated history by default. Warm recency is the final fallback.
+        hot_segments = [
+            segment for segment in self._segments.values() if segment.retention == "hot"
         ]
-        for segment in sorted(active_segments, key=lambda item: -item.source_order):
+        for segment in sorted(hot_segments, key=lambda item: -item.source_order):
+            unit_id = self._unit_for(segment.segment_id)
+            if unit_id not in ordered_unit_set:
+                ordered_units.append(unit_id)
+                ordered_unit_set.add(unit_id)
+
+        retrieval_candidates, retrieval_truncated = self._search_candidates(
+            query, limit=search_limit
+        )
+        for segment in retrieval_candidates:
+            unit_id = self._unit_for(segment.segment_id)
+            if unit_id not in ordered_unit_set:
+                ordered_units.append(unit_id)
+                ordered_unit_set.add(unit_id)
+
+        warm_segments = [
+            segment for segment in self._segments.values() if segment.retention == "warm"
+        ]
+        for segment in sorted(warm_segments, key=lambda item: -item.source_order):
             unit_id = self._unit_for(segment.segment_id)
             if unit_id not in ordered_unit_set:
                 ordered_units.append(unit_id)
@@ -401,12 +515,15 @@ class ContextLedger:
         omitted_digest_builder.update(b"]")
         omitted_digest = omitted_digest_builder.hexdigest()
         return {
-            "schema": "wrench.context-assembly.v1",
+            "schema": "wrench.context-assembly.v2",
             "session_hash": self.session_hash(),
             "query_sha256": _sha256(query.encode("utf-8")),
             "logical_token_count": self.logical_token_count,
             "active_token_budget": active_token_budget,
             "selected_token_count": selected_tokens,
+            "retrieval_candidate_ids": [segment.segment_id for segment in retrieval_candidates],
+            "retrieval_truncated": retrieval_truncated,
+            "search_limit": search_limit,
             "token_count_mode": self.token_count_mode,
             "token_counter_name": self.effective_token_counter_name,
             "selected_segments": [segment.receipt() for segment in selected],

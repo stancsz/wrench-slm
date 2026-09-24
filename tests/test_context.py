@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+import wrench_harness.context as context_module
 from wrench_harness import ContextAdmissionError, ContextLedger, ContextSelectionError
 
 
@@ -61,7 +62,7 @@ def test_receipt_is_hash_bound_and_has_no_silent_omission():
     ledger.add_segment("new", "current compiler error", 2, token_count=5)
     receipt = ledger.assemble("current error", active_token_budget=5)
 
-    assert receipt["schema"] == "wrench.context-assembly.v1"
+    assert receipt["schema"] == "wrench.context-assembly.v2"
     assert len(receipt["session_hash"]) == 64
     omitted = {item["segment_id"]: item["reason"] for item in receipt["omitted_segments"]}
     assert omitted["old"] in {"active_token_budget", "not_selected", "unit_exceeds_active_budget"}
@@ -83,6 +84,99 @@ def test_reference_context_is_not_forwarded_without_explicit_preservation():
         preserve_ids=("old-lookup",),
     )
     assert [item["segment_id"] for item in preserved_receipt["selected_segments"]] == ["old-lookup", "recent"]
+
+
+def test_query_retrieves_ranked_reference_segments_within_budget():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("hot", "current deployment request", 3, token_count=3, retention="hot")
+    ledger.add_segment("matching", "deployment rollback commands", 2, token_count=3, retention="reference")
+    ledger.add_segment("unrelated", "database schema changes", 1, token_count=3, retention="reference")
+
+    receipt = ledger.assemble("deployment rollback", active_token_budget=6, search_limit=2)
+
+    assert [item["segment_id"] for item in receipt["selected_segments"]] == ["matching", "hot"]
+    assert receipt["retrieval_candidate_ids"] == ["matching", "hot"]
+    assert receipt["search_limit"] == 2
+    omitted = {item["segment_id"]: item["reason"] for item in receipt["omitted_segments"]}
+    assert omitted["unrelated"] == "not_selected"
+
+
+def test_hot_context_precedes_retrieved_context_when_budget_is_tight():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("hot-old", "current deployment request", 1, token_count=2, retention="hot")
+    ledger.add_segment("hot-new", "deployment failure output", 2, token_count=2, retention="hot")
+    ledger.add_segment("reference", "deployment rollback notes", 0, token_count=2, retention="reference")
+
+    first = ledger.assemble("deployment rollback", active_token_budget=4)
+    second = ledger.assemble("deployment rollback", active_token_budget=4)
+
+    assert first == second
+    assert [item["segment_id"] for item in first["selected_segments"]] == ["hot-old", "hot-new"]
+    assert first["retrieval_candidate_ids"][0] == "reference"
+
+
+def test_invalid_search_limit_fails_before_context_selection():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("one", "deployment", 1, token_count=1)
+
+    with pytest.raises(ContextSelectionError, match="invalid search limit"):
+        ledger.assemble("deployment", active_token_budget=10, search_limit=0)
+
+
+def test_receipt_marks_search_work_truncated_at_posting_cap(monkeypatch):
+    monkeypatch.setattr(context_module, "MAX_SEARCH_TERM_DOCUMENT_CHECKS", 1)
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("newer", "common deployment failure", 2, token_count=1, retention="reference")
+    ledger.add_segment("older", "common compiler message", 1, token_count=1, retention="reference")
+
+    receipt = ledger.assemble("common", active_token_budget=1)
+
+    assert receipt["retrieval_truncated"] is True
+    assert receipt["retrieval_candidate_ids"] == ["newer"]
+
+
+def test_query_character_limit_rejects_repeated_terms_before_tokenization():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("one", "common evidence", 1, token_count=1)
+    query = "x " * (context_module.MAX_SEARCH_QUERY_CHARS // 2 + 1)
+
+    with pytest.raises(ContextSelectionError, match="query_character_limit_exceeded"):
+        ledger.assemble(query, active_token_budget=10)
+
+
+def test_text_byte_limit_cannot_be_bypassed_with_explicit_token_counts(monkeypatch):
+    monkeypatch.setattr(context_module, "MAX_CONTEXT_TEXT_BYTES", 3)
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("one", "aa", 1, token_count=1)
+
+    with pytest.raises(ContextAdmissionError, match="context_text_byte_limit_exceeded"):
+        ledger.add_segment("two", "bb", 2, token_count=1)
+
+
+def test_metadata_and_summary_references_have_independent_admission_limits():
+    ledger = ContextLedger(max_logical_tokens=100)
+
+    with pytest.raises(ContextAdmissionError, match="context_metadata_byte_limit_exceeded"):
+        ledger.add_segment("large-metadata", "text", 1, token_count=1, metadata={"note": "x" * 1025})
+    with pytest.raises(ContextAdmissionError, match="summary_reference_limit_exceeded"):
+        ledger.add_segment(
+            "many-references",
+            "text",
+            2,
+            token_count=1,
+            summary_of=(f"source-{index}" for index in range(context_module.MAX_CONTEXT_SUMMARY_REFS + 1)),
+        )
+
+
+def test_auxiliary_bytes_are_capped_and_returned_metadata_is_immutable(monkeypatch):
+    monkeypatch.setattr(context_module, "MAX_CONTEXT_AUX_BYTES", 40)
+    ledger = ContextLedger(max_logical_tokens=100)
+    segment = ledger.add_segment("a", "text", 1, token_count=1, metadata={"source": "local"})
+
+    with pytest.raises(TypeError):
+        segment.metadata["extra"] = "x"
+    with pytest.raises(ContextAdmissionError, match="context_auxiliary_byte_limit_exceeded"):
+        ledger.add_segment("b", "text", 2, token_count=1)
 
 
 def test_invalid_retention_tier_fails_closed():
