@@ -318,16 +318,17 @@ bounded hashes, references, and position.
 
 Focused tests passed 97 cases across prompt compilation, E0 preparation,
 OpenCode projection, and lifecycle accounting. The transition compares
-caller-supplied projections and is not authenticated client evidence; OpenCode
-remains uninstalled and unrun. Nested message schema validation, dispatch
-enforcement, final request/tokenizer parity, complete lifecycle accounting,
-task truth, utility, and overall E0 acceptance remain open. See the [prepared
+caller-supplied projections and is not authenticated client evidence. Nested
+message schema validation, dispatch enforcement, final request/tokenizer
+parity, complete lifecycle accounting, task truth, utility, and overall E0
+acceptance remain open. See the [prepared
 transition report](../../reports/wrench-e0-context-pipeline/prepared-context-transition.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/prepared-context-transition.md).
 
 ## Follow-up: serializer mutation and context identity
 
-Status: implemented and focused verification passed; independent review pending.
+Status: initial mutation boundary implemented and focused verification passed;
+later serializer-input hardening is recorded in the v2 follow-up below.
 
 The prompt gate gives the serializer a recursive copy and rejects ordinary
 mutation attempts, including attempts caught by the callback. This protects
@@ -351,3 +352,31 @@ OpenCode content-part union validation, client execution, serializer and
 tokenizer parity, dispatch behavior, and E0 acceptance remain open. See the
 [report](../../reports/wrench-e0-context-pipeline/opencode-message-shape.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/opencode-message-shape.md).
+
+## Follow-up: serializer input immutability v2
+
+Status: implemented in `adc4cbc`; 102 focused tests passed and independent
+source review passed. The serializer now receives detached read-only mappings
+and tuple sequences, with a bounded materializer for callbacks that require
+ordinary JSON containers. This blocks supported interface mutation and common
+built-in mutators; same-process reflection and arbitrary serializer output
+remain outside the guarantee. Qwen contract tests could not collect because
+`torch` is unavailable. See the [v2 report](../../reports/wrench-e0-context-pipeline/serializer-input-immutability-v2.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-immutability-v2.md).
+
+## Current client setup status (2026-09-25)
+
+OpenCode `v2.0.15` is installed in an isolated directory under
+`C:\wrench-slm-data\opencode` and configured for `wrench-local/current` at
+`http://127.0.0.1:4000/v1`. A subagent revalidated the CLI, wrapper, config,
+and executable identities; `--version` matched, and a GET to `/v1/models`
+returned HTTP 200 with `current`. This is configuration and model-list
+connectivity evidence only. No prompt, task, chat, provider POST, inference,
+Wrench hook, or plugin ran. The install's current measured size is 1,042,047,920
+bytes across 609 files, about 5.6 MB above its initial report measurement,
+with new growth in local log/database state; no cleanup was attempted. The
+[install report](../../reports/wrench-e0-opencode-context-adapter/local-client-install.md)
+and [mock preflight](../../reports/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md)
+retain the identities and exact runtime boundary. A future mock prompt remains
+gated on validated process-level egress confinement and a separately approved
+single synthetic request. Overall E0 acceptance remains open.
