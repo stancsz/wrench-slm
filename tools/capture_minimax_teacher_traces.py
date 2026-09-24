@@ -8,15 +8,13 @@ normalized proposal suitable for calibration, usage, and transport evidence.
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import hashlib
 import json
 import os
 import re
-import time
 import urllib.error
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -25,10 +23,8 @@ try:
 except ModuleNotFoundError:
     from tools.generate_wrench_calibration import SYSTEM_EXPLICIT
 
-try:
-    from tools.evaluation_provenance import canonical_jsonl_sha256, raw_sha256
-except ModuleNotFoundError:
-    from evaluation_provenance import canonical_jsonl_sha256, raw_sha256
+from tools.provider_budget_guard import admit, debit_attempt
+from tools.provider_budget_guard import conservative_input_size
 
 
 ACTION_KEYS: dict[str, tuple[str, ...]] = {
@@ -75,14 +71,7 @@ def _parse_streaming_response(response: Any) -> tuple[str, str | None, str | Non
 
 
 def _parse_json_object(content: str) -> dict[str, Any] | None:
-    """Extract the first schema-bearing JSON object from a model response.
-
-    MiniMax may return private reasoning in a ``<think>`` block before the
-    final JSON object even when thinking is disabled in the request. Keep the
-    raw response for provenance, but normalize only the structured object.
-    This parser deliberately accepts no prose as a proposal and requires the
-    Wrench schema discriminator below.
-    """
+    """Extract only the schema-bearing object, discarding any reasoning text."""
     cleaned = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
     decoder = json.JSONDecoder()
     for match in re.finditer(r"\{", cleaned):
@@ -119,20 +108,20 @@ def _request(
     row: dict[str, Any],
     timeout: float,
     max_tokens: int,
+    request_reserve_usd: str,
+    maximum_input_tokens: int,
+    maximum_input_rate: str,
+    maximum_output_rate: str,
     api_key: str | None = None,
 ) -> dict[str, Any]:
-    started = time.perf_counter()
-
-    def with_latency(result: dict[str, Any]) -> dict[str, Any]:
-        result["latency_ms"] = round((time.perf_counter() - started) * 1000, 3)
-        return result
-
     messages = row.get("messages")
     if not isinstance(messages, list) or not messages:
         messages = [
             {"role": "system", "content": row.get("system") or SYSTEM_EXPLICIT},
             {"role": "user", "content": row["prompt"]},
         ]
+    if conservative_input_size(messages) > maximum_input_tokens:
+        raise ValueError("synthetic case exceeds child receipt maximum input token ceiling")
     body = json.dumps(
         {
             "model": model,
@@ -142,6 +131,16 @@ def _request(
             "stream": True,
             "stream_options": {"include_usage": True},
             "chat_template_kwargs": {"enable_thinking": False},
+            "provider": {
+                "only": ["minimax"],
+                "allow_fallbacks": False,
+                "enforce_distillable_text": True,
+                "data_collection": "deny",
+                "max_price": {
+                    "prompt": float(Decimal(maximum_input_rate)),
+                    "completion": float(Decimal(maximum_output_rate)),
+                },
+            },
         },
         ensure_ascii=False,
     ).encode("utf-8")
@@ -152,71 +151,85 @@ def _request(
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             content, response_model, finish_reason, usage = _parse_streaming_response(response)
-    except (urllib.error.URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        return with_latency({"id": row["id"], "transport_failure": True, "error": type(exc).__name__})
+    except (urllib.error.URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {
+            "normalized_proposal": None,
+            "response_model": None,
+            "provider_usage_and_cost": {"usage": None, "accounted_cost_usd": request_reserve_usd},
+            "response_content_sha256": None,
+        }
     if not isinstance(content, str):
-        return with_latency({"id": row["id"], "transport_failure": False, "response_invalid": True})
-    return with_latency({
-        "id": row["id"],
-        "family": row.get("family"),
-        "prompt": row.get("prompt"),
-        "system": row.get("system") or SYSTEM_EXPLICIT,
-        "target": row.get("target"),
-        "expected_status": row.get("expected_status"),
-        "expected_fallback_reason": row.get("expected_fallback_reason"),
-        "raw_model_output": content,
-        "normalized_proposal": _normalize(content),
+        return {
+            "normalized_proposal": None,
+            "response_model": response_model,
+            "provider_usage_and_cost": {
+                "usage": usage,
+                "accounted_cost_usd": debit_attempt(request_reserve_usd, usage.get("cost") if isinstance(usage, dict) else None),
+            },
+            "response_content_sha256": None,
+        }
+    actual_cost = usage.get("cost") if isinstance(usage, dict) else None
+    normalized = _normalize(content)
+    if response_model != model:
+        normalized = None
+    if isinstance(usage, dict):
+        prompt_tokens = usage.get("prompt_tokens")
+        completion_tokens = usage.get("completion_tokens")
+        if ((isinstance(prompt_tokens, int) and prompt_tokens > maximum_input_tokens)
+                or (isinstance(completion_tokens, int) and completion_tokens > max_tokens)):
+            normalized = None
+    return {
+        "normalized_proposal": normalized,
         "response_model": response_model,
-        "finish_reason": finish_reason,
-        "usage": usage,
-        "provider": None,
-        "transport_failure": False,
-        "response_invalid": False,
-    })
+        "provider_usage_and_cost": {"usage": usage, "accounted_cost_usd": debit_attempt(request_reserve_usd, actual_cost)},
+        "response_content_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+    }
 
 
 def capture(args: argparse.Namespace) -> dict[str, Any]:
+    admission = admit(
+        args.approval, args.child_receipt, args.cases,
+        endpoint=args.endpoint, model=args.model, max_tokens=args.max_tokens,
+        workers=args.workers, prior_spend_usd=args.prior_spend_usd,
+        prior_charge_status=args.prior_charge_status,
+        reconciliation_reference=args.reconciliation_reference,
+        remaining_cap_usd=args.remaining_cap_usd,
+        output_path=args.output,
+    )
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
-    if args.limit is not None:
-        rows = rows[: args.limit]
-    if not rows:
-        raise ValueError("no cases to capture")
-    api_key = os.environ.get(args.auth_env, "") if args.auth_env else ""
-    if args.auth_env and not api_key:
-        raise ValueError(f"configured auth environment variable is empty: {args.auth_env}")
-    results: list[dict[str, Any]] = []
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [
-            pool.submit(_request, args.endpoint, args.model, row, args.timeout, args.max_tokens, api_key or None)
-            for row in rows
+    if len(rows) != 1:
+        raise ValueError("the approved pilot is exactly one canonical synthetic case")
+    if rows[0].get("synthetic") is not True:
+        raise ValueError("case must be explicitly marked synthetic before dispatch")
+    auth_env = args.auth_env
+    if not isinstance(auth_env, str) or not auth_env.strip():
+        raise ValueError("--auth-env must name an environment variable")
+    api_key = os.environ.get(auth_env, "")
+    if not api_key:
+        raise ValueError(f"configured auth environment variable is empty: {auth_env}")
+    messages = rows[0].get("messages")
+    if not isinstance(messages, list) or not messages:
+        messages = [
+            {"role": "system", "content": rows[0].get("system") or SYSTEM_EXPLICIT},
+            {"role": "user", "content": rows[0]["prompt"]},
         ]
-        for future in as_completed(futures):
-            results.append(future.result())
-    results.sort(key=lambda item: str(item["id"]))
-    payload = {
-        "schema": "wrench.mechanical-worker-teacher-traces.v1",
-        "status": "CAPTURED_TEACHER_PROPOSAL_ONLY",
-        "teacher": {
-            "endpoint": args.endpoint,
-            "model": args.model,
-            "label": "MiniMax M3",
-            "identity_status": "endpoint_model_id_recorded_owner_label_not_independently_verified",
-            "max_tokens": args.max_tokens,
-            "auth_env": args.auth_env,
-            "auth_configured": bool(api_key),
-        },
-        "input_path": str(args.cases.resolve()),
-        "input_sha256": canonical_jsonl_sha256(args.cases),
-        "input_bytes_sha256": raw_sha256(args.cases),
-        "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "request_count": len(results),
-        "transport_failures": sum(bool(item.get("transport_failure")) for item in results),
-        "invalid_responses": sum(bool(item.get("response_invalid")) for item in results),
-        "results": results,
-        "quality_claim": False,
-        "execution_performed": False,
-        "scope": "teacher proposal capture for calibration; no model-quality or workflow-value claim",
-    }
+    if conservative_input_size(messages) > admission["maximum_input_tokens"]:
+        raise ValueError("synthetic case exceeds child receipt maximum input token ceiling")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    claim_path = args.output.with_name(args.output.name + ".claim")
+    try:
+        claim_fd = os.open(claim_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError as exc:
+        raise ValueError("this child receipt/output path has already been claimed; retries are prohibited") from exc
+    with os.fdopen(claim_fd, "w", encoding="utf-8") as claim:
+        claim.write(json.dumps({"approval_sha256": admission["approval_sha256"], "cases_sha256": admission["cases_canonical_sha256"]}))
+        claim.flush()
+        os.fsync(claim.fileno())
+    results = [_request(args.endpoint, args.model, rows[0], args.timeout, args.max_tokens,
+                        admission["maximum_request_reserve_usd"], admission["maximum_input_tokens"],
+                        admission["maximum_input_rate_usd_per_million_tokens"],
+                        admission["maximum_output_rate_usd_per_million_tokens"], api_key or None)]
+    payload = results[0]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return payload
@@ -226,24 +239,29 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--endpoint", default="http://127.0.0.1:4000/v1/chat/completions")
-    parser.add_argument("--model", default="minimax")
-    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--approval", type=Path, required=True)
+    parser.add_argument("--child-receipt", type=Path, required=True)
+    parser.add_argument("--endpoint", default="https://openrouter.ai/api/v1/chat/completions")
+    parser.add_argument("--model", default="minimax/minimax-m3")
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--timeout", type=float, default=60)
-    parser.add_argument("--max-tokens", type=int, default=1024)
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--max-tokens", type=int, default=128)
+    parser.add_argument("--prior-spend-usd", required=True)
+    parser.add_argument("--prior-charge-status", required=True)
+    parser.add_argument("--reconciliation-reference", required=True)
+    parser.add_argument("--remaining-cap-usd", required=True)
     parser.add_argument(
         "--auth-env",
-        default=None,
+        default="OPENROUTER_API_KEY",
         help="environment variable containing a bearer token; the token is never written to the receipt",
     )
     args = parser.parse_args()
-    if not 1 <= args.workers <= 16:
-        raise ValueError("workers must be between 1 and 16")
-    if not 128 <= args.max_tokens <= 8192:
-        raise ValueError("max_tokens must be between 128 and 8192")
+    if args.workers != 1:
+        raise ValueError("workers is fixed at 1")
+    if args.max_tokens != 128:
+        raise ValueError("max_tokens is fixed at 128")
     receipt = capture(args)
-    print(json.dumps({"status": receipt["status"], "requests": receipt["request_count"], "transport_failures": receipt["transport_failures"]}))
+    print(json.dumps({"status": "CAPTURED", "requests": 1}))
     return 0
 
 

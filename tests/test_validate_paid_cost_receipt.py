@@ -266,7 +266,7 @@ def test_gateway_alias_and_provider_model_are_bound_as_separate_identities():
 def test_paid_cost_receipt_rejects_child_route_outside_parent_allowance():
     expected = "f" * 64
     evidence = _evidence()
-    authorization = _authorization(expected)
+    authorization = list(_authorization(expected))
     authorization[2]["expected_provider_model"] = "unapproved-provider-model"
     child_bytes = json.dumps(authorization[2], indent=2).encode("utf-8")
     authorization[3] = hashlib.sha256(child_bytes).hexdigest()

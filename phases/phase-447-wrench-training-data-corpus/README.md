@@ -1,6 +1,14 @@
 # Wrench 20,000-row training corpus
 
-Status: source audit and draft cross-validation in progress. On 2026-09-23,
+> V1 history: the binary-only corpus scope below is superseded by
+> [Wrench v2](../../GOAL.md). Historical D: locations are not current storage
+> instructions. Use C:\wrench-slm-data and the strict aggregate 50 GB ceiling.
+> Preserve the unresolved exposure, consent and charge findings.
+
+Status: source audit and draft cross-validation in progress; corpus production
+reactivated under the human's 2026-09-23 Northstar direction. See the
+[25k data goal](../../docs/goal/wrench-25k-data/GOAL.md) for the active task
+and its blocked prerequisites. On 2026-09-23,
 402 agent-authored draft rows were reported across two D: batches and frozen
 for audit; zero rows have passed the training quality gate and no training job
 has started. The batches are distinct by path, but row-level overlap across

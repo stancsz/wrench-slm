@@ -1,0 +1,32 @@
+{
+    "schema":  "wrench.host-resource-reserve.v1",
+    "status":  "PASS_HOST_RESOURCE_RESERVE",
+    "before_download":  {
+                            "ram_total_bytes":  34290302976,
+                            "ram_free_bytes":  17214971904,
+                            "ram_free_fraction":  0.5020361562873582,
+                            "gpus":  [
+                                         {
+                                             "name":  "NVIDIA GeForce RTX 5060 Ti",
+                                             "total_mib":  16311,
+                                             "used_mib":  992,
+                                             "free_mib":  15319,
+                                             "free_fraction":  0.93918214701735026
+                                         }
+                                     ]
+                        },
+    "after_download":  {
+                           "ram_total_bytes":  34290302976,
+                           "ram_free_bytes":  17206116352,
+                           "ram_free_fraction":  0.50177790391769561,
+                           "gpus":  [
+                                        {
+                                            "name":  "NVIDIA GeForce RTX 5060 Ti",
+                                            "total_mib":  16311,
+                                            "used_mib":  990,
+                                            "free_mib":  15321,
+                                            "free_fraction":  0.93930476365642823
+                                        }
+                                    ]
+                       }
+}

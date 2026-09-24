@@ -1,0 +1,989 @@
+Yes. After looking across prompt compression, code retrieval, agent context management, tool discovery, model routing, and inference caching, I would change Wrench from “a small model in front of a big model” into a **hybrid local context runtime**.
+
+The closest existing system to the generic context-compression half is probably **Headroom**. The closest code-context design is **Aider + Sourcegraph**. The closest toolbelt design is the newer **OpenAI/Anthropic deferred tool-search pattern**. The closest routing design is **RouteLLM / Not Diamond Code**. The closest memory model is **MemGPT/OpenHands/Codex compaction**.
+
+None of them alone is what we want.
+
+## 1. What the prior art actually teaches us
+
+| Prior art                         | Core pattern                                                                   | What Wrench should steal                                         | What I would *not* copy                   |
+| --------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------- |
+| **Aider Repo Map**                | Tree-sitter → symbols → dependency graph → ranked ~token-budget map            | Structural repo overview + graph ranking                         | Treat repo map itself as sufficient       |
+| **Sourcegraph / SCIP / Cody**     | Compiler-quality defs/refs + keyword search + code graph                       | Precise semantic graph, not AST alone                            | Depend on vector retrieval alone          |
+| **GraphCoder**                    | Code Context Graph + coarse→fine retrieval                                     | Graph expansion after initial localization                       | Build giant context before knowing task   |
+| **Repoformer**                    | Decide whether retrieval is needed at all                                      | **Selective retrieval**                                          | Retrieve every time                       |
+| **CoSIL**                         | Iterative function-call-graph exploration + context pruning                    | Graph walking + stop/retrieve decisions                          | Let a 32B model perform all navigation    |
+| **Agentless**                     | Localization → repair → validation                                             | Separate localization from reasoning/editing                     | Fully autonomous tool loop for every task |
+| **SWE-agent**                     | Carefully designed Agent-Computer Interface                                    | Small, model-friendly tool surface                               | Expose raw shell/filesystem chaos         |
+| **LLMLingua**                     | Smaller model compresses input before large LLM                                | Learned relevance/compression                                    | Free-form abstractive compression of code |
+| **RECOMP / EXIT**                 | Extractive/selective compression                                               | Prefer extractive evidence                                       | Always summarize                          |
+| **Headroom**                      | Content router + AST/log/JSON compressors + ML fallback + reversible retrieval | Type-specific compressors + **CCR-style reversible compression** | Aggressive compression of active code     |
+| **MemGPT**                        | Fast/slow memory tiers                                                         | Treat context like virtual memory                                | Keep everything in active prompt          |
+| **OpenHands/Codex**               | Condense old event history                                                     | Post-step state compaction                                       | Re-summarize everything every step        |
+| **Anthropic/OpenAI Tool Search**  | Load tool schemas only on demand                                               | **Progressive disclosure of tools**                              | Stuff MCP definitions into every prompt   |
+| **RouteLLM**                      | Learn weak/strong-model selection                                              | Learned routing from actual outcomes                             | Route from prompt length alone            |
+| **Not Diamond Code**              | Step-level routing using session state, cost, expected future work             | Session-aware routing                                            | One model decision at session start       |
+| **vLLM / provider prompt caches** | Stable prefix → KV reuse                                                       | Cache-aligned context layout                                     | Rewrite earlier context every turn        |
+
+Aider's repository map is particularly relevant: it uses Tree-sitter-derived symbols and a dependency graph, then selects the most relevant pieces under a token budget; its default repo-map budget is about 1K tokens. ([Aider][1])
+
+Sourcegraph goes further semantically. Its Code Graph contains definitions, references, symbols and documentation data, with precise code navigation available through SCIP-style indexing. Cody combines this with keyword/search retrieval rather than relying on one retrieval mechanism. ([Sourcegraph][2])
+
+That distinction matters:
+
+> **Tree-sitter tells Wrench what the code structurally looks like. LSP/SCIP tells Wrench what symbols actually mean and where they resolve.**
+
+We want both.
+
+---
+
+# 2. Retrieval should be hybrid, not "AST only"
+
+There is significant evidence that repository context improves when structure participates directly in retrieval. GraphCoder builds code-context graphs containing control-flow/data/control dependencies and uses coarse-to-fine retrieval; it reported improvements over sequence-based retrieval baselines. ([arXiv][3])
+
+Repoformer contributes an even more important idea: **don't retrieve unless retrieval is expected to improve the answer**. Its selective retrieval strategy reported up to 70% serving-speed improvement in its evaluated repository-completion setting without hurting performance. ([arXiv][4])
+
+CoSIL similarly explores call graphs iteratively and prunes context rather than materializing the entire graph into the prompt. ([arXiv][5])
+
+So Wrench shouldn't do:
+
+```text
+repo
+ ↓
+convert entire repo to AST
+ ↓
+give 100K AST tokens to Wrench
+```
+
+It should do:
+
+```text
+repo
+ ↓
+persistent structural index
+ ↓
+cheap candidate generation
+ ↓
+graph expansion
+ ↓
+Wrench relevance/reranking
+ ↓
+only then expand exact code
+```
+
+That is a huge architectural difference.
+
+---
+
+# 3. AST shouldn't be the source of truth either
+
+I would build the repository substrate from several parallel indexes:
+
+```text
+                       REPOSITORY
+                           │
+        ┌──────────────────┼──────────────────┐
+        ↓                  ↓                  ↓
+    Tree-sitter         LSP / SCIP          Git
+    syntax tree         semantic graph      history/diff
+        │                  │                  │
+        ├─ functions       ├─ definitions     ├─ changed files
+        ├─ classes         ├─ references      ├─ changed symbols
+        ├─ scopes          ├─ type links      └─ recency
+        └─ imports         └─ inheritance
+                           │
+                           ↓
+                      CODE GRAPH
+```
+
+Tree-sitter is ideal locally because it supports incremental reparsing: an existing syntax tree can be updated after an edit rather than rebuilding everything. It's specifically designed to remain fast enough for editor-time parsing. ([Tree-sitter][6])
+
+So Wrench's repo brain should be **incremental**.
+
+Edit:
+
+```text
+router.py:183
+```
+
+should update:
+
+```text
+router.py AST
+        +
+affected symbols
+        +
+affected graph edges
+        +
+repo fingerprint
+```
+
+—not re-ingest the whole repository.
+
+---
+
+# 4. Context compression: steal Headroom's philosophy, but go farther
+
+Headroom is surprisingly close to part of what we described. It already sits transparently between an application and an LLM and performs content-specific compression for JSON, source, grep results, logs, diffs, HTML, tables, configs and text. It has a ModernBERT-based local compressor called Kompress as a fallback. ([GitHub][7])
+
+Its most interesting feature for us is **CCR — compress, cache, retrieve**.
+
+Conceptually:
+
+```text
+large result
+    ↓
+compressed representation ─────→ LLM
+    │
+    └── original stored locally
+                  ↑
+           retrieve(handle)
+```
+
+Headroom stores the uncompressed original locally and exposes retrieval when the model discovers it needs additional detail. ([GitHub][8])
+
+**We absolutely should copy this pattern.**
+
+It solves one of the biggest problems with prompt compression:
+
+> Compression doesn't have to be irreversible.
+
+Instead of:
+
+```text
+8,000 lines
+→
+120-line summary
+→
+hope nothing important vanished
+```
+
+Wrench can output:
+
+```text
+FAILURES
+3 unique failures across 882 tests.
+
+[E17] tests/router_test.py:199
+AssertionError: expected READY, got TIMEOUT
+
+[E18] ...
+...
+
+SOURCE: wrench://artifact/9f52...
+FULL: retrieve("9f52", section="E17")
+```
+
+The downstream model gets the cheap representation but retains a **page fault mechanism**.
+
+That's MemGPT's virtual-memory idea applied to agent context. MemGPT explicitly framed context management as movement between fast and slow memory tiers. ([arXiv][9])
+
+---
+
+# 5. But Headroom exposes an important warning
+
+Headroom's current implementation deliberately avoids aggressively compressing recent/active code in many analysis/debugging scenarios because removing function bodies can remove exactly the code the model is trying to reason about. ([GitHub][10])
+
+This is the mistake I would avoid in Wrench.
+
+So we'd classify context into:
+
+```text
+LOSSLESS HOT
+changed functions
+failing lines
+active diff
+exact errors
+user-specified code
+currently investigated symbols
+
+STRUCTURAL WARM
+signatures
+types
+callers/callees
+imports
+tests
+related symbols
+
+COMPRESSIBLE COLD
+old terminal output
+successful logs
+repeated test output
+unchanged code
+historical agent chatter
+irrelevant tool results
+```
+
+**Hot context never goes through lossy compression.**
+
+This also aligns with RECOMP/EXIT-style research, where extractive selection can be much safer than arbitrary summarization. RECOMP even learns to output nothing when retrieved evidence isn't useful. ([arXiv][11])
+
+And a very recent 2026 study suggests that simply having much longer context can degrade model performance even when the relevant information has been perfectly retrieved, strengthening the case for aggressively producing short working contexts rather than merely taking advantage of million-token windows. ([arXiv][12])
+
+---
+
+# 6. Toolbelt architecture should use progressive disclosure
+
+This has become a very clear industry design pattern.
+
+Anthropic reported examples where MCP definitions alone could consume tens of thousands of tokens before the actual user request; its Tool Search approach keeps only a tiny discovery surface present and loads a handful of relevant tools on demand. Their internal evaluation reported an 85% tool-token reduction in one setup and improved tool-selection accuracy with large catalogs. ([Anthropic][13])
+
+OpenAI independently exposes essentially the same architecture: namespaces/MCP servers can be advertised with high-level descriptions, with complete function schemas deferred until the model searches for them. Loaded tools are appended so earlier context remains cacheable. ([OpenAI Developers][14])
+
+This should become **Wrench Toolbelt**:
+
+```text
+ALWAYS VISIBLE
+
+fs
+code
+shell
+git
+test
+tool_search
+```
+
+Everything else becomes:
+
+```text
+git.github.*
+cloud.gcp.*
+cloud.aws.*
+database.*
+browser.*
+notion.*
+slack.*
+deployment.*
+```
+
+Wrench sees only something like:
+
+```text
+github:
+  Repository hosting, PRs, issues and CI.
+
+gcp:
+  GCP infrastructure, logs, storage and deployments.
+
+database:
+  SQL/database inspection and operations.
+```
+
+If required:
+
+```text
+Wrench
+→ load_namespace("github", query="PR failing checks")
+```
+
+Then perhaps only:
+
+```text
+github.get_pull_request
+github.get_check_runs
+github.get_workflow_logs
+```
+
+appear downstream.
+
+This alone can eliminate a surprisingly large amount of mechanical context.
+
+---
+
+# 7. Tool *results* should also stay outside the LLM whenever possible
+
+Anthropic makes another good point: if an agent performs five tool calls just to filter a large dataset, natural-language tool orchestration may send every intermediate result through the model. They advocate programmatic tool calling/code execution for loops, filtering and transformations that do not require inference. ([Anthropic][15])
+
+OpenAI now supports the same general pattern with programmatic tool calling. ([OpenAI Developers][16])
+
+Wrench should therefore distinguish:
+
+```text
+NEURAL OPERATION
+"Which implementation likely causes this timeout?"
+
+from
+
+PROGRAMMATIC OPERATION
+grep all symbols
+filter failed tests
+sort timestamps
+calculate statistics
+parse JSON
+walk dependency graph
+extract changed functions
+```
+
+The latter should execute **inside Wrench without consuming model tokens at all**.
+
+This is important.
+
+Our first objective shouldn't be:
+
+> Make Qwen perform everything locally.
+
+It should be:
+
+> **Don't invoke a neural network for work normal code can do perfectly.**
+
+---
+
+# 8. Routing should happen after context normalization
+
+RouteLLM demonstrates learned weak-vs-strong-model routing using preference data rather than a fixed heuristic. ([arXiv][17])
+
+Not Diamond has subsequently pushed that pattern into long-running coding agents. Their current coding router explicitly considers the broader session, expected downstream work and cache state when choosing both model and reasoning effort at each step—not simply at session start. ([Notdiamond][18])
+
+That's exactly what we need.
+
+But I would change the ordering:
+
+```text
+BAD
+
+raw 180K prompt
+      ↓
+router
+      ↓
+choose model
+```
+
+versus:
+
+```text
+WRENCH
+
+raw agent state
+      ↓
+normalize
+      ↓
+localize
+      ↓
+estimate information requirements
+      ↓
+construct context
+      ↓
+route
+```
+
+Once Wrench discovers:
+
+```text
+task = rename symbol
+files = 2
+affected refs = 7
+tests = known
+context = 1,600 tokens
+```
+
+routing becomes much easier.
+
+---
+
+# 9. The router shouldn't predict "difficulty"
+
+I'd train it to estimate **expected utility**.
+
+For candidate model \(m\):
+
+```text
+utility(m) =
+P(success | state, m)
+-
+λ × cost(m)
+-
+μ × latency(m)
+-
+ν × expected_future_steps(m)
++
+κ × cache_reuse(m)
+```
+
+Then:
+
+```text
+choose cheapest m
+subject to:
+P(success | state,m) ≥ required_quality
+```
+
+Candidates might be:
+
+```text
+NO_MODEL
+NanoWrench
+Wrench-0.8B
+local coder 7B
+local coder 30B
+MiniMax
+Codex
+Claude
+frontier reasoning
+```
+
+**NO_MODEL needs to be a legitimate route.**
+
+A repeated test-output transformation shouldn't hit any LLM.
+
+Neither should deterministic repo indexing.
+
+---
+
+# 10. Cache architecture is another major piece people overlook
+
+Prompt caching works best when the beginning of the request doesn't change. OpenAI specifically recommends keeping stable instructions/tools early and appending dynamic information later; changing earlier prefixes destroys downstream cache reuse. ([OpenAI Developers][19])
+
+vLLM's automatic prefix caching provides the same idea locally: requests sharing a prompt prefix can reuse the previous KV computation instead of prefilling those tokens again. ([vLLM][20])
+
+So Wrench shouldn't generate a completely different giant prompt each iteration.
+
+I'd use:
+
+```text
+[CACHE-STABLE]
+Wrench downstream contract
+core tool definitions
+project instructions
+stable architectural context
+
+---------------- cache boundary ----------------
+
+[SESSION-STABLE]
+task
+accepted decisions
+working hypothesis
+
+[DYNAMIC]
+current diff
+active symbols
+latest test/error
+new retrieved evidence
+
+[DEFERRED]
+tool schemas loaded this step
+```
+
+That's a very important design property.
+
+Compression and caching can otherwise fight each other: rewriting earlier content to save 5K tokens can invalidate 100K cached tokens.
+
+---
+
+# The fusion I would actually build
+
+I think this is the strongest architecture:
+
+```text
+                     ┌─────────────────────┐
+                     │      RAW WORLD      │
+                     │ repo/tools/logs/etc │
+                     └──────────┬──────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │ W0: DETERMINISTIC INGEST  │
+                  │                           │
+                  │ Tree-sitter incremental   │
+                  │ LSP / SCIP semantic graph │
+                  │ git/diff/test parsers     │
+                  │ BM25 + embeddings         │
+                  │ tool registry             │
+                  └─────────────┬─────────────┘
+                                │
+                     persistent local state
+                                │
+                  ┌─────────────▼─────────────┐
+                  │    W1: WRENCH PLANNER    │
+                  │       <1B local SLM       │
+                  │                           │
+                  │ classify task             │
+                  │ generate retrieval plan   │
+                  │ rerank symbols/evidence   │
+                  │ determine information gap │
+                  │ choose tool namespaces    │
+                  │ determine context budget  │
+                  └─────────────┬─────────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │ W2: CONTEXT COMPILER      │
+                  │                           │
+                  │ exact hot evidence        │
+                  │ structural warm context   │
+                  │ compressed cold context   │
+                  │ provenance IDs            │
+                  │ reversible retrieval refs │
+                  └─────────────┬─────────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │ W3: TOOLBELT GATEWAY      │
+                  │                           │
+                  │ small core tools          │
+                  │ namespace search          │
+                  │ deferred schemas          │
+                  │ programmatic execution    │
+                  └─────────────┬─────────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │ W4: SESSION ROUTER        │
+                  │                           │
+                  │ quality probability       │
+                  │ $ / latency               │
+                  │ future-step estimate      │
+                  │ cache state               │
+                  │ escalation risk           │
+                  └─────────────┬─────────────┘
+                                │
+          ┌──────────┬──────────┼───────────┬──────────┐
+          ▼          ▼          ▼           ▼          ▼
+      NO MODEL    local 1B   local coder   cheap API  FRONTIER
+          │          │          │           │          │
+          └──────────┴──────────┴─────┬─────┴──────────┘
+                                      │
+                            output/tool result
+                                      │
+                  ┌───────────────────▼────────────────┐
+                  │ W5: STATE DIGESTER / VERIFIER     │
+                  │                                    │
+                  │ deterministic validation           │
+                  │ tests/lint/typecheck               │
+                  │ extract new facts                  │
+                  │ update repo graph                  │
+                  │ store full artifacts               │
+                  │ compact historical events          │
+                  └───────────────────┬────────────────┘
+                                      │
+                                  next step
+```
+
+That's what I would call **Wrench**, not merely the 0.8B model.
+
+---
+
+# The crucial insight: Wrench should be mostly non-neural
+
+My preferred split is approximately:
+
+```text
+Wrench Runtime
+│
+├── deterministic substrate
+│   AST
+│   LSP/SCIP
+│   graph
+│   diff
+│   grep/BM25
+│   logs
+│   parsers
+│   cache
+│   exact retrieval
+│   validation
+│
+├── cheap learned components
+│   embeddings
+│   reranker
+│   extractive compressor
+│
+└── Wrench SLM ~0.8B
+    semantic localization
+    retrieval decisions
+    context budgeting
+    toolbelt selection
+    routing
+    escalation
+```
+
+So the `<1B Wrench model` is the **control plane**.
+
+It is not the database.
+
+It is not the parser.
+
+It is not the search engine.
+
+It is not the code graph.
+
+That makes it both faster and dramatically easier to train.
+
+---
+
+# What I would train Qwen3.5-0.8B to do first
+
+I would **not** start by teaching it general summarization.
+
+The first training targets should be decision tasks:
+
+| Input                      | Output                        |
+| -------------------------- | ----------------------------- |
+| task + symbol index        | relevant symbols              |
+| task + candidate snippets  | ranked IDs                    |
+| task + current evidence    | `ENOUGH / RETRIEVE_MORE`      |
+| state + repo graph         | next graph expansion          |
+| content metadata           | compression policy            |
+| task + tool namespaces     | relevant namespaces           |
+| state + candidate models   | model route                   |
+| state + cheap model result | accept / verify / escalate    |
+| long event history         | facts/state that must persist |
+
+These are bounded, highly trainable tasks.
+
+Free-form language is where a tiny model wastes capacity.
+
+---
+
+# Context should have pointers, not just summaries
+
+I'd make the Wrench context format roughly:
+
+```text
+GOAL
+Fix retry timeout regression introduced by current diff.
+
+STATE
+branch=feature/retry
+tests=882
+failed=3
+
+RELEVANT_SYMBOLS
+[S17] Router.dispatch         router.py:149-221
+[S44] Worker.execute          worker.py:81-139
+[S72] RetryPolicy.timeout     retry.py:30-61
+
+GRAPH
+S17 ->calls-> S44
+S44 ->reads-> S72
+T8  ->tests-> S17
+
+CHANGE
+S72 modified in HEAD~1.
+
+EVIDENCE
+[E1 exact]
+AssertionError expected READY got TIMEOUT
+tests/test_router.py:199
+
+[E2 exact]
+- timeout_ms: int
++ timeout: int
+
+COLD_CONTEXT
+[C9 compressed]
+Previous 4 test runs showed the same three failures.
+retrieve("C9") for full output.
+
+AVAILABLE_TOOLBELTS
+code
+test
+git
+
+ROUTING_FEATURES
+context_tokens=1874
+files=3
+graph_hops=2
+failure_localized=true
+```
+
+That is much easier for downstream models than either:
+
+**180K raw tokens**
+
+or:
+
+**a vague 500-word summary.**
+
+---
+
+# Retrieval algorithm I'd use
+
+This is where I'd fuse Sourcegraph + Anthropic Contextual Retrieval + Aider + GraphCoder.
+
+The retrieval cascade would be:
+
+```text
+literal hits / user-mentioned names
+          ↓
+BM25 / ripgrep
+          ↓
+semantic embeddings
+          ↓
+union candidates
+          ↓
+AST + SCIP graph expansion
+          ↓
+Wrench learned reranker
+          ↓
+diversity / dependency coverage
+          ↓
+budget-aware context pack
+```
+
+Anthropic's Contextual Retrieval work found that combining contextualized embeddings with BM25 substantially reduced retrieval failures compared with its embedding-only baseline, and reranking improved it further. ([Anthropic][21])
+
+For code, we can improve this by inserting the structural graph.
+
+So:
+
+> **lexical + semantic + structural > any single retrieval mechanism.**
+
+---
+
+# One more thing I'd borrow from Agentless
+
+Agentless's surprisingly strong result came from explicitly separating:
+
+```text
+LOCALIZE
+↓
+REPAIR
+↓
+VALIDATE
+```
+
+rather than asking one agent loop to discover its strategy autonomously. ([arXiv][22])
+
+Wrench should use the same principle.
+
+The Layer-1 phase should be:
+
+```text
+UNDERSTAND WHAT INFORMATION IS NEEDED
+```
+
+not:
+
+```text
+START WRITING CODE IMMEDIATELY
+```
+
+That separation makes routing much cleaner.
+
+---
+
+# And SWE-agent teaches us to design the tool interface for the model
+
+SWE-agent attributes a significant part of its performance to the **Agent-Computer Interface**: simple commands and feedback formats designed specifically around what an LM can reliably manipulate. ([GitHub][23])
+
+Therefore Wrench shouldn't expose:
+
+```text
+arbitrary filesystem
+arbitrary shell
+700 MCP functions
+gigabytes of output
+```
+
+It should expose semantics:
+
+```text
+symbol.find
+symbol.expand
+symbol.references
+graph.callers
+graph.callees
+
+code.read
+code.patch
+
+test.run
+test.failures
+
+git.diff
+git.changed_symbols
+
+artifact.retrieve
+
+toolbelt.search
+
+route.escalate
+```
+
+The actual implementation can map those onto shell, Tree-sitter, LSP, git, etc.
+
+---
+
+# Where I think the real novelty is
+
+After this research, I would **not** pitch Wrench as novel because it compresses context.
+
+Headroom already does that surprisingly well.
+
+I would not pitch it as novel because it routes models.
+
+RouteLLM and Not Diamond already do that.
+
+I would not pitch AST-aware repo context alone.
+
+Aider, Sourcegraph and academic code-RAG systems already do that.
+
+The interesting fusion is:
+
+> **A local code-native control plane that converts raw agent state into a provenance-preserving, model-specific working set, progressively exposes tools, and routes each reasoning step to the cheapest model capable of completing it.**
+
+Or shorter:
+
+> **Wrench compiles agent context before inference.**
+
+I like **context compiler** more and more because that describes what it actually does.
+
+```text
+raw agent state
+        ↓
+       parse
+        ↓
+       link
+        ↓
+      optimize
+        ↓
+ dead-context elimination
+        ↓
+ tool resolution
+        ↓
+ target selection
+        ↓
+ model-specific context
+```
+
+It is almost literally a compiler pipeline.
+
+---
+
+# The architecture I'd build first
+
+I would *not* train anything for V0.
+
+Build the deterministic skeleton first:
+
+```text
+Tree-sitter
++ LSP/SCIP where available
++ git
++ ripgrep/BM25
++ embedding retrieval
++ code graph
++ reversible artifact store
++ tool namespace registry
++ static context packer
++ simple rule router
+```
+
+Run it against your Harness Grid.
+
+Measure baseline:
+
+```text
+frontier input tokens
+task success
+TTFT
+total wall time
+tool-definition tokens
+context recall
+model spend
+```
+
+Then log every:
+
+```text
+candidate retrieved
+candidate kept
+candidate rejected
+extra context requested
+chosen model
+result
+validation outcome
+escalation
+```
+
+Those become the dataset for **Wrench-0.8B**.
+
+Then replace heuristics one component at a time:
+
+```text
+V0 deterministic
+       ↓
+V1 learned reranking
+       ↓
+V2 learned retrieve/stop
+       ↓
+V3 learned toolbelt selection
+       ↓
+V4 learned routing
+       ↓
+V5 learned context compression
+```
+
+This gives us ablations, which are critical because otherwise we'll never know whether the 0.8B model is helping or merely adding latency.
+
+---
+
+## The metric I'd make the North Star
+
+Not compression ratio.
+
+Not Wrench benchmark score.
+
+Not even model-call reduction.
+
+I'd use:
+
+$$
+\textbf{Frontier Token Share}
+=
+\frac{\text{paid frontier tokens}}
+{\text{total logical tokens processed by the agent system}}
+$$
+
+subject to:
+
+$$
+\text{task-success degradation} \le 1\%-2\%
+$$
+
+If today's agent logically processes:
+
+```text
+1,000,000 tokens
+```
+
+and after Wrench:
+
+```text
+920K handled structurally/local
+ 55K handled by local models
+ 25K reach frontier
+```
+
+then:
+
+```text
+Frontier Token Share = 2.5%
+```
+
+**That's the actual realization of your 95% thesis.**
+
+And after this research, I think the strongest version of Wrench is not “Qwen 0.8B that eats a huge context.” It is:
+
+> **Tree-sitter/SCIP supply the memory, retrieval supplies the eyes, reversible compression supplies virtual memory, deferred tools supply the hands, Qwen-0.8B supplies the reflex/control decisions, and the router decides when a real brain needs to wake up.**
+
+That fusion is significantly stronger than the simpler Layer-1 design we started with.
+
+[1]: https://aider.chat/docs/repomap.html?utm_source=chatgpt.com "Repository map | aider"
+[2]: https://sourcegraph.com/docs/cody/core-concepts/context?utm_source=chatgpt.com "Cody Context - Sourcegraph docs"
+[3]: https://arxiv.org/abs/2406.07003?utm_source=chatgpt.com "GraphCoder: Enhancing Repository-Level Code Completion via Code Context Graph-based Retrieval and Language Model"
+[4]: https://arxiv.org/abs/2403.10059?utm_source=chatgpt.com "Repoformer: Selective Retrieval for Repository-Level Code Completion"
+[5]: https://arxiv.org/abs/2503.22424?utm_source=chatgpt.com "CoSIL: Software Issue Localization via LLM-Driven Code Repository Graph Searching"
+[6]: https://tree-sitter.github.io/tree-sitter/using-parsers/3-advanced-parsing.html?utm_source=chatgpt.com "Advanced Parsing - Tree-sitter"
+[7]: https://github.com/headroomlabs-ai/headroom/blob/main/docs/content/docs/architecture.mdx?utm_source=chatgpt.com "headroom/docs/content/docs/architecture.mdx at main · headroomlabs-ai/headroom · GitHub"
+[8]: https://github.com/headroomlabs-ai/headroom/blob/main/docs/content/docs/ccr.mdx?utm_source=chatgpt.com "headroom/docs/content/docs/ccr.mdx at main · headroomlabs-ai/headroom · GitHub"
+[9]: https://arxiv.org/abs/2310.08560?utm_source=chatgpt.com "MemGPT: Towards LLMs as Operating Systems"
+[10]: https://github.com/headroomlabs-ai/headroom/blob/main/wiki/LIMITATIONS.md?utm_source=chatgpt.com "headroom/wiki/LIMITATIONS.md at main · headroomlabs-ai/headroom · GitHub"
+[11]: https://arxiv.org/abs/2310.04408?utm_source=chatgpt.com "RECOMP: Improving Retrieval-Augmented LMs with Compression and Selective Augmentation"
+[12]: https://arxiv.org/abs/2510.05381?utm_source=chatgpt.com "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval"
+[13]: https://www.anthropic.com/engineering/advanced-tool-use?utm_source=chatgpt.com "Introducing advanced tool use on the Claude Developer Platform \ Anthropic"
+[14]: https://developers.openai.com/api/docs/guides/tools-tool-search?utm_source=chatgpt.com "Tool search | OpenAI API"
+[15]: https://www.anthropic.com/engineering/code-execution-with-mcp?utm_source=chatgpt.com "Code execution with MCP: building more efficient AI agents \ Anthropic"
+[16]: https://developers.openai.com/api/docs/guides/tools-programmatic-tool-calling?utm_source=chatgpt.com "Programmatic Tool Calling | OpenAI API"
+[17]: https://arxiv.org/abs/2406.18665?utm_source=chatgpt.com "RouteLLM: Learning to Route LLMs with Preference Data"
+[18]: https://code.notdiamond.ai/docs/?utm_source=chatgpt.com "Not Diamond Code | Not Diamond"
+[19]: https://developers.openai.com/api/docs/guides/prompt-caching?utm_source=chatgpt.com "Prompt caching | OpenAI API"
+[20]: https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html?utm_source=chatgpt.com "Automatic Prefix Caching - vLLM"
+[21]: https://www.anthropic.com/engineering/contextual-retrieval?utm_source=chatgpt.com "Contextual Retrieval in AI Systems \ Anthropic"
+[22]: https://arxiv.org/abs/2407.01489?utm_source=chatgpt.com "Agentless: Demystifying LLM-based Software Engineering Agents"
+[23]: https://github.com/SEC-bench/SWE-agent?utm_source=chatgpt.com "GitHub - SEC-bench/SWE-agent · GitHub"

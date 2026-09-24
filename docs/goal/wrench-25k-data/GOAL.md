@@ -1,0 +1,143 @@
+# Wrench 25k quality data
+
+Status: superseded by v2; prior v1 status: 0 accepted rows; bounded provider guard implemented and offline-tested; dispatch remains blocked pending prior-charge reconciliation and route-rights review  
+Updated: 2026-09-23  
+Owner: repository agent under human product authority
+
+## Supersession
+
+The owner has realigned Wrench to [Layer 1 and continuous LoRA](../../northstar/README.md).
+This binary-only corpus goal is retained as historical provenance. Its 25k
+allocation, next-action instructions and scoped provider approval are not v2
+data requirements or spend authority. Existing unresolved data/charge findings
+remain unresolved. The body below records the prior plan.
+
+## Outcome
+
+Produce a quality-gated Wrench dataset with exactly 25,000 records:
+
+| Split | Rows | Use |
+| --- | ---: | --- |
+| Training | 20,000 | Train the bounded System One `continue`/`abstain` readout. |
+| Development/calibration | 2,500 | Diagnose and calibrate before candidate freeze. |
+| Sealed final | 2,500 | One untouched final evaluation after candidate and scoring freeze. |
+| **Total** | **25,000** | |
+
+The authoritative row, review, and validation contract and historical audit
+are in [Phase 447](../../../phases/phase-447-wrench-training-data-corpus/README.md).
+Human direction in this task authorizes MiniMax as a distillation source with
+an incremental total spend cap of USD 100 for this corpus. The user selected
+another existing data volume after D: was found absent; C: is the only other
+  mounted volume, so large data goes to `C:\wrench-slm-data`. This goal
+reactivates data preparation only. It does not authorize model training or
+production routing. Prepare a public-release candidate as requested, then
+stop for concrete rights and artifact review before external publication.
+
+## Data design
+
+Use six typed action families (`read_file`, `read_lines`, `literal_search`,
+`git_read_status`, `health_read`, and `patch_draft`) with eligible, matched
+boundary, and explicit out-of-scope examples. Favor executable generated
+repositories with varied structure and exact snapshots. Add paired cases
+where a small change flips the correct result: a path moves outside the root,
+a line range crosses a bound, a search result exceeds its cap, repository
+state changes, an endpoint is not allowlisted, or a patch request crosses the
+review-only boundary. Group every such family so variants stay in one split.
+
+Generate task intent and fixture state from controlled specifications, then
+ask the selected MiniMax model for a Wrench proposal. Compare it against the
+typed oracle; reject or review mismatches rather than treating the teacher as
+truth. The student target remains the binary `continue`/`abstain` label, with
+action family and proposal retained as audit strata. Capture only the visible
+proposal and required usage/provenance, never hidden reasoning. Keep a separately authored and independently checked
+abstention set for risky, ambiguous, multi-step, credential, mutation, and
+unrelated requests. Report authored coverage separately from observed
+workflow frequency.
+
+Use the 2,500 final rows only after freezing the source generators, families,
+scoring, candidate, and prompt. Hold out repositories, task families, and
+template groups, not merely paraphrases. Do not send sealed-final prompts to
+the teacher during prompt or dataset construction. Evaluation against the
+teacher, if later authorized, is a separately versioned comparison.
+
+## Quality gates
+
+- Exactly 20,000 accepted training rows, 2,500 development/calibration rows,
+  and 2,500 sealed-final rows; no rejected or needs-review rows in a split.
+- Every row has source identity and rights/consent status, case and task-group
+  IDs, exact context/snapshot identity, typed expected proposal or exact
+  abstention reason, oracle reference, review receipt, and duplicate hashes.
+- Independent deterministic validation confirms schema, action arguments,
+  bounds, oracle result, label consistency, source hashes, split isolation,
+  and zero exact or near-duplicate leakage across splits.
+- Every accepted synthetic row has a human review receipt before admission.
+  Review may be batched around a reviewed task specification and executable
+  fixture generator, but every row must be linked to that review and pass its
+  own deterministic oracle. Human reviewers directly inspect all higher-risk
+  `patch_draft` rows and a recorded, stratified sample of other rows; report
+  that sample separately from row-level mechanical validation.
+- The final split stays inaccessible to training/calibration tooling until
+  the candidate and scoring protocol freeze. Its prompt/hash exposure is
+  audited before any evaluation claim.
+- No publication claim until rights, redaction, hidden-reasoning removal,
+  content review, attribution, release license, and artifact reproducibility
+  are independently checked and the human approves the concrete release.
+
+## Task plan and ownership
+
+| Task | Owner | Status | Evidence |
+| --- | --- | --- | --- |
+| Reconcile historical drafts, sealed-split exposure, and existing validators | Supervisor | In progress | [Dataset state audit](../../reports/wrench-25k-data/dataset-state-audit.md), [provenance and budget audit](../../reports/wrench-25k-data/provenance-budget-audit.md); validator runtime crash repaired, sealed-split exposure remains unresolved. |
+| Design deterministic fixture/oracle and split generation | Supervisor | In progress | One synthetic `read_file` pilot passes the executor and four independent verifier passes; a six-action fixture pilot is being prepared. No rows are admitted. |
+| Establish MiniMax route, per-request budget guard, and safe visible-output capture | Supervisor | Blocked | [Provider guard report](../../reports/wrench-25k-data/provider-budget-guard.md); seven offline tests pass, and the pilot receipt binds rates, cases, and output path. Dispatch remains blocked until the earlier HTTP 401 charge is reconciled and route-specific rights are reviewed. |
+| Generate, review, and validate train and development data | Supervisor | Waiting | Admission receipts, hashes, review and validation summaries. |
+| Freeze and independently construct sealed-final data | Supervisor + reviewer | Waiting | Separate access boundary, frozen protocol, leakage audit. |
+| Prepare publication candidate and review rights/release terms | Supervisor | Waiting | Concrete package and license review; human release decision. |
+
+## Blockers and boundaries
+
+- The user authorized up to USD 100 for MiniMax data generation on 2026-09-23;
+  this is separate from the $500 paired-canary allowance. A corpus-specific
+  child receipt and fail-closed per-request guard are now implemented for a
+  single synthetic request; the unresolved prior charge still prevents
+  dispatch.
+- The repository contains draft batches totaling 402 reported rows, but none
+  passed the corpus quality gate. Possible exposure of sealed evaluation
+  content is unresolved. Do not reuse those records or the current sealed
+  final set as fresh final evidence without source-level resolution.
+- A 397-row real-workflow capture lacks sufficient consent, redaction, and
+  verifier/outcome evidence. Do not use it for training. Authored synthetic
+  data can proceed without claiming real traffic weighting.
+- MiniMax API terms and the chosen API route must be checked for data-use,
+  retention, and redistribution conditions before retaining or publishing
+  generated output. The corpus allowance is USD 100 inclusive of all provider
+  charges and retries. Use a corpus-specific child receipt, preflight request
+  maxima, single-request concurrency, bounded retries, and a local circuit
+  breaker. The local gateway on port 4000 was not listening at the time of
+  inspection; `OPENROUTER_API_KEY` is configured but its value was not read.
+  The one direct OpenRouter preflight returned HTTP 401 with no model/usage
+  response. Charge status is unknown, not counted as zero. See
+  [the pilot receipt](../../../phases/phase-447-wrench-training-data-corpus/minimax-data-pilot-receipt.json).
+  Public price lists are estimates, not spend authorization or a hard billing
+  cap.
+- OpenRouter's current [provider-routing contract](https://openrouter.ai/docs/guides/routing/provider-selection)
+  defaults to load balancing across providers and fallback. The guarded
+  capture path now pins the approved upstream provider, disables fallback,
+  requests distillation-compatible text, and validates a task-hash-bound local
+  cost receipt before dispatch. OpenRouter's [Terms of Service](https://openrouter.ai/terms) make
+  output rights subject to model terms and disclaim guarantees about provider
+  data handling; route-specific terms remain an unresolved prerequisite.
+
+## Next action
+
+Resolve the prior pilot's charge status and route-specific output rights before
+any paid request. The corpus validator's undefined `group_splits` crash has
+been fixed; its post-fix invocation against `dataset/manifest.json` returns a
+structured `FAIL` because that file is an exclusion manifest rather than a
+corpus manifest. No accepted corpus rows exist, and no production-ready
+manifest has been validated. Continue by producing small deterministic
+fixture/oracle batches, binding them to reviewed task specifications, and
+proving split isolation before scaling. Do not use the unresolved current
+sealed-final set as untouched evaluation evidence. Prepare a publication
+candidate only after all gates pass, then stop for concrete rights and artifact
+review before external release.

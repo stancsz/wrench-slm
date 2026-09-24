@@ -1,0 +1,16 @@
+# Isolated read-only overlay for the current package smoke.
+- id: llm-deepseek
+  config:
+    apiKeyEnv: WRENCH_LOCAL_API_KEY
+    baseURL: http://127.0.0.1:28943/v1
+    models:
+      - id: wrench-local
+        name: Wrench local current package
+        contextWindow: 4000000
+        maxTokens: 256
+    defaultModel:
+      id: wrench-local
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: wrench-local

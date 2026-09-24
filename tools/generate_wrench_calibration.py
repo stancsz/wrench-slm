@@ -60,13 +60,13 @@ def build(system: str = SYSTEM) -> tuple[list[dict], list[dict]]:
     # Accepted read_file targets must be above the current repository file
     # sizes. Smaller limits are valid boundary-abstention cases, not accepted
     # training examples, because the independent verifier rejects truncation.
-    train_files = [("README.md", 4096), ("GOAL.md", 32768), ("docs/PROJECT_PLAN.md", 32768), ("dataset/README.md", 4096), ("tests/test_harness.py", 32768)]
+    train_files = [("README.md", 4096), ("GOAL.md", 32768), ("docs/misc/v1/PROJECT_PLAN.md", 32768), ("dataset/README.md", 4096), ("tests/test_harness.py", 32768)]
     read_phrases = ["Prepare a bounded read of {path} with a {limit} byte ceiling.", "Read {path} without exceeding {limit} bytes.", "Create a read_file proposal for {path}; cap it at {limit} bytes.", "The safe action is to inspect {path}, limited to {limit} bytes."]
     for index in range(40):
         path, limit = train_files[index % len(train_files)]
         prompt = read_phrases[index % len(read_phrases)].format(path=path, limit=limit)
         train.append(row(f"train_read_file_{index:03d}", "read_file", prompt, {"action": "read_file", "path": path, "max_bytes": limit}, "accepted", system=system))
-    train_lines = [("GOAL.md", 1, 5), ("README.md", 2, 8), ("docs/PROJECT_PLAN.md", 10, 20), ("tests/test_harness.py", 1, 4), ("dataset/README.md", 2, 6)]
+    train_lines = [("GOAL.md", 1, 5), ("README.md", 2, 8), ("docs/misc/v1/PROJECT_PLAN.md", 10, 20), ("tests/test_harness.py", 1, 4), ("dataset/README.md", 2, 6)]
     line_phrases = ["Read lines {start} through {end} from {path}, inclusively.", "Prepare an inclusive line-range proposal for {path}, {start}-{end}.", "Inspect {path} only from line {start} to line {end}.", "Return a bounded read_lines action for {path} at lines {start} to {end}."]
     for index in range(40):
         path, start, end = train_lines[index % len(train_lines)]
@@ -86,7 +86,7 @@ def build(system: str = SYSTEM) -> tuple[list[dict], list[dict]]:
     for index in range(20):
         url, description = health_specs[index % len(health_specs)]
         train.append(row(f"train_health_{index:03d}", "health_read", health_phrases[index % len(health_phrases)].format(description=description), {"action": "health_read", "url": url, "timeout_seconds": 3, "max_bytes": 65536}, "accepted", system=system))
-    patch_files = ["README.md", "GOAL.md", "docs/PROJECT_PLAN.md"]
+    patch_files = ["README.md", "GOAL.md", "docs/misc/v1/PROJECT_PLAN.md"]
     patch_phrases = ["Draft a review-only one-line change to {path} and do not apply it.", "Prepare a patch_draft for {path}; leave the working tree untouched.", "Show a small unified diff for {path} for review only.", "Propose a bounded, unapplied wording change in {path}."]
     for index in range(20):
         path = patch_files[index % len(patch_files)]
@@ -104,7 +104,7 @@ def build(system: str = SYSTEM) -> tuple[list[dict], list[dict]]:
         train.append(row(f"train_boundary_{index:03d}", family, prompt, proposal, "abstain", reason, system=system))
 
     holdout_specs = [
-        ("read_file", "Locate a bounded read proposal for docs/PROJECT_PLAN.md with a 32768-byte cap.", {"action": "read_file", "path": "docs/PROJECT_PLAN.md", "max_bytes": 32768}, "accepted", None),
+        ("read_file", "Locate a bounded read proposal for docs/misc/v1/PROJECT_PLAN.md with a 32768-byte cap.", {"action": "read_file", "path": "docs/misc/v1/PROJECT_PLAN.md", "max_bytes": 32768}, "accepted", None),
         ("read_file", "Read the first 4096 bytes of dataset/README.md.", {"action": "read_file", "path": "dataset/README.md", "max_bytes": 4096}, "accepted", None),
         ("read_lines", "Prepare an inclusive line read of GOAL.md from line 7 to line 12.", {"action": "read_lines", "path": "GOAL.md", "start": 7, "end": 12}, "accepted", None),
         ("read_lines", "Read lines 3 through 9 in README.md.", {"action": "read_lines", "path": "README.md", "start": 3, "end": 9}, "accepted", None),

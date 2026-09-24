@@ -1,0 +1,103 @@
+{
+  "schema": "wrench.model-candidate-metadata.v1",
+  "status": "UPSTREAM_METADATA_ONLY_NO_WEIGHTS_DOWNLOADED",
+  "observed_at_utc": "2026-09-24T01:16:54.466031+00:00",
+  "source": "https://huggingface.co/api/models/Qwen/Qwen3.5-0.8B/revision/2fc06364715b967f1860aea9cf38778875588b17?blobs=true",
+  "model_id": "Qwen/Qwen3.5-0.8B",
+  "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "checkpoint_type": "post-trained, multimodal; initial Wrench experiment text only",
+  "license_metadata": "apache-2.0",
+  "repository_bytes": 1769980465,
+  "safetensors": {
+    "parameters": {
+      "F32": 2592,
+      "BF16": 873436192
+    },
+    "total": 873438784
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size_bytes": 1570,
+      "upstream_sha256": null,
+      "git_blob_id": "52373fe24473b1aa44333d318f578ae6bf04b49b"
+    },
+    {
+      "path": "LICENSE",
+      "size_bytes": 11544,
+      "upstream_sha256": null,
+      "git_blob_id": "f938136e3adacfd92be087f6e113b5d6d97f678f"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 61705,
+      "upstream_sha256": null,
+      "git_blob_id": "5824f1761b2b3a55a2141a9a1172a7f92c7c2ad9"
+    },
+    {
+      "path": "chat_template.jinja",
+      "size_bytes": 7755,
+      "upstream_sha256": null,
+      "git_blob_id": "0ef09f214eaa6d9bca297988afc1454b5827b2c7"
+    },
+    {
+      "path": "config.json",
+      "size_bytes": 2907,
+      "upstream_sha256": null,
+      "git_blob_id": "715f0448b9d38103211f0ad88bbb4d6e4f4be8c9"
+    },
+    {
+      "path": "merges.txt",
+      "size_bytes": 3353259,
+      "upstream_sha256": null,
+      "git_blob_id": "a494e019ca1502219fd0128658b979e5f05ae8e8"
+    },
+    {
+      "path": "model.safetensors-00001-of-00001.safetensors",
+      "size_bytes": 1746942600,
+      "upstream_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+      "git_blob_id": "969da4e6aa85b4e224739020212b7cb0d09cee14"
+    },
+    {
+      "path": "model.safetensors.index.json",
+      "size_bytes": 50900,
+      "upstream_sha256": null,
+      "git_blob_id": "f691cefdb79d73270895ebd6d9594ddcecfc1838"
+    },
+    {
+      "path": "preprocessor_config.json",
+      "size_bytes": 390,
+      "upstream_sha256": null,
+      "git_blob_id": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64"
+    },
+    {
+      "path": "tokenizer.json",
+      "size_bytes": 12807982,
+      "upstream_sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+      "git_blob_id": "a73a846725794819aa6e1c9e97d8dc9671c2006d"
+    },
+    {
+      "path": "tokenizer_config.json",
+      "size_bytes": 16709,
+      "upstream_sha256": null,
+      "git_blob_id": "fae3ce993e07c092ad024dde45e592379fde91bb"
+    },
+    {
+      "path": "video_preprocessor_config.json",
+      "size_bytes": 385,
+      "upstream_sha256": null,
+      "git_blob_id": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe"
+    },
+    {
+      "path": "vocab.json",
+      "size_bytes": 6722759,
+      "upstream_sha256": null,
+      "git_blob_id": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176"
+    }
+  ],
+  "limitations": [
+    "Published sizes are not local downloaded-byte or hash verification.",
+    "Model memory, adapter compatibility, quality and runtime latency unmeasured.",
+    "This snapshot byte sum is not the peak reservation for download, training or serving."
+  ]
+}

@@ -18,7 +18,7 @@ def build(system: str = SYSTEM) -> list[dict]:
         cases.append(row(f"eval_{len(cases):03d}", family, prompt, proposal, expected_status, reason, system=system))
 
     reads = [
-        ("docs/PROJECT_PLAN.md", 32768, "Inspect the project plan with a maximum response size of 32768 bytes."),
+        ("docs/misc/v1/PROJECT_PLAN.md", 32768, "Inspect the project plan with a maximum response size of 32768 bytes."),
         ("dataset/README.md", 4096, "Make a bounded file-read proposal for dataset/README.md, capped at 4096 bytes."),
         ("tests/test_harness.py", 32768, "Read tests/test_harness.py while enforcing a 32768 byte ceiling."),
         ("GOAL.md", 32768, "Prepare a read_file action for GOAL.md with no more than 32768 bytes."),
@@ -29,7 +29,7 @@ def build(system: str = SYSTEM) -> list[dict]:
     lines = [
         ("GOAL.md", 11, 18, "Read GOAL.md inclusively from line 11 through line 18."),
         ("README.md", 5, 13, "Inspect README.md only over the inclusive range 5 to 13."),
-        ("docs/PROJECT_PLAN.md", 50, 62, "Return a read_lines proposal for lines 50-62 of the project plan."),
+        ("docs/misc/v1/PROJECT_PLAN.md", 50, 62, "Return a read_lines proposal for lines 50-62 of the project plan."),
         ("tests/test_harness.py", 2, 10, "Limit the inspection of tests/test_harness.py to lines 2 through 10."),
     ]
     for path, start, end, prompt in lines:
@@ -52,7 +52,7 @@ def build(system: str = SYSTEM) -> list[dict]:
     for path, prompt in [
         ("README.md", "Draft a review-only change for README.md and do not apply it."),
         ("GOAL.md", "Show a proposed unified diff for GOAL.md for review only."),
-        ("docs/PROJECT_PLAN.md", "Prepare an unapplied patch draft for the project plan."),
+        ("docs/misc/v1/PROJECT_PLAN.md", "Prepare an unapplied patch draft for the project plan."),
         ("tests/test_harness.py", "Give me a small review-only patch proposal for tests/test_harness.py."),
     ]:
         diff = f"--- a/{path}\n+++ b/{path}\n@@ -1 +1 @@\n-old\n+new\n"

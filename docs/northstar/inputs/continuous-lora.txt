@@ -1,0 +1,538 @@
+Yes — that’s a much cleaner definition.
+
+Wrench’s learned component can be a **3-layer weight stack**:
+
+```text
+Layer 1 — Qwen Base
+    frozen foundation
+        +
+Layer 2 — Wrench LoRA
+    frozen, globally trained
+    "how to be Wrench"
+        +
+Layer 3 — Continuous LoRA
+    writable runtime adapter
+    "what this user/environment teaches Wrench"
+        ↓
+effective Wrench model
+```
+
+Mathematically, inference is approximately:
+
+$$
+W_{effective}
+=
+W_{Qwen}
++
+\Delta W_{Wrench}
++
+\Delta W_{continuous}
+$$
+
+The important part is: **only Layer 3 changes during normal use.**
+
+### 1. Qwen Base = intelligence substrate
+
+Keep this immutable.
+
+It gives you:
+
+* language/code understanding
+* long-context ability
+* basic reasoning
+* general tool-call understanding
+* pretrained world/code knowledge
+
+You can always reconstruct the model because this base never changes.
+
+### 2. Wrench LoRA = product identity
+
+This is the adapter we train centrally from your curated dataset.
+
+It teaches:
+
+```text
+raw state
+→ relevant context
+
+repo graph
+→ useful symbols
+
+context
+→ hot / warm / cold
+
+task
+→ retrieval strategy
+
+tool catalog
+→ relevant toolbelt
+
+state
+→ route / escalate
+```
+
+This adapter represents:
+
+> **How Wrench thinks.**
+
+It should also normally be immutable on the user's machine:
+
+```text
+Qwen-0.8B
++
+wrench-core-v17.lora
+```
+
+When you improve the product, you ship:
+
+```text
+wrench-core-v18.lora
+```
+
+without touching the base model.
+
+---
+
+# 3. Continuous LoRA = experience
+
+Then every installation has a tiny adapter sitting on top:
+
+```text
+user-A-continuous.lora
+```
+
+or even more usefully:
+
+```text
+user
+ ├── global-personal.lora
+ │
+ ├── repo-A.lora
+ ├── repo-B.lora
+ └── company-workspace.lora
+```
+
+But I'd initially keep your three conceptual layers exactly as you described and let Layer 3 contain the active personalization.
+
+For example, after using Wrench for weeks, Layer 3 might implicitly learn:
+
+```text
+this repo usually needs pytest, not unittest
+
+"deployment issue"
+→ inspect infra/terraform first
+
+payment failures
+→ likely packages/payments
+
+user prefers local Qwen coder
+before invoking Codex
+
+these generated directories are almost
+never relevant
+
+this specific test failure usually means
+we should inspect retry_policy.py
+```
+
+That's exactly the kind of knowledge you'd want to accumulate.
+
+---
+
+# But don't update Layer 3 after every token
+
+I'd make **Continuous LoRA continuously accumulative but asynchronously consolidated**.
+
+During runtime:
+
+```text
+interaction
+     ↓
+Wrench acts
+     ↓
+observe outcome
+     ↓
+experience record
+```
+
+Example:
+
+```json
+{
+  "state": "...",
+  "selected_context": ["S18", "S72"],
+  "route": "qwen-coder",
+  "result": "success",
+  "tests_passed": true,
+  "user_correction": null
+}
+```
+
+Nothing gets trained yet.
+
+Instead:
+
+```text
+                EXPERIENCE BUFFER
+
+good actions ──────────┐
+user corrections ──────┤
+failed routing ─────────┤
+retrieval mistakes ─────┤
+successful escalations ─┤
+                        ↓
+                  training batch
+```
+
+Then periodically:
+
+```text
+continuous-v31
+      ↓
+train on new experience
++ replay old experience
+      ↓
+continuous-v32-candidate
+      ↓
+evaluate
+   ┌────┴────┐
+ pass       fail
+  ↓           ↓
+activate    discard
+```
+
+The user experiences it as continuous learning even though you're performing **micro-batch continual learning**.
+
+That's much safer.
+
+---
+
+# Very important: train primarily on corrections
+
+Not all interactions are equally valuable.
+
+I would weight them approximately:
+
+```text
+user corrected Wrench             10x
+
+frontier disagreed with Wrench     8x
+
+Wrench route failed,
+different model succeeded          8x
+
+context retrieved too late         5x
+
+successful difficult decision      3x
+
+ordinary successful behavior       1x
+```
+
+The highest-value data is:
+
+> **where Wrench's prediction differed from what ultimately worked.**
+
+For instance:
+
+```text
+Wrench:
+route → 0.8B local
+
+Outcome:
+failed twice
+Codex solved immediately
+```
+
+becomes:
+
+```text
+STATE X
+BAD:
+route(local-0.8B)
+
+GOOD:
+route(frontier-coding)
+```
+
+That's an exceptionally useful continual-learning example.
+
+Likewise:
+
+```text
+Wrench selected:
+A B C
+
+Downstream model requested:
+D
+
+D solved problem
+```
+
+becomes:
+
+```text
+task/state
+→ include D
+```
+
+Now Layer 3 improves its context selection.
+
+---
+
+# Continuous LoRA should learn decisions, not facts
+
+This is crucial.
+
+Don't try to LoRA-train:
+
+```text
+FooService currently calls BarService.
+```
+
+That belongs in the code graph and may change tomorrow.
+
+Train:
+
+```text
+When debugging interface mismatches,
+expand callers + implementations +
+recent diff.
+```
+
+In other words:
+
+```text
+EPHEMERAL KNOWLEDGE
+→ external memory
+
+BEHAVIORAL PATTERN
+→ Continuous LoRA
+```
+
+That dramatically reduces forgetting and stale knowledge.
+
+So:
+
+```text
+Wrench State Store
+    =
+facts
+
+Continuous LoRA
+    =
+habits
+```
+
+---
+
+# I'd keep Continuous LoRA very small
+
+For a 0.8B base, Layer 3 could plausibly be only a few million trainable parameters.
+
+Conceptually:
+
+```text
+Qwen base
+~800M frozen
+
+Wrench LoRA
+perhaps 5–20M trainable params
+frozen after shipping
+
+Continuous LoRA
+perhaps 0.5–5M trainable params
+writable
+```
+
+Exact numbers need experimentation, but the important asymmetry is:
+
+```text
+Base              HUGE / immutable
+Wrench identity   small / versioned
+Experience        tiny / constantly replaceable
+```
+
+Continuous training then becomes cheap enough to run locally.
+
+On your 5070 Ti, this is a fundamentally different problem from retraining 0.8B weights.
+
+---
+
+# I'd also version the adapter like a filesystem
+
+Never mutate:
+
+```text
+continuous.lora
+```
+
+in place.
+
+Do:
+
+```text
+continuous/
+├── v00031
+├── v00032
+├── v00033
+└── active -> v00033
+```
+
+Every version has metrics:
+
+```json
+{
+  "version": 33,
+  "parent": 32,
+  "examples_new": 1834,
+  "examples_replay": 4000,
+  "context_recall": 0.961,
+  "route_success": 0.933,
+  "tool_accuracy": 0.978
+}
+```
+
+If the user starts getting worse results:
+
+```text
+rollback → v32
+```
+
+Instantly.
+
+This is extremely important for a continuously learning product.
+
+---
+
+# The replay buffer solves catastrophic forgetting
+
+If Layer 3 only trains on yesterday:
+
+```text
+today:
+lots of Python tasks
+```
+
+it could gradually forget:
+
+```text
+last month:
+TypeScript behavior
+```
+
+So each consolidation run might contain something like:
+
+```text
+40% newest experience
+30% historically important examples
+20% failure/correction examples
+10% Wrench-core invariants
+```
+
+That last category is important.
+
+It prevents Continuous LoRA from learning:
+
+```text
+"always use Claude"
+```
+
+just because the user happened to spend one week on extremely difficult tasks.
+
+---
+
+# And Layer 2 provides a natural anchor
+
+This is another reason your 3-layer model is elegant.
+
+Suppose Layer 3 goes bad.
+
+Remove it:
+
+```text
+Qwen
++
+Wrench LoRA
+=
+known-good Wrench
+```
+
+You're immediately back to factory behavior.
+
+Then:
+
+```text
+Qwen
++ Wrench LoRA
++ User LoRA
+```
+
+is personalization.
+
+That's essentially:
+
+```text
+OS ROM
++
+product firmware
++
+adaptive state
+```
+
+which is a very clean mental model.
+
+---
+
+# Eventually I'd extend your 3-layer concept slightly
+
+Logically still three layers, but Layer 3 can become **adapter memory**:
+
+```text
+              QWEN BASE
+                  +
+              WRENCH CORE
+                  +
+        CONTINUOUS ADAPTER BANK
+             /     |      \
+            /      |       \
+       general   python   repo-X
+                  infra
+```
+
+The Wrench controller selects:
+
+```text
+task
+ ↓
+activate repo-X + python adapters
+```
+
+rather than forcing every experience into one giant user LoRA.
+
+That prevents unrelated behaviors from fighting each other.
+
+But I would **not start there**.
+
+Start with exactly:
+
+```text
+Qwen3.5-0.8B
+      │
+      + Wrench-Core LoRA
+      │
+      + Continuous LoRA
+      ↓
+    WRENCH
+```
+
+And maintain one absolutely critical invariant:
+
+> **Layer 3 may personalize Wrench, but it can never be allowed to destroy Layer 2's fundamental behavior.**
+
+So every continuous update has to pass the original Wrench regression suite before becoming active.
+
+That turns Wrench from merely a locally deployed model into something much more interesting:
+
+> **Every installed Wrench begins from the same learned reflexes, but develops its own reflexes through actual use.**
+
+That fits the Wrench concept exceptionally well.

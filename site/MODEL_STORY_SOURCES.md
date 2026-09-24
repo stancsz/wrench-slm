@@ -20,7 +20,7 @@ is repository-only and is not copied to the static publish directory.
   `tools/calibrate_qwen_router.py` (`_example` and `calibrate`).
 - JSON syntax versus semantic correctness:
   `phases/phase-353-guided-json-lora-development/README.md`.
-- Current scope: root `GOAL.md`, `AGENTS.md`, and `docs/WRENCH_MODEL_TOOLBELT.md`.
+- Historical model-story scope: `docs/misc/v1/WRENCH_MODEL_TOOLBELT.md` and the archived v1 direction. Current scope is in `GOAL.md` and `docs/northstar/V2_ARCHITECTURE.md`.
 
 Do not combine historical quantization and adapter experiments into one
 promoted artifact. File size is not runtime VRAM; expert retention is not

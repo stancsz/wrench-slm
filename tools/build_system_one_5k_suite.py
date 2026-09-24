@@ -142,7 +142,7 @@ def positive(family: str, i: int, paths: list[str], line_paths: list[str]) -> tu
             ("src/wrench_harness/router.py", "return", "yield"),
             ("src/wrench_harness/mechanical.py", "return", "yield"),
             ("src/wrench_harness/qwen_abstain.py", "abstain", "decline"),
-            ("docs/PROJECT_PLAN.md", "active", "current"),
+            ("docs/misc/v1/PROJECT_PLAN.md", "active", "current"),
             ("pyproject.toml", "wrench", "Wrench"),
             ("src/wrench_harness/toolbelt.py", "return", "yield"),
         )

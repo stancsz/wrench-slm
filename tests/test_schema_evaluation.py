@@ -11,7 +11,7 @@ def _row(target: str, *, status: str = "accepted", reason: str | None = None) ->
 
 
 def test_safe_but_wrong_proposal_is_not_a_correct_accept():
-    row = _row('{"schema":"wrench.proposal.v1","action":"read_file","path":"docs/PROJECT_PLAN.md","max_bytes":32768}')
+    row = _row('{"schema":"wrench.proposal.v1","action":"read_file","path":"docs/misc/v1/PROJECT_PLAN.md","max_bytes":32768}')
     result = {
         "status": "accepted",
         "parsed_proposal": {"schema": "wrench.proposal.v1", "action": "read_file", "path": "README.md", "max_bytes": 32768},

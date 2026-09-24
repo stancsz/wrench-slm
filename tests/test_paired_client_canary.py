@@ -1461,7 +1461,11 @@ def test_zero_parent_budget_blocks_configured_baseline_before_output_or_network(
         encoding="utf-8",
     )
     monkeypatch.setattr(canary, "PARENT_CONTRACT_PATH", parent_path)
-    workload_path = canary.REPO_ROOT / "phases" / "phase-395-authorized-minimax-canary" / "workload.json"
+    workload_path = tmp_path / "synthetic-workload.json"
+    workload_payload = canary._default_workload()
+    workload_payload["workload_id"] = "test-only-zero-budget"
+    workload_payload["authorization"] = canary.EXTERNAL_AUTHORIZATION
+    workload_path.write_text(json.dumps(workload_payload), encoding="utf-8")
     workload = load_workload(workload_path)
     child_path = tmp_path / "child-contract.json"
     parent_contract_sha256 = canary.hashlib.sha256(parent_path.read_bytes()).hexdigest()

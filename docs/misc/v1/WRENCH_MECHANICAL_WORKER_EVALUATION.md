@@ -1,5 +1,8 @@
 # Wrench Mechanical Worker Evaluation
 
+> Historical v1 document. Its scope and active wording are superseded by
+> [Wrench v2](../../../GOAL.md). Retained behavior still requires its original evidence.
+
 Status: local evaluation contract active; the paired real-workflow canary and
 sustained operational tests are active, while cross-host and historical
 diagnostic sections remain evidence only
@@ -37,7 +40,7 @@ failure, and the result does not prove learned MiniMax parity or direct native
 traces, and its reported net savings did not reconcile all current Gate D
 overhead. The current scorer requires a declared eligible-workload universe
 to evaluate weighted coverage and leaves net savings unknown. See
-[Phase 432](../phases/phase-432-bound-workload-coverage/README.md). This note
+[Phase 432](../../../phases/phase-432-bound-workload-coverage/README.md). This note
 does not rewrite the saved v103 receipt.
 
 The independent 5060TI worker is the remote host `DESKTOP-KET1SKP` with an

@@ -1,0 +1,55 @@
+{
+  "documents": [
+    {
+      "old_path": "docs/MODEL_ARTIFACT_TRANSFER.md",
+      "new_path": "docs/misc/v1/MODEL_ARTIFACT_TRANSFER.md",
+      "original_sha256": "e00ae719055b5c25d26c9f2c04ffcc9c3492ccb03b07fca04112f2fe371f5490"
+    },
+    {
+      "old_path": "docs/PROJECT_PLAN.md",
+      "new_path": "docs/misc/v1/PROJECT_PLAN.md",
+      "original_sha256": "5cb0d26c21dd264c7bba4d3ff2c202517d7c8d9b05d2685f5b9a66597e71a596"
+    },
+    {
+      "old_path": "docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md",
+      "new_path": "docs/misc/v1/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md",
+      "original_sha256": "1b6ef9827758c004322ddb4126ba8e9e5e11caaf6d7cd12d7fc9b48f0ac316ae"
+    },
+    {
+      "old_path": "docs/WRENCH_LONG_CONTEXT_SERVING_CONTRACT.md",
+      "new_path": "docs/misc/v1/WRENCH_LONG_CONTEXT_SERVING_CONTRACT.md",
+      "original_sha256": "641270fc293efa4ed273f63ba69248f4d8838238e60d9eb7cf12577183194a7e"
+    },
+    {
+      "old_path": "docs/WRENCH_MECHANICAL_WORKER_EVALUATION.md",
+      "new_path": "docs/misc/v1/WRENCH_MECHANICAL_WORKER_EVALUATION.md",
+      "original_sha256": "c170014b405da81fac69eb20145ea7e8c41cd896e8c31d1078a441f7964c7941"
+    },
+    {
+      "old_path": "docs/WRENCH_MODEL_TIERS.md",
+      "new_path": "docs/misc/v1/WRENCH_MODEL_TIERS.md",
+      "original_sha256": "c6764615630739d651b6101ffd8880d76bcd2902fbe363dfc61d341bf183af8d"
+    },
+    {
+      "old_path": "docs/WRENCH_MODEL_TOOLBELT.md",
+      "new_path": "docs/misc/v1/WRENCH_MODEL_TOOLBELT.md",
+      "original_sha256": "f04bbda01c462d4de2a0f8199b429cb1091705e4a10ce6e863d5f0b8450171d1"
+    },
+    {
+      "old_path": "docs/WRENCH_PORTABLE_DISTRIBUTION.md",
+      "new_path": "docs/misc/v1/WRENCH_PORTABLE_DISTRIBUTION.md",
+      "original_sha256": "6b681b9179f3642453431ef6425a39683a8ff64eb190266fd318a5104b1a5c5c"
+    }
+  ],
+  "source_path_updates": [
+    "tools/build_executable_mechanical_contract.py",
+    "tools/build_router_calibration_v2.py",
+    "tools/build_system_one_5k_suite.py",
+    "tools/generate_expanded_evaluation.py",
+    "tools/generate_patch_calibration_probe.py",
+    "tools/generate_wrench_calibration.py",
+    "tools/generate_wrench_evaluation.py",
+    "tests/test_schema_evaluation.py"
+  ],
+  "historical_payloads_rewritten": false
+}

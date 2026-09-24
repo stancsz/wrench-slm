@@ -1,0 +1,13 @@
+{
+  "status": "PASS_HF_PACKAGE_RECEIPT",
+  "schema": "wrench.huggingface-cross-host-receipt.v1",
+  "host": "rtx-5060-ti",
+  "source_commit": "6d25fc8dfa21e53c8593d4d09df7ba7f6b74e4e1",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+  "huggingface_revision": "966a1720d84b330d90b6ad38f22e883e749448f3",
+  "safetensors_shard_count": 2,
+  "resource_reserve_policy": "host RAM and VRAM each retain at least 10 percent",
+  "quality_claim": false,
+  "native_attention_claim": false,
+  "input_sha256": "72cbaf344435ac77a0c67ee91877fe882403165ee2e869f88ee440577416e69f"
+}

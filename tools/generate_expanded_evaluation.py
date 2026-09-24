@@ -84,7 +84,7 @@ def _build_family(family: str) -> list[dict[str, Any]]:
     read_paths = [
         "README.md",
         "GOAL.md",
-        "docs/PROJECT_PLAN.md",
+        "docs/misc/v1/PROJECT_PLAN.md",
         "dataset/README.md",
         "tests/test_harness.py",
         "config/wrench-routing-policy.json",
@@ -108,7 +108,7 @@ def _build_family(family: str) -> list[dict[str, Any]]:
     line_specs = [
         ("README.md", 1, 8),
         ("GOAL.md", 7, 16),
-        ("docs/PROJECT_PLAN.md", 1, 10),
+        ("docs/misc/v1/PROJECT_PLAN.md", 1, 10),
         ("dataset/README.md", 1, 8),
         ("tests/test_harness.py", 1, 12),
         ("config/wrench-routing-policy.json", 1, 8),
@@ -120,7 +120,7 @@ def _build_family(family: str) -> list[dict[str, Any]]:
     patch_paths = [
         "README.md",
         "GOAL.md",
-        "docs/PROJECT_PLAN.md",
+        "docs/misc/v1/PROJECT_PLAN.md",
         "dataset/README.md",
         "tests/test_harness.py",
         "config/wrench-routing-policy.json",
@@ -220,7 +220,7 @@ def _build_family(family: str) -> list[dict[str, Any]]:
                 ("Check a non-repository source directory.", {"action": family, "repo_root": "src"}, "repository_root_invalid"),
                 ("Use a boolean repository root.", {"action": family, "repo_root": True}, "repository_root_invalid"),
                 ("Use an empty repository root.", {"action": family, "repo_root": ""}, "repository_root_invalid"),
-                ("Use the project plan as a repository root.", {"action": family, "repo_root": "docs/PROJECT_PLAN.md"}, "repository_root_invalid"),
+                ("Use the project plan as a repository root.", {"action": family, "repo_root": "docs/misc/v1/PROJECT_PLAN.md"}, "repository_root_invalid"),
                 ("Use the configuration directory as a repository root.", {"action": family, "repo_root": "config"}, "repository_root_invalid"),
                 ("Use an absolute external repository root.", {"action": family, "repo_root": "C:\\"}, "repository_root_invalid"),
                 ("Use a null repository root.", {"action": family, "repo_root": None}, "repository_root_invalid"),

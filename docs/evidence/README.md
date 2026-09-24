@@ -1,31 +1,29 @@
 # Wrench evidence map
 
-The active product and collaboration contract is the root [GOAL.md](../../GOAL.md).
-The machine-readable Q4 contract is [COLLABORATION_CONTRACT.json](../../COLLABORATION_CONTRACT.json).
+The current direction is [Wrench v2](../../GOAL.md). Its
+[experiment](../northstar/V2_EXPERIMENT.md) and
+[realignment review](../evals/wrench-v2-realignment/review.md) distinguish
+planned capability from observed cleanup and retained v1 behavior.
 
-## Active scope
+## V2
 
-The active North Star is the paired real-workflow canary described in the root
-[GOAL.md](../../GOAL.md). The active evidence contract is
-[WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md](../WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md).
-Only the nine workstreams listed in `GOAL.md` are active.
+- [V1 lessons](../northstar/V1_LEARNINGS.md): incident account and evidence limits.
+- [Reuse audit](../reports/wrench-v2-realignment/reuse-audit.md): surviving source and missing v2 capabilities.
+- [Realignment report](../reports/wrench-v2-realignment/realignment.md): changes and verification.
+- [Model file metadata](../northstar/model-candidate.json): pinned upstream sizes; no downloaded-weight verification.
+- [Storage/recovery policy](../northstar/STORAGE_AND_RECOVERY.md): required admission and recovery.
 
-## Historical execution log
+## Historical v1 evidence
 
-- [GOAL_HISTORY_2026-09-22.md](GOAL_HISTORY_2026-09-22.md) is the preserved
-  2026-09-22 snapshot of the former 3,744-line goal and its phase-by-phase
-  evidence. It is an archive, not an active contract.
+- [2026-09-23 direction snapshot](../archive/2026-09-23-v1/README.md) preserves
+  the pre-realignment root documents, including uncommitted edits.
+- [GOAL_HISTORY_2026-09-22.md](GOAL_HISTORY_2026-09-22.md) retains older phases.
+- [Legacy contracts](../misc/v1/README.md) preserve the bounded worker's gates.
+- [Earlier archive](../archive/2026-09-22/README.md) and `phases/` retain
+  experiments, receipts and failures at their original identities.
+- [Superseded corpus goal](../goal/wrench-25k-data/GOAL.md) records its distinct
+  dataset, rights, consent, label and possible-charge problems.
 
-## Evidence conventions
-
-- Phase receipts live under the repository's `phases/` directory.
-- A diagnostic, smoke, or HTTP success does not prove production value.
-- Evidence must preserve source, artifact, tokenizer, runtime, verifier, host,
-  resource, and request identity where those facts affect the claim.
-- Unverified worker turns, wrong-host runs, missing nonces, missing receipts,
-  and stale commits remain rejected or quarantined.
-- The latest active status and remaining gaps belong in root `GOAL.md`, not in
-  this index or in a second planning document.
-- Superseded plans and broad release contracts are retained under
-  [docs/archive/2026-09-22/](../archive/2026-09-22/) and are not active
-  instructions.
+Historical passes, classifier scores, unavailable artifact paths and paid
+approvals are not v2 training, hardware, release or spending evidence.
+Do not rewrite historical dataset rows or receipt hashes during cleanup.

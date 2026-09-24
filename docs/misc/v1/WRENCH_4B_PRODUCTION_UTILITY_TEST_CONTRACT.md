@@ -1,8 +1,11 @@
 # Wrench productive-value evidence contract
 
+> Historical v1 document. Its scope and active wording are superseded by
+> [Wrench v2](../../../GOAL.md). Retained behavior still requires its original evidence.
+
 This is the active evidence contract for the narrowed Wrench goal. The former
 broader 4B model-selection and hardware contract is preserved at
-[docs/archive/2026-09-22/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md](archive/2026-09-22/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md).
+[docs/archive/2026-09-22/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md](../../archive/2026-09-22/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md).
 
 ## Decision
 

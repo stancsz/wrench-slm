@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.rtx-5060ti-resource-snapshot.v1",
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "vram_total_mib": 16311,
+  "vram_used_before_mib": 1107,
+  "vram_free_before_mib": 14946,
+  "vram_free_before_fraction": 0.9163141438,
+  "vram_used_after_mib": 1084,
+  "vram_free_after_mib": 14969,
+  "vram_free_after_fraction": 0.9177242352,
+  "ram_total_kib": 33486624,
+  "ram_free_before_kib": 16479344,
+  "ram_free_before_fraction": 0.4921172107,
+  "ram_free_after_kib": 16560948,
+  "ram_free_after_fraction": 0.4945541241,
+  "reserve_policy_met": true
+}

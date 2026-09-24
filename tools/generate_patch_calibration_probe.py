@@ -70,15 +70,15 @@ def build_rows() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     train_specs = [
         ("replace", "README.md", "status-{i}", "status-{i}-verified", "Replace \"status-{i}\" with \"status-{i}-verified\" in README.md and draft it for review only."),
         ("append", "GOAL.md", "goal-marker-{i}", "goal-marker-{i}-append", "Append the line \"goal-marker-{i}-append\" to GOAL.md as an unapplied review-only patch."),
-        ("prepend", "docs/PROJECT_PLAN.md", "plan-marker-{i}", "plan-marker-{i}-header", "Prepend the line \"plan-marker-{i}-header\" to docs/PROJECT_PLAN.md, leaving the file unchanged."),
-        ("insert", "docs/WRENCH_PORTABLE_DISTRIBUTION.md", "anchor-{i}", "inserted-{i}", "Insert \"inserted-{i}\" after the unique text \"anchor-{i}\" in docs/WRENCH_PORTABLE_DISTRIBUTION.md for review."),
-        ("remove", "docs/WRENCH_MODEL_TIERS.md", "deprecated-{i}", "deprecated-{i}", "Remove the unique text \"deprecated-{i}\" from docs/WRENCH_MODEL_TIERS.md and return only a review patch."),
+        ("prepend", "docs/misc/v1/PROJECT_PLAN.md", "plan-marker-{i}", "plan-marker-{i}-header", "Prepend the line \"plan-marker-{i}-header\" to docs/misc/v1/PROJECT_PLAN.md, leaving the file unchanged."),
+        ("insert", "docs/misc/v1/WRENCH_PORTABLE_DISTRIBUTION.md", "anchor-{i}", "inserted-{i}", "Insert \"inserted-{i}\" after the unique text \"anchor-{i}\" in docs/misc/v1/WRENCH_PORTABLE_DISTRIBUTION.md for review."),
+        ("remove", "docs/misc/v1/WRENCH_MODEL_TIERS.md", "deprecated-{i}", "deprecated-{i}", "Remove the unique text \"deprecated-{i}\" from docs/misc/v1/WRENCH_MODEL_TIERS.md and return only a review patch."),
     ]
     holdout_specs = [
         ("replace", "GOAL.md", "intent-{i}", "intent-{i}-current", "For review only, replace \"intent-{i}\" with \"intent-{i}-current\" in GOAL.md."),
         ("append", "README.md", "append-old-{i}", "append-new-{i}", "Draft an unapplied append of \"append-new-{i}\" to README.md."),
-        ("prepend", "docs/WRENCH_MODEL_TIERS.md", "tier-old-{i}", "tier-new-{i}", "Add \"tier-new-{i}\" before the first line of docs/WRENCH_MODEL_TIERS.md without applying it."),
-        ("insert", "docs/PROJECT_PLAN.md", "section-{i}", "detail-{i}", "Draft a change inserting \"detail-{i}\" immediately after \"section-{i}\" in docs/PROJECT_PLAN.md."),
+        ("prepend", "docs/misc/v1/WRENCH_MODEL_TIERS.md", "tier-old-{i}", "tier-new-{i}", "Add \"tier-new-{i}\" before the first line of docs/misc/v1/WRENCH_MODEL_TIERS.md without applying it."),
+        ("insert", "docs/misc/v1/PROJECT_PLAN.md", "section-{i}", "detail-{i}", "Draft a change inserting \"detail-{i}\" immediately after \"section-{i}\" in docs/misc/v1/PROJECT_PLAN.md."),
         ("remove", "README.md", "obsolete-{i}", "obsolete-{i}", "Prepare a review-only removal of unique text \"obsolete-{i}\" from README.md."),
     ]
     train: list[dict[str, Any]] = []

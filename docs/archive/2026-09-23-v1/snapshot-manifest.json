@@ -1,0 +1,54 @@
+{
+  "source_commit": "87909b958ac252b0b3b2cc720a300babb26b733d",
+  "includes_preexisting_worktree_edits": true,
+  "files": [
+    {
+      "source": "README.md",
+      "snapshot": "README.v1.md.txt",
+      "bytes": 10945,
+      "sha256": "51b8e9b939ff02c12d900c0a612d8897c27f075099175da561c4d37bf4ddfe4e"
+    },
+    {
+      "source": "GOAL.md",
+      "snapshot": "GOAL.v1.md.txt",
+      "bytes": 41419,
+      "sha256": "230942b2d5ee6000acade7b2626da180fdff63fd0da38a40d8dead0071199bd8"
+    },
+    {
+      "source": "AGENTS.md",
+      "snapshot": "AGENTS.v1.md.txt",
+      "bytes": 8639,
+      "sha256": "aa7132d5f67731b3c0fd1695cfaed568113e3dd8d7c928426127c1ed0d03a427"
+    },
+    {
+      "source": "AGENT.md",
+      "snapshot": "AGENT.v1.md.txt",
+      "bytes": 948,
+      "sha256": "1d9784641a1527c52b7294f22efe7c12758520fde932b07f3aefac9db2387f2c"
+    },
+    {
+      "source": "COLLABORATION_CONTRACT.json",
+      "snapshot": "COLLABORATION_CONTRACT.v1.json",
+      "bytes": 8977,
+      "sha256": "ea645e063574a5dea68b7348f28de14f5b9c3a55927e8aeb34286ee1c849e340"
+    },
+    {
+      "source": "docs/northstar/README.md",
+      "snapshot": "northstar.v1.md.txt",
+      "bytes": 4758,
+      "sha256": "bb737a91245e3d8f5a996b314ff55f6790a6d7daa95b1a964b1b4f3c38b125ee"
+    },
+    {
+      "source": "docs/goal/wrench-25k-data/GOAL.md",
+      "snapshot": "corpus-goal.v1.md.txt",
+      "bytes": 9152,
+      "sha256": "e20ec19488b5302d9223574492525f7414a59edf58c64c27af7aed51e9dd9039"
+    },
+    {
+      "source": "docs/evidence/README.md",
+      "snapshot": "evidence-index.v1.md.txt",
+      "bytes": 1509,
+      "sha256": "a9456345dd88324a20328b3891dd27e700b653a6f9e103338e6beec9893d635d"
+    }
+  ]
+}

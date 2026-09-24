@@ -1,0 +1,49 @@
+{
+  "schema": "wrench.5060ti-receipt-reconciliation.v1",
+  "status": "PARTIAL_STALE_SOURCE_DIAGNOSTIC",
+  "host": "DESKTOP-KET1SKP",
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "worker_source_commit": "aaf0c79b5fcef5105531793eacfbece0dc0c338f",
+  "current_checkout_commit": "52852a6817e445b43adb69253168948aa4c8b446",
+  "huggingface_revision": "966a1720d84b330d90b6ad38f22e883e749448f3",
+  "canonical_cases_sha256": "da64a33d193389dc0ed47d564d86e1599e4d30c4ef425206af68fe991cd10a72",
+  "direct_4m": {
+    "status": "PASS_MODEL_LOCAL_SERVER_4M",
+    "receipt": "C:\\Users\\stanc\\wrench-independent-verify-20260921\\direct-4m-receipt.json",
+    "sha256": "b7a2a451d1783c1843c3bc0a70b9dff58b0c35ca496ac6159bd1ce1592da8312",
+    "requested_tokens": 4000000,
+    "raw_input_tokens": 3999995,
+    "effective_working_context_tokens": 9,
+    "elapsed_ms": 570.417,
+    "model_calls": 0
+  },
+  "retrieval": {
+    "status": "PASS_PACKAGE_RETRIEVAL_2M_4M",
+    "receipt": "C:\\Users\\stanc\\wrench-independent-verify-20260921\\retrieval-2m-4m-receipt.json",
+    "sha256": "e0f5026204021adaa9ba3eb43974423ad70c5e027388855a04ca0a523c45c79b",
+    "case_count": 6,
+    "passed": 6,
+    "model_calls": 0
+  },
+  "replay_220": {
+    "status": "DIAGNOSTIC_COMPLETE_NOT_MINIMAX_PARITY",
+    "receipt": "C:\\Users\\stanc\\wrench-independent-verify-20260921\\v2\\evaluation-rerun.json",
+    "sha256": "dc8d27cbacc28108d2575c35d52a3e66b9660062c98a7e8035c0d856fbedb854",
+    "requests": 220,
+    "outcome_matches": 200,
+    "exact_proposals": 100,
+    "eligible_rows": 120,
+    "eligible_exact_accepts": 100,
+    "prohibited_accepts": 0,
+    "transport_or_runtime_abstentions": 0,
+    "model_calls": 0,
+    "median_latency_ms": 1.998,
+    "p95_latency_ms": 105.298
+  },
+  "nonce_bound": false,
+  "teacher_parity": false,
+  "quality_claim": false,
+  "native_attention_claim": false,
+  "current_source_match": false,
+  "next_required": "Fresh authenticated RTX 5060 Ti run against current checkout commit with nonce-bound final receipt."
+}

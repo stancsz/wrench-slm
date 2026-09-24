@@ -1,0 +1,59 @@
+{
+  "schema": "wrench.huggingface-cross-host-receipt.v1",
+  "status": "PASS_HF_PACKAGE_PREFLIGHT",
+  "host": "rtx-5060-ti",
+  "source_commit": "6d25fc8dfa21e53c8593d4d09df7ba7f6b74e4e1",
+  "huggingface_repo_id": "stancsz/Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+  "huggingface_revision": "966a1720d84b330d90b6ad38f22e883e749448f3",
+  "hub_revision_pinned": true,
+  "package_root": "C:\\Users\\stanc\\models\\wrench-5060-preflight-20260921\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+  "safetensors_shard_count": 2,
+  "gpu_identity": "NVIDIA GeForce RTX 5060 Ti",
+  "resource_reserve": {
+    "schema": "wrench.host-resource-reserve.v1",
+    "status": "PASS_HOST_RESOURCE_RESERVE",
+    "before_download": {
+      "ram_total_bytes": 34290302976,
+      "ram_free_bytes": 17214971904,
+      "ram_free_fraction": 0.5020361562873582,
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 5060 Ti",
+          "total_mib": 16311,
+          "used_mib": 992,
+          "free_mib": 15319,
+          "free_fraction": 0.9391821470173503
+        }
+      ]
+    },
+    "after_download": {
+      "ram_total_bytes": 34290302976,
+      "ram_free_bytes": 17206116352,
+      "ram_free_fraction": 0.5017779039176956,
+      "gpus": [
+        {
+          "name": "NVIDIA GeForce RTX 5060 Ti",
+          "total_mib": 16311,
+          "used_mib": 990,
+          "free_mib": 15321,
+          "free_fraction": 0.9393047636564282
+        }
+      ]
+    }
+  },
+  "runtime_identity": {
+    "python": "3.13.15",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "package_validation": {
+    "status": "PASS_STRUCTURAL_PACKAGE",
+    "config_max_position_embeddings": 4000000,
+    "file_hash_count": 20
+  },
+  "mechanical_smoke": {
+    "status": "PASS_HF_PACKAGE_MECHANICAL_SMOKE",
+    "proposal_status": "accepted"
+  },
+  "quality_claim": false,
+  "native_attention_claim": false
+}

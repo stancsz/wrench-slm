@@ -37,7 +37,7 @@ def _build_fixture(root: Path) -> None:
     files = {
         "README.md": "README fixture\nstatus marker\nrouter verifier selection\n",
         "GOAL.md": "GOAL fixture\nprohibited quality_claim parameter_count\n",
-        "docs/PROJECT_PLAN.md": "PROJECT_PLAN fixture\nfallback_reason verifier\n",
+        "docs/misc/v1/PROJECT_PLAN.md": "PROJECT_PLAN fixture\nfallback_reason verifier\n",
         "dataset/README.md": "DATASET fixture\nEXPERIMENTAL health_read\n",
         "tests/test_harness.py": "def test_fixture():\n    return 'health_read'\n",
         "config/wrench-routing-policy.json": '{"router":"wrench","selection":"bounded"}\n',

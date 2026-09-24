@@ -1,5 +1,14 @@
 # Wrench developer documentation
 
+## Current direction: experiment v2
+
+The [v2 experiment](../docs/northstar/V2_EXPERIMENT.md) supersedes the old
+binary-worker-only direction. The site now has an English/Chinese v2 page
+and a direction notice on retained v1 pages. The historical content below
+describes the existing site and v1 behavior, not a completed v2 runtime.
+This realignment builds locally only; earlier publication history is not a
+new deployment action. Current repository visibility was not rechecked.
+
 The website connects the mission, current bounded worker, practical example,
 client status, evidence, and hardware roadmap. Product mission: affordable AI
 for the rest of us. Initial audience: less than 8 GB of GPU memory. Next target:

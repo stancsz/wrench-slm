@@ -1,0 +1,17 @@
+{
+  "schema": "wrench.current-package-dsh-readonly-smoke.v1",
+  "status": "PASS_DSH_READONLY_LOCAL_OVERLAY",
+  "package_dir": "C:\\Users\\stanc\\models\\wrench-5060-preflight-20260921\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+  "client": "dsh",
+  "profile": "headless",
+  "overlay": "phases/phase-273-5060ti-current-package-e2e/dsh-current.patch.yml",
+  "endpoint": "http://127.0.0.1:28943/v1",
+  "prompt": "Read README.md and report its first heading.",
+  "exit_code": 0,
+  "observed_output": "The first heading in README.md is: **# Wrench SLM**",
+  "workspace": "phases/phase-273-5060ti-current-package-e2e/client-smoke/dsh-workspace",
+  "server_stdout": "phases/phase-273-5060ti-current-package-e2e/client-smoke/dsh-server.stdout.log",
+  "server_stderr": "phases/phase-273-5060ti-current-package-e2e/client-smoke/dsh-server.stderr.log",
+  "client_stdout": "phases/phase-273-5060ti-current-package-e2e/client-smoke/dsh.stdout.txt",
+  "metadata_trace": "not emitted by this client run; local endpoint overlay was independently confirmed with dsh --dump-config"
+}

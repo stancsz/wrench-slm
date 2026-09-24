@@ -1,0 +1,11 @@
+{
+  "schema": "wrench.current-package-opencode-readonly-smoke.v1",
+  "status": "BLOCKED_PREREQUISITE",
+  "package_dir": "C:\\Users\\stanc\\models\\wrench-5060-preflight-20260921\\Wrench-4B-Qwen3.6-8E-NVFP4-native4M-Experimental-Preview",
+  "required_client": "OpenCode CLI",
+  "exit_code": 1,
+  "failure": "opencode and opencode.cmd are not installed or available on PATH",
+  "package_files_missing": ["opencode.wrench.json", "dsh-wrench.patch.yml"],
+  "command": "pwsh -NoProfile -File tools/smoke_portable_clients.ps1 -PackageDir <current-package> -OutputDir phases/phase-273-5060ti-current-package-e2e/client-smoke",
+  "side_effects": "none"
+}

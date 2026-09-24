@@ -1,0 +1,35 @@
+{
+  "schema": "wrench.minimax-data-job-approval.v1",
+  "status": "APPROVED_BOUNDED_CORPUS_INFERENCE_BLOCKED_ON_AUTHENTICATION",
+  "approved_by": "human",
+  "approval_reference": "2026-09-23 task reply: Approve a $100 cap",
+  "scope": "MiniMax teacher inference for the 25,000-row Wrench training/evaluation corpus",
+  "maximum_total_cost_usd": 100.0,
+  "provider": "minimax via OpenRouter",
+  "model": "minimax/minimax-m3",
+  "requested_upstream_provider": "minimax",
+  "fallbacks": false,
+  "storage_root": "C:\\wrench-slm-data",
+  "pilot": {
+    "maximum_requests": 1,
+    "maximum_output_tokens": 128,
+    "automatic_retries": 0,
+    "retain_only": [
+      "normalized structured proposal",
+      "response model identifier",
+      "provider usage and cost",
+      "response content hash"
+    ],
+    "retain_hidden_reasoning": false
+  },
+  "full_job_status": "BLOCKED_ON_AUTHENTICATION",
+  "pilot_receipt": "minimax-data-pilot-receipt.json",
+  "authenticated_usage_recorded": false,
+  "constraints": [
+    "Use synthetic prompts and fixtures only.",
+    "Never send sealed-final prompts to MiniMax during construction.",
+    "Stop before any request whose reserved maximum could exceed the remaining budget.",
+    "Treat missing response usage after dispatch as the full request reserve consumed; do not retry automatically.",
+    "Do not publish generated output until route terms and the concrete release artifact pass review."
+  ]
+}

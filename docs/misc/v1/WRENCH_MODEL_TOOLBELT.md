@@ -1,5 +1,8 @@
 # Wrench model-side toolbelt
 
+> Historical v1 document. Its scope and active wording are superseded by
+> [Wrench v2](../../../GOAL.md). Retained behavior still requires its original evidence.
+
 The 2M or 4M payload is not treated as an undifferentiated prompt. Wrench
 should expose a small deterministic toolbelt beside the model so the latest
 intent stays visible while older context remains searchable reference data.

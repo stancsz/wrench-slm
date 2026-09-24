@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_id": "wrench-slm-productive-value-2026-09-22",
+  "version": "2.0",
+  "project": "wrench-slm",
+  "collaboration": {
+    "mode": "CHALLENGE",
+    "classification": {
+      "risk": "high",
+      "risk_reasons": [
+        "production_or_system_of_record",
+        "money",
+        "permissions",
+        "privacy",
+        "security",
+        "external_representation",
+        "outside_isolated_sandbox",
+        "cannot_simulate_before_commit"
+      ],
+      "complexity": "high",
+      "complexity_reasons": [
+        "ambiguous_productive_value",
+        "multiple_dependencies",
+        "hard_to_verify",
+        "reasonable_expert_disagreement"
+      ],
+      "confidence_in_classification": "high"
+    },
+    "authority": {
+      "intent": "human",
+      "initiative": "human",
+      "execution": "ai_analysis_human_decision",
+      "acceptance": "human_or_independent_review",
+      "commit": "human_only"
+    },
+    "task_routing": [
+      {
+        "task_class": "read-only inspection, documentation edits, deterministic local tests, and reversible evidence indexing",
+        "mode": "AUTO",
+        "boundary": "Repository-only, reversible, with diff and test verification"
+      },
+      {
+        "task_class": "sustained local operational testing and bounded real-client canary preparation",
+        "mode": "GUARD",
+        "boundary": "Stop before external effect, provider spending, or promotion"
+      },
+      {
+        "task_class": "product wording, tradeoffs, and interpretation of canary value",
+        "mode": "COCREATE",
+        "boundary": "Human acceptance and final commit"
+      },
+      {
+        "task_class": "workflow comparison, targeted fallback expansion, routing, and architecture changes",
+        "mode": "CHALLENGE",
+        "boundary": "Human decision with AI evidence, alternatives, and dissent"
+      },
+      {
+        "task_class": "production enablement, deployment, publication, credential approval, or unverified safety judgment",
+        "mode": "HUMAN_ONLY",
+        "boundary": "Human performs or explicitly takes over"
+      }
+    ],
+    "bounds": {
+      "scope": "Develop and verify the deterministic hybrid Wrench worker, its independent verifier, two-state client protocol, three named client surfaces, paired productive-value canary, targeted fallback handlers, and sustained local operational behavior. Human approval covers exactly one paid paired canary with one repetition using workload SHA-256 a7633846225827f0877a0e4202706be4f2c4c4a5118d6069c78755c4323729ce through http://localhost:4000/v1 using the OpenRouter MiniMax M3 comparison route, capped at USD 500, only after a provider-enforced cap with explicit headroom for delayed enforcement, the exact gateway alias, separate expected provider-model identity, authoritative cost-export retrieval path, and a hash-bound schema-v3 child contract are verified. If the provider cost source is daily aggregate only, its child contract must bind a dedicated project and exclusive API key for every complete included billing bucket, with separately captured request IDs and usage, a complete daily response with has_more false and no remaining page cursor, and human-reviewed isolation and spend-headroom evidence. The aggregate export must not be represented as request-level cost or model evidence.",
+      "paid_canary_route_allowance": {
+        "schema": "wrench.paid-canary-route-allowance.v1",
+        "decision": "human.approve_commit",
+        "status": "APPROVED",
+        "approved_by": "human",
+        "approval_reference": "Q4 human route choice on 2026-09-22: use MiniMax as comparison via OpenRouter MiniMax M3",
+        "routes": [
+          {
+            "endpoint": "http://localhost:4000/v1",
+            "gateway_model_alias": "openrouter",
+            "expected_provider_model": "openrouter/minimax/minimax-m3"
+          }
+        ]
+      },
+      "permissions": [
+        "read the repository and approved redacted evaluation inputs",
+        "make reversible changes inside the repository",
+        "run approved local tests and bounded evaluation entry points",
+        "exercise the three named client surfaces with bounded read-only or review-only work"
+      ],
+      "prohibited_actions": [
+        "deploy or enable production routing",
+        "publish or release an artifact without human approval",
+        "spend provider money without an approved child contract",
+        "access or expose credentials",
+        "upload customer data or unrestricted private data",
+        "execute arbitrary external mutation",
+        "weaken verifier, safety, or evidence gates",
+        "claim parity or production value from a smoke, HTTP 200, synthetic replay, or offline result",
+        "start skipped hardware, dense-native, learned-routing, adapter, or broad packaging work without a new human decision"
+      ],
+      "data_access": [
+        "repository source and documentation",
+        "approved redacted traces and fixtures",
+        "hash-bound model and package metadata",
+        "client receipts that contain no credentials or unrestricted private data"
+      ],
+      "token_budget": 0,
+      "monetary_budget": 500,
+      "max_retries": 2
+    },
+    "evidence_required": [
+      "validated Q4 contract",
+      "git diff --check",
+      "relevant automated tests",
+      "hash-bound source, artifact, tokenizer, runtime, and verifier identities",
+      "Gate A receipt: zero schema errors, typed-oracle matches for eligible cases, and exact abstention reasons for out-of-boundary cases",
+      "Gate B receipt: zero prohibited accepts, unexpected side effects, or unverified boundary escapes",
+      "Gate C teacher-only comparison: final success and safety outcomes, eligible correct acceptance and overall correct outcomes with paired 95% confidence intervals, and median and p95 successful eligible-task latency improvements of at least 50%",
+      "Gate D matched three-arm replay across stronger-model-only, rules-plus-fallback, and Wrench-plus-fallback, covering at least 90% of weighted mechanical-workload frontier-token mass and at least 95% net frontier-token savings after all overhead, with zero material final-success regression",
+      "Gate E ProposalRouter operational receipts for concurrency, cancellation, timeout, and circuit breaking",
+      "bounded two-state protocol receipts for OpenCode, DeepSeek Harness, and Claude Code",
+      "per-request purpose and route attribution for auxiliary model traffic, including automatic title generation",
+      "complete frontier-token, local-token, cost, latency, retry, correction, abstention, verifier, compaction, mutation, and fallback accounting",
+      "paid-cost evidence matching the approved child accounting mode: either exact provider request rows, or a complete official OpenAI daily Costs response with has_more false, buckets filtered and grouped by the child-bound project and API key, exclusive-use evidence, aggregate cost reconciled to the paid receipt through that isolated scope, and request IDs and usage preserved separately",
+      "real-trace evidence for any targeted fallback expansion, with typed scope and independent verification",
+      "human decision receipt before promotion, publication, deployment, or spend"
+    ],
+    "human_checkpoint": {
+      "type": "human.approve_commit",
+      "required_for": [
+        "promotion",
+        "production enablement",
+        "deployment",
+        "publication",
+        "provider spending",
+        "permission or data-scope expansion",
+        "reactivating skipped workstreams"
+      ]
+    },
+    "escalation": {
+      "triggers": [
+        "verifier_failure",
+        "novel_condition",
+        "scope_expansion",
+        "permission_expansion",
+        "budget_exceeded",
+        "unresolved_disagreement",
+        "irreversible_side_effect",
+        "security_or_privacy_concern",
+        "missing_or_stale_identity",
+        "unbounded_retry",
+        "sealed_split_exposure",
+        "production_enablement_request",
+        "provider_spend_request",
+        "request_to_reactivate_skipped_workstream"
+      ],
+      "target_mode": "HUMAN_ONLY",
+      "on_human_timeout": "stop_and_preserve_state"
+    },
+    "rollback": {
+      "available": true,
+      "procedure": "Disable learned routing, restore the named source and artifact recovery point, preserve all receipts and failures, and do not rewrite evidence.",
+      "recovery_point": "Record source commit, artifact manifest hash, tokenizer hash, runtime identity, verifier identity, and working-tree state before each consequential task."
+    },
+    "audit": {
+      "decision_log": true,
+      "override_reason_required": true,
+      "artifacts": [
+        "GOAL.md",
+        "COLLABORATION_CONTRACT.json",
+        "AGENTS.md",
+        "AGENTS.local.md",
+        "docs/evidence/",
+        "docs/archive/2026-09-22/",
+        "phases/"
+      ]
+    }
+  }
+}

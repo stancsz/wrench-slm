@@ -679,6 +679,13 @@ def main() -> int:
             seen_fingerprints[row["fingerprint"]] = row_id
     errors.extend(isolation_errors(train + development))
     errors.extend(near_duplicate_errors(train + development))
+    unique_template_groups = len(
+        {
+            row["template_id"]
+            for row in train + development
+            if isinstance(row.get("template_id"), str) and row["template_id"]
+        }
+    )
 
     train_counts = Counter((row["family"], row["category"]) for row in train)
     dev_counts = Counter((row["family"], row["category"]) for row in development)
@@ -779,7 +786,7 @@ def main() -> int:
             },
             "status_counts": dict(Counter(row["expected_status"] for row in development)),
         },
-        "unique_template_groups": len(group_splits),
+        "unique_template_groups": unique_template_groups,
         "errors": errors[:100],
         **diagnostics,
     }

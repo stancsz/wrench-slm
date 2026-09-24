@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = {
     "index": ("Wrench | Affordable AI for the rest of us", "Home"),
+    "experiment-v2": ("Wrench v2 | Layer 1 and continuous LoRA", "Experiment v2"),
     "getting-started": ("Getting started | Wrench", "Getting started"),
     "how-it-works": ("How it works | Wrench", "How it works"),
     "model-story": ("How Wrench was built | Wrench", "How we built it"),
@@ -24,6 +25,7 @@ ASSETS = ("site.css", "brand.css", "site.js", "demo-receipt.json", "wrench-mark.
 GENERATED_ASSETS = ("hardware-garden-zh.svg",)
 ZH_PAGES = {
     "index": ("Wrench | AI，也得用得起", "首页"),
+    "experiment-v2": ("Wrench v2 | 第一层与持续学习 LoRA", "第二版实验"),
     "getting-started": ("先跑起来 | Wrench", "先跑起来"),
     "how-it-works": ("它怎么干活 | Wrench", "它怎么干活"),
     "model-story": ("这把扳手怎么造的 | Wrench", "这把扳手怎么造的"),
@@ -76,6 +78,9 @@ def build_language(output: Path, language: str, page_map: dict):
     footer_links = [("getting-started", "使用文档"), ("roadmap", "我们的想法"), ("author", "作者留言"), ("evidence", "进展与证据"), ("faq", "常见问题"), ("brand", "品牌素材")] if chinese else [("getting-started", "Documentation"), ("roadmap", "Our mission"), ("author", "From the author"), ("evidence", "Evidence"), ("faq", "FAQ"), ("brand", "Brand")]
     for slug, (title, label) in page_map.items():
         content = (source / f"{slug}.html").read_text(encoding="utf-8")
+        if slug != "experiment-v2":
+            notice = ('<strong>方向更新：</strong>本页保留第一版的实现、证据或愿景。当前方向是 <a href="experiment-v2.html">Wrench v2：第一层上下文运行时与持续学习 LoRA</a>。第二版仍处于实验设计阶段。' if chinese else '<strong>Direction update:</strong> This page retains v1 implementation, evidence or vision. The current direction is <a href="experiment-v2.html">Wrench v2: a Layer 1 context runtime with continuous LoRA</a>. V2 remains an experiment, not a completed runtime.')
+            content = f'<div class="wrap"><aside class="note" aria-label="{"方向更新" if chinese else "Direction update"}">{notice}</aside></div>' + content
         if chinese:
             content = content.replace('href="assets/', 'href="../assets/').replace('src="assets/', 'src="../assets/')
         navigation = "".join(link(s, l, slug) for s, l in main_links)

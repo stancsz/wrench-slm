@@ -1,0 +1,81 @@
+# North Star
+
+## Product thesis
+
+Wrench is a bounded developer-tool assistant for people with modest hardware.
+It handles routine, checkable read-only or review-only work locally and
+abstains cleanly when a request exceeds its authority or capability. The
+stronger-model fallback and independent verifier keep final authority.
+
+The data product serves this mission by teaching a small model a narrow,
+verifiable protocol rather than generic tool use. Its value is measured by
+correct eligible proposals, exact boundary abstention, safety, and real
+workflow utility. Row count alone is not evidence of value.
+
+## Owner standards
+
+- Keep accepted examples aligned to Wrench's six actions and exact abstention
+  reasons.
+- Derive labels from executable oracles and reviewed task specifications.
+  MiniMax is a teacher proposal source, never the source of truth.
+- Prefer generated repository fixtures and matched counterfactuals that make
+  path, bounds, state, and authority boundaries checkable. Do not claim
+  production frequency without approved, redacted, consented workflow evidence.
+- Split by repository, task family, and template group. Keep sealed final data
+  isolated from training, tuning, and teacher prompt development.
+- Track source/license or consent, model and prompt identity, usage, review,
+  hashes, duplicates, and every rejection. Remove hidden reasoning from
+  retained or distributable teacher artifacts.
+- Keep large datasets and provider receipts on the approved data volume,
+  currently `C:\wrench-slm-data` after owner approval. External publication
+  and data-scope expansion require the human checkpoint in the active
+  collaboration contract. Corpus inference has its own owner-approved
+  USD 100 ceiling and must be bound to a child receipt before requests.
+- Keep all Wrench-owned artifacts across the repository, worktrees, caches,
+  and external storage below 50,000,000,000 bytes total. Check the complete
+  model size before choosing or downloading it, and reserve peak temporary
+  expansion before each job with
+  [`check_wrench_storage_budget.py`](../../tools/check_wrench_storage_budget.py);
+  stop before the cap.
+
+## Reference products and methods
+
+Research checked 2026-09-23:
+
+- [Berkeley Function Calling Leaderboard (BFCL)](https://gorilla.cs.berkeley.edu/leaderboard)
+  is the closest public tool-call evaluation reference. It separates structured
+  call correctness from executable function outcomes and spans single-turn
+  through agentic tasks. Wrench should borrow executable, schema-aware scoring,
+  while keeping its own narrow six-action scope and exact abstention tests.
+- [ToolSandbox](https://arxiv.org/abs/2408.04682) is a stateful,
+  conversational tool-use benchmark. Its use of an interactive environment
+  motivates task fixtures with explicit state and outcome oracles. Wrench's
+  bounded, two-state proposal protocol does not need ToolSandbox's broader
+  agent loop.
+- The repo's [Phase 447 audit](../../phases/phase-447-wrench-training-data-corpus/README.md)
+  found that generic external function-calling bundles had poor task fit.
+  Therefore BFCL and ToolSandbox inform evaluation method, not automatic corpus
+  imports. Any external rows need their own task-fit and license review.
+- OpenRouter's [MiniMax M3 page](https://openrouter.ai/minimax/minimax-m3/pricing)
+  lists multiple upstream providers with different prices, including MiniMax.
+  Its [provider-routing documentation](https://openrouter.ai/docs/guides/routing/provider-selection)
+  says requests are load-balanced across providers by default and can fall back
+  after failures. A corpus request must pin the approved `minimax` provider,
+  disable fallback, require distillation-compatible text, and set explicit data
+  handling preferences; the capture script must enforce and record these
+  settings before dispatch. OpenRouter's [Terms of Service](https://openrouter.ai/terms),
+  last updated 2026-08-31, make output rights subject to each model's terms and
+  disclaim guarantees about provider data handling, retention, training, and
+  intellectual-property practices. The applicable MiniMax terms therefore
+  still need review for the exact routed provider and use. MiniMax's [paid
+  services terms](https://platform.minimax.io/protocol/paid-agreement) say
+  direct API costs may vary with task details; OpenRouter prices and provider
+  rates are estimates, not a hard billing cap. Enforce the approved corpus cap
+  locally and account using request usage plus provider billing evidence.
+  Checked 2026-09-23.
+
+## Current data goal
+
+See [Wrench 25k data goal](../goal/wrench-25k-data/GOAL.md). Its existing
+corpus rules and audit history live in
+[Phase 447](../../phases/phase-447-wrench-training-data-corpus/README.md).

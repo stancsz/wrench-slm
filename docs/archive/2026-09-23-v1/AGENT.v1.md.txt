@@ -1,0 +1,10 @@
+# Agent rules
+
+Use luna high as the default worker.
+
+## Storage and cleanup
+
+- Hard ceiling: keep the aggregate on-disk size of all Wrench artifacts and model weights below 50 GB (50,000,000,000 bytes decimal), including copies, caches, and temporary files.
+- Before choosing or downloading a model, inspect its full size and shard count. Before every artifact-producing job, measure current use and reserve the job's peak additional bytes with `tools/check_wrench_storage_budget.py`; include model downloads, caches, checkpoints, logs, conversions, and temporary copies.
+- Keep total actual use plus active reservations below 50 GB. If the model footprint or job growth cannot be bounded, do not start. Never remove user data or another task's files to make room.
+- Preserve source code, user data, active work and checkpoints, configuration, documentation, and anything not verified safe to remove. Verify cleanup candidates before deletion.

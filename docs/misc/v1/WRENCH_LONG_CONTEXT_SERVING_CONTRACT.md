@@ -1,5 +1,8 @@
 # Wrench hybrid long-context serving contract
 
+> Historical v1 document. Its scope and active wording are superseded by
+> [Wrench v2](../../../GOAL.md). Retained behavior still requires its original evidence.
+
 Status: active hybrid serving boundary
 
 This contract covers the active long-context capability only: model-local raw
@@ -53,4 +56,4 @@ change must fail closed and preserve the original request.
 Dense-native 2M or 4M attention, native decoder quality comparisons, stock
 Ollama, vLLM, GGUF adapters, and hardware-portability work are skipped by the
 active goal. Historical design and measurement notes are preserved under
-[docs/archive/2026-09-22/](archive/2026-09-22/).
+[docs/archive/2026-09-22/](../../archive/2026-09-22).

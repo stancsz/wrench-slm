@@ -1,0 +1,118 @@
+# Working agreement: Wrench 多快好省 Production-Ready Execution
+
+Write naturally. Do not use em dashes.
+
+## Large File Storage
+
+All Wrench-owned data, checkpoints, model weights, caches, logs, downloads,
+temporary extraction files, and generated artifacts across the repository,
+worktrees, and data storage must stay **below 50,000,000,000 bytes (50 GB
+decimal) in aggregate**. This is a hard ceiling, not a target. Count ignored
+and hidden files, `.git`, environments, scratch, duplicate copies, and peak
+temporary space. Moving a Wrench artifact to another path or drive does not
+make it exempt. Before choosing or downloading a model, check its complete
+on-disk footprint, including every weight shard and cache copy. Account for
+growth during training and temporary copies so model weights and all other
+artifacts remain under the aggregate ceiling; if growth cannot be bounded,
+do not start.
+
+Use `C:\wrench-slm-data` as the approved large-file root for this host, with
+separate `checkpoints`, `artifacts`, `datasets`, `logs`, `weights`, and
+`cache` subdirectories as needed. This C: location was selected by the human
+after D: was found unavailable. Keep only small source files and manifests in
+the repository. Set model/cache environment paths such as `HF_HOME` and
+`TORCH_HOME` under this root; include any unavoidable external Wrench cache
+path explicitly in budget checks.
+
+Before every download, extraction, training, inference, benchmark, packaging,
+or other artifact-producing job, run `python tools/check_wrench_storage_budget.py
+status`, then reserve the job's **peak additional bytes** with the same tool.
+Peak means final output plus downloaded source, unpacked copy, checkpoints,
+logs, cache growth, and temporary files that coexist. Do not start unless
+actual use plus all active reservations plus this peak reserve is below
+the cap. Keep the reservation active while the job runs; check status during
+long jobs; release it only after the job stops and files are accounted for.
+Use `--include-root` for every Wrench artifact path outside the repository and
+approved data root. If size or peak growth cannot be bounded, do not start the
+job. Stop before the cap, preserve evidence, and reduce or clean up only your
+own disposable files. Never delete user data or another task's artifacts to
+make room. Bypassing the budget gate is prohibited.
+
+The repository checker is a required job-admission gate. Do not claim it is an
+OS-level quota on the whole C: drive; unrelated personal files are outside the
+Wrench artifact budget.
+
+## Core Objective and Production Target
+
+The active delivery target of this repository is **measured productive value from one bounded Wrench worker**. The former 4.25B figure is archived context, not the objective. Keep the deterministic hybrid path safe, fast, useful on real workflows, and operationally reliable before expanding model or platform scope.
+
+The model operates as a bounded, specialized developer-tool execution SLM and fast defensive gatekeeper:
+1. **Eligible Routine Tools**: Offload routine, verifiable developer-tool tasks (`read_file`, `read_lines`, `literal_search`, `git_read_status`, `health_read`, `patch_draft`) only when the paired workflow evidence shows real value.
+2. **Deterministic Abstention and Clean Escalation**: Confidently identify out-of-boundary, risky, complex, or multi-step tasks, emitting structured `abstain` outcomes so the harness cleanly routes requests to the smarter frontier model without corrupting context or materially regressing final success.
+3. **No Direct Mutation Authority**: Wrench proposes bounded structured actions or abstains. It never executes arbitrary shell commands, accesses credentials, or writes autonomously.
+
+The current Keep and Continue scope is defined only by the nine workstreams in
+the root `GOAL.md`: deterministic mechanics, independent verification, hybrid
+retrieval, the two-state protocol, the three named clients, latency repair,
+one paired canary, targeted fallback expansion, and sustained operational
+testing. RTX 5060 Ti verification, learned routing, dense-native 4M work,
+adapter work, broad tool expansion, and separate packaging work are skipped
+unless the human product owner changes the goal.
+
+## Ownership and Completion Gates
+
+All active engineering, evaluation, and operational testing must directly target the release gates defined in `docs/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md` and the North Star in `GOAL.md`:
+
+- **Gate A (Proposal Semantics)**: Zero schema errors. Eligible cases match typed oracles; out-of-boundary cases match exact expected abstention reasons.
+- **Gate B (Verifier & Authority Bounds)**: Strict zero tolerance for prohibited accepts (0 Prohibited Accepts). Any unexpected side effect or unverified boundary escape is an immediate `FAIL_WRENCH`.
+- **Gate C (Model Comparison vs. Full-Expert Teacher)**:
+  - Final task success and safety must not materially regress against the teacher-only workflow. Report eligible-task correct acceptance and overall correct outcomes with paired 95% confidence intervals.
+  - Median and p95 end-to-end latency must improve by >= 50% on successful eligible tasks (fast refusals do not count as fast completion).
+- **Gate D (Matched Real-Workflow Utility - Three-Arm Replay)**:
+  - Replay matched traces across: (1) Stronger model only, (2) Rules + fallback, (3) Wrench + fallback.
+  - Cover at least 90% of weighted mechanical-workload frontier-token mass and deliver at least 95% net frontier-token savings (accounting for local inference, verification, compaction, retries, corrections, and fallback overhead) with zero material final-success regression.
+- **Gate E (Operational & Operational Shadow)**: Robust under concurrency, cancellation, timeout, and circuit breaking via `ProposalRouter`.
+
+## Training and Iteration Guidelines
+
+Training, learned-routing optimization, candidate selection, pruning, and
+architecture research are not active work under the current goal. Do not start
+them from these instructions without a new human product decision.
+
+When explicitly reactivated, apply the following discipline:
+
+When preparing training data, calibrations, or model weights:
+1. **Dataset Discipline**:
+   - Ensure a balanced mix: include high-quality positive routine developer-tool traces AND explicit negative / out-of-scope tasks teaching decisive `abstain`.
+   - Never allow training or tuning on the sealed evaluation split (`final.jsonl`).
+2. **Local Worker Coordination**:
+   - Treat `AGENTS.local.md` worker-queue procedures as historical unless the
+     human product owner reactivates the skipped 5060TI workstream.
+3. **Evidence Over Assumptions**:
+   - Never equate prompt tweaks, synthetic fixture passes, or parameter count with production utility.
+   - Record verifiable receipts (hash-bound checkpoints, latency distributions, exact failure logs) under `phases/` before claiming progress.
+
+## Host Resource Safety
+
+Every training, inference, benchmark, packaging, and delegated worker job must preserve normal host operation:
+
+- Keep at least 10% of total host system memory free at all times.
+- Keep at least 10% of total host VRAM free at all times.
+- Check available memory and VRAM before starting work and during long-running work. If either reserve would be breached, reduce concurrency, batch size, context size, cache size, or model footprint before continuing.
+- Prefer releasing framework caches and lowering workload intensity. Do not terminate unrelated applications, Docker services, or WSL distributions without explicit user authorization.
+- A job that cannot maintain both 10% reserves is resource-unsafe and must be paused or marked failed, not treated as a valid benchmark result.
+
+## Complete Delegated Worker Payload
+
+Every message or job sent to a remote worker must be self-contained. It must
+repeat the unique nonce and job ID, the full objective and verification scope,
+the repository and expected commit, the artifact or package identity and
+hashes, exact allowed commands and output paths, timeout and retry limits, the
+10% RAM and VRAM reserve, explicit no-spend and no-credential boundaries, and
+the complete final response schema. The worker must not need conversation
+history or an implicit plan.
+
+An empty turn, missing nonce, missing required fields, or execution on the
+wrong host is unverified. Start a fresh authenticated worker session instead
+of appending more context to the failed thread. Never promote such a result to
+independent hardware, benchmark, parity, or release evidence.
