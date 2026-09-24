@@ -425,6 +425,41 @@ This still requires a separately authorized, process-confined runtime test
 before any dispatch-denial or E0 acceptance claim. See the
 [fail-closed boundary evaluation](../../evals/wrench-e0-opencode-context-adapter/runtime-fail-closed-boundary.md).
 
+## Follow-up: next integration contract recommendation
+
+Independent project-binding, store-lifecycle, route-parity, and utility-oracle
+reviews recommend that any future integration use a Wrench-owned project
+registry, finite explicitly enrolled source paths, one persistent store owner,
+and a Wrench request boundary that owns the final request stream and source
+lease lifetime. The boundary must bind each preparation lease to exactly one
+lowered request; session identity alone cannot distinguish concurrent or
+retried attempts. Missing, duplicate, stale, or ambiguous correlation must
+fail closed. The pinned Promise API has a candidate chain from context to
+`model.request` headers to the concrete `http.request`, but no implementation
+has proved one-to-one correlation across concurrent/retried attempts or
+failures between hooks. The proxy remains a candidate, not a proven solution to
+request-lifetime pinning. The current hook alone cannot meet the existing
+pin-through-completion invariant. An offline fixture can establish body
+structure, byte-budget, correlation, and lease-release mechanics only;
+exact-token E0 remains closed while the localhost route's immutable serving
+identity and matching tokenizer are unknown. Any fixture/store job must
+reserve peak bytes under the 50 GB aggregate limit, preserve at least 5 GB
+physical-volume headroom after projected writes, and keep 10% RAM/VRAM free
+for client/runtime jobs.
+
+The selected future matched-task source is prospective per-task opt-in work on
+participant- and repository-authorized snapshots. E0 evidence selection and
+E4 task completion require separate frozen oracles; the current synthetic
+seed remains development regression only. No real task data is admitted.
+
+The install request is complete at the static-configuration boundary:
+OpenCode v2.0.15 is installed in the approved data root and its isolated
+profile points to `http://127.0.0.1:4000/v1`. Runtime config loading and
+effective route resolution remain unverified. Next, implement and review the
+offline-only Wrench request boundary with synthetic data, leaving OpenCode
+configuration unchanged. Any later config change or forwarding to port 4000
+needs a separate explicit step. See the [next-contract recommendation](../../reports/wrench-e0-opencode-context-adapter/bridge-next-contract.md).
+
 ## Follow-up: bounded bridge implementation feasibility
 
 The proposed project-local plugin and Python subprocess bridge were not
