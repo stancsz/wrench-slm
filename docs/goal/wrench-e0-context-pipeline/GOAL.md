@@ -260,3 +260,19 @@ The route result and path selection remain caller-supplied and unauthenticated;
 the fixture does not establish task truth, utility, runtime parity, or dispatch
 enforcement. See the [composition report](../../reports/wrench-e0-context-pipeline/route-preparation-composition.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-composition.md).
+
+## Follow-up: route-owned preparation orchestration
+
+Status: accepted as a bounded local composition slice after independent source
+review (2026-09-25).
+
+`route_and_prepare_e0_context` invokes the snapshot-bound rule route itself,
+derives required and preserved preparation paths only from successful exact-
+read evidence, and emits a bounded receipt joining route counters and content
+hashes to preparation and accounting digests. Five focused pytest cases passed;
+independent source review returned PASS. The reviewer did not run tests, and
+the inter-step filesystem race is not dynamically exercised. This does not
+prove authenticated route provenance, dispatch enforcement, final request or
+tokenizer parity, complete lifecycle accounting, task truth, or customer
+utility. Overall E0 acceptance remains open. See the [report](../../reports/wrench-e0-context-pipeline/route-preparation-orchestrator.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-orchestrator.md).
