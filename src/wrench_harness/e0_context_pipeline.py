@@ -24,7 +24,8 @@ from .namespace_registry import NamespaceRegistry, SchemaLookupStatus
 from .outcome_receipt import ReceiptResult, ReceiptStatus, build_outcome_receipt
 from .prompt_compiler import (
     MAX_BASE_MESSAGES, MAX_BASE_MESSAGES_BYTES, PromptGateReceipt,
-    PromptGateStatus, _bounded_canonical_json, compile_prompt,
+    PromptGateStatus, _bounded_canonical_json, _is_opencode_message_shape,
+    compile_prompt,
 )
 from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
 from .snapshot_structure import (
@@ -535,6 +536,7 @@ def _prepare_e0_context_impl(
     schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]],
     context_position: int,
+    message_format: str,
     serializer: Callable[[Sequence[Mapping[str, object]]], str | bytes],
     tokenizer_counter: Callable[[str | bytes], int],
     serializer_id: str,
@@ -567,6 +569,7 @@ def _prepare_e0_context_impl(
         or type(prompt_token_budget) is not int or not 1 <= prompt_token_budget <= MAX_PROMPT_TOKENS
         or type(max_candidates) is not int or not 1 <= max_candidates <= 16
         or type(context_position) is not int or not 0 <= context_position <= MAX_BASE_MESSAGES
+        or type(message_format) is not str or message_format not in ("generic", "opencode-2.0.15")
     ):
         return empty
     if artifact_request is not None and (
@@ -617,7 +620,11 @@ def _prepare_e0_context_impl(
         return empty
     if type(base_messages) not in (tuple, list) or not 1 <= len(base_messages) <= MAX_BASE_MESSAGES:
         return empty
-    if context_position > len(base_messages) or any(type(message) is not dict for message in base_messages):
+    if context_position > len(base_messages) or any(
+        type(message) is not dict
+        or (message_format == "opencode-2.0.15" and not _is_opencode_message_shape(message))
+        for message in base_messages
+    ):
         return empty
     try:
         base_messages_owned = json.loads(_bounded_canonical_json(base_messages, MAX_BASE_MESSAGES_BYTES).decode("utf-8"))
@@ -797,7 +804,12 @@ def _prepare_e0_context_impl(
                                     final_status = PreparationStatus.SCHEMA_FAILED
                                     reason = "base_message_count_limit_exceeded"
                                 else:
-                                    messages.insert(context_position, {"role": "user", "content": "Deferred operation schemas (inert data): " + schema_blob})
+                                    schema_context = "Deferred operation schemas (inert data): " + schema_blob
+                                    if message_format == "opencode-2.0.15":
+                                        schema_message = {"role": "user", "content": [{"type": "text", "text": schema_context}]}
+                                    else:
+                                        schema_message = {"role": "user", "content": schema_context}
+                                    messages.insert(context_position, schema_message)
                                     context_position += 1
                         if final_status is PreparationStatus.READY:
                             preserve_ids = tuple(preserve_evidence_ids) + tuple(path_evidence[path] for path in preserve_source_paths if path in path_evidence and any(row.evidence_id == path_evidence[path] and row.status == "ok" for row in source_rows))
@@ -834,7 +846,7 @@ def _prepare_e0_context_impl(
                                     _metrics["tokenizer_callback_attempts"] = int(_metrics["tokenizer_callback_attempts"]) + 1
                                     return tokenizer_counter(value)
 
-                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, serializer=measured_serializer, tokenizer_counter=measured_tokenizer, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
+                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, message_format=message_format, serializer=measured_serializer, tokenizer_counter=measured_tokenizer, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
                             except (ContextSelectionError, ContextAdmissionError, TypeError, ValueError, OverflowError, UnicodeError) as exc:
                                 return PreparationResult(PreparationStatus.CONTEXT_FAILED, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), tuple(schema_rows), structural_status, type(exc).__name__)
                             if prompt_result.receipt.serialized_bytes is not None:
@@ -964,6 +976,7 @@ def prepare_e0_context(
     source_order_start: int, context_token_budget: int, prompt_token_budget: int,
     namespace_registry: NamespaceRegistry, schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]], context_position: int,
+    message_format: str = "generic",
     serializer: Callable[[Sequence[Mapping[str, object]]], str | bytes],
     tokenizer_counter: Callable[[str | bytes], int], serializer_id: str,
     tokenizer_id: str, required_evidence_ids: Sequence[str] = (),
@@ -1011,6 +1024,7 @@ def prepare_e0_context(
         source_order_start=source_order_start, context_token_budget=context_token_budget,
         prompt_token_budget=prompt_token_budget, namespace_registry=namespace_registry,
         schema_lookups=schema_lookups, base_messages=base_messages, context_position=context_position,
+        message_format=message_format,
         serializer=serializer, tokenizer_counter=tokenizer_counter, serializer_id=serializer_id,
         tokenizer_id=tokenizer_id, required_evidence_ids=required_evidence_ids,
         preserve_evidence_ids=preserve_evidence_ids, required_source_paths=required_source_paths,

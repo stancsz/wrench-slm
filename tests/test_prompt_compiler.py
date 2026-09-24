@@ -108,6 +108,25 @@ def test_empty_selected_context_has_no_insertion_identity():
     assert result.prompt == _fixture_serializer(messages)
 
 
+def test_opencode_message_format_inserts_typed_text_part_and_binds_that_shape():
+    assembly = _ledger_with_two_segments().assemble("critical", active_token_budget=4)
+    result = _compile(
+        assembly,
+        [{"role": "system", "content": [{"type": "text", "text": "rules"}]}],
+        message_format="opencode-2.0.15",
+    )
+
+    assert result.receipt.status is PromptGateStatus.READY
+    messages = json.loads(result.prompt)
+    inserted = messages[1]
+    assert inserted["role"] == "user"
+    assert inserted["content"][0]["type"] == "text"
+    assert inserted["content"][0]["text"].startswith("Wrench retrieved context")
+    assert result.receipt.context_message_sha256 == hashlib.sha256(
+        gate_module._bounded_canonical_json(inserted, gate_module.MAX_CONTEXT_MESSAGE_BYTES)
+    ).hexdigest()
+
+
 def test_serializer_cannot_mutate_prepared_context_even_if_it_catches_error():
     ledger = _ledger_with_two_segments()
     assembly = ledger.assemble("critical", active_token_budget=4)

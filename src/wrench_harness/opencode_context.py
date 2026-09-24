@@ -226,6 +226,7 @@ def prepare_opencode_e0_context(
         schema_lookups=schema_lookups,
         base_messages=base_messages,
         context_position=context_position,
+        message_format="opencode-2.0.15",
         serializer=serializer,
         tokenizer_counter=tokenizer_counter,
         serializer_id=serializer_id,

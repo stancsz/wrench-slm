@@ -338,3 +338,16 @@ run's 43 setup errors came from a missing reserved scratch parent, which was
 created before the successful rerun. See the [task report](../../reports/wrench-e0-context-pipeline/serializer-input-mutation.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-mutation.md).
 Runtime parity and callback serialization correctness remain open.
+
+## Follow-up: OpenCode v2 typed text messages
+
+Status: implemented; focused offline verification passed.
+
+The OpenCode adapter now emits prepared context and deferred schema text as
+typed text-part messages, and the projection checks the pinned role, system
+text-part, and message content-array shape. The transition validator binds a
+single inserted user text part. The focused set passed 132 tests. Full
+OpenCode content-part union validation, client execution, serializer and
+tokenizer parity, dispatch behavior, and E0 acceptance remain open. See the
+[report](../../reports/wrench-e0-context-pipeline/opencode-message-shape.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/opencode-message-shape.md).

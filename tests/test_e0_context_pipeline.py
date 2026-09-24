@@ -691,7 +691,7 @@ def test_preparation_does_not_call_known_execution_or_network_tripwires(tmp_path
     assert parameter_names == {
         "source_root", "snapshot", "paths", "store", "query", "source_order_start",
         "context_token_budget", "prompt_token_budget", "namespace_registry",
-        "schema_lookups", "base_messages", "context_position", "serializer",
+        "schema_lookups", "base_messages", "context_position", "message_format", "serializer",
         "tokenizer_counter", "serializer_id", "tokenizer_id", "required_evidence_ids",
         "preserve_evidence_ids", "required_source_paths", "preserve_source_paths",
         "max_candidates", "artifact_request",

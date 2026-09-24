@@ -158,6 +158,23 @@ def _valid_callback_id(value: object) -> bool:
     return True
 
 
+def _is_opencode_message_shape(value: object) -> bool:
+    """Check the pinned hook's bounded Message content-array surface."""
+    if (
+        type(value) is not dict
+        or value.get("role") not in ("system", "user", "assistant", "tool")
+        or type(value.get("content")) is not list
+    ):
+        return False
+    return all(
+        type(part) is dict
+        and type(part.get("type")) is str
+        and bool(part["type"])
+        and (part["type"] != "text" or type(part.get("text")) is str)
+        for part in value["content"]
+    )
+
+
 def _bounded_canonical_json(value: object, limit: int) -> bytes:
     """Validate JSON-shaped input and encode at most `limit` bytes."""
     nodes = 0
@@ -330,6 +347,7 @@ def compile_prompt(
     hard_budget: int,
     required_evidence_ids: Sequence[str] = (),
     context_role: str = "user",
+    message_format: str = "generic",
 ) -> PromptGateResult:
     """Serialize complete chat messages, count final serialization, and gate.
 
@@ -344,6 +362,7 @@ def compile_prompt(
         or not isinstance(hard_budget, int) or isinstance(hard_budget, bool) or not 0 < hard_budget <= 2**63 - 1
         or not isinstance(context_position, int) or isinstance(context_position, bool)
         or type(context_role) is not str or not context_role or len(context_role) > 64
+        or type(message_format) is not str or message_format not in ("generic", "opencode-2.0.15")
         or not callable(serializer) or not callable(tokenizer_counter)
     ):
         return _empty_receipt(
@@ -421,6 +440,8 @@ def compile_prompt(
         for message in base_messages:
             if type(message) is not dict:
                 raise ValueError("base_message_must_be_mapping")
+            if message_format == "opencode-2.0.15" and not _is_opencode_message_shape(message):
+                raise ValueError("opencode_message_shape_invalid")
         base_raw = _bounded_canonical_json(base_messages, MAX_BASE_MESSAGES_BYTES)
         if len(base_raw) > MAX_BASE_MESSAGES_BYTES:
             raise OverflowError("base_message_byte_limit_exceeded")
@@ -467,7 +488,14 @@ def compile_prompt(
     try:
         copied_messages = json.loads(base_raw.decode("utf-8"))
         if selected_tuple:
-            context_message = {"role": context_role, "content": _render_untrusted_context(assembled_text)}
+            rendered_context = _render_untrusted_context(assembled_text)
+            if message_format == "opencode-2.0.15":
+                context_message = {
+                    "role": context_role,
+                    "content": [{"type": "text", "text": rendered_context}],
+                }
+            else:
+                context_message = {"role": context_role, "content": rendered_context}
             context_message_sha256 = hashlib.sha256(
                 _bounded_canonical_json(context_message, MAX_CONTEXT_MESSAGE_BYTES)
             ).hexdigest()

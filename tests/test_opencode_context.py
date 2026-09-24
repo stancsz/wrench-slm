@@ -32,6 +32,10 @@ from wrench_harness.snapshot import SourceRootBinding, SourceSnapshot, create_sn
 from wrench_harness.prompt_compiler import PromptGateReceipt, PromptGateStatus
 
 
+def _opencode_text_message(role, text):
+    return {"role": role, "content": [{"type": "text", "text": text}]}
+
+
 def _admission_fixture():
     prompt_hash = "c" * 64
     gate = PromptGateReceipt(
@@ -199,7 +203,7 @@ def test_real_opencode_preparation_pins_until_caller_request_scope_closes(tmp_pa
             prompt_token_budget=4096,
             namespace_registry=registry,
             schema_lookups=(),
-            base_messages=({"role": "system", "content": "fixture"},),
+            base_messages=(_opencode_text_message("system", "fixture"),),
             context_position=1,
             serializer=lambda messages: json.dumps(messages, sort_keys=True),
             tokenizer_counter=lambda serialized: len(serialized),
@@ -256,7 +260,7 @@ def test_resolved_root_and_snapshot_identity_reach_real_preparation(tmp_path):
         prompt_token_budget=4096,
         namespace_registry=registry,
         schema_lookups=(("files", "inspect"),),
-        base_messages=({"role": "system", "content": "fixture"},),
+        base_messages=(_opencode_text_message("system", "fixture"),),
         context_position=1,
         serializer=lambda messages: json.dumps(messages, sort_keys=True),
         tokenizer_counter=lambda serialized: len(serialized),
@@ -271,6 +275,52 @@ def test_resolved_root_and_snapshot_identity_reach_real_preparation(tmp_path):
     assert result.root_location_sha256 == snapshot.root_location_sha256
     assert result.root_identity == snapshot.root_identity
     assert "target" in result.preparation.prompt
+    prepared_messages = json.loads(result.preparation.prompt)
+    assert all(type(message["content"]) is list for message in prepared_messages)
+    assert any(
+        part["type"] == "text" and part["text"].startswith("Deferred operation schemas (inert data): ")
+        for message in prepared_messages
+        for part in message["content"]
+    )
+
+
+@pytest.mark.parametrize(
+    "base_message",
+    [
+        {"role": "system", "content": "scalar content"},
+        {"role": "system", "content": [{"type": "text"}]},
+        {"role": "unknown", "content": []},
+    ],
+)
+def test_opencode_preparation_rejects_invalid_base_message_shape(tmp_path, base_message):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "sample.py").write_text("def target():\n    return 7\n", encoding="utf-8")
+    snapshot = create_snapshot(root, ["sample.py"])
+    callback_calls = []
+    result = prepare_opencode_e0_context(
+        "ses_fixture123",
+        {"id": "ses_fixture123", "location": {"directory": str(root)}},
+        snapshot=snapshot,
+        paths=("sample.py",),
+        store=ArtifactStore(tmp_path / "store"),
+        query="target",
+        source_order_start=0,
+        context_token_budget=128,
+        prompt_token_budget=4096,
+        namespace_registry=NamespaceRegistry([]),
+        schema_lookups=(),
+        base_messages=(base_message,),
+        context_position=1,
+        serializer=lambda messages: callback_calls.append("serialize") or json.dumps(messages),
+        tokenizer_counter=lambda serialized: callback_calls.append("tokenize") or len(serialized),
+        serializer_id="fixture-json-v1",
+        tokenizer_id="fixture-char-count-v1",
+    )
+
+    assert result.preparation.status is PreparationStatus.INVALID_INPUT
+    assert result.preparation.prompt is None
+    assert callback_calls == []
 
 
 def test_session_root_mismatch_produces_no_prompt(tmp_path):
@@ -312,7 +362,7 @@ def test_session_root_mismatch_produces_no_prompt(tmp_path):
         prompt_token_budget=4096,
         namespace_registry=registry,
         schema_lookups=(("files", "inspect"),),
-        base_messages=({"role": "system", "content": "fixture"},),
+        base_messages=(_opencode_text_message("system", "fixture"),),
         context_position=1,
         serializer=serializer,
         tokenizer_counter=tokenizer_counter,

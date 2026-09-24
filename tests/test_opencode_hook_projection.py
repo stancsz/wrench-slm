@@ -32,10 +32,10 @@ def _hook_event():
             "providerID": "openai",
             "variant": "low-latency",
         },
-        "system": ["Follow repository instructions.", {"type": "text", "text": "Keep tools unchanged."}],
+        "system": [{"type": "text", "text": "Follow repository instructions."}, {"type": "text", "text": "Keep tools unchanged."}],
         "messages": [
-            {"role": "user", "content": "Find the project entry point."},
-            {"role": "assistant", "content": "I will inspect the tree."},
+            {"role": "user", "content": [{"type": "text", "text": "Find the project entry point."}]},
+            {"role": "assistant", "content": [{"type": "text", "text": "I will inspect the tree."}]},
         ],
         "options": {
             "temperature": 0,
@@ -53,6 +53,10 @@ def _hook_event():
             },
         },
     }
+
+
+def _text_message(text):
+    return {"role": "user", "content": [{"type": "text", "text": text}]}
 
 
 def _prepared_context(message, position):
@@ -140,13 +144,32 @@ def test_projection_hash_is_canonical_across_mapping_order_but_payload_order_is_
 
 
 @pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("system", ["scalar system part"]),
+        ("system", [{"type": "image", "text": "not a system text part"}]),
+        ("messages", [{"role": "user", "content": "scalar message content"}]),
+        ("messages", [{"role": "unknown", "content": []}]),
+    ],
+)
+def test_projection_rejects_noncanonical_hook_message_shapes(field, value):
+    event = _hook_event()
+    event[field] = value
+
+    result = project_opencode_context_hook(event)
+
+    assert result.status is OpenCodeProjectionStatus.INVALID_SHAPE
+    assert result.projection is None
+
+
+@pytest.mark.parametrize(
     ("field", "change"),
     [
         ("sessionID", lambda event: event.update(sessionID="ses_other123")),
         ("agent", lambda event: event.update(agent="review")),
         ("model", lambda event: event["model"].update(id="other-model")),
-        ("system", lambda event: event["system"].append("Another system instruction.")),
-        ("messages", lambda event: event["messages"].append({"role": "user", "content": "Next"})),
+        ("system", lambda event: event["system"].append({"type": "text", "text": "Another system instruction."})),
+        ("messages", lambda event: event["messages"].append(_text_message("Next"))),
         ("options", lambda event: event["options"].update(providerOnlyOption="retained")),
         ("tools", lambda event: event["tools"]["z_read"].update(description="Changed")),
     ],
@@ -166,7 +189,7 @@ def test_every_context_field_changes_projection_identity(field, change):
 def test_transition_accepts_exact_single_context_message_insertion():
     before_event = _hook_event()
     after_event = copy.deepcopy(before_event)
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     position = 1
     after_event["messages"].insert(position, copy.deepcopy(expected))
     before = project_opencode_context_hook(before_event).projection
@@ -193,7 +216,7 @@ def test_transition_accepts_exact_single_context_message_insertion():
         ("sessionID", lambda event: event.update(sessionID="ses_other123"), OpenCodeTransitionStatus.SESSION_MISMATCH),
         ("agent", lambda event: event.update(agent="review"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
         ("model", lambda event: event["model"].update(id="other-model"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
-        ("system", lambda event: event["system"].append("Changed"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
+        ("system", lambda event: event["system"].append({"type": "text", "text": "Changed"}), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
         ("tools", lambda event: event["tools"].pop("a_search"), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
         ("options", lambda event: event["options"].update(extra=True), OpenCodeTransitionStatus.PROTECTED_CONTEXT_CHANGED),
     ],
@@ -201,13 +224,13 @@ def test_transition_accepts_exact_single_context_message_insertion():
 def test_transition_rejects_changed_protected_context(field, change, expected_status):
     before_event = _hook_event()
     after_event = copy.deepcopy(before_event)
-    after_event["messages"].insert(0, {"role": "user", "content": "Prepared."})
+    after_event["messages"].insert(0, _text_message("Prepared."))
     change(after_event)
 
     result = validate_opencode_context_hook_transition(
         project_opencode_context_hook(before_event).projection,
         project_opencode_context_hook(after_event).projection,
-        expected_message={"role": "user", "content": "Prepared."},
+        expected_message=_text_message("Prepared."),
         insertion_position=0,
     )
 
@@ -218,15 +241,15 @@ def test_transition_rejects_changed_protected_context(field, change, expected_st
 @pytest.mark.parametrize(
     "change_messages",
     [
-        lambda messages: messages.__setitem__(0, {"role": "user", "content": "Changed"}),
+        lambda messages: messages.__setitem__(0, _text_message("Changed")),
         lambda messages: messages.reverse(),
-        lambda messages: messages.__setitem__(1, {"role": "user", "content": "Wrong insertion"}),
+        lambda messages: messages.__setitem__(1, _text_message("Wrong insertion")),
     ],
 )
 def test_transition_rejects_changed_reordered_or_wrong_inserted_messages(change_messages):
     before_event = _hook_event()
     after_event = copy.deepcopy(before_event)
-    expected = {"role": "user", "content": "Prepared."}
+    expected = _text_message("Prepared.")
     after_event["messages"].insert(1, copy.deepcopy(expected))
     change_messages(after_event["messages"])
 
@@ -244,16 +267,17 @@ def test_transition_rejects_changed_reordered_or_wrong_inserted_messages(change_
 @pytest.mark.parametrize(
     ("expected_message", "insertion_position"),
     [
-        ({"role": "user", "content": "Prepared."}, True),
-        ({"role": "user", "content": "Prepared."}, -1),
-        ({"role": "user", "content": "Prepared."}, 3),
+        (_text_message("Prepared."), True),
+        (_text_message("Prepared."), -1),
+        (_text_message("Prepared."), 3),
+        ({"role": "user", "content": "scalar content is not a hook Message"}, 0),
         (["not", "an", "object"], 0),
     ],
 )
 def test_transition_rejects_invalid_message_or_position(expected_message, insertion_position):
     before_event = _hook_event()
     after_event = copy.deepcopy(before_event)
-    expected = {"role": "user", "content": "Prepared."}
+    expected = _text_message("Prepared.")
     after_event["messages"].insert(0, expected)
 
     result = validate_opencode_context_hook_transition(
@@ -270,7 +294,7 @@ def test_transition_rejects_invalid_message_or_position(expected_message, insert
 def test_transition_rejects_forged_or_malformed_projection():
     before = project_opencode_context_hook(_hook_event()).projection
     after_event = _hook_event()
-    after_event["messages"].append({"role": "user", "content": "Prepared."})
+    after_event["messages"].append(_text_message("Prepared."))
     after = project_opencode_context_hook(after_event).projection
     assert before is not None and after is not None
     forged = replace(before, projection_sha256="0" * 64)
@@ -278,7 +302,7 @@ def test_transition_rejects_forged_or_malformed_projection():
     result = validate_opencode_context_hook_transition(
         forged,
         after,
-        expected_message={"role": "user", "content": "Prepared."},
+        expected_message=_text_message("Prepared."),
         insertion_position=2,
     )
 
@@ -288,7 +312,7 @@ def test_transition_rejects_forged_or_malformed_projection():
 
 def test_prepared_transition_binds_ready_preparation_gate_and_hook_insertion():
     before_event = _hook_event()
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     position = 1
     after_event = copy.deepcopy(before_event)
     after_event["messages"].insert(position, copy.deepcopy(expected))
@@ -312,14 +336,14 @@ def test_prepared_transition_binds_ready_preparation_gate_and_hook_insertion():
 
 
 def test_prepared_transition_rejects_expected_message_that_differs_from_gate_binding():
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     preparation, _gate = _prepared_context(expected, 0)
 
     result = validate_opencode_preparation_context_transition(
         preparation,
         project_opencode_context_hook(_hook_event()).projection,
         project_opencode_context_hook(_hook_event()).projection,
-        expected_message={"role": "user", "content": "different"},
+        expected_message=_text_message("different"),
     )
 
     assert result.status is OpenCodePreparedTransitionStatus.INSERTION_BINDING_MISMATCH
@@ -328,7 +352,7 @@ def test_prepared_transition_rejects_expected_message_that_differs_from_gate_bin
 
 def test_prepared_transition_rejects_gate_position_that_does_not_match_inserted_message():
     before_event = _hook_event()
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     actual_position = 1
     after_event = copy.deepcopy(before_event)
     after_event["messages"].insert(actual_position, copy.deepcopy(expected))
@@ -348,7 +372,7 @@ def test_prepared_transition_rejects_gate_position_that_does_not_match_inserted_
 
 @pytest.mark.parametrize("case", ["no_binding", "non_ready_preparation", "bool_position"])
 def test_prepared_transition_rejects_missing_or_invalid_preparation_binding(case):
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     position = 0
     preparation, _gate = _prepared_context(expected, position)
     if case == "no_binding":
@@ -384,7 +408,7 @@ def test_prepared_transition_rejects_missing_or_invalid_preparation_binding(case
 
 def test_prepared_transition_receipt_verifier_rejects_tampering():
     before_event = _hook_event()
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     after_event = copy.deepcopy(before_event)
     after_event["messages"].insert(0, copy.deepcopy(expected))
     preparation, _gate = _prepared_context(expected, 0)
@@ -403,7 +427,7 @@ def test_prepared_transition_receipt_verifier_rejects_tampering():
 
 def test_prepared_transition_receipt_verifier_rejects_position_beyond_hook_limit():
     before_event = _hook_event()
-    expected = {"role": "user", "content": "Prepared repository context."}
+    expected = _text_message("Prepared repository context.")
     after_event = copy.deepcopy(before_event)
     after_event["messages"].insert(0, copy.deepcopy(expected))
     preparation, _gate = _prepared_context(expected, 0)

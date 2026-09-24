@@ -61,7 +61,7 @@ def _prepare(
         prompt_token_budget=4096,
         namespace_registry=registry,
         schema_lookups=(),
-        base_messages=({"role": "system", "content": "Use evidence."},),
+        base_messages=({"role": "system", "content": [{"type": "text", "text": "Use evidence."}]},),
         context_position=1,
         serializer=lambda messages: json.dumps(messages, sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
@@ -121,7 +121,7 @@ def _projection(session_id="ses_partial_trace_fixture"):
         "sessionID": session_id,
         "model": {"id": "model-fixture", "providerID": "provider-fixture"},
         "system": [],
-        "messages": [{"role": "user", "content": "synthetic fixture"}],
+        "messages": [{"role": "user", "content": [{"type": "text", "text": "synthetic fixture"}]}],
         "options": {},
         "agent": "build",
         "tools": {},
@@ -189,8 +189,9 @@ def _route_preparation(
         prompt_token_budget=4096,
         namespace_registry=NamespaceRegistry([]),
         schema_lookups=(),
-        base_messages=({"role": "system", "content": system_content},),
+        base_messages=({"role": "system", "content": [{"type": "text", "text": system_content}]},),
         context_position=1,
+        message_format="opencode-2.0.15",
         serializer=lambda messages: json.dumps(list(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
@@ -330,7 +331,7 @@ def test_partial_trace_joins_route_owned_preparation_receipt(tmp_path):
     assert transition["before_projection_sha256"] == before.projection.projection_sha256
     assert transition["after_projection_sha256"] == after.projection.projection_sha256
     assert len(transition["receipt_sha256"]) == 64
-    assert expected_message["content"] not in result.envelope.payload_json
+    assert expected_message["content"][0]["text"] not in result.envelope.payload_json
     assert "sample.py" not in result.envelope.payload_json
     assert "def target" not in result.envelope.payload_json
 
@@ -423,7 +424,7 @@ def test_partial_trace_rejects_after_projection_changed_after_transition(tmp_pat
     join, route_preparation = _route_preparation(tmp_path, original_join)
     before, after, expected_message, _ = _prepared_transition(join.preparation)
     after_event = json.loads(after.projection.payload_json)
-    after_event["messages"].append({"role": "user", "content": "unaccounted addition"})
+    after_event["messages"].append({"role": "user", "content": [{"type": "text", "text": "unaccounted addition"}]})
     changed_after = project_opencode_context_hook(after_event)
     assert changed_after.status is OpenCodeProjectionStatus.READY
 

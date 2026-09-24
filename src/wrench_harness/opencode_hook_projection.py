@@ -242,12 +242,33 @@ def _validate_context_shape(payload: object) -> tuple[str, str, str, str, str | 
     messages = payload["messages"]
     options = payload["options"]
     tools = payload["tools"]
-    if type(system) is not list or len(system) > MAX_HOOK_SYSTEM_PARTS:
+    if (
+        type(system) is not list
+        or len(system) > MAX_HOOK_SYSTEM_PARTS
+        or any(
+            type(part) is not dict
+            or part.get("type") != "text"
+            or type(part.get("text")) is not str
+            for part in system
+        )
+    ):
         raise _ProjectionFailure("system_parts_invalid")
     if (
         type(messages) is not list
         or len(messages) > MAX_HOOK_MESSAGES
-        or any(type(message) is not dict for message in messages)
+        or any(
+            type(message) is not dict
+            or message.get("role") not in ("system", "user", "assistant", "tool")
+            or type(message.get("content")) is not list
+            or any(
+                type(part) is not dict
+                or type(part.get("type")) is not str
+                or not part.get("type")
+                or (part.get("type") == "text" and type(part.get("text")) is not str)
+                for part in message.get("content", ())
+            )
+            for message in messages
+        )
     ):
         raise _ProjectionFailure("messages_invalid")
     if type(options) is not dict:
@@ -261,6 +282,19 @@ def _validate_context_shape(payload: object) -> tuple[str, str, str, str, str | 
             raise _ProjectionFailure("tool_schema_invalid")
 
     return session_id, agent_id, model["providerID"], model["id"], variant
+
+
+def _is_opencode_text_message(value: object) -> bool:
+    """Validate the exact user-text Message subset Wrench inserts."""
+    return (
+        type(value) is dict
+        and value.get("role") == "user"
+        and type(value.get("content")) is list
+        and len(value["content"]) == 1
+        and type(value["content"][0]) is dict
+        and value["content"][0].get("type") == "text"
+        and type(value["content"][0].get("text")) is str
+    )
 
 
 def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
@@ -417,6 +451,7 @@ def validate_opencode_context_hook_transition(
         or len(before_messages) >= MAX_HOOK_MESSAGES
         or len(after_messages) != len(before_messages) + 1
         or type(expected_message) is not dict
+        or not _is_opencode_text_message(expected_message)
     ):
         return OpenCodeTransitionResult(
             OpenCodeTransitionStatus.INSERTION_POSITION_INVALID,

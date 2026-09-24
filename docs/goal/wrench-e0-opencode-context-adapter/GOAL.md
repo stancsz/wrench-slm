@@ -278,3 +278,12 @@ This is a structural check over caller-provided objects. It does not prove
 OpenCode executed the transition, validate the full nested client message
 schema, prevent dispatch, or establish final request/tokenizer parity. Runtime
 integration and overall E0 acceptance remain open.
+
+## Follow-up: pinned text-message subset
+
+The OpenCode preparation seam now serializes its inserted context and deferred
+schema text as typed user text parts. The bounded hook projection validates
+system text parts, message roles, content arrays, and the shape of Wrench's
+single inserted text message. It does not validate the complete OpenCode
+content-part union or the installed runtime. See the [message-shape report](../../reports/wrench-e0-context-pipeline/opencode-message-shape.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/opencode-message-shape.md).
