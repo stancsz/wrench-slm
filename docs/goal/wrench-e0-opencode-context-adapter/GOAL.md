@@ -582,3 +582,22 @@ project-source use, plugin registration, runtime hook invocation, dispatch
 denial, provider behavior, request-lifetime handling, or tokenizer parity.
 The broader E0/E4 goals remain incomplete and the exact-token gate remains
 closed.
+
+## Follow-up: snapshot-to-hook boundary review
+
+The OpenCode context event supplies a session ID but no authoritative source
+root. A future adapter must fetch the session record for that exact event ID
+and use its data record with the enrolled snapshot API. It must not take root
+authority from the plugin directory, process working directory, model text,
+repo configuration, or hook-provided paths. The Python API binds the event to
+the enrolled root and validates a finite selected-path subset before source
+reads.
+
+The review found no IPC entry point yet. A snapshot-only plugin would discard
+the result rather than produce E0 context. An insertion-capable integration
+still needs a Wrench-owned store/context-preparation contract and pinned
+serializer and tokenizer identities; until those exist, the exact-token gate
+remains unavailable. The review recommends delaying an insertion-capable
+plugin and treating any earlier bridge as synthetic input characterization.
+See the [snapshot-to-hook boundary report](../../reports/wrench-e0-opencode-context-adapter/snapshot-to-hook-boundary.md).
+No client, plugin, endpoint, provider, or real source was touched.
