@@ -118,6 +118,36 @@ set.
 - Correction, disagreement, and unknown-outcome handling: `TBD`
 - Oracle validation and pre-study pilot procedure, isolated from sealed tasks: `TBD`
 
+### Recommended defaults for a future protocol
+
+These defaults guide a later proposal; they do not fill the `TBD` fields or
+authorize capture, evaluation, provider transfer, or a run. See the
+[V2 experiment](V2_EXPERIMENT.md) and [data-source plan](DATA_SOURCES.md) for
+stage requirements and source-selection rationale.
+
+- **Source and sequence:** After upstream-stage acceptance and separate human
+  approval, begin with prospective, explicitly opt-in OpenCode tasks covering
+  code localization and failing-test/log triage. Freeze each authorized
+  repository snapshot and task before replay. Treat this first-client study as
+  a scoped milestone. Full E4 utility evidence requires matched tasks across
+  OpenCode, DeepSeek Harness, and Claude Code, with outcomes reported by client.
+- **E0 evidence/action oracle:** Before running an arm, freeze the authorized
+  scope, expected evidence or permitted abstention, and a deterministic,
+  task-specific check where available. Preserve ambiguous or unverifiable
+  expectations as `unknown` / unresolved; do not infer an earlier context
+  choice's correctness from later task success alone.
+- **E4 final-task oracle:** Use task-specific acceptance checks or existing
+  independent verification receipts where available, participant confirmation
+  that the stated task goal was met, and blinded independent adjudication of
+  disagreements where feasible. Keep these evidence sources distinct in the
+  report. Missing or conflicting evidence stays unresolved.
+- **Rights and data handling:** Require documented repository-owner or
+  employer authorization, participant opt-in, and per-task consent before
+  capture or use. Keep private source data local by default; define approved
+  capture fields, redaction, retention, withdrawal, and deletion verification
+  in the study protocol. Any provider/model transfer needs separate explicit
+  approval. Exclude tasks with unresolved permission, redaction, or lineage.
+
 Later success alone does not establish which earlier context choice caused the
 outcome. Preserve ambiguous cases as unresolved; never force a label to improve
 the measured result.
