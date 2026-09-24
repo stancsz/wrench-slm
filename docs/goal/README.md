@@ -5,6 +5,8 @@
   assembly; does not claim full E0 completion.
 - [E0 snapshot identity and exact-source retrieval](wrench-e0-snapshot-retrieval/GOAL.md):
   active bounded source-manifest and stale-source retrieval increment.
+- [E0 bounded artifact store](wrench-e0-artifact-store/GOAL.md):
+  accepted standalone content-addressed persistence; snapshot/runtime integration remains open.
 - [Wrench v2 realignment](wrench-v2-realignment/GOAL.md): current direction
   cleanup, v1 lessons and definition of the Layer 1 + continuous-LoRA experiment.
 - [Experiment v2](../northstar/V2_EXPERIMENT.md): planned product implementation

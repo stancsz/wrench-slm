@@ -56,7 +56,9 @@ publish, deploy, collect user traces, or mutate source files through the runtime
 
 ## Next E0 work after this slice
 
-The reversible bounded artifact store, namespace discovery, exact serialized
-prompt accounting, and verified outcome receipts remain unimplemented. Continue
-the full E0 baseline before considering E1 model work. Keep E1-E4 adapter,
-learning, recovery, and matched-utility gates open until their evidence exists.
+The bounded artifact store now exists as a standalone primitive, but it is not
+connected to snapshots or context assembly. POSIX pytest follow-up, integrated
+snapshot-backed context, namespace discovery, exact serialized-prompt
+accounting, and verified outcome receipts remain open. Continue the full E0
+baseline before considering E1 model work. Keep E1-E4 adapter, learning,
+recovery, and matched-utility gates open until their evidence exists.
