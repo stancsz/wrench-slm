@@ -58,6 +58,7 @@ a model.
 | Connect to snapshots/context and continue E0 | Accepted for local preparation | [E0 caller-owned pipeline](../wrench-e0-context-pipeline/GOAL.md); production request manager and recovery qualification remain outside this slice |
 | Enforce safe retention eligibility in the bounded store | Implemented; caller policy remains pending | [Retention eligibility report](../../reports/wrench-e0-artifact-store/retention-eligibility.md); expiry-aware manual eviction does not set real-data retention periods |
 | Add regression evidence for migration and eviction recovery boundaries | Focused tests pass; review recorded | [Recovery regression report](../../reports/wrench-e0-artifact-store/recovery-regressions.md) and [independent evaluation](../../evals/wrench-e0-artifact-store/recovery-regressions-review.md) |
+| Enforce physical-volume headroom before bounded object and manifest staging writes | Cooperative per-write guard and focused suite reviewed; hard 5 GB guarantee remains open | [Headroom guard report](../../reports/wrench-e0-artifact-store/headroom-guard.md) and [evaluation](../../evals/wrench-e0-artifact-store/headroom-guard-review.md) |
 
 ## Limits
 
@@ -69,3 +70,10 @@ a future caller explicitly opts into a reviewed expiry policy. No real-data
 retention duration is selected here. Same-disk previous manifests do not
 protect against volume loss. Production qualification remains open in the v2
 experiment.
+
+The save-time headroom guard is a per-write check using the store root's
+physical volume free bytes. It does not reserve space across a full put or
+coordinate with other writers, so free space can change after a successful
+probe. Store-directory creation during initialization precedes the first
+manifest probe. This is separate from the cooperative 50 GB aggregate
+admission checker and does not prove a hard physical reserve.

@@ -11,12 +11,14 @@ import itertools
 import json
 import os
 import re
+import shutil
 import stat
 import threading
 import uuid
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import Callable
 
 
 MAX_OBJECT_BYTES = 256 * 1024
@@ -28,6 +30,7 @@ MAX_STORE_BYTES = 8 * 1024 * 1024
 MAX_STAGING_FILES = 8
 MAX_STAGING_FILE_BYTES = MAX_MANIFEST_BYTES
 MAX_SOURCE_PATH_CHARS = 1024
+MIN_FREE_SPACE_BYTES = 5_000_000_000
 _SCHEMA = "wrench.artifact-store.v2"
 _LEGACY_SCHEMA = "wrench.artifact-store.v1"
 _MAX_UNIX_SECONDS = 253402300799
@@ -198,8 +201,20 @@ class ArtifactStore:
     external writers while a store is active.
     """
 
-    def __init__(self, root: str | os.PathLike[str]):
+    def __init__(
+        self,
+        root: str | os.PathLike[str],
+        *,
+        free_space_probe: Callable[[Path], int] | None = None,
+    ):
         self.root = _prepare_store_root(root)
+        if free_space_probe is not None and not callable(free_space_probe):
+            raise TypeError("free_space_probe must be callable")
+        self._free_space_probe = (
+            free_space_probe
+            if free_space_probe is not None
+            else lambda path: shutil.disk_usage(path).free
+        )
         self.objects = self.root / "objects"
         self.staging = self.root / "staging"
         self._lock = threading.RLock()
@@ -302,6 +317,25 @@ class ArtifactStore:
     def _assert_store_size(self, additional: int = 0) -> None:
         if self._disk_usage() + additional > MAX_STORE_BYTES:
             raise ArtifactStoreLimitError("aggregate_store_limit_exceeded")
+
+    def _require_volume_headroom(self, projected_write_bytes: int) -> None:
+        """Require the documented physical free-space reserve before a bounded write."""
+        if (
+            not isinstance(projected_write_bytes, int)
+            or isinstance(projected_write_bytes, bool)
+            or projected_write_bytes < 0
+        ):
+            raise ValueError("projected_write_bytes must be a nonnegative integer")
+        try:
+            free_bytes = self._free_space_probe(self.root)
+        except Exception as exc:
+            raise ArtifactStoreLimitError("physical_volume_headroom_unavailable") from exc
+        if (
+            not isinstance(free_bytes, int)
+            or isinstance(free_bytes, bool)
+            or free_bytes < projected_write_bytes + MIN_FREE_SPACE_BYTES
+        ):
+            raise ArtifactStoreLimitError("physical_volume_headroom_insufficient")
 
     def _encode_manifest(self, payload: dict[str, object]) -> bytes:
         body = _canonical_json(payload)
@@ -481,6 +515,9 @@ class ArtifactStore:
         if len(data) > MAX_MANIFEST_BYTES:
             raise ArtifactStoreLimitError("manifest_size_limit_exceeded")
         self._assert_store_size(len(data))
+        # Atomic replacement first stages a complete extra copy while the old
+        # destination may still exist, so reserve the full staged byte count.
+        self._require_volume_headroom(len(data))
         temporary = self.staging / f"stage-{uuid.uuid4().hex}.tmp"
         self._ensure_stage_slot()
         created = False
@@ -608,6 +645,7 @@ class ArtifactStore:
             if not has_object:
                 staged = self.staging / f"stage-{uuid.uuid4().hex}.tmp"
                 self._ensure_stage_slot()
+                self._require_volume_headroom(len(data))
                 try:
                     with staged.open("xb") as stream:
                         stream.write(data)

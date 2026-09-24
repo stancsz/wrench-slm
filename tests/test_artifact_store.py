@@ -106,6 +106,93 @@ def test_aggregate_limit_stops_growth_before_write(tmp_path, monkeypatch):
     assert not list(store.objects.iterdir())
 
 
+def test_put_requires_projected_write_and_five_gigabyte_volume_reserve(tmp_path):
+    available = [10_000_000_000]
+    next_values = []
+    probe_calls = []
+
+    def probe(path):
+        probe_calls.append(path)
+        if next_values:
+            return next_values.pop(0)
+        return available[0]
+
+    store = ArtifactStore(tmp_path / "store", free_space_probe=probe)
+    probe_calls.clear()
+    data = b"headroom boundary"
+    available[0] = store_module.MIN_FREE_SPACE_BYTES + len(data) - 1
+    with pytest.raises(ArtifactStoreLimitError, match="physical_volume_headroom_insufficient"):
+        _put(store, "snapshot", "a", data)
+
+    assert probe_calls == [store.root]
+    assert not list(store.objects.iterdir())
+    assert not list(store.staging.iterdir())
+
+    next_values.extend([store_module.MIN_FREE_SPACE_BYTES + len(data), 10_000_000_000, 10_000_000_000])
+    handle = _put(store, "snapshot", "a", data)
+    assert store.read(handle).data == data
+
+
+def test_manifest_save_headroom_failure_leaves_old_manifest_and_read_path_usable(tmp_path):
+    available = [10_000_000_000]
+    probe_calls = []
+
+    def probe(path):
+        probe_calls.append(path)
+        return available[0]
+
+    store = ArtifactStore(tmp_path / "store", free_space_probe=probe)
+    first = _put(store, "snapshot", "first", b"shared bytes")
+    before_manifest = (store.root / "manifest.json").read_bytes()
+    probe_calls.clear()
+
+    # The second handle reuses the existing object, so the next guarded write
+    # is a manifest staging write.
+    available[0] = store_module.MIN_FREE_SPACE_BYTES
+    with pytest.raises(ArtifactStoreLimitError, match="physical_volume_headroom_insufficient"):
+        _put(store, "snapshot", "second", b"shared bytes")
+
+    assert probe_calls == [store.root]
+    assert (store.root / "manifest.json").read_bytes() == before_manifest
+    assert store.read(first).data == b"shared bytes"
+    assert not list(store.staging.iterdir())
+
+
+@pytest.mark.parametrize("probe_result", [None, -1, True])
+def test_invalid_or_unavailable_volume_headroom_fails_closed(tmp_path, probe_result):
+    store = ArtifactStore(tmp_path / "store", free_space_probe=lambda _path: 10_000_000_000)
+    store._free_space_probe = lambda _path: probe_result
+
+    with pytest.raises(ArtifactStoreLimitError, match="physical_volume_headroom_insufficient"):
+        _put(store, "snapshot", "a", b"payload")
+    assert not list(store.objects.iterdir())
+
+
+def test_volume_probe_error_fails_closed_before_write(tmp_path):
+    store = ArtifactStore(tmp_path / "store", free_space_probe=lambda _path: 10_000_000_000)
+
+    def unavailable(_path):
+        raise OSError("fixture volume unavailable")
+
+    store._free_space_probe = unavailable
+    with pytest.raises(ArtifactStoreLimitError, match="physical_volume_headroom_unavailable"):
+        _put(store, "snapshot", "a", b"payload")
+    assert not list(store.objects.iterdir())
+
+
+def test_read_only_read_does_not_probe_volume_headroom(tmp_path):
+    probe_calls = []
+    store = ArtifactStore(
+        tmp_path / "store",
+        free_space_probe=lambda path: probe_calls.append(path) or 10_000_000_000,
+    )
+    handle = _put(store, "snapshot", "a", b"payload")
+    probe_calls.clear()
+
+    assert store.read(handle).data == b"payload"
+    assert probe_calls == []
+
+
 def test_manifest_recovery_restores_only_valid_previous_generation(tmp_path):
     root = tmp_path / "store"
     store = ArtifactStore(root)
