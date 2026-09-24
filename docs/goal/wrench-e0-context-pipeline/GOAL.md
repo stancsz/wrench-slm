@@ -58,3 +58,14 @@ only call sites owned by this facade, not total request activity. Caller
 serializer and tokenizer callbacks are arbitrary code; any external effects
 they cause are not observed, so `callback_external_activity` is null. This is
 preparation-scope measurement, not complete E0 accounting or acceptance.
+
+Metrics also copy bounded content-free facts from a successful ledger assembly:
+logical and selected token counts, lexical retrieval candidate count and
+truncation flag, search limit, and token-count mode/counter label. The default
+`word_estimate_v1` counts are not final prompt tokens or target-runtime tokens.
+A successful structural index contributes file count, symbol count, and
+canonical in-memory serialized payload bytes. These index facts remain null if
+index construction fails or is not reached. Candidate count is not a count of
+symbols scanned; serialized bytes are not disk I/O. No candidate IDs, query,
+paths, hashes, or content are copied into metrics, which remain outside the
+aggregate receipt hash.

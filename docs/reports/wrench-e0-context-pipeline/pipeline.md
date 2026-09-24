@@ -48,3 +48,15 @@ read total in the preparation metrics. Index results retain counts on
 retrieval, parse, and output failures. Process CPU, RSS, energy, OS cache, and
 request-local page faults are likewise null/unmeasured. This is preparation
 scope only, not complete E0 accounting or an E0 acceptance claim.
+
+`PreparationMetrics` additionally copies scalar/enum ledger assembly facts:
+logical and selected token counts, retrieval candidate count, whether
+retrieval was truncated, the search limit, and token-count mode/counter label.
+With the current facade ledger configuration, `word_estimate_v1` is a word
+estimate; it is not the final prompt token count or a target-runtime tokenizer
+result. A successful structural index contributes its file count, symbol
+count, and canonical in-memory serialized payload size in bytes. These remain
+null unless index construction succeeds. Retrieval candidate count does not
+measure symbols scanned, and serialized payload bytes do not measure disk
+I/O. The values carry no IDs, query, paths, hashes, or content and are not
+included in the aggregate receipt digest.

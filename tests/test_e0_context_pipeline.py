@@ -107,6 +107,16 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert metrics.artifact_read_attempts == metrics.artifact_read_successes == 1
     assert metrics.schema_discover_attempts == 1 and metrics.schema_lookup_attempts == 1
     assert metrics.ledger_assembly_attempts == 1 and metrics.ledger_selected_count > 0
+    assert metrics.ledger_logical_token_count > 0
+    assert metrics.ledger_selected_token_count > 0
+    assert metrics.ledger_retrieval_candidate_count >= 0
+    assert metrics.ledger_retrieval_truncated is False
+    assert metrics.ledger_search_limit == 32
+    assert metrics.ledger_token_count_mode == "word_estimate"
+    assert metrics.ledger_token_counter_name == "word_estimate_v1"
+    assert metrics.structural_index_file_count == 1
+    assert metrics.structural_index_symbol_count >= 1
+    assert metrics.structural_index_serialized_bytes > 0
     assert metrics.serializer_callback_attempts == metrics.tokenizer_callback_attempts == 1
     assert metrics.prompt_serialized_bytes > 0 and metrics.prompt_token_count > 0
     assert metrics.outcome_receipt_build_attempts == 1 and metrics.outcome_receipt_status == "incomplete"
@@ -142,6 +152,16 @@ def test_stale_source_is_omitted_and_never_written_to_artifact_store(tmp_path):
     assert result.metrics.structural_index_exact_read_attempts == 0
     assert result.metrics.structural_index_exact_read_successes == 0
     assert result.metrics.structural_index_returned_bytes == 0
+    assert result.metrics.structural_index_file_count is None
+    assert result.metrics.structural_index_symbol_count is None
+    assert result.metrics.structural_index_serialized_bytes is None
+    assert result.metrics.ledger_logical_token_count is None
+    assert result.metrics.ledger_selected_token_count is None
+    assert result.metrics.ledger_retrieval_candidate_count is None
+    assert result.metrics.ledger_retrieval_truncated is None
+    assert result.metrics.ledger_search_limit is None
+    assert result.metrics.ledger_token_count_mode is None
+    assert result.metrics.ledger_token_counter_name is None
     assert result.metrics.source_exact_read_total_attempts == 1
     assert result.metrics.source_exact_read_total_successes == 0
 
@@ -212,6 +232,8 @@ def test_facade_bounds_inputs_and_has_no_execution_surface(tmp_path):
     assert invalid.status is PreparationStatus.INVALID_INPUT
     assert invalid.route == "none" and invalid.prompt is None
     assert not hasattr(invalid, "execute")
+    assert invalid.metrics.ledger_logical_token_count is None
+    assert invalid.metrics.structural_index_symbol_count is None
     oversized_messages = [{"role": "system", "content": "x"}] * 129
     invalid_messages = prepare_e0_context(
         source_root=root, snapshot=snapshot, paths=("sample.py",), store=store, query="target",

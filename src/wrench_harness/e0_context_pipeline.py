@@ -141,6 +141,16 @@ class PreparationMetrics:
     os_cache_bytes: None
     request_page_faults: None
     unmeasured_dimensions: tuple[str, ...]
+    ledger_logical_token_count: int | None = None
+    ledger_selected_token_count: int | None = None
+    ledger_retrieval_candidate_count: int | None = None
+    ledger_retrieval_truncated: bool | None = None
+    ledger_search_limit: int | None = None
+    ledger_token_count_mode: str | None = None
+    ledger_token_counter_name: str | None = None
+    structural_index_file_count: int | None = None
+    structural_index_symbol_count: int | None = None
+    structural_index_serialized_bytes: int | None = None
 
 
 def _sha(value: bytes) -> str:
@@ -438,6 +448,9 @@ def _prepare_e0_context_impl(
                 final_status = PreparationStatus.STRUCTURE_FAILED
                 reason = indexed.status.value
             else:
+                _metrics["structural_index_file_count"] = len(indexed.index.files)
+                _metrics["structural_index_symbol_count"] = indexed.index.symbol_count
+                _metrics["structural_index_serialized_bytes"] = indexed.index.serialized_bytes
                 _metrics["structural_index_query_attempts"] = int(_metrics["structural_index_query_attempts"]) + 1
                 candidate_result = query_snapshot_symbols(indexed.index, query, limit=max_candidates)
                 _metrics["structural_index_query_status"] = candidate_result.status.value
@@ -513,6 +526,13 @@ def _prepare_e0_context_impl(
                                 assembly = ledger.assemble(query, active_token_budget=context_token_budget, preserve_ids=preserve_ids, search_limit=32, receipt_detail="full")
                                 _metrics["ledger_selected_count"] = len(assembly.get("selected_segments", ()))
                                 _metrics["ledger_omitted_count"] = int(assembly.get("omitted_segment_count", 0))
+                                _metrics["ledger_logical_token_count"] = assembly.get("logical_token_count")
+                                _metrics["ledger_selected_token_count"] = assembly.get("selected_token_count")
+                                _metrics["ledger_retrieval_candidate_count"] = len(assembly.get("retrieval_candidate_ids", ()))
+                                _metrics["ledger_retrieval_truncated"] = assembly.get("retrieval_truncated")
+                                _metrics["ledger_search_limit"] = assembly.get("search_limit")
+                                _metrics["ledger_token_count_mode"] = assembly.get("token_count_mode")
+                                _metrics["ledger_token_counter_name"] = assembly.get("token_counter_name")
 
                                 def measured_serializer(value):
                                     _metrics["serializer_callback_attempts"] = int(_metrics["serializer_callback_attempts"]) + 1
@@ -625,6 +645,11 @@ def prepare_e0_context(
         "serializer_callback_attempts": 0, "tokenizer_callback_attempts": 0,
         "prompt_serialized_bytes": None, "prompt_token_count": None,
         "outcome_receipt_build_attempts": 0, "outcome_receipt_status": None,
+        "ledger_logical_token_count": None, "ledger_selected_token_count": None,
+        "ledger_retrieval_candidate_count": None, "ledger_retrieval_truncated": None,
+        "ledger_search_limit": None, "ledger_token_count_mode": None, "ledger_token_counter_name": None,
+        "structural_index_file_count": None, "structural_index_symbol_count": None,
+        "structural_index_serialized_bytes": None,
     }
     result = _prepare_e0_context_impl(
         source_root=source_root, snapshot=snapshot, paths=paths, store=store, query=query,
@@ -677,6 +702,16 @@ def prepare_e0_context(
         callback_external_activity=None, process_cpu_ns=None, process_rss_bytes=None,
         energy_joules=None, os_cache_bytes=None, request_page_faults=None,
         unmeasured_dimensions=("callback_external_activity", "process_cpu", "process_rss", "energy", "os_cache", "request_page_faults"),
+        ledger_logical_token_count=counters["ledger_logical_token_count"],
+        ledger_selected_token_count=counters["ledger_selected_token_count"],
+        ledger_retrieval_candidate_count=counters["ledger_retrieval_candidate_count"],
+        ledger_retrieval_truncated=counters["ledger_retrieval_truncated"],
+        ledger_search_limit=counters["ledger_search_limit"],
+        ledger_token_count_mode=counters["ledger_token_count_mode"],
+        ledger_token_counter_name=counters["ledger_token_counter_name"],
+        structural_index_file_count=counters["structural_index_file_count"],
+        structural_index_symbol_count=counters["structural_index_symbol_count"],
+        structural_index_serialized_bytes=counters["structural_index_serialized_bytes"],
     ))
     return result
 
