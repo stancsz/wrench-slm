@@ -3,11 +3,11 @@
 Goal: [North Star pilot readiness](../../goal/wrench-northstar-pilot-readiness/GOAL.md)
 Evaluated artifact: [interview kit](../../reports/wrench-northstar-pilot-readiness/customer-discovery-interview-kit.md)
 Evaluator: North Star pilot-readiness supervisor
-Date: 2026-09-26 (America/Edmonton)
+Date: 2026-09-24 (America/Edmonton)
 Job: `W2-NS-PILOT-INTERVIEW-KIT-20260926`
 Nonce: `PILOT-SUP-6D2F`
 Repository baseline: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
-Final artifact SHA-256: `56825A2226859FE2BA60E98C040B765BB6FEA0BE4449EA502628310B76CD38A3`
+Final artifact SHA-256: `8BC179BF59D643D6B0C56E366F347E505177BDF94DD914C8A80B3E562E473C8D`
 Decision: PASS as a draft for owner review; NOT READY for participant use
 
 ## Scope and acceptance
@@ -69,7 +69,7 @@ so the final content check is attributed accurately.
 
 ## Verification evidence
 
-- Final artifact hash: `56825A2226859FE2BA60E98C040B765BB6FEA0BE4449EA502628310B76CD38A3`.
+- Final artifact hash: `8BC179BF59D643D6B0C56E366F347E505177BDF94DD914C8A80B3E562E473C8D`.
 - All reviewers observed repository HEAD
   `0c7a00ab8cc4970ae66133d51bada7617fb7db90`.
 - Storage checker with the npm cache explicitly included reported

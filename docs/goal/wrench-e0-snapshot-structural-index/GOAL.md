@@ -51,7 +51,7 @@ At most 16 files, 64 KiB per file, 512 KiB aggregate source bytes, 4 MiB
   sent to a model/provider. Query strings and candidate limits require exact
   built-in `str` and `int` types before any length or comparison operation.
 
-## Selected parser-language matrix follow-up (2026-09-26)
+## Selected parser-language matrix follow-up (2026-09-24)
 
 Job `W2-NS-W0-LANG-MATRIX-IMPL-20260926`, nonce `W0-IMPL-AE92`, added a
 seven-row authored regression matrix for the selected-snapshot coverage

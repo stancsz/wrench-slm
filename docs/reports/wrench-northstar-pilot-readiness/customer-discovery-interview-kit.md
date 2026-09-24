@@ -3,7 +3,7 @@
 Goal: [North Star pilot readiness](../../goal/wrench-northstar-pilot-readiness/GOAL.md)
 Task: turn the proposed six-interview screen into a reviewable moderator packet
 Owner: North Star pilot-readiness supervisor
-Date: 2026-09-26 (America/Edmonton)
+Date: 2026-09-24 (America/Edmonton)
 Job: `W2-NS-PILOT-INTERVIEW-KIT-20260926`
 Nonce: `PILOT-SUP-6D2F`
 Baseline: `0c7a00ab8cc4970ae66133d51bada7617fb7db90`
