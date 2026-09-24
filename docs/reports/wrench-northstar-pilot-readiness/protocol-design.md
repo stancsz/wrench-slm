@@ -21,11 +21,39 @@ are repository localization and failing-test/log triage. Tool/context choices
 are component traces inside those tasks, not an independent outcome oracle.
 
 The next customer evidence should be six non-leading walkthrough interviews
-with developers who recently used OpenCode for coding work. A proposed
+with developers who recently used OpenCode for coding work. Each session
+reconstructs exactly two recent coding tasks from the prior 30 days, yielding a
+planned denominator of six participants and twelve task episodes. A proposed
 directional screen is four of six reporting the same recurring context problem
-across at least two recent tasks, with an observable workaround or cost. This
+across both tasks, with an observable workaround or cost in at least one. This
 is a small qualitative screen only. The gate needs owner approval and does not
 measure prevalence, willingness to pay, or Wrench utility.
+
+### Eligibility and coding rule
+
+The six-interview denominator is six completed eligible OpenCode developers.
+Eligibility requires at least three coding tasks in the prior 30 days and the
+ability to reconstruct two; it does not require a reported context problem.
+Track invited, screened, eligible, enrolled, completed, refused, and incomplete
+counts. If six eligible interviews do not complete, report the screen as
+inconclusive rather than substituting a new denominator.
+
+Treat each reconstructed task as an episode. Record task family, needed
+information, where it was found, workaround, recalled delay/retry/call cost,
+verification method, and whether the episode is verifiable. Preserve negative
+and uncertain codes, including no context problem, no workaround/cost, unable
+to recall, and not verifiable. Predeclare three primary categories: (1)
+localization of relevant code, tests, or configuration; (2) recovery of a prior
+decision or task state; and (3) filtering tool, test, or log output for
+task-relevant signals. Keep "other" exploratory and ineligible for the gate.
+A second reviewer independently codes an anonymized episode summary; a
+recorded adjudication rule resolves disagreements while preserving both
+original codes and rationale. Count the directional signal per participant:
+the same predeclared primary category must appear in both distinct episodes,
+with a concrete workaround or cost in at least one. Publish category counts
+against the six participants and twelve planned episodes, including
+counterexamples and incomplete episodes. Episode counts do not become the
+participant denominator.
 
 ## Repository evidence
 

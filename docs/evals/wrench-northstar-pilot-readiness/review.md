@@ -29,3 +29,16 @@ The untracked owner file `docs/northstar/DATA_SOURCES.md` was left untouched.
 The independent ARB audit indicates its ARB subsection needs reconciliation;
 the source remains unadmitted pending expanded-size, rights, and
 query-provenance evidence.
+
+## Follow-up review
+
+Follow-up job `W2-NS-DISCOVERY-FIX-REVIEW-20260924` (nonce
+`NSD-RV-FIX-40B8`) found an initial mismatch between one-task interview wording
+and the two-task recurrence threshold, and requested prespecified category
+rules. The protocol was revised to require exactly two reconstructed tasks per
+interview, report a six-participant/twelve-episode denominator, use three
+predeclared primary categories, and keep "other" exploratory. The reviewer
+found no remaining material issues and confirmed incomplete episodes,
+counterexamples, non-leading eligibility, and owner/data gates remain visible.
+This review remains proposal-only; it authorized no contact or capture. No
+tests or external services were used.

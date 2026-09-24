@@ -52,10 +52,12 @@ outcomes, repeat use, switching behavior, support burden, or sustainability
 commitment is recorded in the current evidence.
 
 Proposed next evidence is six non-leading task walkthroughs with qualified
-OpenCode developers. Each session should reconstruct one recent real coding
-task and identify the actual context work, existing alternative, delays,
-retries, and verification. Do not ask participants to provide repository
-content or sensitive materials during this discovery screen.
+OpenCode developers. Each session should reconstruct exactly two recent real
+coding tasks from the prior 30 days and identify the actual context work,
+existing alternative, delays, retries, and verification. Do not ask
+participants to provide repository content or sensitive materials during this
+discovery screen. The planned denominator is six participants and twelve task
+episodes; report incomplete episodes separately.
 
 Proposed directional gate, pending owner approval: advance to a reversible
 pilot only if at least four of six independently describe the same recurring
@@ -63,6 +65,36 @@ context problem from at least two recent tasks and identify an observable
 workaround or cost. One or fewer weakens this narrow problem-frequency
 hypothesis; two or three is inconclusive. This small qualitative screen cannot
 estimate market prevalence, willingness to pay, or product utility.
+
+### Eligibility, episode coding, and counterexamples
+
+Recruit six completed interviews from developers who used OpenCode for at least
+three coding tasks in the last 30 days and can reconstruct two of those tasks.
+Do not require that they report a context problem. Track the denominator as
+invited, screened, eligible, enrolled, and completed; report refusals and
+incomplete interviews without replacing them silently. The directional gate
+uses six completed eligible interviews and is inconclusive if fewer complete.
+
+Code each reconstructed task as one episode, separately for each participant.
+Record task family, the information needed, where it was found, the existing
+workaround, observable delay/retry/call cost if recalled, how completion was
+checked, and whether the episode is specific enough to verify. Assign one or
+more problem categories only when supported by the episode narrative. Preserve
+"no context problem," "no workaround/cost," "could not recall," and
+"not verifiable" as explicit values. Use these predeclared primary categories:
+(1) localization of relevant code, tests, or configuration; (2) recovery of a
+prior decision or task state; and (3) filtering tool, test, or log output for
+task-relevant signals. "Other" remains exploratory and cannot satisfy the
+directional gate. A second reviewer should independently code the anonymized
+episode summary, resolve disagreements under a recorded adjudication rule
+before applying the gate, and retain original codes and rationale.
+
+Count the directional signal per participant, not per episode: a participant
+supports a category only when at least two distinct episodes show that same
+problem and at least one has a concrete workaround or cost. Report the full
+participant/category counts and episode denominator. Include disconfirming
+episodes in the report; do not use episode volume to inflate the six-person
+denominator or present this screen as a prevalence estimate.
 
 ## Capture, consent, and split gates
 
