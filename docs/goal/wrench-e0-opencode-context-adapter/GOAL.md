@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, and a strict Wrench-owned project enrollment registry are implemented and independently reviewed; a route-owned synthetic request/lease composition is now implemented and under independent review. Isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
+Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, a strict Wrench-owned project enrollment registry, and route-owned synthetic request/lease composition are implemented and independently reviewed. The latest offline follow-up adds synthetic prompt accounting over all seven validated context-hook fields. Isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 

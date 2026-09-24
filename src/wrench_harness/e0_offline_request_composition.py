@@ -1,9 +1,11 @@
 """Synthetic offline composition from enrolled source to fixture request.
 
 This module joins existing Wrench preparation and the fixture-only request
-boundary. It has no client, HTTP client, upstream route, or provider path.
-Serializer and tokenizer identities are synthetic test identities; this does
-not establish runtime token parity or dispatch authority.
+boundary. Prompt accounting covers the complete validated seven-field
+OpenCode context projection in a synthetic semantic envelope. The fixture
+lowerer accepts a stricter message subset and has no client, upstream route,
+or provider path. Serializer and tokenizer identities are synthetic test
+identities; this does not establish runtime token parity or dispatch authority.
 """
 
 from __future__ import annotations
@@ -47,9 +49,13 @@ from .opencode_request_boundary import (
     RequestLeaseBoundary,
     StreamEnd,
 )
+from .opencode_hook_projection import (
+    OpenCodeProjectionStatus,
+    project_opencode_context_hook,
+)
 
 
-SYNTHETIC_SERIALIZER_ID = "wrench-synthetic-opencode-json-v1"
+SYNTHETIC_SERIALIZER_ID = "wrench-synthetic-opencode-semantic-envelope-json-v1"
 SYNTHETIC_TOKENIZER_ID = "wrench-synthetic-character-counter-v1"
 _FIXTURE_MODEL = "wrench-offline-fixture"
 _MAX_CANONICAL_BYTES = 65_536
@@ -79,6 +85,7 @@ class OfflineCompositionReceipt:
     preparation_sha256: str
     insertion_receipt_sha256: str
     context_message_sha256: str
+    semantic_projection_sha256: str
     request_body_sha256: str
     route_preparation_sha256: str | None
     serializer_id: str
@@ -240,10 +247,36 @@ def _source_hash_join(snapshot_sha256: str, sources: Sequence[object]) -> str:
     return _sha256(_canonical({"snapshot_sha256": snapshot_sha256, "sources": rows}))
 
 
-def _fixture_serializer(messages: Sequence[Mapping[str, object]]) -> str:
+def _fixture_serializer_for_projection(
+    semantic_projection: Mapping[str, object],
+):
+    """Account for every supported hook field in the synthetic prompt envelope.
+
+    The compiler supplies the post-insertion message sequence. The other six
+    semantic fields come from the bounded hook projection validated before
+    preparation. This envelope is synthetic accounting only; it does not
+    model OpenCode's final provider serializer or request lowering.
+    """
     from .prompt_compiler import materialize_prompt_messages
 
-    return _canonical(materialize_prompt_messages(messages)).decode("utf-8")
+    base = json.loads(_canonical(dict(semantic_projection)).decode("utf-8"))
+    if type(base) is not dict or set(base) != {
+        "sessionID", "system", "messages", "agent", "model", "tools", "options"
+    }:
+        raise ValueError("semantic_projection_shape_invalid")
+
+    def serialize(messages: Sequence[Mapping[str, object]]) -> str:
+        envelope = dict(base)
+        envelope["messages"] = materialize_prompt_messages(messages)
+        return _canonical(
+            {
+                "schema": "wrench.synthetic-opencode-context-envelope.v1",
+                "opencode_context_hook_version": "2.0.15",
+                "projection": envelope,
+            }
+        ).decode("utf-8")
+
+    return serialize
 
 
 def _fixture_tokenizer(value: str | bytes) -> int:
@@ -337,6 +370,7 @@ def prepare_offline_e0_request(
     open until fixture-stream completion, cancellation, failure, disconnect,
     or timeout cleanup.
     """
+    hook_projection = project_opencode_context_hook(event)
     if (
         type(registry) is not OpenCodeProjectRegistry
         or type(store) is not ArtifactStore
@@ -347,10 +381,20 @@ def prepare_offline_e0_request(
         or not lease_id
         or type(max_tokens) is not int
         or not 1 <= max_tokens <= 8_192
+        or hook_projection.status is not OpenCodeProjectionStatus.READY
+        or hook_projection.projection is None
         or type(event) is not dict
-        or event.get("sessionID") != event_session_id
-        or type(event.get("messages")) is not list
         or (route_prompt is not None and (type(route_prompt) is not str or not route_prompt or len(route_prompt) > 8_192))
+    ):
+        return OfflineCompositionResult(CompositionStatus.PROJECT_REJECTED, "input_invalid")
+
+    try:
+        semantic_projection_payload = json.loads(hook_projection.projection.payload_json)
+    except (TypeError, ValueError, RecursionError):
+        return OfflineCompositionResult(CompositionStatus.PROJECT_REJECTED, "input_invalid")
+    if (
+        type(semantic_projection_payload) is not dict
+        or semantic_projection_payload.get("sessionID") != event_session_id
     ):
         return OfflineCompositionResult(CompositionStatus.PROJECT_REJECTED, "input_invalid")
 
@@ -388,9 +432,9 @@ def prepare_offline_e0_request(
                 prompt_token_budget=prompt_token_budget,
                 namespace_registry=namespace_registry,
                 schema_lookups=(),
-                base_messages=event["messages"],
+                base_messages=semantic_projection_payload["messages"],
                 context_position=context_position,
-                serializer=_fixture_serializer,
+                serializer=_fixture_serializer_for_projection(semantic_projection_payload),
                 tokenizer_counter=_fixture_tokenizer,
                 serializer_id=SYNTHETIC_SERIALIZER_ID,
                 tokenizer_id=SYNTHETIC_TOKENIZER_ID,
@@ -409,10 +453,10 @@ def prepare_offline_e0_request(
                 prompt_token_budget=prompt_token_budget,
                 namespace_registry=namespace_registry,
                 schema_lookups=(),
-                base_messages=event["messages"],
+                base_messages=semantic_projection_payload["messages"],
                 context_position=context_position,
                 message_format="opencode-2.0.15",
-                serializer=_fixture_serializer,
+                serializer=_fixture_serializer_for_projection(semantic_projection_payload),
                 tokenizer_counter=_fixture_tokenizer,
                 serializer_id=SYNTHETIC_SERIALIZER_ID,
                 tokenizer_id=SYNTHETIC_TOKENIZER_ID,
@@ -480,7 +524,11 @@ def prepare_offline_e0_request(
             preparation.sources,
         )
 
-        materialized = materialize_opencode_prepared_context(join, event)
+        # Continue from the projector's private bounded snapshot so prompt
+        # accounting, insertion, lowering, and the receipt share one input.
+        materialized = materialize_opencode_prepared_context(
+            join, semantic_projection_payload
+        )
         if materialized.status is not PreparedContextStatus.READY or materialized.event is None or materialized.transition_receipt is None:
             pin_scope.release_once()
             return OfflineCompositionResult(
@@ -496,6 +544,20 @@ def prepare_offline_e0_request(
             context_message_sha256=preparation.prompt_gate.context_message_sha256,
             max_tokens=max_tokens,
         )
+        materialized_projection = project_opencode_context_hook(materialized.event)
+        if (
+            materialized_projection.status is not OpenCodeProjectionStatus.READY
+            or materialized_projection.projection is None
+        ):
+            pin_scope.release_once()
+            return OfflineCompositionResult(
+                CompositionStatus.LOWERING_REJECTED,
+                "semantic_projection_invalid",
+                snapshot_sha256=project_snapshot.snapshot.snapshot_sha256,
+                preparation_status=preparation.status.value,
+                candidate_count=candidate_count,
+            )
+        semantic_projection_sha256 = materialized_projection.projection.projection_sha256
         receipt_payload = {
             "schema": "wrench.e0-offline-composition-receipt.v1",
             "snapshot_sha256": project_snapshot.snapshot.snapshot_sha256,
@@ -505,6 +567,7 @@ def prepare_offline_e0_request(
             "preparation_sha256": preparation.aggregate_sha256,
             "insertion_receipt_sha256": materialized.transition_receipt.receipt_sha256,
             "context_message_sha256": preparation.prompt_gate.context_message_sha256,
+            "semantic_projection_sha256": semantic_projection_sha256,
             "request_body_sha256": body_digest,
             "route_preparation_sha256": (
                 route_preparation.accounting_receipt.accounting_sha256
@@ -525,6 +588,7 @@ def prepare_offline_e0_request(
             preparation_sha256=receipt_payload["preparation_sha256"],
             insertion_receipt_sha256=receipt_payload["insertion_receipt_sha256"],
             context_message_sha256=receipt_payload["context_message_sha256"],
+            semantic_projection_sha256=receipt_payload["semantic_projection_sha256"],
             request_body_sha256=receipt_payload["request_body_sha256"],
             route_preparation_sha256=receipt_payload["route_preparation_sha256"],
             serializer_id=SYNTHETIC_SERIALIZER_ID,
@@ -589,6 +653,7 @@ def _receipt_payload(
         "preparation_sha256": receipt.preparation_sha256,
         "insertion_receipt_sha256": receipt.insertion_receipt_sha256,
         "context_message_sha256": receipt.context_message_sha256,
+        "semantic_projection_sha256": receipt.semantic_projection_sha256,
         "request_body_sha256": receipt.request_body_sha256,
         "route_preparation_sha256": receipt.route_preparation_sha256,
         "serializer_id": receipt.serializer_id,

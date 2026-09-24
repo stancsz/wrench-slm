@@ -101,3 +101,53 @@ exact-token claims closed until route, model, serializer, tokenizer, and
 supported dispatch-denial behavior are pinned and authorized. The broader E0
 deterministic baseline still needs inventory-bound source selection and
 complete end-to-end accounting.
+
+## Follow-up: complete synthetic hook-envelope accounting
+
+- Date: 2026-09-24 (America/Edmonton)
+- Job: `W2-NS-E0-FULL-PROJECTION-20260924`
+- Nonce: `E0FP-7D42`
+- Base HEAD: `3ca8a5e6b5caa1ddc5b29302b5ec371cf6bdb4a3`
+- Status: implemented, independently reviewed, and committed with this report
+
+The prompt compiler now counts a bounded synthetic envelope containing every
+validated OpenCode context-hook field: `sessionID`, `system`, `messages`,
+`agent`, `model`, `tools`, and `options`. It inserts the compiler-prepared
+messages into that envelope while preserving the other six fields. The
+composition continues from the projector's private bounded JSON snapshot for
+materialization, lowering, and receipt creation, so it does not reread the
+caller-owned event after accounting. A content-free receipt binds the
+post-insertion projection digest; the serializer identity is
+`wrench-synthetic-opencode-semantic-envelope-json-v1`, and the tokenizer
+identity remains the synthetic character counter.
+
+The fixture lowerer remains a strict text-message subset. A valid hook
+projection containing a tool-role message is rejected during fixture lowering
+before a request ticket or retained pins can escape. This change does not model
+OpenCode's final provider serializer or downstream transforms.
+
+## Verification
+
+The focused module was run through the existing Python 3.11 environment by
+directly invoking all test functions: **14 passed**. The `pytest` package is not
+installed in either available interpreter, so it was not installed. The
+integration regression recomputes SHA-256 and byte count for the exact
+canonical synthetic envelope and matches both to the prompt-gate receipt; it
+also binds the post-insertion projection hash, verifies one context insertion,
+and compares supported fixture-lowered messages to the materialized event.
+The unsupported tool-role case verifies lowering rejection and lease/pin
+cleanup. `git diff --check` passed with existing LF-to-CRLF advisories.
+
+An independent read-only review returned PASS for job
+`W2-NS-E0-SEMANTIC-ENVELOPE-REVIEW-20260924`, nonce `ESER-19A2`. Review found
+no blockers after the input-snapshot binding and envelope-measurement
+assertions were added. Source SHA-256:
+`25e2f76a8f2dd596b4c8ed0527482ca9551368361e2a657a3d84651ceac0a83a`; test
+SHA-256:
+`869335931c4dbf1cfb97f18ab8b31cf46881b6862769d140b03a8805fd78c220`.
+
+This remains synthetic offline evidence. It does not prove OpenCode hook
+registration, actual client dispatch denial, final request equivalence,
+provider routing, tokenizer parity, or complete lifecycle accounting. The
+exact-token gate remains unavailable. The caller-supplied finite source
+selection and broader E0 baseline are still incomplete.

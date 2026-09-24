@@ -21,6 +21,10 @@ from wrench_harness.e0_offline_request_composition import (
 )
 import wrench_harness.e0_offline_request_composition as composition_module
 from wrench_harness.namespace_registry import NamespaceRegistry
+from wrench_harness.opencode_hook_projection import (
+    OpenCodeProjectionStatus,
+    project_opencode_context_hook,
+)
 from wrench_harness.opencode_project_registry import OpenCodeProjectRegistry
 from wrench_harness.opencode_request_boundary import (
     FixtureResponse,
@@ -119,12 +123,132 @@ def _prepare(tmp_path: Path, *, prompt_token_budget: int = 4096, lease_id: str =
     return result, store, boundary, response
 
 
+def test_synthetic_semantic_envelope_accounts_for_all_seven_fields_and_only_inserts_messages():
+    projection = _event()
+    serializer = composition_module._fixture_serializer_for_projection(projection)
+    original_messages = json.loads(json.dumps(projection["messages"]))
+    original = serializer(original_messages)
+    original_size = len(original)
+    mutations = {
+        "sessionID": "ses_offline_composition_longer",
+        "agent": "build-with-longer-identity",
+        "model": {"providerID": "synthetic-fixture", "id": "synthetic-fixture-longer"},
+        "system": [{"type": "text", "text": "Synthetic fixture rules, extended."}],
+        "messages": [*_event()["messages"], _message("assistant", "A longer synthetic reply.")],
+        "tools": {
+            "synthetic_tool": {"description": "A synthetic tool.", "input": {"type": "object"}}
+        },
+        "options": {"temperature": 0, "synthetic_option": "longer"},
+    }
+    for field, value in mutations.items():
+        changed = dict(projection)
+        prepared_messages = original_messages
+        if field == "messages":
+            prepared_messages = value
+        else:
+            changed[field] = value
+        serialized = composition_module._fixture_serializer_for_projection(changed)(prepared_messages)
+        assert serialized != original, field
+        assert len(serialized) > original_size, field
+        assert composition_module._fixture_tokenizer(serialized) > composition_module._fixture_tokenizer(original), field
+
+    inserted_messages = [*original_messages]
+    inserted_messages.insert(1, _message("user", "Synthetic inserted context."))
+    with_inserted = json.loads(serializer(inserted_messages))
+    without_inserted = json.loads(original)
+    assert with_inserted["schema"] == without_inserted["schema"]
+    assert with_inserted["opencode_context_hook_version"] == without_inserted["opencode_context_hook_version"]
+    for field in ("sessionID", "system", "agent", "model", "tools", "options"):
+        assert with_inserted["projection"][field] == without_inserted["projection"][field]
+    assert with_inserted["projection"]["messages"] == inserted_messages
+    assert with_inserted["projection"]["messages"] != without_inserted["projection"]["messages"]
+
+
+def test_unsupported_hook_projection_fails_closed_before_lease_or_pins():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="projection-reject-", dir=TEST_TMP_ROOT) as scratch:
+        source_root, _, registry, store, boundary, response = _fixture(Path(scratch))
+        event = _event()
+        del event["options"]
+        result = prepare_offline_e0_request(
+            registry,
+            SESSION_ID,
+            {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+            ("src/sample.py", "README.md"),
+            event=event,
+            fixture_response=response,
+            store=store,
+            boundary=boundary,
+            namespace_registry=NamespaceRegistry(()),
+            query="synthetic_target",
+            lease_id="fixture-invalid-projection",
+        )
+        assert result.status is CompositionStatus.PROJECT_REJECTED
+        assert result.request is None and result.ticket is None and result.receipt is None
+        assert not result.artifact_scope_active
+        assert not store._pins
+        assert not boundary._pending and not boundary._active
+
+
+def test_fixture_unsupported_hook_message_fails_at_lowering_without_lease_or_pins():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="lowering-reject-", dir=TEST_TMP_ROOT) as scratch:
+        source_root, _, registry, store, boundary, response = _fixture(Path(scratch))
+        event = _event()
+        event["messages"][1] = _message("tool", "Synthetic tool result.")
+        result = prepare_offline_e0_request(
+            registry,
+            SESSION_ID,
+            {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+            ("src/sample.py", "README.md"),
+            event=event,
+            fixture_response=response,
+            store=store,
+            boundary=boundary,
+            namespace_registry=NamespaceRegistry(()),
+            query="synthetic_target",
+            lease_id="fixture-unsupported-message",
+        )
+        assert result.status is CompositionStatus.LOWERING_REJECTED
+        assert result.request is None and result.ticket is None and result.receipt is None
+        assert not result.artifact_scope_active
+        assert not store._pins
+        assert not boundary._pending and not boundary._active
+
+
 def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
     TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="compose-", dir=TEST_TMP_ROOT) as scratch:
         root = Path(scratch)
         source_root, data_root, registry, store, boundary, fixture_response = _fixture(root)
         event = _event()
+        gate_envelopes: list[dict[str, object]] = []
+        gate_preparations = []
+        materialized_events = []
+        original_serializer_factory = composition_module._fixture_serializer_for_projection
+        original_prepare_context = composition_module.prepare_opencode_e0_context
+        original_materializer = composition_module.materialize_opencode_prepared_context
+
+        def capture_serializer(semantic_projection):
+            serialize = original_serializer_factory(semantic_projection)
+
+            def capture(messages):
+                serialized = serialize(messages)
+                gate_envelopes.append(json.loads(serialized))
+                return serialized
+
+            return capture
+
+        def capture_prepare_context(*args, **kwargs):
+            joined = original_prepare_context(*args, **kwargs)
+            gate_preparations.append(joined.preparation)
+            return joined
+
+        def capture_materializer(join, event_snapshot):
+            materialized = original_materializer(join, event_snapshot)
+            materialized_events.append(materialized.event)
+            return materialized
+
         release_calls: dict[int, int] = {}
         original_release = composition_module._PinScope.release_once
 
@@ -133,7 +257,12 @@ def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
             release_calls[key] = release_calls.get(key, 0) + 1
             return original_release(scope)
 
-        with patch.object(composition_module._PinScope, "release_once", counted_release):
+        with (
+            patch.object(composition_module._PinScope, "release_once", counted_release),
+            patch.object(composition_module, "_fixture_serializer_for_projection", capture_serializer),
+            patch.object(composition_module, "prepare_opencode_e0_context", capture_prepare_context),
+            patch.object(composition_module, "materialize_opencode_prepared_context", capture_materializer),
+        ):
             first = prepare_offline_e0_request(
                 registry,
                 SESSION_ID,
@@ -187,6 +316,7 @@ def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
         assert first.receipt.serializer_id == SYNTHETIC_SERIALIZER_ID
         assert first.receipt.tokenizer_id == SYNTHETIC_TOKENIZER_ID
         assert first.receipt.exact_token_gate == "exact_gate_unavailable"
+        assert len(first.receipt.semantic_projection_sha256) == 64
         assert sum(store._pins.values()) > 0
 
         with LoopbackFixtureServer(boundary, fixture_response) as server:
@@ -230,6 +360,43 @@ def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
                 context_matches.append(message)
         assert len(context_matches) == 1
         assert "def synthetic_target(value)" in context_matches[0]["content"]
+        expected_materialized_event = _event()
+        expected_materialized_event["messages"].insert(
+            1,
+            {
+                "role": context_matches[0]["role"],
+                "content": [{"type": "text", "text": context_matches[0]["content"]}],
+            },
+        )
+        expected_projection = project_opencode_context_hook(expected_materialized_event)
+        assert expected_projection.status is OpenCodeProjectionStatus.READY
+        assert expected_projection.projection is not None
+        assert gate_envelopes[0]["projection"] == expected_materialized_event
+        assert materialized_events[0] == expected_materialized_event
+        assert materialized_events[0] is not event
+        envelope_bytes = composition_module._canonical(gate_envelopes[0])
+        gate_receipt = gate_preparations[0].prompt_gate
+        assert hashlib.sha256(envelope_bytes).hexdigest() == gate_receipt.prompt_sha256
+        assert len(envelope_bytes) == gate_receipt.serialized_bytes
+        context_message_count = sum(
+            hashlib.sha256(composition_module._canonical(message)).hexdigest()
+            == first.receipt.context_message_sha256
+            for message in gate_envelopes[0]["projection"]["messages"]
+        )
+        assert context_message_count == 1
+        assert (
+            len(gate_preparations) == 2
+            and len(gate_envelopes) == 2
+            and len(materialized_events) == 2
+        )
+        assert (
+            expected_projection.projection.projection_sha256
+            == first.receipt.semantic_projection_sha256
+        )
+        assert lowered["messages"] == [
+            {"role": message["role"], "content": message["content"][0]["text"]}
+            for message in expected_materialized_event["messages"]
+        ]
         assert first.receipt.insertion_receipt_sha256
         assert "return value + 1" not in repr(first.receipt)
 
