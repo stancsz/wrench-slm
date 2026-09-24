@@ -14,6 +14,12 @@ from .snapshot import (
     SourceSnapshot,
     create_snapshot,
     retrieve_exact,
+    validate_source_root,
+)
+from .opencode_session_root import (
+    OpenCodeSessionRoot,
+    OpenCodeSessionRootError,
+    resolve_opencode_session_root,
 )
 from .mechanical import mechanical_route
 from .handoff import build_advisor_handoff
@@ -40,6 +46,10 @@ __all__ = [
     "mechanical_route",
     "create_snapshot",
     "retrieve_exact",
+    "validate_source_root",
+    "OpenCodeSessionRoot",
+    "OpenCodeSessionRootError",
+    "resolve_opencode_session_root",
     "build_advisor_handoff",
     "load_router_state",
     "save_router_state",

@@ -49,6 +49,30 @@ or production route was added or run. Authored fixtures can test mechanics
 only. No consented matched-task corpus or outcome oracle was identified, so
 this review supplies no E4 utility evidence. Full E0 acceptance remains open.
 
+## Provider-free session-root resolver slice
+
+The follow-on implementation adds a Wrench-side boundary that consumes the
+event session ID and session record as data. It requires an exact record-ID
+match, an absolute usable `location.directory`, and absent or empty `subpath`;
+it rejects ambiguous subpaths and does not infer a root from process or plugin
+state. It returns the configured lexical root for existing snapshot-v2
+binding. It is not an installed OpenCode hook and has no dispatch authority.
+
+Independent read-only code review found no material findings. The reviewer
+confirmed the v2.0.15 tagged session fields, matching session ID, fail-closed
+root validation, lexical-root preservation, and the documented limits. The
+review ran `git diff --check`, which passed. Reviewed Python file hashes:
+
+- `src/wrench_harness/opencode_session_root.py`:
+  `D9DDE5B6511347C832DB3AE8A3E8BD366FB35647F9612B8133BEAF5B69E314C1`
+- `src/wrench_harness/snapshot.py`:
+  `89E5CAEDCA8E4B2566210A7E197D60FE46299926D9D2FACE509669D436866C82`
+
+No tests were run. No OpenCode install, client/provider/model call, benchmark,
+participant capture, or utility evaluation occurred. The runtime callback
+failure path, exact serializer/tokenizer boundary, and complete E0 lifecycle
+remain open.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)

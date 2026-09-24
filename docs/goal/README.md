@@ -1,5 +1,8 @@
 # Goals
 
+- [North Star pilot readiness](wrench-northstar-pilot-readiness/GOAL.md):
+  proposed opt-in OpenCode corpus and task-oracle protocol; customer discovery,
+  consent, and capture remain unapproved and unperformed.
 - [E0 caller-owned context preparation](wrench-e0-context-pipeline/GOAL.md):
   accepted local composition of snapshot reads, structural candidates,
   request-pinned artifacts, bounded context, deferred schemas, prompt gating,
@@ -31,9 +34,8 @@
   accepted v2 snapshot hash binding to the normalized configured root path;
   it is not physical-directory identity or authorization.
 - [E0 OpenCode V2 context adapter contract](wrench-e0-opencode-context-adapter/GOAL.md):
-  bounded uninstalled integration contract for active-session location,
-  semantic context and the supplied tools map; provider wire/token equivalence and
-  dispatch veto remain unresolved.
+  provider-free, release-pinned session-root validation seam; the client remains
+  uninstalled and provider wire/token equivalence and dispatch veto remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.

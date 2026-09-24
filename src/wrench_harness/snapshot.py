@@ -235,6 +235,43 @@ def _prepare_root_path(root_path: Path) -> Path:
     return root_path
 
 
+def validate_source_root(root: str | os.PathLike[str]) -> Path:
+    """Validate an existing source root without scanning or retaining its files.
+
+    The returned path preserves the caller's normalized lexical identity so a
+    later snapshot remains bound to the same configured location.
+    """
+    configured_root_path = _configured_root_path(root)
+    try:
+        prepared_root = _prepare_root_path(configured_root_path)
+    except FileNotFoundError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    except OSError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+
+    if os.name == "nt":
+        return configured_root_path
+
+    required_flags = ("O_NOFOLLOW", "O_DIRECTORY")
+    if any(not hasattr(os, flag) for flag in required_flags):
+        raise SnapshotAdmissionError("secure_open_flags_unavailable")
+    opened: list[int] = []
+    try:
+        opened, _ = _open_posix_directory_chain(
+            prepared_root,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+        )
+    except FileNotFoundError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    except OSError as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+    finally:
+        # _open_posix_directory_chain closes descriptors when it raises.
+        for descriptor in reversed(opened):
+            os.close(descriptor)
+    return configured_root_path
+
+
 def _root_location_sha256(root_path: Path) -> str:
     """Hash the normalized configured path, not a physical-directory identity."""
     value = os.path.normpath(os.fspath(root_path))

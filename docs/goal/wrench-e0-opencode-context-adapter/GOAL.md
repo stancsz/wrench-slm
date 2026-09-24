@@ -1,25 +1,26 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: contract slice documented; integration remains uninstalled and unrun
-Job: `W2-E0-OPENCODE-CONTRACT-DOCS-20260924`
+Status: provider-free session-root boundary implemented; client integration remains uninstalled and unrun
+Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
 ## Product outcome
 
 Define a small, reviewable first-client boundary for Wrench's deterministic
 Layer 1 context runtime. OpenCode V2 is the selected first integration target.
-This slice records what a future adapter may observe and which assumptions must
-remain blocked until OpenCode and provider identities are pinned. It adds no
-plugin code, dependency, install, provider call, or production route.
+This increment pins a candidate OpenCode release and implements provider-free
+validation from a hook session ID and returned session record to an existing
+source root. It adds no OpenCode plugin, dependency, install, provider call,
+dispatch gate, or production route.
 
 ## Contract
 
 - OpenCode documents two distinct hook boundaries. The `prompt` hook runs at
   user-prompt admission, before attachments, skill resolution, and durable
   inbox admission. The guide says a failed or interrupted preparation does
-  not admit that prompt, but the API still has no typed rejection result; a
-  future release-pinned implementation must establish and test the supported
-  failure signal. This hook runs once per admission, not before each model
+  not admit that prompt, but the API still has no typed rejection result;
+  runtime validation must establish and test the supported failure signal.
+  This hook runs once per admission, not before each model
   call, and does not expose the resolved model or assembled tool map.
 - The `context` hook runs immediately before agent-loop model dispatch,
   including tool-driven continuations, and exposes the assembled request
@@ -37,16 +38,17 @@ plugin code, dependency, install, provider call, or production route.
   can retry a recognized overflow once when automatic compaction is enabled,
   but its heuristic estimate cannot prevent every provider-specific overflow.
   This is not an exact E0 prompt gate.
-- A future context hook obtains the active session using its event
-  `sessionID`, then reads the session record using the documented session API.
-- The adapter derives its candidate source root from the active session's
-  returned `location.directory`, which must be present and valid. It must not
-  substitute the plugin load location, current process directory, a remembered
-  path, or a guessed worktree path.
-- The session `subpath` semantics must be pinned and tested against the chosen
-  OpenCode release. Until then, reject nonempty or otherwise ambiguous
-  subpaths. Convert the accepted root once and bind snapshot v2 to that
-  configured lexical absolute path.
+- The release candidate is OpenCode `v2.0.15`, tag commit `6f3639d`, with the
+  matching `@opencode/plugin` package at `2.0.15`. This is a source/API pin for
+  review, not evidence that the client or hook was installed or run.
+- `resolve_opencode_session_root` accepts the event `sessionID` and returned
+  session record as data, requires the record `id` to match, accepts only an
+  absolute usable `location.directory`, rejects parent path components, and
+  rejects nonempty or null `subpath` values. It never falls back to a cached
+  path, plugin location, process directory, or guessed worktree.
+- The validated root remains a configured lexical path and can be passed to
+  the existing snapshot API, which binds snapshot v2 to that configured root.
+  Source selection remains an explicit finite path list.
 - Source selection stays an explicit finite path list. Exact snapshot
   retrieval and existing deterministic preparation limits remain in force;
   no adapter-driven recursive discovery is introduced.
@@ -77,8 +79,11 @@ plugin code, dependency, install, provider call, or production route.
   explicitly bounded above.
 - Prompt-admission and model-context hooks are distinguished; the documented
   prompt failure behavior is not claimed as a final-request veto.
-- The contract names the remaining release, serializer, tokenizer, root
-  semantics, and dispatch-authority prerequisites without inventing them.
+- The release and matching plugin package are pinned to `v2.0.15`; runtime
+  hook behavior, callback failure semantics, provider serializer, tokenizer,
+  and dispatch authority remain unresolved.
+- Offline validation rejects mismatched IDs, missing/invalid roots, ambiguous
+  subpaths, and unusable directories before snapshot creation.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -86,13 +91,22 @@ plugin code, dependency, install, provider call, or production route.
 
 ## Limits and evidence
 
-OpenCode documents a session context hook and a session query surface, but the
-documentation is not version-pinned. The contract does not establish exact
-provider payload reconstruction, model dispatch control, tokenizer parity,
-tool authority, recovery qualification, complete lifecycle accounting, or
-production fitness. The integration has not been installed or run.
+The resolver is a Wrench-side data boundary, not a registered OpenCode hook.
+It does not establish exact provider payload reconstruction, model dispatch
+control, tokenizer parity, tool authority, recovery qualification, complete
+lifecycle accounting, or production fitness. The integration has not been
+installed or run.
 
-References: official [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins),
+Implementation details and review evidence are in the
+[session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md).
+
+References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
+[tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),
+[tagged context hook type](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/plugin/src/promise/session.ts),
+[tagged session schema](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/schema/src/session.ts),
+[tagged location schema](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/schema/src/location.ts),
+official [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins),
 [OpenCode V2 API](https://opencode.ai/v2/docs/api), and
 [V1-to-V2 plugin migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1).
 The [V2 compaction guide](https://opencode.ai/v2/docs/compaction) describes
@@ -101,8 +115,9 @@ prevent every provider-specific overflow.
 
 ## Next action
 
-Revisit implementation only when the exact OpenCode release and provider
-request/tokenization boundary can be pinned, and when the client supplies a
-fail-closed dispatch contract or an explicitly approved integration design
-that does not claim one. Select a consented matched-task corpus and outcome
-oracle before measuring E4 utility.
+Implementing the actual OpenCode plugin remains gated on an owner-approved
+integration design and pinned runtime validation. Exact prompt gating remains
+gated on the provider/model serializer and tokenizer plus a documented or
+verified fail-closed dispatch contract. Select a consented matched-task corpus
+and outcome oracle before measuring E4 utility; the current pilot proposal is
+not capture authorization.
