@@ -389,6 +389,19 @@ This remains synthetic caller-supplied structural evidence. It does not prove
 runtime hook execution, atomic capture, dispatch enforcement, provider or
 tokenizer parity, complete lifecycle accounting, or overall E0 acceptance.
 
+## Follow-up: v2.0.15 runtime config inspection boundary
+
+The isolated wrapper's version-only command reports OpenCode v2.0.15, and the
+corrected workspace config and preserved prior-shape backup match their
+recorded hashes and parse as JSON. No resolved-config command was run: the
+installed distribution has no inspectable command-handler source, and the
+pinned docs do not establish whether that command can load/install the custom
+provider package or perform external work. The configured endpoint and model
+selection therefore remain unverified at runtime. No localhost or provider
+request was intentionally issued; implicit traffic during the version-only
+command was not monitored. See the
+[config-load preflight report](../../reports/wrench-e0-opencode-context-adapter/config-load-preflight.md).
+
 ## Follow-up: reconcile the isolated v2.0.15 config schema
 
 The isolated workspace config now follows the custom-provider field names in
