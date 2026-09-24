@@ -364,7 +364,7 @@ remain outside the guarantee. Qwen contract tests could not collect because
 `torch` is unavailable. See the [v2 report](../../reports/wrench-e0-context-pipeline/serializer-input-immutability-v2.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/serializer-input-immutability-v2.md).
 
-## Current client setup status (2026-09-25)
+## Current client setup status (2026-09-24)
 
 OpenCode `v2.0.15` is installed in an isolated directory under
 `C:\wrench-slm-data\opencode` and configured for `wrench-local/current` at
