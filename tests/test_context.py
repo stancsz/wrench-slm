@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 
 import pytest
 
 import wrench_harness.context as context_module
 from wrench_harness import ContextAdmissionError, ContextLedger, ContextSelectionError
+from wrench_harness.context import RetrievalDecision, RetrievalPageStatus
 
 
 def test_ledger_admits_two_million_logical_tokens_without_model_call():
@@ -99,6 +101,117 @@ def test_query_retrieves_ranked_reference_segments_within_budget():
     assert receipt["search_limit"] == 2
     omitted = {item["segment_id"]: item["reason"] for item in receipt["omitted_segments"]}
     assert omitted["unrelated"] == "not_selected"
+
+
+def _retrieval_ledger(count: int = 65) -> ContextLedger:
+    ledger = ContextLedger(max_logical_tokens=10_000)
+    for index in range(count):
+        ledger.add_segment(
+            f"evidence-{index:03}", "needle deployment evidence", index,
+            token_count=1, retention="reference",
+        )
+    return ledger
+
+
+def test_retrieval_pages_are_stable_bounded_and_return_only_known_ids():
+    ledger = _retrieval_ledger()
+
+    first = ledger.retrieve_page("needle", RetrievalDecision.RETRIEVE_MORE)
+    second = ledger.retrieve_page(
+        "needle", RetrievalDecision.RETRIEVE_MORE, cursor=first.cursor
+    )
+
+    assert first.status is RetrievalPageStatus.MORE_AVAILABLE
+    assert len(first.candidate_ids) == context_module.MAX_RETRIEVAL_PAGE_SIZE == 32
+    assert first.candidate_ids[0] == "evidence-064"
+    assert first.candidate_ids[-1] == "evidence-033"
+    assert second.status is RetrievalPageStatus.CANDIDATE_LIMIT
+    assert len(second.candidate_ids) == 32
+    assert second.candidate_ids[0] == "evidence-032"
+    assert second.candidate_ids[-1] == "evidence-001"
+    assert set(first.candidate_ids + second.candidate_ids).issubset(ledger._segments)
+    assert not hasattr(first, "assembled_text")
+    assert second.cursor is None
+
+
+def test_retrieval_enough_stops_without_search_or_candidate_ids(monkeypatch):
+    ledger = _retrieval_ledger()
+
+    def forbidden_search(*args, **kwargs):
+        raise AssertionError("ENOUGH must stop without searching")
+
+    monkeypatch.setattr(ledger, "_search_candidates", forbidden_search)
+    result = ledger.retrieve_page("needle", RetrievalDecision.ENOUGH)
+
+    assert result.status is RetrievalPageStatus.STOPPED
+    assert result.candidate_ids == ()
+    assert result.cursor is None
+
+
+@pytest.mark.parametrize("mutation", ["query", "session"])
+def test_retrieval_cursor_rejects_other_query_or_changed_ledger(mutation):
+    ledger = _retrieval_ledger()
+    first = ledger.retrieve_page("needle", RetrievalDecision.RETRIEVE_MORE)
+    assert first.cursor is not None
+
+    if mutation == "query":
+        result = ledger.retrieve_page(
+            "deployment", RetrievalDecision.RETRIEVE_MORE, cursor=first.cursor
+        )
+    else:
+        ledger.add_segment("new-evidence", "needle deployment", 100, token_count=1)
+        result = ledger.retrieve_page(
+            "needle", RetrievalDecision.RETRIEVE_MORE, cursor=first.cursor
+        )
+
+    assert result.status is RetrievalPageStatus.INVALID_CURSOR
+    assert result.candidate_ids == ()
+    assert result.cursor is None
+
+
+def test_retrieval_cursor_checksum_rejects_accidental_edit():
+    ledger = _retrieval_ledger()
+    first = ledger.retrieve_page("needle", RetrievalDecision.RETRIEVE_MORE)
+    assert first.cursor is not None
+    edited = replace(first.cursor, cursor_sha256="0" * 64)
+
+    result = ledger.retrieve_page(
+        "needle", RetrievalDecision.RETRIEVE_MORE, cursor=edited
+    )
+
+    assert result.status is RetrievalPageStatus.INVALID_CURSOR
+    assert result.candidate_ids == ()
+
+
+def test_retrieval_second_page_reports_exhaustion_without_more_candidates():
+    ledger = _retrieval_ledger(40)
+    first = ledger.retrieve_page("needle", RetrievalDecision.RETRIEVE_MORE)
+    second = ledger.retrieve_page(
+        "needle", RetrievalDecision.RETRIEVE_MORE, cursor=first.cursor
+    )
+
+    assert first.status is RetrievalPageStatus.MORE_AVAILABLE
+    assert second.status is RetrievalPageStatus.EXHAUSTED
+    assert second.candidate_ids == tuple(f"evidence-{i:03}" for i in range(7, -1, -1))
+    assert second.cursor is None
+
+
+def test_retrieval_fails_closed_when_bm25_work_is_truncated(monkeypatch):
+    monkeypatch.setattr(context_module, "MAX_SEARCH_TERM_DOCUMENT_CHECKS", 1)
+    ledger = _retrieval_ledger(4)
+
+    result = ledger.retrieve_page("needle", RetrievalDecision.RETRIEVE_MORE)
+
+    assert result.status is RetrievalPageStatus.WORK_LIMIT
+    assert result.candidate_ids == ()
+    assert result.cursor is None
+
+
+def test_retrieval_page_rejects_untyped_action():
+    ledger = _retrieval_ledger(1)
+
+    with pytest.raises(ContextSelectionError, match="invalid retrieval decision"):
+        ledger.retrieve_page("needle", "retrieve_more")
 
 
 def test_hot_context_precedes_retrieved_context_when_budget_is_tight():

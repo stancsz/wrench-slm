@@ -14,6 +14,7 @@ import math
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from enum import Enum
 from itertools import islice
 from types import MappingProxyType
 from typing import Callable, Iterable, Mapping
@@ -32,8 +33,12 @@ MAX_CONTEXT_LABEL_CHARS = 64
 MAX_SEARCH_QUERY_CHARS = 4_096
 MAX_SEARCH_QUERY_TERMS = 256
 MAX_SEARCH_TERM_DOCUMENT_CHECKS = 100_000
+MAX_RETRIEVAL_PAGE_SIZE = 32
+MAX_RETRIEVAL_PAGES = 2
+MAX_RETRIEVAL_CANDIDATES = MAX_RETRIEVAL_PAGE_SIZE * MAX_RETRIEVAL_PAGES
 RETENTION_TIERS = {"hot", "warm", "reference", "cold"}
 _TOKEN_RE = re.compile(r"\w+", re.UNICODE)
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class ContextError(ValueError):
@@ -48,12 +53,72 @@ class ContextSelectionError(ContextError):
     """Raised when required context cannot fit the active model budget."""
 
 
+class RetrievalDecision(str, Enum):
+    """Caller-owned decision controlling one bounded candidate page."""
+
+    ENOUGH = "enough"
+    RETRIEVE_MORE = "retrieve_more"
+
+
+class RetrievalPageStatus(str, Enum):
+    """Outcome of one in-memory candidate page request."""
+
+    STOPPED = "stopped"
+    MORE_AVAILABLE = "more_available"
+    EXHAUSTED = "exhausted"
+    CANDIDATE_LIMIT = "candidate_limit"
+    WORK_LIMIT = "work_limit"
+    INVALID_CURSOR = "invalid_cursor"
+
+
+@dataclass(frozen=True)
+class RetrievalCursor:
+    """Continuation reference bound to one immutable ledger/query pair.
+
+    The digest detects accidental edits. It is not an authentication token.
+    """
+
+    schema: str
+    session_sha256: str
+    query_sha256: str
+    next_offset: int
+    page_count: int
+    cursor_sha256: str
+
+
+@dataclass(frozen=True)
+class RetrievalPage:
+    """Content-free result for one caller-controlled retrieval decision."""
+
+    schema: str
+    decision: RetrievalDecision
+    status: RetrievalPageStatus
+    session_sha256: str
+    query_sha256: str
+    candidate_ids: tuple[str, ...]
+    cursor: RetrievalCursor | None
+
+
 def _tokens(text: str) -> list[str]:
     return [match.casefold() for match in _TOKEN_RE.findall(text)]
 
 
 def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def _retrieval_cursor_sha256(
+    *, session_sha256: str, query_sha256: str, next_offset: int, page_count: int
+) -> str:
+    payload = {
+        "schema": "wrench.context-retrieval-cursor.v1",
+        "session_sha256": session_sha256,
+        "query_sha256": query_sha256,
+        "next_offset": next_offset,
+        "page_count": page_count,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return _sha256(encoded)
 
 
 @dataclass(frozen=True)
@@ -392,6 +457,125 @@ class ContextLedger:
 
         candidates, _ = self._search_candidates(query, limit=limit)
         return candidates
+
+    def retrieve_page(
+        self,
+        query: str,
+        decision: RetrievalDecision,
+        *,
+        cursor: RetrievalCursor | None = None,
+    ) -> RetrievalPage:
+        """Return a caller-requested page of known BM25 candidate IDs.
+
+        There is at most one continuation page. Each page contains up to 32
+        IDs; the full ranked pool is bounded at 64 candidates plus one probe
+        used to report ``candidate_limit``. A caller can stop at any time by
+        sending ``ENOUGH``. Work-truncated rankings fail closed without IDs.
+        This method is in-memory only and performs no source retrieval.
+        Replaying a cursor or restarting from page one can repeat results;
+        this bounds one continuation chain, not total caller invocations.
+        """
+
+        if type(decision) is not RetrievalDecision:
+            raise ContextSelectionError("invalid retrieval decision")
+        if (
+            not isinstance(query, str)
+            or len(query) > MAX_SEARCH_QUERY_CHARS
+            or len(_tokens(query)) > MAX_SEARCH_QUERY_TERMS
+        ):
+            raise ContextSelectionError("invalid retrieval query")
+
+        session_hash = self.session_hash()
+        query_hash = _sha256(query.encode("utf-8"))
+        if cursor is not None and not self._valid_retrieval_cursor(cursor, session_hash, query_hash):
+            return RetrievalPage(
+                "wrench.context-retrieval-page.v1", decision,
+                RetrievalPageStatus.INVALID_CURSOR, session_hash, query_hash, (), None,
+            )
+        if decision is RetrievalDecision.ENOUGH:
+            return RetrievalPage(
+                "wrench.context-retrieval-page.v1", decision,
+                RetrievalPageStatus.STOPPED, session_hash, query_hash, (), None,
+            )
+
+        if cursor is None:
+            offset = 0
+        else:
+            offset = cursor.next_offset
+        ranked, work_truncated = self._search_candidates(
+            query, limit=MAX_RETRIEVAL_CANDIDATES + 1
+        )
+        if work_truncated:
+            return RetrievalPage(
+                "wrench.context-retrieval-page.v1", decision,
+                RetrievalPageStatus.WORK_LIMIT, session_hash, query_hash, (), None,
+            )
+
+        end = offset + MAX_RETRIEVAL_PAGE_SIZE
+        page_segments = ranked[offset:end]
+        candidate_ids = tuple(segment.segment_id for segment in page_segments)
+        if any(segment_id not in self._segments for segment_id in candidate_ids):
+            # Defensive invariant: ranking may only reference admitted ledger IDs.
+            return RetrievalPage(
+                "wrench.context-retrieval-page.v1", decision,
+                RetrievalPageStatus.WORK_LIMIT, session_hash, query_hash, (), None,
+            )
+
+        if offset == 0 and len(ranked) > end:
+            next_cursor = self._make_retrieval_cursor(session_hash, query_hash, end, 1)
+            status = RetrievalPageStatus.MORE_AVAILABLE
+        elif len(ranked) > MAX_RETRIEVAL_CANDIDATES:
+            next_cursor = None
+            status = RetrievalPageStatus.CANDIDATE_LIMIT
+        else:
+            next_cursor = None
+            status = RetrievalPageStatus.EXHAUSTED
+        return RetrievalPage(
+            "wrench.context-retrieval-page.v1", decision, status,
+            session_hash, query_hash, candidate_ids, next_cursor,
+        )
+
+    @staticmethod
+    def _make_retrieval_cursor(
+        session_hash: str, query_hash: str, next_offset: int, page_count: int
+    ) -> RetrievalCursor:
+        digest = _retrieval_cursor_sha256(
+            session_sha256=session_hash, query_sha256=query_hash,
+            next_offset=next_offset, page_count=page_count,
+        )
+        return RetrievalCursor(
+            "wrench.context-retrieval-cursor.v1", session_hash, query_hash,
+            next_offset, page_count, digest,
+        )
+
+    @staticmethod
+    def _valid_retrieval_cursor(
+        cursor: RetrievalCursor, session_hash: str, query_hash: str
+    ) -> bool:
+        if type(cursor) is not RetrievalCursor:
+            return False
+        if (
+            type(cursor.schema) is not str
+            or type(cursor.session_sha256) is not str
+            or type(cursor.query_sha256) is not str
+            or type(cursor.next_offset) is not int
+            or type(cursor.page_count) is not int
+            or cursor.schema != "wrench.context-retrieval-cursor.v1"
+            or cursor.session_sha256 != session_hash
+            or cursor.query_sha256 != query_hash
+            or cursor.next_offset != MAX_RETRIEVAL_PAGE_SIZE
+            or cursor.page_count != 1
+            or type(cursor.cursor_sha256) is not str
+            or _SHA256_RE.fullmatch(cursor.cursor_sha256) is None
+        ):
+            return False
+        expected = _retrieval_cursor_sha256(
+            session_sha256=cursor.session_sha256,
+            query_sha256=cursor.query_sha256,
+            next_offset=cursor.next_offset,
+            page_count=cursor.page_count,
+        )
+        return cursor.cursor_sha256 == expected
 
     def session_hash(self) -> str:
         if self._session_hash is not None:
