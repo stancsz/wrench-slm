@@ -16,6 +16,13 @@ The integration review confirmed that callers must carry the exact same `OpenCod
 
 Windows, Python 3.11.16, pytest 8.3.5: 75 passed, 8 skipped across snapshot, OpenCode session-root, OpenCode context, and E0 context pipeline tests. `git diff --check` passed. Storage checker reported `WITHIN_LIMIT` at 645,051,724 actual bytes plus 52,531,800 bytes of active reservations before the final focused test run. No client, provider, or model was installed or run.
 
+After commit, Ubuntu 24.04 WSL Python 3.12.3 ran a standard-library-only
+smoke for the POSIX path. It rejected a deterministic directory swap during
+root handle capture and passed the ordinary bound snapshot/retrieval round
+trip. Pytest was absent in that distro, so the POSIX pytest regression itself
+was not run there. The smoke script was held briefly in the approved data
+root and removed after completion; its 5,000,000-byte reservation was released.
+
 ## Remaining limits
 
 Static review and local fixtures do not establish hostile concurrent-writer immunity beyond the tested capture sequence, authenticated session identity, atomic multi-file snapshots, UNC/network filesystem qualification, dispatch veto, final provider serialization/tokenizer parity, lifecycle accounting, production recovery, or E4 task utility. Runtime integration and real-workflow data remain unapproved.

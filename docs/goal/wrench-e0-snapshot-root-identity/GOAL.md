@@ -31,6 +31,11 @@ to one snapshot and during each later exact retrieval.
 - Focused Windows Python 3.11.16 suite for root binding and E0 preparation:
   75 passed, 8 skipped with pytest 8.3.5, including direct bound retrieval
   and byte-identical replacement coverage.
+- Ubuntu 24.04 WSL Python 3.12.3 standard-library smoke: the controlled
+  same-name directory swap during POSIX handle capture was rejected with
+  `root_directory_binding_changed`; normal bound snapshot and exact retrieval
+  passed. Pytest is not installed in that distro, so POSIX pytest cases remain
+  unrun there.
 - Independent post-fix source review found no remaining correctness blocker;
   it requested direct retrieval coverage, which was added before final
   verification. See the [continuity evaluation](../../evals/wrench-e0-snapshot-root-identity/root-binding-continuity-review.md)
