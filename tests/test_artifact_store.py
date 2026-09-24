@@ -208,6 +208,22 @@ def test_manifest_recovery_restores_only_valid_previous_generation(tmp_path):
     assert len(recovered._payload["entries"]) == 1
 
 
+def test_oversized_current_manifest_recovers_valid_previous_generation(tmp_path):
+    root = tmp_path / "store"
+    store = ArtifactStore(root)
+    first = _put(store, "snapshot", "a", b"first")
+    _put(store, "snapshot", "b", b"second")
+    (root / "manifest.json").write_bytes(
+        b"x" * (store_module.MAX_MANIFEST_BYTES + 1)
+    )
+
+    recovered = ArtifactStore(root)
+
+    assert recovered.recovery_status == "restored_previous_manifest"
+    assert recovered.read(first).data == b"first"
+    assert len(recovered._payload["entries"]) == 1
+
+
 def test_no_valid_manifest_reports_corruption_without_deleting_data(tmp_path):
     root = tmp_path / "store"
     ArtifactStore(root)

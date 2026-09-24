@@ -476,10 +476,26 @@ class ArtifactStore:
         return self._read_bounded(path, MAX_MANIFEST_BYTES)
 
     def _load_recover(self) -> None:
-        current_raw = self._manifest_raw("manifest.json")
-        previous_raw = self._manifest_raw("manifest.prev.json")
-        current = previous = None
+        current_path = self.root / "manifest.json"
+        previous_path = self.root / "manifest.prev.json"
+        current_present = os.path.lexists(current_path)
+        previous_present = os.path.lexists(previous_path)
         current_error = previous_error = None
+        try:
+            current_raw = self._manifest_raw("manifest.json")
+        except ArtifactStoreCorruption as exc:
+            if str(exc) != "manifest_size_limit_exceeded":
+                raise
+            current_raw = None
+            current_error = exc
+        try:
+            previous_raw = self._manifest_raw("manifest.prev.json")
+        except ArtifactStoreCorruption as exc:
+            if str(exc) != "manifest_size_limit_exceeded":
+                raise
+            previous_raw = None
+            previous_error = exc
+        current = previous = None
         if current_raw is not None:
             try:
                 current = self._decode_manifest(current_raw)
@@ -493,14 +509,19 @@ class ArtifactStore:
             except (ArtifactStoreError, ArtifactIdentityError) as exc:
                 previous_error = exc
         if current is not None:
-            if previous_raw is not None and previous is None:
+            if previous_present and previous is None:
                 raise ArtifactStoreCorruption("previous manifest is corrupt") from previous_error
             self._payload = current
         elif previous is not None:
             self._payload = previous
             self._atomic_write(self.root / "manifest.json", previous_raw)
             self.recovery_status = "restored_previous_manifest"
-        elif current_raw is None and previous_raw is None and not self._objects_on_disk and not self._staging_files():
+        elif (
+            not current_present
+            and not previous_present
+            and not self._objects_on_disk
+            and not self._staging_files()
+        ):
             self._payload = {
                 "schema": _SCHEMA, "retention_schema": 1,
                 "generation": 0, "entries": [], "evicted": [],
