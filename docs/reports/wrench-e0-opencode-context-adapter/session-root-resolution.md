@@ -47,3 +47,33 @@ expanded-size, rights, and query-provenance requirements.
 The source and docs were reviewed against the pinned tag schemas. Independent
 code review and `git diff --check` are recorded in the companion evaluation.
 No tests were run in this slice.
+
+## Follow-on root-to-preparation seam
+
+Commit `701dd9368556e18d166054fa97dbeada9ede9194` added
+`prepare_opencode_e0_context`. It accepts the supplied session record plus the
+existing bounded E0 arguments, resolves the session root, and injects that root
+as the only `source_root`. Its returned join carries the session ID,
+configured-root path, snapshot and root-location hashes, and the preparation
+result. The actual preparation path still performs exact retrieval against the
+snapshot's root identity. The helper does not query OpenCode or dispatch a
+model.
+
+Independent review job `W2-NS-OC-BIND-SUP-20260924` (nonce `OCB-SUP-E812`)
+accepted the seam. The review confirmed that the fixture set covers root
+forwarding, ID-mismatch short-circuiting, and an actual call through preparation
+with a matching session and snapshot root. A wrong-root fixture was suggested
+as optional follow-up. The test files were not executed, so this is source and
+fixture review only.
+
+Reviewed file hashes:
+
+- `src/wrench_harness/opencode_context.py`:
+  `11DE4430FEBA5C346717E10B53FFB4295CA91EAA7CB188190E15216280E6336E`
+- `tests/test_opencode_context.py`:
+  `1CCB0ABDD77764C0258029BBF8FD11CC53F6463F372802B9EBEACA5A9C5040E5`
+
+Windows ancestor reparse-point handling and `workspaceID` are not part of the
+current join. The resolver must not be treated as a complete hostile-path
+boundary until those semantics are reviewed. No client install, runtime test,
+provider request, or participant/repository capture occurred.

@@ -73,6 +73,15 @@ participant capture, or utility evaluation occurred. The runtime callback
 failure path, exact serializer/tokenizer boundary, and complete E0 lifecycle
 remain open.
 
+## Follow-on root-to-preparation review
+
+Review job `W2-NS-OC-BIND-SUP-20260924` (nonce `OCB-SUP-E812`) accepted the
+provider-free `prepare_opencode_e0_context` seam. Its fixtures include mocked
+root-forwarding and invalid-session cases plus a call through the real E0
+preparation path against a snapshot made from the resolved root. No tests were
+run. Session lookup, provider dispatch, callback/tokenizer identity, Windows
+ancestor reparse policy, and full E0 acceptance remain unresolved.
+
 ## Sources
 
 - [OpenCode V2 plugin guide](https://opencode.ai/v2/docs/build/plugins)
