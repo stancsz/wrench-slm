@@ -32,7 +32,7 @@ flowchart TD
 | W0 ingest | Incremental Tree-sitter syntax, LSP/SCIP where available, git/diff/test parsers, lexical/BM25 plus optional embeddings, bounded local state | Snapshot identity and parser/index coverage; lexical edges are not resolved semantic references |
 | W1 controller | Task type, ranked IDs, graph expansion, enough/retrieve-more, context budget, candidate namespaces | Finite typed decisions over known IDs; bounded hops/bytes/attempts; abstain on unsupported/uncertain output |
 | W2 compiler | Exact hot evidence, structural warm context, compressed cold material, retrieval handles | Source ranges/hashes, pinned originals, exact serialized-token count, omissions and stale-handle failures |
-| W3 gateway | Small discovery surface, namespace search, needed schemas, deterministic transformations | Visibility does not grant execution; existing permission checks remain |
+| W3 gateway | Small discovery surface, namespace search, needed schemas, deterministic transformations | Schemas are inert metadata and grant no authority; the registry does not enforce permissions. A deterministic host-owned policy must authorize each action at the dispatch boundary and fail closed when policy or identity is missing or invalid |
 | W4 router | No-model/local/authorized provider after normalization; outcome probability, cost/latency, future steps and cache state | Learned production routing disabled until validated; scores cannot grant authority/spend |
 | W5 digester | Verify outcomes, record facts, update indexes, compact history, retain originals and learning candidates | Preserve user instructions/trust levels; independently supported labels |
 
