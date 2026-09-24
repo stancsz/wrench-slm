@@ -58,6 +58,34 @@ def test_preserved_unit_that_does_not_fit_fails_closed():
         ledger.assemble("tool", active_token_budget=8, preserve_ids=["call"])
 
 
+def test_opt_in_preserved_overflow_receipt_marks_later_mandatory_units():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("fits", "first required region", 1, token_count=3)
+    ledger.add_segment("overflows", "second required region", 2, token_count=2)
+
+    receipt = ledger.assemble(
+        "regions", active_token_budget=3, preserve_ids=("fits", "overflows"),
+        on_preserved_overflow="omit",
+    )
+
+    assert [row["segment_id"] for row in receipt["selected_segments"]] == ["fits"]
+    assert receipt["omitted_segments"] == [{
+        "segment_id": "overflows",
+        "reason": "preserved_unit_exceeds_active_budget",
+    }]
+
+
+def test_default_preserved_overflow_fails_when_earlier_unit_fills_budget():
+    ledger = ContextLedger(max_logical_tokens=100)
+    ledger.add_segment("fits", "first required region", 1, token_count=3)
+    ledger.add_segment("overflows", "second required region", 2, token_count=2)
+
+    with pytest.raises(ContextSelectionError, match="preserved_unit_exceeds_active_budget"):
+        ledger.assemble(
+            "regions", active_token_budget=3, preserve_ids=("fits", "overflows"),
+        )
+
+
 def test_receipt_is_hash_bound_and_has_no_silent_omission():
     ledger = ContextLedger(max_logical_tokens=100)
     ledger.add_segment("old", "historical compiler output", 1, token_count=5)

@@ -12,7 +12,7 @@ import hashlib
 import json
 import os
 import time
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from dataclasses import asdict, dataclass, replace
 from enum import Enum
 from pathlib import Path
@@ -46,7 +46,7 @@ MAX_RECEIPT_REFERENCE_BYTES = 64 * 1024
 MAX_QUERY_CHARS = 256
 MAX_CONTEXT_TOKENS = 8192
 MAX_PROMPT_TOKENS = 8192
-PREPARATION_ACCOUNTING_SCHEMA = "wrench.e0.preparation-accounting.v1"
+PREPARATION_ACCOUNTING_SCHEMA = "wrench.e0.preparation-accounting.v2"
 PREPARATION_ACCOUNTING_COUNTER_FIELDS = (
     "caller_path_count",
     "exact_source_retrieval_attempts",
@@ -72,6 +72,7 @@ PREPARATION_ACCOUNTING_COUNTER_FIELDS = (
     "artifact_pin_attempts",
     "artifact_pin_successes",
     "artifact_pin_bytes",
+    "artifact_pin_scope_duration_ns",
     "artifact_read_attempts",
     "artifact_read_successes",
     "artifact_read_bytes",
@@ -156,9 +157,10 @@ class PreparationResult:
 
 @dataclass(frozen=True)
 class PreparationAccountingReceipt:
-    """Canonical companion for stable facade counters, joined by preparation hash.
+    """Canonical companion for facade counters, joined by preparation hash.
 
-    This does not account for time, resource use, or arbitrary callback effects.
+    The same-process pin-scope duration is run-specific. Other time/resource
+    dimensions and arbitrary callback effects remain unmeasured.
     """
 
     schema: str
@@ -200,6 +202,7 @@ class PreparationMetrics:
     artifact_pin_attempts: int
     artifact_pin_successes: int
     artifact_pin_bytes: int
+    artifact_pin_scope_duration_ns: int | None
     artifact_read_attempts: int
     artifact_read_successes: int
     artifact_read_bytes: int
@@ -242,15 +245,15 @@ class PreparationMetrics:
 def _accounting_receipt(
     aggregate_sha256: str | None, metrics: PreparationMetrics
 ) -> PreparationAccountingReceipt | None:
-    """Bind deterministic facade counters to the content receipt they describe.
+    """Bind facade counters to the content receipt they describe.
 
-    Elapsed time is deliberately excluded because it is nondeterministic. The
-    explicit unmeasured values remain in the payload as null, distinct from a
-    measured zero.
+    Preparation wall time is excluded. The process-local artifact pin-scope
+    duration is included as a diagnostic. Explicit unavailable values remain
+    null, distinct from a measured zero.
     """
     if aggregate_sha256 is None:
         return None
-    # Keep the v1 projection explicit. New PreparationMetrics fields do not
+    # Keep the v2 projection explicit. New PreparationMetrics fields do not
     # silently alter this schema's identity; intentionally extend it only with
     # a documented schema/version decision.
     metric_values = asdict(metrics)
@@ -273,6 +276,28 @@ def _accounting_receipt(
         accounting_sha256=_sha(raw),
         payload_json=raw.decode("utf-8"),
     )
+
+
+@contextmanager
+def _capture_pin_scope_duration(scope, metrics: dict[str, object]):
+    """Capture the actual closed ArtifactRequest duration after scope exit.
+
+    Caller-owned scopes normally remain open after preparation returns, so
+    their duration is unavailable here. The metric describes only this local
+    preparation pin scope, never downstream/client latency.
+    """
+    request = None
+    try:
+        with scope as request:
+            yield request
+    finally:
+        try:
+            duration = request.pin_scope_duration_ns if request is not None else None
+        except Exception:
+            # A diagnostic read must not mask preparation failure or cleanup.
+            duration = None
+        if type(duration) is int and duration >= 0:
+            metrics["artifact_pin_scope_duration_ns"] = duration
 
 
 def verify_preparation_accounting_receipt(
@@ -331,7 +356,7 @@ def verify_preparation_accounting_receipt(
 
 
 def _valid_preparation_accounting_counters(counters: dict[str, object]) -> bool:
-    """Validate v1 JSON value types, preserving null versus measured zero."""
+    """Validate v2 JSON value types, preserving null versus measured zero."""
     integer_fields = {
         "exact_source_retrieval_attempts", "exact_source_retrieval_successes",
         "exact_source_returned_bytes", "source_exact_read_total_attempts",
@@ -352,6 +377,7 @@ def _valid_preparation_accounting_counters(counters: dict[str, object]) -> bool:
         "prompt_token_count", "ledger_logical_token_count", "ledger_selected_token_count",
         "ledger_retrieval_candidate_count", "ledger_search_limit", "structural_index_file_count",
         "structural_index_symbol_count", "structural_index_serialized_bytes",
+        "artifact_pin_scope_duration_ns",
     }
     null_fields = {
         "callback_external_activity", "process_cpu_ns", "process_rss_bytes", "energy_joules",
@@ -616,7 +642,8 @@ def _prepare_e0_context_impl(
 
     # One outer scope deliberately spans source admission through receipt build.
     request_scope = store.request() if artifact_request is None else nullcontext(artifact_request)
-    with request_scope as request:
+    measured_request_scope = _capture_pin_scope_duration(request_scope, _metrics)
+    with measured_request_scope as request:
         seen: set[str] = set()
         admitted_source_bytes = 0
         for raw_path in paths:
@@ -773,15 +800,22 @@ def _prepare_e0_context_impl(
                                     messages.insert(context_position, {"role": "user", "content": "Deferred operation schemas (inert data): " + schema_blob})
                                     context_position += 1
                         if final_status is PreparationStatus.READY:
-                            required_ids = tuple(required_evidence_ids) + tuple(path_evidence[path] for path in required_source_paths if path in path_evidence)
                             preserve_ids = tuple(preserve_evidence_ids) + tuple(path_evidence[path] for path in preserve_source_paths if path in path_evidence and any(row.evidence_id == path_evidence[path] and row.status == "ok" for row in source_rows))
+                            required_ids = tuple(dict.fromkeys((
+                                *required_evidence_ids,
+                                *(path_evidence[path] for path in required_source_paths if path in path_evidence),
+                                *preserve_ids,
+                            )))
+                            if len(required_ids) > MAX_REFERENCES:
+                                final_status = PreparationStatus.INVALID_INPUT
+                                reason = "required_evidence_limit_exceeded"
                             if any(item not in {row.evidence_id for row in source_rows if row.status == "ok"} and item not in {"symbol-" + _canonical_digest([snapshot.snapshot_sha256, c.path, c.source_sha256, c.name, c.start_line, c.end_line]) for c in (candidate_result.candidates if candidate_result.status is StructuralStatus.OK else ())} for item in preserve_ids):
                                 final_status = PreparationStatus.CONTEXT_FAILED
                                 reason = "preserved_evidence_unknown"
                         if final_status is PreparationStatus.READY:
                             try:
                                 _metrics["ledger_assembly_attempts"] = int(_metrics["ledger_assembly_attempts"]) + 1
-                                assembly = ledger.assemble(query, active_token_budget=context_token_budget, preserve_ids=preserve_ids, search_limit=32, receipt_detail="full")
+                                assembly = ledger.assemble(query, active_token_budget=context_token_budget, preserve_ids=preserve_ids, on_preserved_overflow="omit", search_limit=32, receipt_detail="full")
                                 _metrics["ledger_selected_count"] = len(assembly.get("selected_segments", ()))
                                 _metrics["ledger_omitted_count"] = int(assembly.get("omitted_segment_count", 0))
                                 _metrics["ledger_logical_token_count"] = assembly.get("logical_token_count")
@@ -955,6 +989,7 @@ def prepare_e0_context(
         "artifact_put_attempts": 0, "artifact_put_successes": 0,
         "artifact_put_input_bytes": 0, "artifact_put_success_bytes": 0,
         "artifact_pin_attempts": 0, "artifact_pin_successes": 0, "artifact_pin_bytes": 0, "artifact_read_attempts": 0,
+        "artifact_pin_scope_duration_ns": None,
         "artifact_read_successes": 0, "artifact_read_bytes": 0,
         "schema_discover_attempts": 0, "schema_discover_results": None,
         "schema_lookup_attempts": 0, "schema_lookup_status_counts": {},
@@ -1003,6 +1038,7 @@ def prepare_e0_context(
         artifact_put_success_bytes=int(counters["artifact_put_success_bytes"]),
         artifact_pin_attempts=int(counters["artifact_pin_attempts"]),
         artifact_pin_successes=int(counters["artifact_pin_successes"]), artifact_pin_bytes=int(counters["artifact_pin_bytes"]),
+        artifact_pin_scope_duration_ns=counters["artifact_pin_scope_duration_ns"],
         artifact_read_attempts=int(counters["artifact_read_attempts"]),
         artifact_read_successes=int(counters["artifact_read_successes"]), artifact_read_bytes=int(counters["artifact_read_bytes"]),
         schema_discover_attempts=int(counters["schema_discover_attempts"]), schema_discover_results=counters["schema_discover_results"],

@@ -596,6 +596,7 @@ class ContextLedger:
         *,
         active_token_budget: int,
         preserve_ids: Iterable[str] = (),
+        on_preserved_overflow: str = "raise",
         search_limit: int = 32,
         receipt_detail: str = "full",
     ) -> dict[str, object]:
@@ -603,7 +604,11 @@ class ContextLedger:
 
         Selection is whole-unit only. If one preserved ID belongs to a tool
         call/result unit, every member of that unit is selected or the call
-        fails closed because the unit cannot fit.
+        fails closed because the unit cannot fit. A higher-level caller with a
+        required-evidence gate may set ``on_preserved_overflow="omit"`` to
+        receive the explicit omission row and let that gate produce its
+        structured rejection receipt. The default retains the original
+        exception behavior.
         """
 
         if not isinstance(active_token_budget, int) or isinstance(active_token_budget, bool) or active_token_budget < 1:
@@ -612,6 +617,8 @@ class ContextLedger:
             raise ContextSelectionError("active_token_budget_exceeds_logical_limit")
         if receipt_detail not in {"full", "summary"}:
             raise ContextSelectionError("invalid_receipt_detail")
+        if on_preserved_overflow not in {"raise", "omit"}:
+            raise ContextSelectionError("invalid_preserved_overflow_policy")
         preserve = tuple(preserve_ids)
         unknown = [item for item in preserve if item not in self._segments]
         if unknown:
@@ -659,14 +666,25 @@ class ContextLedger:
         selected_ids: set[str] = set()
         omitted: dict[str, str] = {}
         selected_tokens = 0
-        for unit_id in ordered_units:
+        for unit_index, unit_id in enumerate(ordered_units):
             if selected_tokens >= active_token_budget:
+                for pending_unit_id in ordered_units[unit_index:]:
+                    if pending_unit_id in mandatory_units:
+                        if on_preserved_overflow == "raise":
+                            raise ContextSelectionError("preserved_unit_exceeds_active_budget")
+                        else:
+                            for pending in self._unit_segments(pending_unit_id):
+                                omitted[pending.segment_id] = "preserved_unit_exceeds_active_budget"
                 break
             members = self._unit_segments(unit_id)
             member_ids = [item.segment_id for item in members]
             unit_tokens = sum(item.token_count for item in members)
             if unit_id in mandatory_units and selected_tokens + unit_tokens > active_token_budget:
-                raise ContextSelectionError("preserved_unit_exceeds_active_budget")
+                if on_preserved_overflow == "raise":
+                    raise ContextSelectionError("preserved_unit_exceeds_active_budget")
+                for member_id in member_ids:
+                    omitted[member_id] = "preserved_unit_exceeds_active_budget"
+                continue
             if selected_tokens + unit_tokens <= active_token_budget:
                 selected_ids.update(member_ids)
                 selected_tokens += unit_tokens

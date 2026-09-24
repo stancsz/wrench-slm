@@ -1,5 +1,11 @@
 # E0 preparation accounting companion review
 
+Historical v1 evaluation for the initial deterministic-counter projection.
+The current canonical accounting schema is v2 and includes
+`artifact_pin_scope_duration_ns`; see the [pin-scope accounting join
+evaluation](pin-scope-accounting-join.md). This record remains as evidence for
+the earlier v1 slice.
+
 Date: 2026-09-24 (America/Edmonton)
 Status: accepted as a bounded component slice; not E0 milestone acceptance.
 
