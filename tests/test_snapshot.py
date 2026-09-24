@@ -171,6 +171,64 @@ def test_windows_parent_relative_handle_walk_reads_exact_bytes(tmp_path):
     assert info.st_size == len(data)
 
 
+def test_windows_resolved_root_through_static_ancestor_symlink(tmp_path):
+    if os.name != "nt":
+        pytest.skip("Windows native handle walk is platform-specific")
+    target_parent = tmp_path / "target"
+    root = target_parent / "project"
+    root.mkdir(parents=True)
+    (root / "source.txt").write_bytes(b"junction target bytes")
+    alias_parent = tmp_path / "alias"
+    try:
+        alias_parent.symlink_to(target_parent, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("directory symlink creation is unavailable")
+
+    configured_root = alias_parent / "project"
+    snapshot = create_snapshot(configured_root, ["source.txt"])
+    result = retrieve_exact(configured_root, snapshot, "source.txt")
+
+    assert result.status is RetrievalStatus.OK
+    assert result.data == b"junction target bytes"
+
+
+def test_windows_root_ancestor_swap_before_handle_walk_fails_closed(tmp_path, monkeypatch):
+    if os.name != "nt":
+        pytest.skip("Windows native handle walk is platform-specific")
+    parent = tmp_path / "original-parent"
+    root = parent / "project"
+    root.mkdir(parents=True)
+    (root / "source.txt").write_bytes(b"same bytes")
+    snapshot = create_snapshot(root, ["source.txt"])
+
+    decoy_parent = tmp_path / "decoy-parent"
+    decoy_root = decoy_parent / "project"
+    decoy_root.mkdir(parents=True)
+    (decoy_root / "source.txt").write_bytes(b"same bytes")
+    saved_parent = tmp_path / "saved-parent"
+    real_read = snapshot_module._windows_read_stable_source
+
+    def swap_before_root_open(path, relative_path):
+        assert path == root.resolve()
+        parent.rename(saved_parent)
+        try:
+            parent.symlink_to(decoy_parent, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            saved_parent.rename(parent)
+            pytest.skip("directory symlink creation is unavailable")
+        try:
+            return real_read(path, relative_path)
+        finally:
+            parent.unlink()
+            saved_parent.rename(parent)
+
+    monkeypatch.setattr(snapshot_module, "_windows_read_stable_source", swap_before_root_open)
+    result = retrieve_exact(root, snapshot, "source.txt")
+
+    assert result.status is RetrievalStatus.UNSAFE
+    assert result.data is None
+
+
 def test_posix_nested_dirfd_walk_and_symlink_rejection(tmp_path, monkeypatch):
     if os.name == "nt":
         pytest.skip("POSIX dirfd walk is platform-specific")

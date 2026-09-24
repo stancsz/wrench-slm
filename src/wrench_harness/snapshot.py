@@ -511,8 +511,10 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
     ntstatus_to_error.restype = wintypes.ULONG
 
     invalid_handle = ctypes.c_void_p(-1).value
+    if not root.is_absolute() or not root.anchor:
+        raise SnapshotAdmissionError("invalid_root")
     root_handle = create_file(
-        str(root), FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_SHARE_READ, None,
+        root.anchor, FILE_READ_ATTRIBUTES | SYNCHRONIZE, FILE_SHARE_READ, None,
         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, None,
     )
     if root_handle == invalid_handle:
@@ -565,6 +567,14 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
         root_attributes = attributes(root_handle)
         if not (root_attributes & FILE_ATTRIBUTE_DIRECTORY):
             raise SnapshotAdmissionError("root_must_be_real_directory")
+        if not root.parts or root.parts[0] != root.anchor:
+            raise SnapshotAdmissionError("invalid_root")
+        # Resolve every root component relative to a retained parent handle.
+        # This prevents a junction or symlink in the resolved root chain from
+        # being followed between path resolution and the final root open.
+        for component in root.parts[1:]:
+            child = open_relative(directory_handles[-1], component, directory=True)
+            directory_handles.append(child)
         components = relative_path.split("/")
         for component in components[:-1]:
             child = open_relative(directory_handles[-1], component, directory=True)
