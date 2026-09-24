@@ -14,7 +14,11 @@ from wrench_harness.opencode_context import (
     check_opencode_preparation_admission,
     prepare_opencode_e0_context,
 )
-from wrench_harness.outcome_receipt import OutcomeReceipt, ReceiptResult, ReceiptStatus
+from wrench_harness.outcome_receipt import (
+    ReceiptResult,
+    ReceiptStatus,
+    build_outcome_receipt,
+)
 from wrench_harness.opencode_session_root import OpenCodeSessionRootError
 from wrench_harness.namespace_registry import (
     NamespaceDescriptor,
@@ -40,17 +44,49 @@ def _admission_fixture():
         serializer_id="fixture-serializer",
         serialized_bytes=2,
     )
-    receipt = ReceiptResult(
-        ReceiptStatus.VALID,
-        OutcomeReceipt(payload_json="{}", sha256="e" * 64),
-    )
+    aggregate_hash = "a" * 64
+    snapshot_hash = "b" * 64
+    receipt = build_outcome_receipt({
+        "schema": "wrench.e0.outcome-receipt.v1",
+        "task_id": "e0-context-preparation",
+        "run_id": aggregate_hash,
+        "snapshot_sha256": snapshot_hash,
+        "context_receipt_sha256": aggregate_hash,
+        "selected_evidence_ids": [],
+        "omitted_evidence_ids": [],
+        "retrieval_misses": [],
+        "actual_route": "none",
+        "attempts": [],
+        "work_calls": [],
+        "verifier": {"identity": None, "result": "not_run", "evidence_ids": []},
+        "outcome": {"status": "unknown", "provenance": "unknown", "evidence_ids": []},
+        "correction_refs": [],
+        "accounting": {
+            "local_model_calls": 0,
+            "frontier_model_calls": 0,
+            "retries": 0,
+            "fallback_calls": 0,
+            "verifier_calls": 0,
+            "tool_calls": 0,
+            "local_tokens": 0,
+            "frontier_tokens": 0,
+            "local_token_counter_id": None,
+            "frontier_token_counter_id": None,
+            "token_count_status": "not_applicable",
+            "local_cost_microunits": 0,
+            "frontier_cost_microunits": 0,
+            "cost_status": "known",
+        },
+        "completeness": "incomplete",
+        "missing_fields": ["outcome"],
+    })
     preparation = PreparationResult(
         status=PreparationStatus.READY,
         route="none",
         prompt="{}",
         prompt_gate=gate,
         outcome_receipt=receipt,
-        aggregate_sha256="a" * 64,
+        aggregate_sha256=aggregate_hash,
         sources=(),
         selected_evidence_ids=(),
         omitted_evidence=(),
@@ -61,7 +97,7 @@ def _admission_fixture():
     join = OpenCodePreparationJoin(
         session_id="ses_fixture123",
         configured_root=Path("C:/fixture"),
-        snapshot_sha256="a" * 64,
+        snapshot_sha256=snapshot_hash,
         root_location_sha256="b" * 64,
         root_identity="posix:1:1",
         preparation=preparation,
@@ -251,7 +287,17 @@ def test_preparation_admission_returns_join_only_when_all_local_gates_are_ready(
         (
             "ses_fixture123",
             {"outcome_receipt": ReceiptResult(ReceiptStatus.INCOMPLETE, None)},
-            OpenCodeAdmissionStatus.RECEIPT_NOT_VALID,
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+        ),
+        (
+            "ses_fixture123",
+            {"outcome_receipt": ReceiptResult(ReceiptStatus.VALID, None)},
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+        ),
+        (
+            "ses_fixture123",
+            {"outcome_receipt": ReceiptResult(ReceiptStatus.INVALID, None)},
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
         ),
         (
             "ses_fixture123",

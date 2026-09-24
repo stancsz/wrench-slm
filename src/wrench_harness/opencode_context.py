@@ -6,6 +6,7 @@ query the OpenCode API, or authorize downstream dispatch.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from enum import Enum
 from os import PathLike
@@ -15,7 +16,12 @@ from typing import Callable, Mapping, Sequence
 from .artifact_store import ArtifactStore
 from .e0_context_pipeline import PreparationResult, PreparationStatus, prepare_e0_context
 from .namespace_registry import NamespaceRegistry
-from .outcome_receipt import ReceiptResult, ReceiptStatus
+from .outcome_receipt import (
+    OutcomeReceipt,
+    ReceiptResult,
+    ReceiptStatus,
+    validate_outcome_receipt,
+)
 from .opencode_session_root import resolve_opencode_session_root
 from .prompt_compiler import PromptGateReceipt, PromptGateStatus
 from .snapshot import SourceSnapshot
@@ -43,7 +49,7 @@ class OpenCodeAdmissionStatus(str, Enum):
     ROUTE_UNEXPECTED = "route_unexpected"
     PROMPT_MISSING = "prompt_missing"
     PROMPT_GATE_NOT_READY = "prompt_gate_not_ready"
-    RECEIPT_NOT_VALID = "receipt_not_valid"
+    PREPARATION_RECEIPT_INVALID = "preparation_receipt_invalid"
     RETRIEVAL_MISSES = "retrieval_misses"
 
 
@@ -107,13 +113,46 @@ def check_opencode_preparation_admission(
         return OpenCodePreparationAdmission(
             OpenCodeAdmissionStatus.PROMPT_GATE_NOT_READY, None, "prompt_gate_not_ready"
         )
+    receipt_result = preparation.outcome_receipt
     if (
-        type(preparation.outcome_receipt) is not ReceiptResult
-        or type(preparation.outcome_receipt.status) is not ReceiptStatus
-        or preparation.outcome_receipt.status is not ReceiptStatus.VALID
+        type(receipt_result) is not ReceiptResult
+        or type(receipt_result.status) is not ReceiptStatus
+        or receipt_result.status is not ReceiptStatus.INCOMPLETE
+        or type(receipt_result.receipt) is not OutcomeReceipt
     ):
         return OpenCodePreparationAdmission(
-            OpenCodeAdmissionStatus.RECEIPT_NOT_VALID, None, "receipt_not_valid"
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+            None,
+            "preparation_receipt_invalid",
+        )
+    validated_receipt = validate_outcome_receipt(receipt_result.receipt)
+    if validated_receipt.status is not ReceiptStatus.INCOMPLETE or validated_receipt.receipt is None:
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+            None,
+            "preparation_receipt_invalid",
+        )
+    try:
+        receipt_payload = json.loads(validated_receipt.receipt.payload_json)
+    except (TypeError, ValueError, RecursionError):
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+            None,
+            "preparation_receipt_invalid",
+        )
+    if (
+        receipt_payload.get("schema") != "wrench.e0.outcome-receipt.v1"
+        or receipt_payload.get("snapshot_sha256") != join.snapshot_sha256
+        or receipt_payload.get("context_receipt_sha256") != preparation.aggregate_sha256
+        or receipt_payload.get("actual_route") != "none"
+        or receipt_payload.get("outcome", {}).get("status") != "unknown"
+        or receipt_payload.get("completeness") != "incomplete"
+        or receipt_payload.get("missing_fields") != ["outcome"]
+    ):
+        return OpenCodePreparationAdmission(
+            OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID,
+            None,
+            "preparation_receipt_identity_mismatch",
         )
     if type(preparation.retrieval_misses) is not tuple or preparation.retrieval_misses:
         return OpenCodePreparationAdmission(
