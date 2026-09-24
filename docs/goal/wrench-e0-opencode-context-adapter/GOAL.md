@@ -65,12 +65,18 @@ dispatch gate, or production route.
   `location.directory`, rejects parent path components, and rejects nonempty
   or null `subpath` values. It never falls back to a cached path, plugin
   location, process directory, or guessed worktree.
-- The validated root remains a configured lexical path and can be passed to
-  the existing snapshot API, which binds snapshot v2 to that configured root.
-  Source selection remains an explicit finite path list.
-- Source selection stays an explicit finite path list. Exact snapshot
-  retrieval and existing deterministic preparation limits remain in force;
-  no adapter-driven recursive discovery is introduced.
+- The validated root remains a configured lexical path and is passed to the
+  snapshot-v3 API. The snapshot hash binds both that configured-root identity
+  and a root-object identity captured through the retained read handle;
+  retrieval compares the identity, and snapshot creation requires it to stay
+  consistent across selected files. Source selection remains an explicit
+  finite path list. No adapter-driven recursive discovery is introduced.
+- Windows source reads walk the resolved root from its volume/share anchor
+  using component-relative directory handles, reject reparse components, and
+  retain handles through each exact read. This closes the reviewed ancestor
+  reparse-point replacement gap. Root IDs may be reused, the snapshot is not
+  an atomic multi-file view, and UNC/network filesystem identity behavior is
+  unqualified. The boundary must not be described as complete for those cases.
 - At the context hook boundary, account for the complete semantic projection
   visible to that hook: session ID, system instructions, messages, agent,
   model identity, the full supplied tools map, and options. Preserve the tools
@@ -219,11 +225,12 @@ withdrawal, and deletion processes before collection.
 
 The follow-on `prepare_opencode_e0_context` seam resolves the supplied session
 record and passes only its configured root to `prepare_e0_context`. It returns
-a join object containing the session ID, root, snapshot hashes, and preparation
-result. Exact retrieval still checks the snapshot's root identity. This helper
-performs no session lookup, provider request, or dispatch. A future OpenCode
-adapter must explicitly pass the `session.get` response's `data` record; the
-resolver does not accept the outer response wrapper. Optional `workspaceID`
-is not part of the current join. Windows ancestor reparse-point handling is
-not qualified as a complete root-chain policy and must be reviewed before
-relying on this boundary for hostile paths.
+a join object containing the session ID, root, snapshot-v3 digest, root
+location, and root-object identity. Exact retrieval checks the captured root
+identity. This helper performs no session lookup, provider request, or
+dispatch. A future OpenCode adapter must explicitly pass the `session.get`
+response's `data` record; the resolver does not accept the outer response
+wrapper. Optional `workspaceID` is not part of the current join. The remaining
+root identity and UNC/network limitations above are recorded in the
+[session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
+and [snapshot root-identity goal](../wrench-e0-snapshot-root-identity/GOAL.md).
