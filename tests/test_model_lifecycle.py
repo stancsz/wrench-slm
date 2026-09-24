@@ -285,6 +285,99 @@ def test_stale_instance_write_rejected_and_pin_refreshes_disk_active(store_root)
         reopened.read_payload(refreshed_pin, "personal")
 
 
+def test_stale_reset_is_rejected_after_another_instance_activates(store_root):
+    first = _new_store(store_root)
+    stale = lifecycle.ModelLifecycle.open(store_root)
+    _candidate(first)
+    first.admit_candidate("personal-1")
+    first.activate_candidate("personal-1")
+    committed = json.loads(first.state_path.read_text(encoding="ascii"))
+
+    with pytest.raises(lifecycle.ModelLifecycleError, match="stale_instance"):
+        stale.reset_personal("stale-reset")
+
+    assert json.loads(first.state_path.read_text(encoding="ascii")) == committed
+    assert first.active_version_id == "personal-1"
+    assert first.state_path.read_bytes() == lifecycle.ModelLifecycle.open(
+        store_root).state_path.read_bytes()
+    assert not (first.versions_dir / "stale-reset").exists()
+
+
+@pytest.mark.parametrize("mutation", ["numeric_false_flags", "duplicate_key"])
+@pytest.mark.parametrize("operation", ["activate", "open"])
+def test_noncanonical_admission_receipt_cannot_activate_or_open(
+        store_root, mutation, operation):
+    store = _new_store(store_root)
+    _candidate(store)
+    store.admit_candidate("personal-1")
+    if operation == "open":
+        store.activate_candidate("personal-1")
+
+    receipt_path = store.admissions_dir / "personal-1.json"
+    receipt_bytes = receipt_path.read_bytes()
+    if mutation == "numeric_false_flags":
+        receipt = json.loads(receipt_bytes.decode("ascii"))
+        receipt["training_eligible"] = 0
+        receipt["production_activation"] = 0
+        receipt_bytes = lifecycle._canonical(receipt)
+    else:
+        receipt_bytes = receipt_bytes.replace(
+            b'"schema":"wrench.model-version-admission.v1"',
+            b'"schema":"wrong","schema":"wrench.model-version-admission.v1"',
+        )
+    receipt_path.write_bytes(receipt_bytes)
+    before = store.state_path.read_bytes()
+
+    if operation == "activate":
+        with pytest.raises(lifecycle.ModelLifecycleError,
+                           match="candidate_not_admitted_for_active_parent"):
+            store.activate_candidate("personal-1")
+        assert store.state_path.read_bytes() == before
+        assert store.active_version_id == "factory"
+    else:
+        recovered = lifecycle.ModelLifecycle.open(store_root)
+        recovered_state = json.loads(recovered.state_path.read_text(encoding="ascii"))
+        original_state = json.loads(before.decode("ascii"))
+        assert recovered.active_version_id == "factory"
+        assert recovered.previous_version_id is None
+        assert recovered_state["generation"] == original_state["generation"] + 1
+        assert recovered_state["active_manifest_sha256"] == original_state["previous_manifest_sha256"]
+    assert receipt_path.read_bytes() == receipt_bytes
+
+
+@pytest.mark.parametrize("when,corruption", [
+    ("admit", "manifest"),
+    ("activate", "manifest"),
+    ("activate", "payload"),
+])
+def test_corrupt_active_parent_blocks_admission_or_activation_without_promotion(
+        store_root, when, corruption):
+    store = _new_store(store_root)
+    _candidate(store)
+    if when == "activate":
+        store.admit_candidate("personal-1")
+
+    parent_manifest_path = store.versions_dir / "factory" / "manifest.json"
+    parent_payload_path = store.versions_dir / "factory" / "foundation.bin"
+    if corruption == "manifest":
+        parent_manifest = json.loads(parent_manifest_path.read_text(encoding="ascii"))
+        parent_manifest["artifacts"]["runtime"]["sha256"] = "a" * 64
+        parent_manifest["artifacts"]["runtime"]["artifact_id"] = "runtime:" + "a" * 64
+        parent_manifest_path.write_bytes(lifecycle._canonical(parent_manifest))
+    else:
+        parent_payload_path.write_bytes(b"corrupted parent payload")
+    before = store.state_path.read_bytes()
+
+    operation = store.admit_candidate if when == "admit" else store.activate_candidate
+    expected_error = "state_manifest_hash_mismatch" if corruption == "manifest" else "payload_corrupt"
+    with pytest.raises(lifecycle.ModelLifecycleError, match=expected_error):
+        operation("personal-1")
+
+    assert store.state_path.read_bytes() == before
+    assert json.loads(before.decode("ascii"))["generation"] == 0
+    assert store.active_version_id == "factory"
+
+
 def test_forged_pin_cannot_read_even_a_known_version(store_root):
     store = _new_store(store_root)
     genuine = store.pin("request-1")

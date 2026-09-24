@@ -98,3 +98,61 @@ No human-only authority was used or granted. Model acquisition/loading,
 training or inference, real task data, integration installation/use, and
 production activation remain separate decisions. Root owns the shared goal
 index and commit. No files were committed by this task.
+
+## Repair follow-up
+
+Date: 2026-09-24 (America/Edmonton)
+Job: `W2-NS-E3-LIFECYCLE-FIX-20260924`
+Nonce: `E3FIX-ROOT-91B2`
+Base HEAD: `cbd819d324bcc571af5116c6a40b3f58519d375d`
+
+The root-authorized repair checked receipts as exact canonical bytes during
+activation and active-candidate verification. This rejects numeric `0` in
+place of JSON `false` and duplicate keys. Inventory still rejects orphaned
+receipt files, while deferring receipt-content validation until the candidate
+is activated or referenced as active. This lets startup recover to the prior
+version when an active candidate receipt is malformed. Admission and activation
+now verify the current active manifest digest and all parent payload hashes
+before candidate compatibility checks.
+
+The stale-reset audit finding did not reproduce against the assigned base:
+`reset_personal` already had `@_serialized_writer` at HEAD. A regression test
+now confirms that a stale store instance cannot reset over another instance's
+activation and that the committed state identities remain unchanged.
+
+Changed file hashes:
+
+- `src/wrench_harness/model_lifecycle.py` SHA-256:
+  `6A5C586981B26646223815BD161FA1191CB2FA0AA75CC8CAE3E2D44407680E56`
+- `tests/test_model_lifecycle.py` SHA-256:
+  `B200F7428368019BEA3BBBAA02CB3AE53A12BED85EFAD140615BEC7F182D154B`
+
+Verification used the existing Python 3.11.16 runtime and pytest cache, with
+synthetic temporary stores only:
+
+```powershell
+$env:PYTHONPATH='C:\wrench-slm-data\cache\wrench-v2-test-deps-20260923\site-packages;src'
+& 'C:\Users\stanc\AppData\Roaming\uv\python\cpython-3.11.16-windows-x86_64-none\python.exe' -m pytest -p no:cacheprovider --basetemp='C:\wrench-slm-data\tmp\W2-NS-E3-SYNTHETIC-VERSION-LIFECYCLE-20260924\impl\pytest-E3FIX2-20260924' tests/test_model_lifecycle.py -q
+```
+
+Result: **26 passed, 1 skipped in 35.08s**. The symlink fixture was skipped
+because the Windows host did not grant link creation. `git diff --check`
+passed. The new regressions cover numeric flags and duplicate keys on
+activation and open, stale reset after activation from another instance, and
+corrupt active-parent manifest/payload rejection before promotion. Open-time
+receipt rejection recovers to factory through the retained prior pointer.
+
+Before verification, storage was `WITHIN_LIMIT`: 1,714,704,683 bytes actual
+plus 1,151,576 bytes reserved, leaving 48,284,143,740 bytes under the limit.
+RAM was 52.8% free and the RTX 5060 Ti had 15,462 MiB free of 16,311 MiB.
+After verification, storage remained within the limit at 1,714,707,890 bytes
+actual plus 1,151,576 reserved; RAM was 52.7% free and VRAM was 15,459 MiB
+free. The E3 fix reservation remains active for root's integration and review.
+
+Independent read-only review returned **PASS**, job
+`E3-LIFECYCLE-FIX-REVIEW-20260924`, nonce `E3FIXREV-91B2`, against the exact
+source and test hashes above. The reviewer confirmed parent verification,
+canonical receipt checks, fallback recovery for a malformed active receipt,
+and the stale-reset regression. No client, endpoint, provider, model, download,
+or real task data was used. Power-loss, volume-loss, and non-cooperating
+filesystem-writer recovery remain unproven.

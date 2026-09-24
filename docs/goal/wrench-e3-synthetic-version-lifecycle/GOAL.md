@@ -72,3 +72,21 @@ authority. The symlink fixture skipped because the Windows host did not permit
 link creation. Review and tests do not establish power-loss or volume-loss
 durability, and filesystem races with non-cooperating writers remain outside
 the evidence.
+
+## Repair follow-up
+
+Root authorized a bounded repair at base HEAD
+`cbd819d324bcc571af5116c6a40b3f58519d375d`. Exact-byte receipt validation now
+rejects wrong JSON flag types and duplicate keys. Startup can recover to a
+verified previous version when an active candidate receipt is malformed, and
+candidate admission and activation verify the current active manifest hash and
+payloads before promotion. The stale-reset review finding did not apply to this
+base because `reset_personal` already used the serialized-writer guard; a new
+regression confirms a stale instance cannot reset over a later activation.
+
+The repaired source and tests passed the focused suite with **26 passed, 1
+skipped** and passed `git diff --check`. Independent review passed on the exact
+source/test hashes; see the [repair evaluation](../../evals/wrench-e3-synthetic-version-lifecycle/implementation.md#repair-follow-up-evaluation)
+and [repair report](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#repair-follow-up).
+The symlink fixture remains skipped on this Windows host. Root retains commit
+and shared-index ownership. Production E3 acceptance remains open.

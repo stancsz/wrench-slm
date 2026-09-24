@@ -320,11 +320,12 @@ class ModelLifecycle:
         """Validate references and compatibility, then persist a bounded receipt."""
         candidate_id = _version_id(version_id)
         state = self._require_state()
+        active = self._verify_state_version(
+            state, state["active"], state["active_manifest_sha256"])
         candidate = self._load_manifest(candidate_id)
         self._verify_manifest_payloads(candidate_id, candidate)
         if candidate.get("kind") != "candidate" or candidate.get("parent_version_id") != state["active"]:
             raise ModelLifecycleError("candidate_parent_or_kind_invalid")
-        active = self._load_manifest(state["active"])
         for layer in (*LAYERS,):
             if candidate["artifacts"][layer] != active["artifacts"][layer]:
                 raise ModelLifecycleError("candidate_compatibility_mismatch")
@@ -346,6 +347,8 @@ class ModelLifecycle:
         """Atomically select a previously admitted candidate for later requests."""
         candidate_id = _version_id(version_id)
         state = self._require_state()
+        active = self._verify_state_version(
+            state, state["active"], state["active_manifest_sha256"])
         candidate = self._load_manifest(candidate_id)
         candidate_hash = _digest(_canonical(candidate))
         self._verify_manifest_payloads(candidate_id, candidate)
@@ -357,15 +360,16 @@ class ModelLifecycle:
             receipt = json.loads(receipt_bytes.decode("ascii"))
         except (ValueError, UnicodeError) as exc:
             raise ModelLifecycleError("admission_record_corrupt") from exc
-        if (receipt != {"schema": ADMISSION_SCHEMA, "version_id": candidate_id,
-                        "manifest_sha256": candidate_hash,
-                        "parent_version_id": state["active"],
-                        "status": "development_admitted",
-                        "training_eligible": False, "production_activation": False}
+        expected_receipt = {"schema": ADMISSION_SCHEMA, "version_id": candidate_id,
+                            "manifest_sha256": candidate_hash,
+                            "parent_version_id": state["active"],
+                            "status": "development_admitted",
+                            "training_eligible": False, "production_activation": False}
+        if (receipt_bytes != _canonical(expected_receipt)
                 or candidate.get("kind") != "candidate"
                 or candidate.get("parent_version_id") != state["active"]):
             raise ModelLifecycleError("candidate_not_admitted_for_active_parent")
-        self._verify_compatibility(candidate, self._load_manifest(state["active"]))
+        self._verify_compatibility(candidate, active)
         self._promote(candidate_id, candidate_hash)
 
     @_serialized_writer
@@ -767,10 +771,11 @@ class ModelLifecycle:
             raise ModelLifecycleError("store_entry_limit_exceeded")
         if total_bytes + add_bytes > MAX_STORE_BYTES:
             raise ModelLifecycleError("store_size_limit_exceeded")
-        self._validate_admissions()
+        self._validate_admission_entries()
         return total_bytes, entries
 
-    def _validate_admissions(self) -> None:
+    def _validate_admission_entries(self) -> None:
+        """Reject orphan receipt files while deferring receipt checks to use."""
         if not self.admissions_dir.exists():
             return
         for path in self.admissions_dir.iterdir():
@@ -778,28 +783,23 @@ class ModelLifecycle:
             try:
                 manifest = self._load_manifest(candidate_id)
             except ModelLifecycleError as exc:
-                raise ModelLifecycleError("admission_record_corrupt") from exc
+                raise ModelLifecycleError("admission_record_orphaned") from exc
             if manifest.get("kind") != "candidate":
                 raise ModelLifecycleError("admission_record_mismatch")
-            try:
-                self._verify_admission_receipt(candidate_id, manifest)
-            except ModelLifecycleError as exc:
-                raise ModelLifecycleError("admission_record_corrupt") from exc
 
     def _verify_admission_receipt(self, candidate_id: str, manifest: dict) -> None:
         """Require a persisted, exact admission receipt before candidate use."""
         path = self.admissions_dir / f"{_version_id(candidate_id)}.json"
         try:
             raw = _read_regular(path, MAX_MANIFEST_BYTES)
-            receipt = json.loads(raw.decode("ascii"))
-        except (ValueError, UnicodeError, ModelLifecycleError) as exc:
+        except ModelLifecycleError as exc:
             raise ModelLifecycleError("candidate_not_admitted") from exc
         expected = {"schema": ADMISSION_SCHEMA, "version_id": candidate_id,
                     "manifest_sha256": _digest(_canonical(manifest)),
                     "parent_version_id": manifest.get("parent_version_id"),
                     "status": "development_admitted", "training_eligible": False,
                     "production_activation": False}
-        if receipt != expected:
+        if raw != _canonical(expected):
             raise ModelLifecycleError("candidate_not_admitted")
 
     def _write_state(self, state: dict) -> None:

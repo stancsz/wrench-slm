@@ -41,3 +41,35 @@ power-loss, volume-loss, or non-cooperating filesystem-writer recovery.
 
 No human-only authority was exercised. The shared goal index and commit are
 root-owned; this task made no commit.
+
+## Repair follow-up evaluation
+
+Date: 2026-09-24 (America/Edmonton)
+Result: **PASS for the bounded synthetic repair**
+Base HEAD: `cbd819d324bcc571af5116c6a40b3f58519d375d`
+Report: [repair follow-up](../../reports/wrench-e3-synthetic-version-lifecycle/implementation.md#repair-follow-up)
+
+The final source SHA-256 is
+`6A5C586981B26646223815BD161FA1191CB2FA0AA75CC8CAE3E2D44407680E56`; the
+test SHA-256 is
+`B200F7428368019BEA3BBBAA02CB3AE53A12BED85EFAD140615BEC7F182D154B`.
+The focused lifecycle suite reported **26 passed, 1 skipped in 35.08s**.
+`git diff --check` passed. The existing symlink case skipped because this
+Windows host denied symlink creation.
+
+Independent read-only review passed under job
+`E3-LIFECYCLE-FIX-REVIEW-20260924`, nonce `E3FIXREV-91B2`, on those exact
+hashes. It confirmed canonical-byte receipt validation rejects numeric
+false flags and duplicate keys; active candidate receipt failure recovers to a
+verified prior version; admission and activation verify the active manifest
+digest and payloads; and a stale reset instance cannot overwrite the state
+after activation. The reset writer lock was already present at the base HEAD;
+the change adds direct regression coverage rather than duplicating the lock.
+
+Storage remained `WITHIN_LIMIT`: post-check actual use was 1,714,707,890 bytes
+with 1,151,576 bytes of active reservations. RAM was 52.7% free and VRAM was
+15,459 MiB free of 16,311 MiB. The fix reservation remains active for root's
+integration and commit. No model, client, endpoint, provider, download, or real
+task data was used. This remains synthetic control-plane evidence; production
+recovery, power-loss durability, runtime compatibility, and model utility are
+not established.
