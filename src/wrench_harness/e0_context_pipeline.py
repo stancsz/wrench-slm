@@ -92,13 +92,18 @@ class PreparationMetrics:
     elapsed_wall_ns: int
     caller_path_count: int | None
     exact_source_retrieval_attempts: int
+    exact_source_retrieval_successes: int
     exact_source_retrieval_status_counts: tuple[tuple[str, int], ...]
     exact_source_returned_bytes: int
+    source_exact_read_total_attempts: int
+    source_exact_read_total_successes: int
+    source_exact_read_total_returned_bytes: int
     structural_index_build_attempts: int
     structural_index_status: str | None
-    structural_index_exact_read_attempts: int | None
-    structural_index_exact_read_successes: int | None
-    structural_index_returned_bytes: int | None
+    structural_index_exact_read_attempts: int
+    structural_index_exact_read_successes: int
+    structural_index_exact_read_status_counts: tuple[tuple[str, int], ...]
+    structural_index_returned_bytes: int
     structural_index_query_attempts: int
     structural_index_query_status: str | None
     structural_index_candidate_count: int
@@ -354,6 +359,8 @@ def _prepare_e0_context_impl(
             status_counts[retrieved.status.value] = status_counts.get(retrieved.status.value, 0) + 1
             if type(retrieved.data) is bytes:
                 _metrics["exact_source_returned_bytes"] = int(_metrics["exact_source_returned_bytes"]) + len(retrieved.data)
+                if retrieved.status is RetrievalStatus.OK:
+                    _metrics["exact_source_retrieval_successes"] = int(_metrics["exact_source_retrieval_successes"]) + 1
             path = retrieved.path or raw_path
             if path in seen:
                 return PreparationResult(PreparationStatus.INVALID_INPUT, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), (), None, "duplicate_normalized_path")
@@ -423,6 +430,10 @@ def _prepare_e0_context_impl(
             indexed = build_snapshot_symbol_index(source_root, snapshot, valid_paths)
             structural_status = indexed.status.value
             _metrics["structural_index_status"] = structural_status
+            _metrics["structural_index_exact_read_attempts"] = indexed.exact_read_attempts
+            _metrics["structural_index_exact_read_successes"] = indexed.exact_read_successes
+            _metrics["structural_index_exact_read_status_counts"] = dict(indexed.exact_read_status_counts)
+            _metrics["structural_index_returned_bytes"] = indexed.exact_read_returned_bytes
             if indexed.status is not StructuralStatus.OK or indexed.index is None:
                 final_status = PreparationStatus.STRUCTURE_FAILED
                 reason = indexed.status.value
@@ -597,8 +608,11 @@ def prepare_e0_context(
     started_ns = time.perf_counter_ns()
     counters: dict[str, object] = {
         "caller_path_count": len(paths) if type(paths) in (tuple, list) else None,
-        "exact_source_retrieval_attempts": 0, "exact_source_retrieval_status_counts": {},
-        "exact_source_returned_bytes": 0, "structural_index_build_attempts": 0,
+        "exact_source_retrieval_attempts": 0, "exact_source_retrieval_successes": 0,
+        "exact_source_retrieval_status_counts": {}, "exact_source_returned_bytes": 0,
+        "structural_index_exact_read_attempts": 0, "structural_index_exact_read_successes": 0,
+        "structural_index_exact_read_status_counts": {}, "structural_index_returned_bytes": 0,
+        "structural_index_build_attempts": 0,
         "structural_index_status": None, "structural_index_query_attempts": 0,
         "structural_index_query_status": None, "structural_index_candidate_count": 0,
         "artifact_put_attempts": 0, "artifact_put_successes": 0,
@@ -626,12 +640,18 @@ def prepare_e0_context(
     result = replace(result, metrics=PreparationMetrics(
         elapsed_wall_ns=elapsed, caller_path_count=counters["caller_path_count"],
         exact_source_retrieval_attempts=int(counters["exact_source_retrieval_attempts"]),
+        exact_source_retrieval_successes=int(counters["exact_source_retrieval_successes"]),
         exact_source_retrieval_status_counts=tuple(sorted(counters["exact_source_retrieval_status_counts"].items())),
         exact_source_returned_bytes=int(counters["exact_source_returned_bytes"]),
+        source_exact_read_total_attempts=int(counters["exact_source_retrieval_attempts"]) + int(counters["structural_index_exact_read_attempts"]),
+        source_exact_read_total_successes=int(counters["exact_source_retrieval_successes"]) + int(counters["structural_index_exact_read_successes"]),
+        source_exact_read_total_returned_bytes=int(counters["exact_source_returned_bytes"]) + int(counters["structural_index_returned_bytes"]),
         structural_index_build_attempts=int(counters["structural_index_build_attempts"]),
         structural_index_status=counters["structural_index_status"],
-        structural_index_exact_read_attempts=None, structural_index_exact_read_successes=None,
-        structural_index_returned_bytes=None,
+        structural_index_exact_read_attempts=int(counters["structural_index_exact_read_attempts"]),
+        structural_index_exact_read_successes=int(counters["structural_index_exact_read_successes"]),
+        structural_index_exact_read_status_counts=tuple(sorted(counters["structural_index_exact_read_status_counts"].items())),
+        structural_index_returned_bytes=int(counters["structural_index_returned_bytes"]),
         structural_index_query_attempts=int(counters["structural_index_query_attempts"]),
         structural_index_query_status=counters["structural_index_query_status"],
         structural_index_candidate_count=int(counters["structural_index_candidate_count"]),
@@ -656,7 +676,7 @@ def prepare_e0_context(
         facade_verifier_call_sites=0, facade_tool_call_sites=0,
         callback_external_activity=None, process_cpu_ns=None, process_rss_bytes=None,
         energy_joules=None, os_cache_bytes=None, request_page_faults=None,
-        unmeasured_dimensions=("structural_index_exact_reads", "callback_external_activity", "process_cpu", "process_rss", "energy", "os_cache", "request_page_faults"),
+        unmeasured_dimensions=("callback_external_activity", "process_cpu", "process_rss", "energy", "os_cache", "request_page_faults"),
     ))
     return result
 

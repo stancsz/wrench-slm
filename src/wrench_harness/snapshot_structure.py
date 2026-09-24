@@ -84,6 +84,10 @@ class SnapshotIndexResult:
     index: SnapshotSymbolIndex | None = None
     path: str | None = None
     reason: str | None = None
+    exact_read_attempts: int = 0
+    exact_read_successes: int = 0
+    exact_read_returned_bytes: int = 0
+    exact_read_status_counts: tuple[tuple[str, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -349,8 +353,24 @@ def build_snapshot_symbol_index(
     paths: Iterable[str | os.PathLike[str]],
 ) -> SnapshotIndexResult:
     """Index only caller-enumerated, exact-read snapshot files; never scans."""
+    exact_read_attempts = 0
+    exact_read_successes = 0
+    exact_read_returned_bytes = 0
+    exact_read_status_counts: dict[str, int] = {}
+
+    def result(
+        status: StructuralStatus,
+        index: SnapshotSymbolIndex | None = None,
+        path: str | None = None,
+        reason: str | None = None,
+    ) -> SnapshotIndexResult:
+        return SnapshotIndexResult(
+            status, index, path, reason, exact_read_attempts, exact_read_successes,
+            exact_read_returned_bytes, tuple(sorted(exact_read_status_counts.items())),
+        )
+
     if isinstance(paths, (str, bytes)):
-        return SnapshotIndexResult(StructuralStatus.INVALID_PATH_SET, reason="paths_must_be_finite_iterable")
+        return result(StructuralStatus.INVALID_PATH_SET, reason="paths_must_be_finite_iterable")
     try:
         iterator = iter(paths)
         selected_paths: list[str | os.PathLike[str]] = []
@@ -360,11 +380,11 @@ def build_snapshot_symbol_index(
             except StopIteration:
                 break
     except (TypeError, RuntimeError) as exc:
-        return SnapshotIndexResult(StructuralStatus.INVALID_PATH_SET, reason=type(exc).__name__)
+        return result(StructuralStatus.INVALID_PATH_SET, reason=type(exc).__name__)
     if not selected_paths:
-        return SnapshotIndexResult(StructuralStatus.INVALID_PATH_SET, reason="empty_path_set")
+        return result(StructuralStatus.INVALID_PATH_SET, reason="empty_path_set")
     if len(selected_paths) > MAX_FILES:
-        return SnapshotIndexResult(StructuralStatus.LIMIT_EXCEEDED, reason="file_count_limit_exceeded")
+        return result(StructuralStatus.LIMIT_EXCEEDED, reason="file_count_limit_exceeded")
 
     retrieved: list[tuple[str, bytes, str]] = []
     seen: set[str] = set()
@@ -377,52 +397,58 @@ def build_snapshot_symbol_index(
         RetrievalStatus.UNSAFE: StructuralStatus.UNSAFE,
     }
     for path in selected_paths:
-        result = retrieve_exact(root, snapshot, path)
-        if result.status in status_map:
-            return SnapshotIndexResult(status_map[result.status], path=result.path)
-        if result.status is not RetrievalStatus.OK or not isinstance(result.data, bytes) or result.path is None:
-            return SnapshotIndexResult(StructuralStatus.UNSAFE, path=result.path)
-        if result.path in seen:
-            return SnapshotIndexResult(StructuralStatus.INVALID_PATH_SET, path=result.path, reason="duplicate_normalized_path")
-        seen.add(result.path)
-        if len(result.data) > MAX_FILE_BYTES:
-            return SnapshotIndexResult(StructuralStatus.LIMIT_EXCEEDED, path=result.path, reason="file_byte_limit_exceeded")
-        total_bytes += len(result.data)
+        exact_read_attempts += 1
+        retrieved_result = retrieve_exact(root, snapshot, path)
+        exact_read_status_counts[retrieved_result.status.value] = exact_read_status_counts.get(retrieved_result.status.value, 0) + 1
+        if type(retrieved_result.data) is bytes:
+            exact_read_returned_bytes += len(retrieved_result.data)
+            if retrieved_result.status is RetrievalStatus.OK:
+                exact_read_successes += 1
+        if retrieved_result.status in status_map:
+            return result(status_map[retrieved_result.status], path=retrieved_result.path)
+        if retrieved_result.status is not RetrievalStatus.OK or not isinstance(retrieved_result.data, bytes) or retrieved_result.path is None:
+            return result(StructuralStatus.UNSAFE, path=retrieved_result.path)
+        if retrieved_result.path in seen:
+            return result(StructuralStatus.INVALID_PATH_SET, path=retrieved_result.path, reason="duplicate_normalized_path")
+        seen.add(retrieved_result.path)
+        if len(retrieved_result.data) > MAX_FILE_BYTES:
+            return result(StructuralStatus.LIMIT_EXCEEDED, path=retrieved_result.path, reason="file_byte_limit_exceeded")
+        total_bytes += len(retrieved_result.data)
         if total_bytes > MAX_AGGREGATE_BYTES:
-            return SnapshotIndexResult(StructuralStatus.LIMIT_EXCEEDED, path=result.path, reason="aggregate_byte_limit_exceeded")
+            return result(StructuralStatus.LIMIT_EXCEEDED, path=retrieved_result.path, reason="aggregate_byte_limit_exceeded")
         try:
-            text = result.data.decode("utf-8", errors="strict")
+            text = retrieved_result.data.decode("utf-8", errors="strict")
         except UnicodeDecodeError:
-            return SnapshotIndexResult(StructuralStatus.NON_TEXT, path=result.path)
-        source_sha256 = hashlib.sha256(result.data).hexdigest()
-        retrieved.append((result.path, result.data, text))
+            return result(StructuralStatus.NON_TEXT, path=retrieved_result.path)
+        source_sha256 = hashlib.sha256(retrieved_result.data).hexdigest()
+        retrieved.append((retrieved_result.path, retrieved_result.data, text))
 
     if not isinstance(snapshot, SourceSnapshot):
-        return SnapshotIndexResult(StructuralStatus.UNKNOWN_SNAPSHOT)
+        return result(StructuralStatus.UNKNOWN_SNAPSHOT)
     retrieved.sort(key=lambda row: row[0])
     try:
         parser_index = build_symbol_index((path, text) for path, _, text in retrieved)
     except (TypeError, ValueError, RecursionError, OverflowError) as exc:
-        return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, reason=type(exc).__name__)
+        return result(StructuralStatus.PARSE_ERROR, reason=type(exc).__name__)
 
     if not isinstance(parser_index.get("files"), list):
-        return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, reason="parser_index_invalid")
+        return result(StructuralStatus.PARSE_ERROR, reason="parser_index_invalid")
     source_hashes = {path: hashlib.sha256(data).hexdigest() for path, data, _ in retrieved}
     files: list[StructuralFile] = []
     count = 0
     for file_row in parser_index["files"]:
         if not isinstance(file_row, dict) or not isinstance(file_row.get("symbols"), list):
-            return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, reason="parser_file_invalid")
+            return result(StructuralStatus.PARSE_ERROR, reason="parser_file_invalid")
         path = file_row.get("path")
         parser = file_row.get("parser")
         language = file_row.get("language")
         source_sha256 = source_hashes.get(path)
         if not all(isinstance(value, str) for value in (path, parser, language, source_sha256)):
-            return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, reason="parser_identity_invalid")
+            return result(StructuralStatus.PARSE_ERROR, reason="parser_identity_invalid")
         symbols: list[StructuralSymbol] = []
         for row in file_row["symbols"]:
             if not isinstance(row, dict):
-                return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, path=path, reason="parser_symbol_invalid")
+                return result(StructuralStatus.PARSE_ERROR, path=path, reason="parser_symbol_invalid")
             try:
                 symbol = StructuralSymbol(
                     name=row["name"], kind=row["kind"], path=path,
@@ -431,11 +457,11 @@ def build_snapshot_symbol_index(
                     parser=parser, language=language,
                 )
             except (KeyError, TypeError) as exc:
-                return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, path=path, reason="parser_symbol_invalid")
+                return result(StructuralStatus.PARSE_ERROR, path=path, reason="parser_symbol_invalid")
             symbols.append(symbol)
             count += 1
             if count > MAX_SYMBOLS:
-                return SnapshotIndexResult(StructuralStatus.SYMBOL_LIMIT_EXCEEDED, path=path)
+                return result(StructuralStatus.SYMBOL_LIMIT_EXCEEDED, path=path)
         files.append(StructuralFile(path, source_sha256, parser, language, tuple(symbols)))
 
     file_tuple = tuple(files)
@@ -443,14 +469,11 @@ def build_snapshot_symbol_index(
     try:
         encoded = _canonical_bytes(payload, MAX_OUTPUT_BYTES)
     except OverflowError:
-        return SnapshotIndexResult(StructuralStatus.OUTPUT_LIMIT_EXCEEDED, reason="index_output_byte_limit_exceeded")
+        return result(StructuralStatus.OUTPUT_LIMIT_EXCEEDED, reason="index_output_byte_limit_exceeded")
     except ValueError as exc:
-        return SnapshotIndexResult(StructuralStatus.PARSE_ERROR, reason=str(exc))
+        return result(StructuralStatus.PARSE_ERROR, reason=str(exc))
     index_hash = hashlib.sha256(encoded).hexdigest()
-    return SnapshotIndexResult(
-        StructuralStatus.OK,
-        SnapshotSymbolIndex(snapshot.snapshot_sha256, file_tuple, count, index_hash, len(encoded)),
-    )
+    return result(StructuralStatus.OK, SnapshotSymbolIndex(snapshot.snapshot_sha256, file_tuple, count, index_hash, len(encoded)))
 
 
 def query_snapshot_symbols(

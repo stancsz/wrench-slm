@@ -26,6 +26,9 @@ def test_indexes_python_and_lexical_declarations_with_source_identity(tmp_path):
 
     assert result.status is StructuralStatus.OK
     assert result.index.symbol_count == 4
+    assert result.exact_read_attempts == result.exact_read_successes == 2
+    assert result.exact_read_returned_bytes == sum((tmp_path / path).stat().st_size for path in ("worker.py", "api.ts"))
+    assert result.exact_read_status_counts == (("ok", 2),)
     files = {file.path: file for file in result.index.files}
     assert files["worker.py"].parser == "python_ast"
     assert files["worker.py"].language == "py"
@@ -88,6 +91,11 @@ def test_retrieval_failures_never_return_partial_index(tmp_path, case, expected)
 
     assert result.status is expected
     assert result.index is None
+    if case == "stale":
+        assert result.exact_read_attempts == 2
+        assert result.exact_read_successes == 1
+        assert result.exact_read_returned_bytes == (tmp_path / "a.py").stat().st_size
+        assert result.exact_read_status_counts == (("changed", 1), ("ok", 1))
 
 
 def test_invalid_utf8_is_reported_without_index(tmp_path):
@@ -138,6 +146,8 @@ def test_symbol_and_output_caps_never_return_partial_index(tmp_path, monkeypatch
     result = build_snapshot_symbol_index(tmp_path, snapshot, ["many.py"])
     assert result.status is StructuralStatus.OUTPUT_LIMIT_EXCEEDED
     assert result.index is None
+    assert result.exact_read_attempts == result.exact_read_successes == 1
+    assert result.exact_read_returned_bytes == (tmp_path / "many.py").stat().st_size
 
 
 @pytest.mark.parametrize("mutation", [

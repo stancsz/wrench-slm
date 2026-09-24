@@ -41,9 +41,10 @@ success bytes increment only after a successful put return. The zero
 model/provider/verifier/tool counters describe direct call sites owned by the
 facade and are not totals for the whole request. Caller supplied
 serializer/tokenizer callbacks may be arbitrary code, and their external
-effects are unmeasured (`callback_external_activity` is null). Exact reads
-performed internally by structural-index construction
-are unobserved and exposed as null rather than being confused with the
-separate admission reads. Process CPU, RSS, energy, OS cache, and
+effects are unmeasured (`callback_external_activity` is null). Admission and
+structural-index exact reads have separate bounded attempts, successes, byte
+totals, and finite retrieval-status counts, with an aggregate source exact
+read total in the preparation metrics. Index results retain counts on
+retrieval, parse, and output failures. Process CPU, RSS, energy, OS cache, and
 request-local page faults are likewise null/unmeasured. This is preparation
 scope only, not complete E0 accounting or an E0 acceptance claim.
