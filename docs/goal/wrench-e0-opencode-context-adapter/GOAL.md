@@ -388,3 +388,13 @@ and [evaluation](../../evals/wrench-e0-opencode-context-adapter/adapter-trace-jo
 This remains synthetic caller-supplied structural evidence. It does not prove
 runtime hook execution, atomic capture, dispatch enforcement, provider or
 tokenizer parity, complete lifecycle accounting, or overall E0 acceptance.
+
+## Follow-up: reconcile the isolated v2.0.15 config schema
+
+The isolated workspace config now follows the custom-provider field names in
+the exact OpenCode `v2.0.15` release-tag docs: singular `provider`, `npm`,
+`options.baseURL`, and `models.current.name`. The preceding config was retained
+with its byte hash in a non-loader backup. Offline JSON parsing and a static
+field allowlist passed; the OpenCode CLI was not run, so runtime loading is
+unverified. No prompt or localhost request was made. See the
+[schema reconciliation report](../../reports/wrench-e0-opencode-context-adapter/localhost-config-schema-reconciliation.md).
