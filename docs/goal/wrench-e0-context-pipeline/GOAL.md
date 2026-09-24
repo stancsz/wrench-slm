@@ -129,3 +129,24 @@ observe a client lifecycle, or veto OpenCode dispatch. A later E0 integration
 must join the route to normalized context and reconciled outcome accounting.
 Focused behavior and independent review are in the [rule-route report](../../reports/wrench-e0-context-pipeline/rule-route.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/rule-route.md).
+
+## Follow-up: partial local lifecycle trace
+
+Status: bounded structural join implemented; task-wide accounting remains open.
+
+`build_partial_lifecycle_trace` joins a READY preparation record, its
+accounting receipt, a self-consistent semantic hook projection, and a valid
+finalized outcome receipt by session, snapshot, context, and accounting
+digests. It emits only bounded references, hashes, projection-input byte
+count, and an explicit unavailable-field inventory. The caller's run ID is
+correlation metadata, not authenticated task identity. The two locally
+measurable dimensions refer to preparation-facade counters and the projection
+function's serialized input; they do not claim that OpenCode emitted or sent
+those exact bytes.
+
+Every input remains caller-supplied and unauthenticated. The envelope does not
+measure dispatch, provider traffic or cost, tool execution, retries, task truth,
+or runtime resource use, and it does not make the outcome receipt a trusted
+measurement. Focused behavior and independent review are in the [partial-trace
+report](../../reports/wrench-e0-context-pipeline/lifecycle-trace.md) and
+[evaluation](../../evals/wrench-e0-context-pipeline/lifecycle-trace.md).
