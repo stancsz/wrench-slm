@@ -13,7 +13,7 @@ import json
 import os
 import time
 from contextlib import contextmanager, nullcontext
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence
@@ -154,6 +154,9 @@ class PreparationResult:
     accounting_receipt: "PreparationAccountingReceipt | None" = None
     selected_source_references: SelectedSourceReferenceReceipt | None = None
     selected_source_reference_unavailable_reasons: tuple[tuple[str, str], ...] = ()
+    # Ephemeral immutable bridge for a local client adapter. Never included in
+    # outcome/accounting receipts or repr output.
+    context_message_json: str | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -946,6 +949,11 @@ def _prepare_e0_context_impl(
                                 tuple(miss_rows), tuple(schema_rows), structural_status, reason,
                                 selected_source_references=selected_source_references,
                                 selected_source_reference_unavailable_reasons=unavailable_reasons,
+                                context_message_json=(
+                                    prompt_result.context_message_json
+                                    if final_status is PreparationStatus.READY
+                                    else None
+                                ),
                             )
 
     # Even a fully stale/missing request gets a reference-only incomplete

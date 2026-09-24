@@ -6,7 +6,7 @@ import hashlib
 import json
 import math
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from itertools import islice
 from types import MappingProxyType
@@ -80,6 +80,9 @@ class PromptGateReceipt:
 class PromptGateResult:
     receipt: PromptGateReceipt
     prompt: str | bytes | None
+    # Ephemeral immutable bridge for client adapters. It is intentionally
+    # excluded from repr/comparison and from every receipt serialization.
+    context_message_json: str | None = field(default=None, repr=False, compare=False)
 
 
 def _read_only_serializer_input(value: object) -> object:
@@ -543,7 +546,14 @@ def compile_prompt(
         context_message_sha256 if status is PromptGateStatus.READY else None,
         context_position if status is PromptGateStatus.READY and context_message is not None else None,
     )
-    return PromptGateResult(receipt, serialized if status is PromptGateStatus.READY else None)
+    context_message_json = None
+    if status is PromptGateStatus.READY and context_message is not None:
+        context_message_json = _bounded_canonical_json(
+            context_message, MAX_CONTEXT_MESSAGE_BYTES
+        ).decode("utf-8")
+    return PromptGateResult(
+        receipt, serialized if status is PromptGateStatus.READY else None, context_message_json
+    )
 
 
 __all__ = [

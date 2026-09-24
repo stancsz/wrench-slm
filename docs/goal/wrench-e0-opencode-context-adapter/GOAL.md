@@ -346,3 +346,27 @@ system text parts, message roles, content arrays, and the shape of Wrench's
 single inserted text message. It does not validate the complete OpenCode
 content-part union or the installed runtime. See the [message-shape report](../../reports/wrench-e0-context-pipeline/opencode-message-shape.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/opencode-message-shape.md).
+
+## Follow-up: materialize compiler-bound context for the hook event
+
+Status: provider-free materialization seam implemented and independently
+reviewed; four focused modules passed 112 tests. The adapter accepts the
+`OpenCodePreparationJoin` from `prepare_opencode_e0_context`, requires a
+matching `event.sessionID` and READY local admission, and inserts the exact
+compiler-produced context message once at the prompt-gate position. The
+compiler carries that bounded canonical message as an ephemeral value through
+`PromptGateResult` and `PreparationResult`; the adapter verifies its digest
+against the gate, preserves the other six event fields and original message
+order, and returns READY only with a verified content-free transition receipt.
+The input event is unchanged. The bridge and returned event are omitted from
+dataclass repr output and are not included in preparation or transition
+receipts.
+
+The independent static review found no materialization defect. It noted that a
+caller still needs to pass the returned transition evidence through the
+existing lifecycle-trace builder; no test yet joins the materialized adapter
+output directly into that envelope. This source-level contract does not prove
+runtime hook registration, callback invocation, dispatch veto, final provider
+serialization/tokenizer parity, or full E0 acceptance. See the
+[implementation report](../../reports/wrench-e0-opencode-context-adapter/prepared-context-adapter.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/prepared-context-adapter.md).
