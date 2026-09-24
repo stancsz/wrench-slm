@@ -315,3 +315,28 @@ def test_preparation_admission_fails_closed(event_session_id, preparation_change
 
     assert result.status is expected
     assert result.join is None
+
+
+@pytest.mark.parametrize(
+    "identity_field",
+    ["snapshot_sha256", "context_receipt_sha256"],
+)
+def test_preparation_admission_rejects_valid_receipt_with_wrong_identity(identity_field):
+    join = _admission_fixture()
+    payload = json.loads(join.preparation.outcome_receipt.receipt.payload_json)
+    payload[identity_field] = "f" * 64
+    wrong_identity_receipt = build_outcome_receipt(payload)
+    assert wrong_identity_receipt.status is ReceiptStatus.INCOMPLETE
+    candidate = replace(
+        join,
+        preparation=replace(
+            join.preparation,
+            outcome_receipt=wrong_identity_receipt,
+        ),
+    )
+
+    result = check_opencode_preparation_admission(join.session_id, candidate)
+
+    assert result.status is OpenCodeAdmissionStatus.PREPARATION_RECEIPT_INVALID
+    assert result.reason == "preparation_receipt_identity_mismatch"
+    assert result.join is None
