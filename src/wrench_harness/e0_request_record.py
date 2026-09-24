@@ -20,6 +20,7 @@ from .outcome_receipt import (
     build_outcome_receipt,
     validate_outcome_receipt,
 )
+from .opencode_context import OpenCodePreparationJoin
 
 
 _POSTRUN_FIELDS = {
@@ -94,8 +95,34 @@ def finalize_preparation_outcome(
     return build_outcome_receipt(payload)
 
 
+def finalize_opencode_preparation_outcome(
+    join: OpenCodePreparationJoin,
+    postrun: object,
+) -> ReceiptResult:
+    """Bind caller-supplied post-run metadata to an OpenCode session join.
+
+    This adds a structural session-ID equality check before delegating to the
+    generic receipt finalizer. It does not authenticate either value or observe
+    OpenCode/provider activity.
+    """
+    if (
+        type(join) is not OpenCodePreparationJoin
+        or type(join.session_id) is not str
+        or not join.session_id
+    ):
+        return _invalid("opencode_join_invalid")
+    if type(postrun) is not dict:
+        return _invalid("postrun_fields_invalid")
+    if postrun.get("session_id") != join.session_id:
+        return _invalid("opencode_session_id_mismatch")
+    return finalize_preparation_outcome(join.preparation, postrun)
+
+
 def _invalid(error: str) -> ReceiptResult:
     return ReceiptResult(ReceiptStatus.INVALID, None, (error,))
 
 
-__all__ = ["finalize_preparation_outcome"]
+__all__ = [
+    "finalize_opencode_preparation_outcome",
+    "finalize_preparation_outcome",
+]

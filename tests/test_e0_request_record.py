@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from wrench_harness.artifact_store import ArtifactStore
 from wrench_harness.e0_context_pipeline import prepare_e0_context
-from wrench_harness.e0_request_record import finalize_preparation_outcome
+from wrench_harness.e0_request_record import (
+    finalize_opencode_preparation_outcome,
+    finalize_preparation_outcome,
+)
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
+from wrench_harness.opencode_context import OpenCodePreparationJoin
 from wrench_harness.outcome_receipt import ReceiptStatus
 from wrench_harness.snapshot import create_snapshot
 
@@ -188,3 +194,43 @@ def test_v2_rejects_prose_in_opaque_identity_fields(tmp_path):
     result = finalize_preparation_outcome(preparation, bad_evidence)
     assert result.status is ReceiptStatus.INVALID
     assert "post_task_evidence_ref_id_invalid" in result.errors
+
+
+def test_opencode_finalizer_binds_postrun_session_to_preparation_join(tmp_path):
+    preparation = _prepare(tmp_path)
+    prep_payload = json.loads(preparation.outcome_receipt.receipt.payload_json)
+    join = OpenCodePreparationJoin(
+        session_id="session-fixture",
+        configured_root=tmp_path / "repo",
+        snapshot_sha256=prep_payload["snapshot_sha256"],
+        root_location_sha256=None,
+        root_identity=None,
+        preparation=preparation,
+    )
+
+    result = finalize_opencode_preparation_outcome(
+        join, _postrun(session_id="session-fixture")
+    )
+
+    assert result.status is ReceiptStatus.VALID
+    assert json.loads(result.receipt.payload_json)["session_id"] == join.session_id
+
+
+@pytest.mark.parametrize("session_id", ["other-session", None])
+def test_opencode_finalizer_rejects_missing_or_mismatched_postrun_session(tmp_path, session_id):
+    preparation = _prepare(tmp_path)
+    join = OpenCodePreparationJoin(
+        session_id="session-fixture",
+        configured_root=tmp_path / "repo",
+        snapshot_sha256="b" * 64,
+        root_location_sha256=None,
+        root_identity=None,
+        preparation=preparation,
+    )
+
+    result = finalize_opencode_preparation_outcome(
+        join, _postrun(session_id=session_id)
+    )
+
+    assert result.status is ReceiptStatus.INVALID
+    assert result.errors == ("opencode_session_id_mismatch",)
