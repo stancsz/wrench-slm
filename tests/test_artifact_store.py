@@ -14,12 +14,14 @@ from wrench_harness.artifact_store import (
 )
 
 
-def _put(store, snapshot, path, data):
+def _put(store, snapshot, path, data, *, disposition="protected", expires_at_unix_seconds=None):
     return store.put(
         snapshot_sha256=hashlib.sha256(snapshot.encode()).hexdigest(),
         source_path=path,
         expected_content_sha256=hashlib.sha256(data).hexdigest(),
         data=data,
+        disposition=disposition,
+        expires_at_unix_seconds=expires_at_unix_seconds,
     )
 
 
@@ -121,16 +123,16 @@ def test_unrecognized_user_entries_fail_closed_and_are_preserved(tmp_path):
 
 def test_request_pins_block_eviction_then_release_and_tombstone(tmp_path):
     store = ArtifactStore(tmp_path / "store")
-    pinned = _put(store, "snapshot", "a", b"pinned")
-    eligible = _put(store, "snapshot", "b", b"eligible")
+    pinned = _put(store, "snapshot", "a", b"pinned", disposition="disposable", expires_at_unix_seconds=10)
+    eligible = _put(store, "snapshot", "b", b"eligible", disposition="disposable", expires_at_unix_seconds=10)
     with store.request() as request:
         assert request.pin(pinned).data == b"pinned"
-        evicted = store.evict(target_bytes=len(b"eligible"))
+        evicted = store.evict(target_bytes=len(b"eligible"), now_unix_seconds=10)
         assert [handle.handle_id for handle in evicted.handles] == [eligible.handle_id]
         assert store.read(pinned).status is ArtifactReadStatus.OK
         assert store.read(eligible).status is ArtifactReadStatus.EVICTED
 
-    second = store.evict(target_bytes=len(b"pinned"))
+    second = store.evict(target_bytes=len(b"pinned"), now_unix_seconds=10)
     assert [handle.handle_id for handle in second.handles] == [pinned.handle_id]
     assert second.object_bytes_reclaimed == len(b"pinned")
     assert store.read(pinned).status is ArtifactReadStatus.EVICTED
@@ -139,9 +141,9 @@ def test_request_pins_block_eviction_then_release_and_tombstone(tmp_path):
 
 def test_eviction_is_deterministic_by_generation_then_handle_id(tmp_path):
     store = ArtifactStore(tmp_path / "store")
-    first = _put(store, "snapshot", "first", b"one")
-    second = _put(store, "snapshot", "second", b"two")
-    result = store.evict(target_bytes=1)
+    first = _put(store, "snapshot", "first", b"one", disposition="disposable", expires_at_unix_seconds=10)
+    second = _put(store, "snapshot", "second", b"two", disposition="disposable", expires_at_unix_seconds=10)
+    result = store.evict(target_bytes=1, now_unix_seconds=10)
     assert result.handles == (first,)
     assert store.read(second).status is ArtifactReadStatus.OK
 

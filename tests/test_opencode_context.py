@@ -204,10 +204,10 @@ def test_real_opencode_preparation_pins_until_caller_request_scope_closes(tmp_pa
         )
         assert join.preparation.status is PreparationStatus.READY
         assert store._pins
-        assert store.evict(target_bytes=1).handles == ()
+        assert store.evict(target_bytes=1, now_unix_seconds=10).handles == ()
 
     assert store._pins == {}
-    assert store.evict(target_bytes=1).handles
+    assert store.evict(target_bytes=1, now_unix_seconds=10).handles == ()
 
 
 def test_invalid_session_fails_before_preparation(tmp_path):

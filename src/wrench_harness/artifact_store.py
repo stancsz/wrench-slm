@@ -28,7 +28,9 @@ MAX_STORE_BYTES = 8 * 1024 * 1024
 MAX_STAGING_FILES = 8
 MAX_STAGING_FILE_BYTES = MAX_MANIFEST_BYTES
 MAX_SOURCE_PATH_CHARS = 1024
-_SCHEMA = "wrench.artifact-store.v1"
+_SCHEMA = "wrench.artifact-store.v2"
+_LEGACY_SCHEMA = "wrench.artifact-store.v1"
+_MAX_UNIX_SECONDS = 253402300799
 _HEX = re.compile(r"^[0-9a-f]{64}$")
 _OBJECT_NAME = re.compile(r"^[0-9a-f]{64}\.blob$")
 _STAGE_NAME = re.compile(r"^stage-[0-9a-f]{32}\.tmp$")
@@ -333,8 +335,22 @@ class ArtifactStore:
             raise ArtifactStoreCorruption("manifest_checksum_invalid") from exc
         if not isinstance(payload, dict) or envelope["sha256"] != checksum:
             raise ArtifactStoreCorruption("manifest_checksum_invalid")
-        if set(payload) != {"schema", "generation", "entries", "evicted"} or payload["schema"] != _SCHEMA:
+        legacy = payload.get("schema") == _LEGACY_SCHEMA
+        expected_payload_keys = {"schema", "generation", "entries", "evicted"}
+        if not legacy:
+            expected_payload_keys.add("retention_schema")
+        if (
+            set(payload) != expected_payload_keys
+            or not isinstance(payload["schema"], str)
+            or payload["schema"] not in {_SCHEMA, _LEGACY_SCHEMA}
+        ):
             raise ArtifactStoreCorruption("manifest_schema_invalid")
+        if not legacy and (
+            not isinstance(payload["retention_schema"], int)
+            or isinstance(payload["retention_schema"], bool)
+            or payload["retention_schema"] != 1
+        ):
+            raise ArtifactStoreCorruption("manifest_retention_schema_invalid")
         generation = payload["generation"]
         entries = payload["entries"]
         evicted = payload["evicted"]
@@ -345,10 +361,13 @@ class ArtifactStore:
         if not isinstance(evicted, list) or len(evicted) > MAX_EVICTED_TOMBSTONES:
             raise ArtifactStoreCorruption("manifest_tombstone_limit_exceeded")
         ids: list[str] = []
+        normalized_entries: list[dict[str, object]] = []
+        legacy_entry_keys = {
+            "handle_id", "snapshot_sha256", "source_path", "content_sha256", "size_bytes", "added_generation"
+        }
+        current_entry_keys = legacy_entry_keys | {"disposition", "expires_at_unix_seconds"}
         for entry in entries:
-            if not isinstance(entry, dict) or set(entry) != {
-                "handle_id", "snapshot_sha256", "source_path", "content_sha256", "size_bytes", "added_generation"
-            }:
+            if not isinstance(entry, dict) or set(entry) != (legacy_entry_keys if legacy else current_entry_keys):
                 raise ArtifactStoreCorruption("manifest_entry_invalid")
             snapshot = entry["snapshot_sha256"]
             digest = entry["content_sha256"]
@@ -373,13 +392,37 @@ class ArtifactStore:
             if not isinstance(added, int) or isinstance(added, bool) or not 0 <= added <= generation:
                 raise ArtifactStoreCorruption("manifest_entry_generation_invalid")
             ids.append(handle_id)
+            normalized = dict(entry)
+            if legacy:
+                normalized["disposition"] = "protected"
+                normalized["expires_at_unix_seconds"] = None
+            else:
+                disposition = entry["disposition"]
+                expiry = entry["expires_at_unix_seconds"]
+                if not isinstance(disposition, str) or disposition not in {"protected", "disposable"}:
+                    raise ArtifactStoreCorruption("manifest_disposition_invalid")
+                if expiry is not None and (
+                    not isinstance(expiry, int)
+                    or isinstance(expiry, bool)
+                    or not 0 <= expiry <= _MAX_UNIX_SECONDS
+                ):
+                    raise ArtifactStoreCorruption("manifest_expiry_invalid")
+                if (disposition == "protected") != (expiry is None):
+                    raise ArtifactStoreCorruption("manifest_retention_pair_invalid")
+            normalized_entries.append(normalized)
         if ids != sorted(ids) or len(ids) != len(set(ids)):
             raise ArtifactStoreCorruption("manifest_entry_order_invalid")
         if any(not isinstance(value, str) or not _HEX.fullmatch(value) for value in evicted):
             raise ArtifactStoreCorruption("manifest_tombstone_invalid")
         if len(evicted) != len(set(evicted)):
             raise ArtifactStoreCorruption("manifest_tombstone_duplicate")
-        return payload
+        return {
+            "schema": _SCHEMA,
+            "retention_schema": 1,
+            "generation": generation,
+            "entries": normalized_entries,
+            "evicted": list(evicted),
+        }
 
     def _validate_references(self, payload: dict[str, object]) -> None:
         for entry in payload["entries"]:
@@ -423,7 +466,10 @@ class ArtifactStore:
             self._atomic_write(self.root / "manifest.json", previous_raw)
             self.recovery_status = "restored_previous_manifest"
         elif current_raw is None and previous_raw is None and not self._objects_on_disk and not self._staging_files():
-            self._payload = {"schema": _SCHEMA, "generation": 0, "entries": [], "evicted": []}
+            self._payload = {
+                "schema": _SCHEMA, "retention_schema": 1,
+                "generation": 0, "entries": [], "evicted": [],
+            }
             self._atomic_write(self.root / "manifest.json", self._encode_manifest(self._payload))
             self.recovery_status = "initialized_empty_store"
         else:
@@ -475,7 +521,15 @@ class ArtifactStore:
         source_path: str,
         expected_content_sha256: str,
         data: bytes,
+        disposition: str = "protected",
+        expires_at_unix_seconds: int | None = None,
     ) -> ArtifactHandle:
+        """Store verified bytes with protected-by-default retention.
+
+        Disposable records require an explicit UTC Unix expiry. Re-putting an
+        existing identity can promote it to protected, but cannot silently
+        replace or shorten its retention metadata.
+        """
         if not isinstance(snapshot_sha256, str) or not _HEX.fullmatch(snapshot_sha256):
             raise ArtifactIdentityError("invalid_snapshot_sha256")
         path = _normalize_source_path(source_path)
@@ -485,6 +539,16 @@ class ArtifactStore:
             raise ArtifactIdentityError("artifact_data_must_be_bytes")
         if len(data) > MAX_OBJECT_BYTES:
             raise ArtifactStoreLimitError("object_size_limit_exceeded")
+        if not isinstance(disposition, str) or disposition not in {"protected", "disposable"}:
+            raise ArtifactIdentityError("invalid_artifact_disposition")
+        if expires_at_unix_seconds is not None and (
+            not isinstance(expires_at_unix_seconds, int)
+            or isinstance(expires_at_unix_seconds, bool)
+            or not 0 <= expires_at_unix_seconds <= _MAX_UNIX_SECONDS
+        ):
+            raise ArtifactIdentityError("invalid_artifact_expiry")
+        if (disposition == "protected") != (expires_at_unix_seconds is None):
+            raise ArtifactIdentityError("artifact_retention_pair_invalid")
         actual_digest = _sha256(data)
         if actual_digest != expected_content_sha256:
             raise ArtifactIdentityError("source_content_hash_mismatch")
@@ -496,6 +560,28 @@ class ArtifactStore:
                 result = self.read(self._entry_handle(existing))
                 if result.status is not ArtifactReadStatus.OK or result.data != data:
                     raise ArtifactStoreCorruption("existing handle failed exact verification")
+                if existing["disposition"] == "disposable" and disposition == "protected":
+                    promoted = dict(existing)
+                    promoted["disposition"] = "protected"
+                    promoted["expires_at_unix_seconds"] = None
+                    candidate = dict(self._payload)
+                    candidate["generation"] = self._payload["generation"] + 1
+                    candidate["entries"] = sorted(
+                        [promoted if row["handle_id"] == handle_id else row for row in current.values()],
+                        key=lambda row: row["handle_id"],
+                    )
+                    self._commit(candidate)
+                    # Do not report a completed promotion while the rollback
+                    # manifest could still restore the old disposable class.
+                    compacted = dict(candidate)
+                    compacted["generation"] = candidate["generation"] + 1
+                    self._commit(compacted)
+                    return self._entry_handle(promoted)
+                if (
+                    existing["disposition"] != disposition
+                    or existing["expires_at_unix_seconds"] != expires_at_unix_seconds
+                ):
+                    raise ArtifactIdentityError("artifact_retention_conflict")
                 return self._entry_handle(existing)
             if len(current) >= MAX_MANIFEST_ENTRIES:
                 raise ArtifactStoreLimitError("manifest_entry_limit_exceeded")
@@ -509,6 +595,8 @@ class ArtifactStore:
                 "content_sha256": actual_digest,
                 "size_bytes": len(data),
                 "added_generation": generation,
+                "disposition": disposition,
+                "expires_at_unix_seconds": expires_at_unix_seconds,
             }
             candidate = dict(self._payload)
             candidate["generation"] = generation
@@ -581,28 +669,59 @@ class ArtifactStore:
     def request(self) -> "ArtifactRequest":
         return ArtifactRequest(self)
 
-    def evict(self, *, target_bytes: int) -> EvictionResult:
+    def evict(self, *, target_bytes: int, now_unix_seconds: int) -> EvictionResult:
+        """Remove only expired, unpinned disposable blobs meeting the target.
+
+        A blob is eligible only when every manifest handle referencing it is
+        itself eligible. If eligible blobs cannot satisfy the requested byte
+        target, the store is left unchanged.
+        """
         if not isinstance(target_bytes, int) or isinstance(target_bytes, bool) or target_bytes < 1:
             raise ValueError("target_bytes must be positive")
+        if (
+            not isinstance(now_unix_seconds, int)
+            or isinstance(now_unix_seconds, bool)
+            or not 0 <= now_unix_seconds <= _MAX_UNIX_SECONDS
+        ):
+            raise ValueError("now_unix_seconds must be a valid UTC epoch second")
         with self._lock:
             entries = self._entry_map()
-            candidates = sorted(
-                (entry for entry in entries.values() if self._pins.get(entry["handle_id"], 0) == 0),
-                key=lambda entry: (entry["added_generation"], entry["handle_id"]),
+            references: dict[str, list[dict[str, object]]] = {}
+            for entry in entries.values():
+                references.setdefault(entry["content_sha256"], []).append(entry)
+            eligible_groups: list[tuple[str, list[dict[str, object]]]] = []
+            for digest, rows in references.items():
+                if digest not in self._objects_on_disk:
+                    continue
+                if not all(
+                    entry["disposition"] == "disposable"
+                    and entry["expires_at_unix_seconds"] <= now_unix_seconds
+                    and self._pins.get(entry["handle_id"], 0) == 0
+                    for entry in rows
+                ):
+                    continue
+                eligible_groups.append((digest, rows))
+            eligible_groups.sort(
+                key=lambda group: (
+                    min(entry["expires_at_unix_seconds"] for entry in group[1]),
+                    min(entry["added_generation"] for entry in group[1]),
+                    min(entry["handle_id"] for entry in group[1]),
+                    group[0],
+                )
             )
             removed: list[dict[str, object]] = []
             remaining = dict(entries)
             reclaimed_hashes: set[str] = set()
             reclaimed = 0
-            for entry in candidates:
-                removed.append(entry)
-                remaining.pop(entry["handle_id"])
-                still_referenced = {row["content_sha256"] for row in remaining.values()}
-                reclaimed_hashes = set(self._objects_on_disk).difference(still_referenced)
-                reclaimed = sum(self._objects_on_disk[digest] for digest in reclaimed_hashes)
+            for digest, group in eligible_groups:
+                removed.extend(sorted(group, key=lambda entry: entry["handle_id"]))
+                for entry in group:
+                    remaining.pop(entry["handle_id"])
+                reclaimed_hashes.add(digest)
+                reclaimed += self._objects_on_disk[digest]
                 if reclaimed >= target_bytes:
                     break
-            if not removed:
+            if not removed or reclaimed < target_bytes:
                 return EvictionResult((), 0)
             tombstones = list(self._payload["evicted"])
             tombstones.extend(row["handle_id"] for row in removed)
@@ -619,7 +738,7 @@ class ArtifactStore:
             compacted["generation"] = candidate["generation"] + 1
             self._commit(compacted)
             still_referenced = {row["content_sha256"] for row in self._payload["entries"]}
-            deleted_hashes = set(self._objects_on_disk).difference(still_referenced)
+            deleted_hashes = reclaimed_hashes.difference(still_referenced)
             deleted_bytes = 0
             for digest in sorted(deleted_hashes):
                 object_path = self.objects / f"{digest}.blob"
