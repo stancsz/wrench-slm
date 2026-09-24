@@ -26,9 +26,9 @@
     },
     "task_routing": [
       {
-        "task_class": "repository cleanup, v1 lessons, v2 architecture and experiment definition, metadata research and bounded offline verification",
+        "task_class": "repository cleanup, v1 lessons, v2 architecture and experiment definition, plus user-directed repository-only staged implementation and bounded offline verification",
         "mode": "AUTO",
-        "boundary": "Reversible local work under current user direction; no model job, spend, publication or production activation"
+        "boundary": "Reversible repository-only work under current user direction; no client install or run, provider/model job, real-data capture or transfer, spend, publication or production activation"
       },
       {
         "task_class": "scope or permission expansion, production promotion, publication, destructive data action or provider spending",
@@ -37,11 +37,11 @@
       }
     ],
     "bounds": {
-      "scope": "Realign Wrench to a Layer 1 hybrid context runtime and frozen Qwen + Wrench-Core LoRA + Continuous LoRA. Preserve v1 evidence, document owner-reported filesystem corruption/data loss without inventing its cause, clean current guidance, define the full v2 experiment, and verify repository consistency. Implementation and training stages are planned; this contract covers the direction/cleanup task.",
+      "scope": "Realign Wrench to a Layer 1 hybrid context runtime and frozen Qwen + Wrench-Core LoRA + Continuous LoRA. Preserve v1 evidence, document owner-reported filesystem corruption/data loss without inventing its cause, clean current guidance, define the full v2 experiment, and verify repository consistency. The original direction/cleanup task is complete. The current user-directed continuation permits reversible repository-only implementation and bounded offline verification for staged v2 goals. It does not authorize client installation or execution, provider/model calls or jobs, real-task capture or transfer, training, spending, publication, or production activation.",
       "permissions": [
         "read repository source/docs and supplied design notes",
         "research public primary-source documentation and model metadata",
-        "make reversible source/documentation/navigation cleanup changes",
+        "make reversible source/documentation/navigation changes and bounded repository-only implementation changes under current user direction",
         "run bounded offline verification and local documentation builds after storage admission"
       ],
       "prohibited_actions": [
@@ -51,15 +51,14 @@
         "access or expose credentials",
         "upload private user data or train on sealed evaluation material",
         "delete user data, another task artifact or sole known-good checkpoint",
-        "train, download model weights or run model inference as part of this direction cleanup",
+        "install or run a client integration, call a provider, collect or transfer real task data, train, download model weights or run model inference without separate explicit authority",
         "weaken authority or evidence gates",
         "claim v2 implemented or useful based on design, synthetic passes or metadata"
       ],
       "data_access": [
-        "repository source and documentation",
-        "approved redacted traces and fixtures",
-        "hash-bound model and package metadata",
-        "client receipts that contain no credentials or unrestricted private data"
+        "repository source, documentation and supplied design notes",
+        "public hash-bound model and package metadata",
+        "Wrench-authored synthetic fixtures admitted for open-development use only"
       ],
       "token_budget": 0,
       "monetary_budget": 0,
