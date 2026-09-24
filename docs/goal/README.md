@@ -3,6 +3,8 @@
 - [E0 deterministic context runtime](wrench-e0-context-runtime/GOAL.md):
   completed first implementation increment for query-ranked, bounded evidence
   assembly; does not claim full E0 completion.
+- [E0 snapshot identity and exact-source retrieval](wrench-e0-snapshot-retrieval/GOAL.md):
+  active bounded source-manifest and stale-source retrieval increment.
 - [Wrench v2 realignment](wrench-v2-realignment/GOAL.md): current direction
   cleanup, v1 lessons and definition of the Layer 1 + continuous-LoRA experiment.
 - [Experiment v2](../northstar/V2_EXPERIMENT.md): planned product implementation

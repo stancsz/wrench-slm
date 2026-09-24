@@ -6,6 +6,15 @@ from .router import CancellationToken, ProposalRouter, RouterConfig
 from .state import load_router_state, save_router_state
 from .tier import TierSelectionError, select_experimental_tier
 from .context import ContextAdmissionError, ContextError, ContextLedger, ContextSegment, ContextSelectionError
+from .snapshot import (
+    RetrievalResult,
+    RetrievalStatus,
+    SnapshotAdmissionError,
+    SourceRecord,
+    SourceSnapshot,
+    create_snapshot,
+    retrieve_exact,
+)
 from .mechanical import mechanical_route
 from .handoff import build_advisor_handoff
 from .worker import WrenchWorker
@@ -17,6 +26,11 @@ __all__ = [
     "ContextLedger",
     "ContextSegment",
     "ContextSelectionError",
+    "RetrievalResult",
+    "RetrievalStatus",
+    "SnapshotAdmissionError",
+    "SourceRecord",
+    "SourceSnapshot",
     "ProposalRouter",
     "RouterConfig",
     "TierSelectionError",
@@ -24,6 +38,8 @@ __all__ = [
     "execute_model_output",
     "execute_proposal",
     "mechanical_route",
+    "create_snapshot",
+    "retrieve_exact",
     "build_advisor_handoff",
     "load_router_state",
     "save_router_state",
