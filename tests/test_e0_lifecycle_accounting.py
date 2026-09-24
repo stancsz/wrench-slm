@@ -10,6 +10,11 @@ from wrench_harness.e0_lifecycle_accounting import (
     build_partial_lifecycle_trace,
 )
 from wrench_harness.e0_request_record import finalize_opencode_preparation_outcome
+from wrench_harness.e0_route_preparation import (
+    RoutePreparationStatus,
+    route_and_prepare_e0_context,
+    verify_route_preparation_accounting_receipt,
+)
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.namespace_registry import NamespaceDescriptor, NamespaceRegistry, OperationDescriptor
 from wrench_harness.opencode_context import prepare_opencode_e0_context
@@ -22,12 +27,16 @@ from wrench_harness.outcome_receipt import ReceiptStatus, build_outcome_receipt
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
-def _prepare(tmp_path):
+def _prepare(tmp_path, *, extra_files=()):
     root = tmp_path / "repo"
     root.mkdir()
     (root / "sample.py").write_text("def target():\n    return 1\n", encoding="utf-8")
+    for relative_path in extra_files:
+        target = root / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("def unrelated():\n    return 'other fixture'\n", encoding="utf-8")
     binding = bind_source_root(root)
-    snapshot = create_snapshot(binding, ["sample.py"])
+    snapshot = create_snapshot(binding, ("sample.py", *extra_files))
     registry = NamespaceRegistry([
         NamespaceDescriptor("files", "File metadata", (
             OperationDescriptor("inspect", "Inspect one path", {
@@ -119,6 +128,32 @@ def _finalized(join, preparation):
     result = finalize_opencode_preparation_outcome(join, _postrun(join.session_id))
     assert result.receipt is not None
     return result.receipt
+
+
+def _route_preparation(tmp_path, join, *, prompt="Read sample.py with a 64 byte limit.", snapshot_paths=("sample.py",)):
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, snapshot_paths)
+    assert snapshot.snapshot_sha256 == join.snapshot_sha256
+    result = route_and_prepare_e0_context(
+        prompt,
+        root_binding=binding,
+        snapshot=snapshot,
+        store=ArtifactStore(tmp_path / "route-preparation-store"),
+        query="target",
+        source_order_start=0,
+        context_token_budget=64,
+        prompt_token_budget=4096,
+        namespace_registry=NamespaceRegistry([]),
+        schema_lookups=(),
+        base_messages=({"role": "system", "content": "Use evidence."},),
+        context_position=1,
+        serializer=lambda messages: json.dumps(list(messages), sort_keys=True, separators=(",", ":")),
+        tokenizer_counter=lambda value: len(value),
+        serializer_id="fixture-json-v1",
+        tokenizer_id="fixture-char-count-v1",
+    )
+    assert result.preparation is not None
+    return replace(join, preparation=result.preparation), result
 
 
 def test_partial_trace_joins_valid_references_without_copying_hook_content(tmp_path):
@@ -215,30 +250,50 @@ def test_partial_trace_rejects_invalid_or_tampered_final_receipt(tmp_path):
     assert rejected.reason == "receipt_join_mismatch"
 
 
-def test_partial_trace_can_join_content_free_rule_route_result(tmp_path):
-    preparation, join = _prepare(tmp_path)
-    binding = bind_source_root(join.configured_root)
-    snapshot = create_snapshot(binding, ["sample.py"])
-    assert snapshot.snapshot_sha256 == join.snapshot_sha256
-    route = run_e0_rule_route(
-        "Read sample.py with a 64 byte limit.",
-        root_binding=binding,
-        snapshot=snapshot,
+def test_partial_trace_joins_route_owned_preparation_receipt(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    assert route_preparation.status is RoutePreparationStatus.JOINED
+    assert route_preparation.route_result.status is RuleRouteStatus.COMPLETED
+    assert route_preparation.preparation is join.preparation
+    assert verify_route_preparation_accounting_receipt(
+        route_preparation.accounting_receipt,
+        route_result=route_preparation.route_result,
+        preparation=join.preparation,
     )
-    assert route.status is RuleRouteStatus.COMPLETED
 
     result = build_partial_lifecycle_trace(
-        join, _projection(), _finalized(join, preparation), rule_route_result=route
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
     )
 
     assert result.status is PartialTraceStatus.READY
     payload = json.loads(result.envelope.payload_json)
     assert payload["rule_route"]["provenance"] == "caller_supplied_component_result_untrusted"
     assert payload["rule_route"]["snapshot_sha256"] == join.snapshot_sha256
-    assert payload["rule_route"]["caller_reported_exact_read_bytes"] == route.exact_read_bytes
+    assert payload["rule_route"]["caller_reported_exact_read_bytes"] == route_preparation.route_result.exact_read_bytes
+    assert payload["route_preparation_accounting_sha256"] == route_preparation.accounting_receipt.accounting_sha256
     assert payload["rule_route"]["observation_included"] is False
     assert "sample.py" not in result.envelope.payload_json
     assert "def target" not in result.envelope.payload_json
+
+
+def test_partial_trace_rejects_standalone_completed_route_result(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+
+    result = build_partial_lifecycle_trace(
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        rule_route_result=route_preparation.route_result,
+    )
+
+    assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
+    assert result.reason == "route_result_invalid_or_snapshot_mismatch"
+    assert result.envelope is None
 
 
 def test_partial_trace_retains_actual_rule_route_abstention(tmp_path):
@@ -262,6 +317,28 @@ def test_partial_trace_retains_actual_rule_route_abstention(tmp_path):
     assert payload["rule_route"]["caller_reported_exact_read_attempts"] == 0
 
 
+def test_partial_trace_retains_stale_snapshot_route_abstention(tmp_path):
+    preparation, join = _prepare(tmp_path)
+    binding = bind_source_root(join.configured_root)
+    snapshot = create_snapshot(binding, ["sample.py"])
+    (join.configured_root / "sample.py").write_text("def target():\n    return 2\n", encoding="utf-8")
+    route = run_e0_rule_route(
+        "Read sample.py with a 64 byte limit.", root_binding=binding, snapshot=snapshot
+    )
+    assert route.status is RuleRouteStatus.ABSTAIN
+    assert route.reason == "snapshot_read_changed"
+
+    result = build_partial_lifecycle_trace(
+        join, _projection(), _finalized(join, preparation), rule_route_result=route
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["rule_route"]["status"] == "abstain"
+    assert payload["rule_route"]["reason"] == "snapshot_read_changed"
+    assert payload["rule_route"]["unknown_evidence"]
+
+
 def test_partial_trace_rejects_route_result_for_different_snapshot(tmp_path):
     preparation, join = _prepare(tmp_path)
     (join.configured_root / "other.py").write_text("other\n", encoding="utf-8")
@@ -279,30 +356,74 @@ def test_partial_trace_rejects_route_result_for_different_snapshot(tmp_path):
     assert result.envelope is None
 
 
-def test_partial_trace_sanitizes_untrusted_route_summary_strings(tmp_path):
-    preparation, join = _prepare(tmp_path)
+def test_partial_trace_rejects_same_snapshot_route_with_mismatched_path_and_content(tmp_path):
+    _, original_join = _prepare(tmp_path, extra_files=("other.py",))
+    join, route_preparation = _route_preparation(
+        tmp_path, original_join, snapshot_paths=("sample.py", "other.py")
+    )
     binding = bind_source_root(join.configured_root)
-    snapshot = create_snapshot(binding, ["sample.py"])
-    route = run_e0_rule_route(
-        "Read sample.py with a 64 byte limit.", root_binding=binding, snapshot=snapshot
+    snapshot = create_snapshot(binding, ("sample.py", "other.py"))
+    mismatched_route = run_e0_rule_route(
+        "Read other.py with a 64 byte limit.",
+        root_binding=binding,
+        snapshot=snapshot,
     )
-    tampered = replace(
-        route,
-        action="SECRET_ACTION",
-        reason="SECRET_REASON",
-        evidence=(replace(route.evidence[0], path="private/customer/project.py", status="SECRET_STATUS"),),
-    )
+    assert mismatched_route.status is RuleRouteStatus.COMPLETED
+    assert mismatched_route.snapshot_sha256 == join.snapshot_sha256
+    assert tuple(row.path for row in mismatched_route.evidence) == ("other.py",)
+    prepared_rows = tuple(row for row in join.preparation.sources if row.status == "ok")
+    assert tuple(row.path for row in prepared_rows) == ("sample.py",)
+    assert mismatched_route.evidence[0].content_sha256 != prepared_rows[0].content_sha256
+    mismatched = replace(route_preparation, route_result=mismatched_route)
 
     result = build_partial_lifecycle_trace(
-        join, _projection(), _finalized(join, preparation), rule_route_result=tampered
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        route_preparation_result=mismatched,
+    )
+
+    assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
+    assert result.reason == "route_preparation_join_invalid"
+    assert result.envelope is None
+
+
+def test_partial_trace_rejects_invalid_or_tampered_route_preparation_receipts(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+    tampered_receipt = replace(
+        route_preparation.accounting_receipt,
+        accounting_sha256="0" * 64,
+    )
+    tampered = replace(route_preparation, accounting_receipt=tampered_receipt)
+
+    result = build_partial_lifecycle_trace(
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        route_preparation_result=tampered,
+    )
+
+    assert result.status is PartialTraceStatus.INVALID_ROUTE_RESULT
+    assert result.reason == "route_preparation_join_invalid"
+    assert result.envelope is None
+
+
+def test_partial_trace_sanitizes_route_owned_preparation_summary(tmp_path):
+    _, original_join = _prepare(tmp_path)
+    join, route_preparation = _route_preparation(tmp_path, original_join)
+
+    result = build_partial_lifecycle_trace(
+        join,
+        _projection(),
+        _finalized(join, join.preparation),
+        route_preparation_result=route_preparation,
     )
 
     assert result.status is PartialTraceStatus.READY
     payload = json.loads(result.envelope.payload_json)
-    assert payload["rule_route"]["action"] == "other"
-    assert payload["rule_route"]["reason"] == "other"
-    assert payload["rule_route"]["evidence"][0]["status"] == "other"
+    assert payload["rule_route"]["provenance"] == "caller_supplied_component_result_untrusted"
     assert payload["rule_route"]["evidence"][0]["path_ref_sha256"]
-    assert all(secret not in result.envelope.payload_json for secret in (
-        "SECRET_ACTION", "SECRET_REASON", "SECRET_STATUS", "private/customer/project.py"
-    ))
+    assert payload["rule_route"]["evidence"][0]["content_sha256"]
+    assert "sample.py" not in result.envelope.payload_json
+    assert "def target" not in result.envelope.payload_json

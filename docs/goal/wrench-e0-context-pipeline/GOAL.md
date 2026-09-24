@@ -276,3 +276,18 @@ prove authenticated route provenance, dispatch enforcement, final request or
 tokenizer parity, complete lifecycle accounting, task truth, or customer
 utility. Overall E0 acceptance remains open. See the [report](../../reports/wrench-e0-context-pipeline/route-preparation-orchestrator.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-orchestrator.md).
+
+## Follow-up: bind route evidence into the partial trace
+
+Status: bounded trace-binding implementation and focused verification complete;
+independent review passed. Overall E0 acceptance remains open.
+
+Completed route evidence is now admitted to the partial lifecycle trace only
+through a successful route-to-preparation receipt, whose exact preparation
+object must also be carried by the session join. The v3 trace records the
+receipt digest; standalone
+completed route results are rejected. This validates cross-record structure
+and content hashes only. Caller provenance, dispatch enforcement, final
+request/tokenizer parity, complete lifecycle accounting, task truth, and E0
+acceptance remain open. See the [report](../../reports/wrench-e0-context-pipeline/route-trace-join.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/route-trace-join.md).

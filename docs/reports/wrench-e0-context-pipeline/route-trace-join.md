@@ -59,3 +59,37 @@ evidence.
 
 See the [evaluation](../../evals/wrench-e0-context-pipeline/route-trace-join.md)
 and [goal](../../goal/wrench-e0-context-pipeline/GOAL.md).
+
+## Follow-up: bind completed route evidence to preparation
+
+Status: bounded trace-binding change verified and independently reviewed.
+
+The partial trace now accepts a completed route only through a successful
+`RoutePreparationResult`. It verifies the route-preparation accounting receipt
+and requires its preparation to equal the preparation carried by the
+OpenCode session join by object identity (both references must point to the
+same in-memory result). The v3 envelope records the route-preparation receipt
+digest. A standalone completed `RuleRouteResult` is rejected; a non-completed
+route may still be represented as an abstention/unknown reference. The trace
+continues to label all records caller supplied and untrusted.
+
+This tightens cross-record consistency for route paths and content hashes. It
+does not authenticate execution, prevent dispatch, establish user intent, or
+close any runtime, tokenizer, accounting, outcome-truth, or utility gate.
+
+Focused verification used Python 3.11.16 and the existing cached pytest
+runtime: `tests/test_e0_lifecycle_accounting.py` passed **14 tests** in 2.92
+seconds. The first run exposed a fixture snapshot mismatch in the new
+same-snapshot path/content case; the fixture was corrected to use the same
+two-file snapshot and the focused rerun passed. No packages were installed.
+Pytest scratch remained under `C:\wrench-slm-data\tmp` and is included in the
+storage inventory. The 10,000,000-byte reservation was released after the run;
+the final storage status was `WITHIN_LIMIT` with 666,150,681 actual bytes and
+103,000 bytes in other active reservations.
+
+Independent read-only review passed with no blocking findings
+(`W2-NS-E0-TRACE-ROUTEPREP-FINAL-REVIEW-20260925`, nonce
+`TRPLINK-FINAL-REV-C91B`). It checked the source, tests, and docs but did not
+run tests. The reviewed source and test SHA-256 values were respectively
+`82895E4179EE039CB9F44542FE8A22F548E1D4061F9EE4FC7710B19D72C2E19B` and
+`7DCC9E8730F0C24F8F017A88724AFAE6A08CD19B24E19A205EE8E5BB93984212`.

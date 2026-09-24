@@ -18,6 +18,11 @@ from .e0_context_pipeline import (
     verify_preparation_accounting_receipt,
 )
 from .e0_rule_route import RuleRouteEvidence, RuleRouteResult, RuleRouteStatus
+from .e0_route_preparation import (
+    RoutePreparationResult,
+    RoutePreparationStatus,
+    verify_route_preparation_accounting_receipt,
+)
 from .opencode_context import OpenCodePreparationJoin
 from .opencode_hook_projection import (
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
@@ -36,7 +41,7 @@ from .outcome_receipt import (
 )
 
 
-ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v2"
+ENVELOPE_SCHEMA = "wrench.e0.partial-lifecycle-trace.v3"
 MAX_ENVELOPE_BYTES = 16 * 1024
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _ROUTE_ACTIONS = frozenset({"read_file", "read_lines", "literal_search"})
@@ -102,6 +107,7 @@ def build_partial_lifecycle_trace(
     finalized_receipt: OutcomeReceipt,
     *,
     rule_route_result: RuleRouteResult | None = None,
+    route_preparation_result: RoutePreparationResult | None = None,
 ) -> PartialTraceResult:
     """Bind a READY hook projection to a valid outcome and preparation join.
 
@@ -191,7 +197,41 @@ def build_partial_lifecycle_trace(
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_session_mismatch")
 
     route_summary = None
-    if rule_route_result is not None:
+    route_preparation_accounting_sha256 = None
+    if rule_route_result is not None and route_preparation_result is not None:
+        return _failure(PartialTraceStatus.INVALID_ROUTE_RESULT, "route_inputs_ambiguous")
+    if route_preparation_result is not None:
+        if (
+            type(route_preparation_result) is not RoutePreparationResult
+            or route_preparation_result.status is not RoutePreparationStatus.JOINED
+            or type(route_preparation_result.route_result) is not RuleRouteResult
+            or type(route_preparation_result.preparation) is not PreparationResult
+            or route_preparation_result.preparation is not preparation
+            or route_preparation_result.accounting_receipt is None
+            or not verify_route_preparation_accounting_receipt(
+                route_preparation_result.accounting_receipt,
+                route_result=route_preparation_result.route_result,
+                preparation=route_preparation_result.preparation,
+            )
+        ):
+            return _failure(
+                PartialTraceStatus.INVALID_ROUTE_RESULT,
+                "route_preparation_join_invalid",
+            )
+        route_summary = _route_summary(
+            route_preparation_result.route_result, join.snapshot_sha256
+        )
+        if route_summary is None:
+            return _failure(
+                PartialTraceStatus.INVALID_ROUTE_RESULT,
+                "route_preparation_snapshot_or_evidence_invalid",
+            )
+        route_preparation_accounting_sha256 = (
+            route_preparation_result.accounting_receipt.accounting_sha256
+        )
+    elif rule_route_result is not None:
+        if rule_route_result.status is RuleRouteStatus.COMPLETED:
+            return _failure(PartialTraceStatus.INVALID_ROUTE_RESULT, "route_result_invalid_or_snapshot_mismatch")
         route_summary = _route_summary(rule_route_result, join.snapshot_sha256)
         if route_summary is None:
             return _failure(PartialTraceStatus.INVALID_ROUTE_RESULT, "route_result_invalid_or_snapshot_mismatch")
@@ -216,6 +256,7 @@ def build_partial_lifecycle_trace(
         "projection_serialized_bytes": projection.serialized_bytes,
         "outcome_receipt_sha256": checked.receipt.sha256,
         "rule_route": route_summary,
+        "route_preparation_accounting_sha256": route_preparation_accounting_sha256,
         "measured_dimensions": [
             "preparation_facade_counters_by_accounting_receipt_reference",
             "locally_serialized_projection_input_bytes",
