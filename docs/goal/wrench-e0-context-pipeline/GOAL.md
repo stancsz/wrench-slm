@@ -445,3 +445,43 @@ and [mock preflight](../../reports/wrench-e0-opencode-context-adapter/mock-runti
 retain the identities and exact runtime boundary. A future mock prompt remains
 gated on validated process-level egress confinement and a separately approved
 single synthetic request. Overall E0 acceptance remains open.
+
+## Follow-up: policy-scoped root inventory
+
+Status: bounded root-to-manifest inventory and snapshot admission are
+implemented; focused synthetic verification is recorded in the accompanying
+evaluation. A caller must provide one or more disjoint directory scopes and
+explicit path-prefix exclusions. The receipt binds their normalized policy,
+normalized root location, retained root-object identity, sorted file paths,
+byte sizes, and SHA-256 values. Only a complete, digest-valid receipt whose
+files still match can be used to create a `SourceSnapshot`. Receipt validation
+also checks that each row belongs to exactly one declared scope and is outside
+all exclusions, even when a caller recomputes the unkeyed receipt digests.
+Scope overlaps and exclusions that cover a scope are rejected; Windows path
+comparisons are case-insensitive. Before snapshot creation, admission
+re-enumerates the same bound root under the same policy and requires the fresh
+complete receipt to equal the supplied receipt. This rejects a rehashed
+manifest that omits an existing in-scope file. The fresh walk and snapshot
+read are not one atomic filesystem transaction, so a concurrent writer can
+still race that interval.
+
+Traversal is capped at 512 observed entries, depth 32, 256 snapshot files,
+256 KiB per source, 4 MiB aggregate source bytes, 64 policy items, 16 KiB
+canonical policy metadata, and 512 KiB receipt output. Excluded boundary
+entries are counted and omitted from the manifest. Traversal/read errors and
+caps are reported and make the receipt incomplete. Correction `FIX1` passed
+17 focused tests; two symbolic-link creation fixtures were skipped because
+this Windows account could not create links. `FIX2` adds fresh same-policy
+re-enumeration before snapshot admission and a rehashed omission regression.
+The FIX2 focused suite passed 19 tests, with two symbolic-link creation
+fixtures skipped. After a report-only summary correction, independent review
+passed; the reviewer did not rerun tests. The walk and later snapshot read
+remain non-atomic against concurrent writers. Static symbolic
+links and reparse points are rejected; file bytes use the existing stable
+root-bound reader. A complete receipt covers only paths reachable within the declared
+scope and exclusion policy at observation time. Path-based directory
+enumeration is not an atomic filesystem view and can race external writers;
+this inventory does not claim whole-repository completeness.
+
+See the [root inventory report](../../reports/wrench-e0-context-pipeline/root-inventory.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/root-inventory.md).
