@@ -171,6 +171,51 @@ def test_exact_snapshot_to_pinned_artifact_context_schema_prompt_receipt(tmp_pat
     assert repeated.accounting_receipt.accounting_sha256 == accounting.accounting_sha256
 
 
+def test_authored_synthetic_composition_keeps_valid_prompt_and_records_non_text_omission(tmp_path):
+    root = tmp_path / "src"
+    root.mkdir()
+    text = b"def target():\n    return 'fixture result'\n"
+    binary = b"\x00\xfffixture bytes"
+    (root / "sample.py").write_bytes(text)
+    (root / "opaque.bin").write_bytes(binary)
+    snapshot = create_snapshot(root, ["sample.py", "opaque.bin"])
+    store = ArtifactStore(tmp_path / "store")
+
+    result = _invoke(
+        root, snapshot, store, paths=("sample.py", "opaque.bin"),
+        required_paths=("sample.py",), preserve_paths=("sample.py",),
+    )
+
+    text_evidence = next(row.evidence_id for row in result.sources if row.path == "sample.py")
+    binary_evidence = next(row.evidence_id for row in result.sources if row.path == "opaque.bin")
+    assert result.status is PreparationStatus.SOURCE_MISSES
+    assert result.route == "none"
+    assert result.prompt is not None and "fixture result" in result.prompt
+    assert result.prompt_gate.status is PromptGateStatus.READY
+    assert text_evidence in result.selected_evidence_ids
+    assert (binary_evidence, "non_text") in result.omitted_evidence
+
+    assert result.outcome_receipt.status is ReceiptStatus.INCOMPLETE
+    payload = json.loads(result.outcome_receipt.receipt.payload_json)
+    assert payload["actual_route"] == "none"
+    assert payload["attempts"] == []
+    assert payload["outcome"]["status"] == "unknown"
+    assert payload["missing_fields"] == ["outcome"]
+    assert binary_evidence in payload["omitted_evidence_ids"]
+    assert text_evidence in payload["selected_evidence_ids"]
+
+    accounting = result.accounting_receipt
+    assert accounting is not None
+    assert verify_preparation_accounting_receipt(accounting, aggregate_sha256=result.aggregate_sha256)
+    assert accounting.preparation_sha256 == result.aggregate_sha256
+    assert result.metrics is not None
+    assert result.metrics.artifact_put_successes == 1
+    assert result.metrics.facade_model_call_sites == 0
+    assert result.metrics.facade_provider_call_sites == 0
+    assert result.metrics.facade_verifier_call_sites == 0
+    assert result.metrics.facade_tool_call_sites == 0
+
+
 def test_stale_source_is_omitted_and_never_written_to_artifact_store(tmp_path):
     root = tmp_path / "src"
     root.mkdir()
