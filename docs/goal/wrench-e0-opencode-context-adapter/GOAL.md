@@ -502,7 +502,7 @@ passed 17 tests. `git diff --check` passed. Independent review job
 `W2-NS-OFFLINE-REQUEST-BOUNDARY-REVIEW3-20260924`, nonce `ORB-REV3-F97A`,
 returned PASS on the frozen source, test, and report hashes. Implementation
 job `W2-NS-OFFLINE-REQUEST-BOUNDARY-20260924` and correction jobs FIX1/FIX2
-remain uncommitted pending parent integration. The detailed
+were integrated in commit `c102cf0`. The detailed
 [offline request-boundary report](../../reports/wrench-e0-opencode-context-adapter/offline-request-boundary.md)
 records the bounds, test paths, and limitations.
 
