@@ -1,6 +1,6 @@
 # OpenCode-compatible SSE encoder contract evaluation
 
-Job: `W2-NS-OPENCODE-SSE-CONTRACT-20260924`, nonce `OSC-1D7B`  
+Job: `W2-NS-OPENCODE-SSE-CONTRACT-20260924`, nonce `OSC-1D7B`
 Reviewed base: `c1342ef`
 
 ## Decision

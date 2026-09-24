@@ -1,8 +1,8 @@
 # OpenCode-compatible Chat Completions SSE encoder contract
 
-Job: `W2-NS-OPENCODE-SSE-CONTRACT-20260924`  
-Nonce: `OSC-1D7B`  
-Repository base: `c1342ef`  
+Job: `W2-NS-OPENCODE-SSE-CONTRACT-20260924`
+Nonce: `OSC-1D7B`
+Repository base: `c1342ef`
 Status: socket-free encoder fixture added; focused server suite passed
 
 ## Outcome
