@@ -546,3 +546,39 @@ source. Persistent store ownership, hook integration, request-lifetime pinning,
 dispatch denial, exact request/tokenizer parity and full E0 acceptance remain
 open. The exact-token gate remains unavailable for the mutable configured
 route.
+
+## Follow-up: enrolled-project snapshot input seam
+
+The Wrench-owned registry now feeds the existing snapshot primitive through
+`prepare_opencode_project_snapshot`. The operation resolves the event and
+record session through the enrolled registry, then requires a finite explicit
+selection of enrolled relative paths. It rejects malformed containers,
+overlong iterables, duplicate or unenrolled paths, exclusions, and invalid
+path forms before calling snapshot creation. The snapshot remains in memory
+and binds to the enrolled `SourceRootBinding`; no artifact store or persistence
+is involved. Registry file and aggregate byte caps are passed into the secure
+source readers. The exact-token gate is explicitly unavailable.
+
+The focused synthetic suite passed **9 tests in 1.229 seconds** using CPython
+3.11.16; the exact interpreter invocation and temporary-root settings are
+recorded in the [enrolled-project snapshot report](../../reports/wrench-e0-opencode-context-adapter/enrolled-project-snapshot.md).
+During the run, RAM free was 54.5–54.6% and VRAM free was at least
+15,588/16,311 MiB. Storage remained `WITHIN_LIMIT` at 1,714,866,044 bytes
+actual with 20,103,000 bytes reserved. `git diff --check` passed with the
+existing LF-to-CRLF advisory for `snapshot.py`.
+
+The broader existing `tests/test_snapshot.py` compatibility check was
+attempted by the orchestrator but did not start: the interpreter does not have
+`pytest` installed (`ModuleNotFoundError`). No tests from that suite ran, and
+no dependencies were installed.
+
+Independent static review by `e0_goal_evidence` returned PASS on the frozen
+source and test hashes. The changed-source and reparse-point fixtures inject
+the underlying read errors with mocks and verify fail-closed propagation;
+they do not exercise those failures through native reads. Existing snapshot
+tests provide separate POSIX symlink and changed-data retrieval coverage.
+This is synthetic input-seam evidence only. It does not establish actual
+project-source use, plugin registration, runtime hook invocation, dispatch
+denial, provider behavior, request-lifetime handling, or tokenizer parity.
+The broader E0/E4 goals remain incomplete and the exact-token gate remains
+closed.

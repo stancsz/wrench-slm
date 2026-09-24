@@ -332,18 +332,28 @@ def _open_posix_directory_chain(path: Path, flags: int) -> tuple[list[int], list
 
 
 def _read_stable_source(
-    root: Path, relative_path: str, expected_root_identity: str | None = None
+    root: Path,
+    relative_path: str,
+    expected_root_identity: str | None = None,
+    max_source_bytes: int = MAX_SOURCE_BYTES,
 ) -> tuple[bytes, os.stat_result, str]:
     if os.name == "nt":
         # Early classification only. The actual read and containment are done
         # again through the pinned native-handle walk below.
         _safe_file(root, relative_path)
-        return _windows_read_stable_source(root, relative_path, expected_root_identity)
-    return _posix_read_stable_source(root, relative_path, expected_root_identity)
+        return _windows_read_stable_source(
+            root, relative_path, expected_root_identity, max_source_bytes
+        )
+    return _posix_read_stable_source(
+        root, relative_path, expected_root_identity, max_source_bytes
+    )
 
 
 def _posix_read_stable_source(
-    root: Path, relative_path: str, expected_root_identity: str | None = None
+    root: Path,
+    relative_path: str,
+    expected_root_identity: str | None = None,
+    max_source_bytes: int = MAX_SOURCE_BYTES,
 ) -> tuple[bytes, os.stat_result, str]:
     """Bounded read using only pinned, parent-relative POSIX directory handles."""
     required_flags = ("O_NOFOLLOW", "O_DIRECTORY", "O_NONBLOCK")
@@ -433,20 +443,24 @@ def _posix_read_stable_source(
             raise SnapshotAdmissionError("reparse_point_forbidden")
         if not stat.S_ISREG(before.st_mode):
             raise SnapshotAdmissionError("non_regular_source")
-        if before.st_size > MAX_SOURCE_BYTES:
+        if before.st_size > max_source_bytes:
             raise SnapshotAdmissionError("source_size_limit_exceeded")
 
         chunks: list[bytes] = []
         total = 0
-        while total <= MAX_SOURCE_BYTES:
-            chunk = os.read(final_fd, min(64 * 1024, MAX_SOURCE_BYTES + 1 - total))
+        while total <= max_source_bytes:
+            chunk = os.read(final_fd, min(64 * 1024, max_source_bytes + 1 - total))
             if not chunk:
                 break
             chunks.append(chunk)
             total += len(chunk)
         data = b"".join(chunks)
         after = os.fstat(final_fd)
-        if _metadata(before) != _metadata(after) or len(data) > MAX_SOURCE_BYTES or len(data) != after.st_size:
+        if _metadata(before) != _metadata(after):
+            raise SnapshotAdmissionError("source_changed_during_read")
+        if len(data) > max_source_bytes:
+            raise SnapshotAdmissionError("source_size_limit_exceeded")
+        if len(data) != after.st_size:
             raise SnapshotAdmissionError("source_changed_during_read")
         verify_binding(file_name, parent_fd, final_fd)
         for component, parent_index, handle_index in reversed(directory_bindings):
@@ -460,7 +474,10 @@ def _posix_read_stable_source(
 
 
 def _windows_read_stable_source(
-    root: Path, relative_path: str | None, expected_root_identity: str | None = None
+    root: Path,
+    relative_path: str | None,
+    expected_root_identity: str | None = None,
+    max_source_bytes: int = MAX_SOURCE_BYTES,
 ) -> tuple[bytes, os.stat_result, str] | str:
     """Read through a Win32 root handle and NtCreateFile parent-relative walk.
 
@@ -635,13 +652,15 @@ def _windows_read_stable_source(
         before = os.fstat(file_object.fileno())
         if not stat.S_ISREG(before.st_mode):
             raise SnapshotAdmissionError("non_regular_source")
-        if before.st_size > MAX_SOURCE_BYTES:
+        if before.st_size > max_source_bytes:
             raise SnapshotAdmissionError("source_size_limit_exceeded")
-        data = file_object.read(MAX_SOURCE_BYTES + 1)
+        data = file_object.read(max_source_bytes + 1)
         after = os.fstat(file_object.fileno())
         if _metadata(before) != _metadata(after):
             raise SnapshotAdmissionError("source_changed_during_read")
-        if len(data) > MAX_SOURCE_BYTES or len(data) != after.st_size:
+        if len(data) > max_source_bytes:
+            raise SnapshotAdmissionError("source_size_limit_exceeded")
+        if len(data) != after.st_size:
             raise SnapshotAdmissionError("source_changed_during_read")
         return data, after, root_identity
     finally:
@@ -731,8 +750,23 @@ def bind_source_root(root: str | os.PathLike[str]) -> SourceRootBinding:
 def create_snapshot(
     root: str | os.PathLike[str] | SourceRootBinding,
     paths: Iterable[str | os.PathLike[str]],
+    *,
+    max_source_bytes: int = MAX_SOURCE_BYTES,
+    max_snapshot_bytes: int = MAX_SNAPSHOT_BYTES,
 ) -> SourceSnapshot:
-    """Hash explicit paths, binding the root before consuming the path iterable."""
+    """Hash explicit paths under global or caller-tightened byte ceilings.
+
+    The defaults preserve the existing 256 KiB per-source and 4 MiB snapshot
+    limits. Lower explicit limits are enforced by the secure readers before
+    and during reads, including the remaining aggregate allowance.
+    """
+    if (
+        type(max_source_bytes) is not int
+        or not 1 <= max_source_bytes <= MAX_SOURCE_BYTES
+        or type(max_snapshot_bytes) is not int
+        or not 1 <= max_snapshot_bytes <= MAX_SNAPSHOT_BYTES
+    ):
+        raise SnapshotAdmissionError("invalid_snapshot_byte_limits")
     if type(root) is SourceRootBinding:
         if not _validate_root_binding(root):
             raise SnapshotAdmissionError("invalid_root_binding")
@@ -765,10 +799,21 @@ def create_snapshot(
     total_bytes = 0
     root_identity = binding.root_identity
     for relative_path in sorted(normalized):
+        remaining_bytes = max_snapshot_bytes - total_bytes
+        if remaining_bytes <= 0:
+            raise SnapshotAdmissionError("snapshot_size_limit_exceeded")
+        read_limit = min(max_source_bytes, remaining_bytes)
         try:
             data, file_stat, observed_root_identity = _read_stable_source(
-                root_path, relative_path, root_identity
+                root_path, relative_path, root_identity, read_limit
             )
+        except SnapshotAdmissionError as exc:
+            if (
+                str(exc) == "source_size_limit_exceeded"
+                and remaining_bytes < max_source_bytes
+            ):
+                raise SnapshotAdmissionError("snapshot_size_limit_exceeded") from exc
+            raise
         except FileNotFoundError as exc:
             raise SnapshotAdmissionError("source_missing") from exc
         except OSError as exc:
@@ -776,7 +821,7 @@ def create_snapshot(
         if root_identity != observed_root_identity:
             raise SnapshotAdmissionError("source_root_changed_during_snapshot")
         total_bytes += len(data)
-        if total_bytes > MAX_SNAPSHOT_BYTES:
+        if total_bytes > max_snapshot_bytes:
             raise SnapshotAdmissionError("snapshot_size_limit_exceeded")
         records.append(SourceRecord(relative_path, len(data), _sha256(data)))
 
