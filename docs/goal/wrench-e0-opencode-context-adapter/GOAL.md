@@ -370,3 +370,21 @@ runtime hook registration, callback invocation, dispatch veto, final provider
 serialization/tokenizer parity, or full E0 acceptance. See the
 [implementation report](../../reports/wrench-e0-opencode-context-adapter/prepared-context-adapter.md)
 and [evaluation](../../evals/wrench-e0-opencode-context-adapter/prepared-context-adapter.md).
+
+## Follow-up: join adapter output to the lifecycle trace
+
+Status: integration fixture added and independently reviewed. The test sends a
+synthetic event through the prepared-context materializer, projects the
+original and returned event, and passes both projections with the same READY
+preparation join and finalized outcome receipt to `build_partial_lifecycle_trace`.
+It verifies the READY envelope transition receipt matches the adapter receipt
+and binds the preparation, session, inserted-message digest, gate position,
+and before/after projection digests. A different-session event is rejected
+by the adapter and cannot produce a READY trace. The focused lifecycle module
+passed 26 tests, and the independent static review passed. See the
+[integration report](../../reports/wrench-e0-opencode-context-adapter/adapter-trace-join.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/adapter-trace-join.md).
+
+This remains synthetic caller-supplied structural evidence. It does not prove
+runtime hook execution, atomic capture, dispatch enforcement, provider or
+tokenizer parity, complete lifecycle accounting, or overall E0 acceptance.

@@ -29,8 +29,13 @@ from wrench_harness.opencode_hook_projection import (
     OpenCodeProjectionResult,
     OpenCodeProjectionStatus,
     project_opencode_context_hook,
+    verify_opencode_prepared_transition_receipt,
 )
 from wrench_harness.outcome_receipt import ReceiptStatus, build_outcome_receipt
+from wrench_harness.opencode_prepared_context import (
+    PreparedContextStatus,
+    materialize_opencode_prepared_context,
+)
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
@@ -134,6 +139,22 @@ def _projection(session_id="ses_partial_trace_fixture"):
         "tools": {},
     }
     return project_opencode_context_hook(event)
+
+
+def _prepared_context_base_event(session_id="ses_partial_trace_fixture"):
+    """Return a synthetic hook event with one base message before gate position 1."""
+    return {
+        "sessionID": session_id,
+        "model": {"id": "model-fixture", "providerID": "provider-fixture"},
+        "system": [],
+        "messages": [{
+            "role": "system",
+            "content": [{"type": "text", "text": "Use evidence."}],
+        }],
+        "options": {},
+        "agent": "build",
+        "tools": {},
+    }
 
 
 def _prepared_transition(preparation, *, insertion_position=None, message_override=None):
@@ -447,6 +468,67 @@ def test_partial_trace_joins_route_owned_preparation_receipt(tmp_path):
     assert expected_message["content"][0]["text"] not in result.envelope.payload_json
     assert "sample.py" not in result.envelope.payload_json
     assert "def target" not in result.envelope.payload_json
+
+
+def test_partial_trace_joins_materialized_prepared_context_event(tmp_path):
+    _, join = _prepare(tmp_path)
+    before_event = _prepared_context_base_event(join.session_id)
+    before = project_opencode_context_hook(before_event)
+    assert before.status is OpenCodeProjectionStatus.READY
+
+    materialized = materialize_opencode_prepared_context(join, before_event)
+    assert materialized.status is PreparedContextStatus.READY
+    assert materialized.event is not None
+    assert materialized.transition_receipt is not None
+    after = project_opencode_context_hook(materialized.event)
+    assert after.status is OpenCodeProjectionStatus.READY
+
+    position = join.preparation.prompt_gate.context_insertion_position
+    expected_message = materialized.event["messages"][position]
+    result = build_partial_lifecycle_trace(
+        join,
+        after,
+        _finalized(join, join.preparation),
+        transition_before_projection_result=before,
+        transition_expected_message=expected_message,
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    assert result.envelope is not None
+    payload = json.loads(result.envelope.payload_json)
+    transition = payload["prepared_context_transition"]
+    adapter_receipt = materialized.transition_receipt
+    assert verify_opencode_prepared_transition_receipt(adapter_receipt)
+    assert transition["receipt_sha256"] == adapter_receipt.receipt_sha256
+    assert transition["preparation_sha256"] == join.preparation.aggregate_sha256
+    assert transition["session_id_ref"] == join.session_id
+    assert transition["inserted_message_sha256"] == join.preparation.prompt_gate.context_message_sha256
+    assert transition["insertion_position"] == position == 1
+    assert transition["before_projection_sha256"] == before.projection.projection_sha256
+    assert transition["after_projection_sha256"] == after.projection.projection_sha256
+    assert expected_message == materialized.event["messages"][position]
+    assert "sample.py" not in result.envelope.payload_json
+    assert "def target" not in result.envelope.payload_json
+
+
+def test_partial_trace_rejects_materialized_event_from_another_session(tmp_path):
+    _, join = _prepare(tmp_path)
+    mismatched_event = _prepared_context_base_event("ses_other_fixture")
+    materialized = materialize_opencode_prepared_context(join, mismatched_event)
+    assert materialized.status is PreparedContextStatus.ADMISSION_REJECTED
+    assert materialized.event is None
+
+    mismatched_projection = project_opencode_context_hook(mismatched_event)
+    assert mismatched_projection.status is OpenCodeProjectionStatus.READY
+    result = build_partial_lifecycle_trace(
+        join,
+        mismatched_projection,
+        _finalized(join, join.preparation),
+    )
+
+    assert result.status is PartialTraceStatus.JOIN_MISMATCH
+    assert result.reason == "projection_session_mismatch"
+    assert result.envelope is None
 
 
 def test_partial_trace_rejects_route_preparation_without_transition(tmp_path):
