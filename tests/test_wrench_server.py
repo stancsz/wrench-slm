@@ -189,6 +189,41 @@ def test_model_local_server_streams_embedded_read_as_openai_sse(tmp_path: Path):
         thread.join(timeout=5)
 
 
+def test_completion_stream_chunks_frame_non_tool_response_as_openai_sse():
+    response = {
+        "id": "chatcmpl-synthetic",
+        "object": "chat.completion",
+        "created": 1_758_700_000,
+        "model": "wrench-test",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "A synthetic answer."},
+                "finish_reason": "stop",
+            }
+        ],
+    }
+
+    events = server_module._completion_stream_chunks(response)
+
+    assert len(events) == 4
+    assert all(event.startswith("data: ") and event.endswith("\n\n") for event in events)
+    assert events[-1] == "data: [DONE]\n\n"
+    chunks = [json.loads(event.removeprefix("data: ").strip()) for event in events[:-1]]
+    assert chunks[0]["choices"][0] == {
+        "index": 0,
+        "delta": {"role": "assistant"},
+        "finish_reason": None,
+    }
+    assert chunks[1]["choices"][0] == {
+        "index": 0,
+        "delta": {"content": "A synthetic answer."},
+        "finish_reason": None,
+    }
+    assert chunks[2]["choices"][0]["delta"] == {}
+    assert chunks[2]["choices"][0]["finish_reason"] == "stop"
+
+
 def test_model_local_server_streams_anthropic_read_tool_use(tmp_path: Path):
     (tmp_path / "README.md").write_text("# Wrench SLM\n", encoding="utf-8")
     server = WrenchHTTPServer(
