@@ -1,6 +1,6 @@
 # Experiment v2: useful Layer 1 decisions that improve from experience
 
-Status: defined; implementation and model trials not started
+Status: defined; bounded E0 components exist, end-to-end E0 acceptance and model trials have not started
 Owner: human product owner
 Planning date: 2026-09-23 (America/Edmonton)
 
@@ -129,6 +129,17 @@ personal metric, and save/load/reset parity. No threshold may be tuned on final
 results. Sample size and acceptable quality margin must be set before a run;
 the owner's illustrative 1-2% suggestion is not an automatic permission to
 accept observed loss.
+
+## Data source decision
+
+Use the ranked [data-source plan](DATA_SOURCES.md) as a proposal, not data
+admission. Today, use authored synthetic fixtures only. A future local-teacher
+proposal run requires approved source snapshots and permitted use; pin its
+actual identity and keep generated labels provisional until scripted checks
+and independent human review. A future matched-task pilot requires participant
+and per-task opt-in plus approved capture, storage, retention, withdrawal, and
+deletion terms. Keep public benchmark splits evaluation-only unless provenance
+is deliberately cleared.
 
 ## Host, storage and authority
 

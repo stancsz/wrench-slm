@@ -70,6 +70,15 @@ details, final success, total latency, cost, installation/reversal, inspectable
 decisions and maintainability. Vendor figures are background, not matched
 Wrench evidence. [Reference review](REFERENCES.md) records what was checked.
 
+## Data sources
+
+The [training and evaluation source plan](DATA_SOURCES.md) proposes consented
+real workflows, reviewed local-teacher candidates and exact fixtures for
+separate purposes. Real workflow capture is not authorized; authored synthetic
+fixtures remain the only admitted corpus. Public benchmarks are limited
+challenge sets, and raw web/code dumps do not stand in for verified Wrench
+outcomes.
+
 ## Durable standards
 
 - All Wrench artifacts and reservations together stay below 50 GB decimal.
@@ -90,8 +99,9 @@ Wrench evidence. [Reference review](REFERENCES.md) records what was checked.
 ## Current work
 
 The [realignment goal](../goal/wrench-v2-realignment/GOAL.md) covers cleanup,
-v1 lessons and the experiment definition. Next comes E0, the deterministic
-context baseline. Full v2 implementation and learning have not been measured.
+v1 lessons and the experiment definition. E0 component slices exist, but the
+deterministic context baseline is not integrated or accepted end to end. Full
+v2 implementation and learning have not been measured.
 The [v1 postmortem](V1_LEARNINGS.md) explains the restart and the
 [reuse inventory](../reports/wrench-v2-realignment/reuse-audit.md) identifies
 surviving implementation and missing capabilities.
