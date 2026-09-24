@@ -50,3 +50,19 @@ At most 16 files, 64 KiB per file, 512 KiB aggregate source bytes, 4 MiB
   and a 32-candidate maximum query limit. Nothing is executed, persisted, or
   sent to a model/provider. Query strings and candidate limits require exact
   built-in `str` and `int` types before any length or comparison operation.
+
+## Selected parser-language matrix follow-up (2026-09-26)
+
+Job `W2-NS-W0-LANG-MATRIX-IMPL-20260926`, nonce `W0-IMPL-AE92`, added a
+seven-row authored regression matrix for the selected-snapshot coverage
+receipt. It checks Python AST valid and syntax-error rows plus TypeScript,
+JavaScript, Go, Rust, and Python-stub suffixes routed through the lexical
+fallback. The latter are explicitly marked unsupported. The worker report and
+independent evaluation document the exact labels, counts, result, and limits:
+[matrix report](../../reports/wrench-e0-snapshot-structural-index/selected-language-matrix-20260926.md),
+[matrix evaluation](../../evals/wrench-e0-snapshot-structural-index/selected-language-matrix-20260926.md).
+
+Focused Python 3.11.16 verification passed: 7 tests. This is selected-path
+dispatch evidence only; it does not establish language support, repository
+coverage, utility, or W0/E0 acceptance. The existing lexical fallback's
+coverage limits remain open.
