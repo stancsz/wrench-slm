@@ -30,8 +30,12 @@ admission permits fixture mechanics, not training or utility claims.
 Ran the eight focused functions in
 `tests/test_e0_synthetic_matched_tasks.py` directly with the repository's
 `.venv` Python 3. The behavioral checks invoked the actual bounded
-`run_e0_rule_route` implementation over temporary copies of each case and
-compared its derived output with the independent frozen answer oracle. The
+`run_e0_rule_route` implementation over temporary copies of each case under
+`C:\\wrench-slm-data\\tmp\\W2-NS-LOCAL-MECHANICS-REPLAY-20260924` and compared
+its derived output with the independent frozen answer oracle. An earlier
+exploratory invocation used Python's default system temp directory; its
+temporary directories were removed automatically before this approved-root
+replay. No test artifacts remain in that external temp location. The
 suite also checked fixture identity/admission, paired boundaries, and that
 missing, stale, and ambiguous evidence abstain. All eight functions passed.
 
@@ -71,7 +75,7 @@ The metadata-only Qwen candidate pins revision
 `2fc06364715b967f1860aea9cf38778875588b17` and describes a 1,769,980,465-byte
 repository snapshot, but this is not a local download or verified shard
 inventory. The RTX 5060 Ti had 15,569 MiB free of 16,311 MiB and system RAM had
-about 17.1 GiB free of 31.9 GiB. Hardware headroom does not remedy the absent
+about 16.9 GiB free of 31.9 GiB. Hardware headroom does not remedy the absent
 model/runtime identity.
 
 The OpenCode profile targets `http://127.0.0.1:4000/v1`, but the latest
