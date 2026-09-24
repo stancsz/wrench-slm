@@ -86,8 +86,9 @@ Scoped `git diff --check` passed for the three delivered paths.
 ## Limits and follow-up
 
 The manifest is an in-memory value, not a durable handle registry or a
-persistent artifact store. A snapshot hash is content/path identity and does
-not identify a particular root directory. On Windows, after the initial
+persistent artifact store. The v2 snapshot hash includes the normalized
+configured root-path identity, not a physical directory identity or
+authorization proof. On Windows, after the initial
 caller-supplied root path is opened, relative traversal uses pinned directory
 handles rather than re-resolving child paths; write/delete sharing is denied
 for the duration of the read. The initial root path and any reparse points in
@@ -106,7 +107,8 @@ SHA-256 checks reject detected mutation and never return bytes that fail the
 admitted hash. POSIX pytest fixtures have now run in WSL using cached
 dependencies, with two Windows-specific skips. Neither implementation provides
 power-loss durability. The bounded artifact store and artifact roundtrip are
-implemented in separate accepted slices. Root binding/discovery, production
-retention and recovery, and request-lifetime pinning remain open E0 work.
+implemented in separate accepted slices. Configured-root binding is recorded
+in a separate v2 slice. Automatic root discovery, production retention and
+recovery, and request-lifetime pinning remain open E0 work.
 Independent review accepted this bounded increment; POSIX pytest follow-up is
 recorded in `docs/evals/wrench-e0-snapshot-retrieval/review.md`.

@@ -98,4 +98,6 @@ that proves integrity, not measurement authenticity or callback completeness.
   provider call, or downstream task was exercised. This does not close E0's
   complete lifecycle accounting, authority, or client integration gates.
 - **Review record:** [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md)
-- **Next:** continue with source-root binding and the OpenCode adapter contract.
+- **Next:** define the uninstalled OpenCode adapter contract over the
+  root-bound snapshot; the context hook still does not establish dispatch veto,
+  full request projection, or runtime-matched tokenization.

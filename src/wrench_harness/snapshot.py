@@ -21,7 +21,8 @@ MAX_SNAPSHOT_FILES = 256
 MAX_SOURCE_BYTES = 256 * 1024
 MAX_SNAPSHOT_BYTES = 4 * 1024 * 1024
 MAX_SOURCE_PATH_CHARS = 1_024
-_SCHEMA = "wrench.source-snapshot.v1"
+_SCHEMA = "wrench.source-snapshot.v2"
+_ROOT_LOCATION_SCHEMA = "wrench.source-root-location.v1"
 _REPARSE_POINT = 0x400
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
@@ -51,6 +52,7 @@ class SourceSnapshot:
     schema: str
     sources: tuple[SourceRecord, ...]
     snapshot_sha256: str
+    root_location_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -124,13 +126,19 @@ def _safe_file(root: Path, relative_path: str) -> Path:
     return current
 
 
-def _canonical_snapshot_payload(sources: tuple[SourceRecord, ...]) -> bytes:
+def _canonical_snapshot_payload(
+    sources: tuple[SourceRecord, ...], root_location_sha256: str
+) -> bytes:
     rows = [
         {"path": item.path, "size_bytes": item.size_bytes, "sha256": item.sha256}
         for item in sources
     ]
     return json.dumps(
-        {"schema": _SCHEMA, "sources": rows},
+        {
+            "schema": _SCHEMA,
+            "root_location_sha256": root_location_sha256,
+            "sources": rows,
+        },
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -142,6 +150,11 @@ def _validate_snapshot(snapshot: object) -> bool:
     if not isinstance(snapshot, SourceSnapshot) or snapshot.schema != _SCHEMA:
         return False
     if not isinstance(snapshot.snapshot_sha256, str) or not _SHA256_RE.fullmatch(snapshot.snapshot_sha256):
+        return False
+    if (
+        not isinstance(snapshot.root_location_sha256, str)
+        or not _SHA256_RE.fullmatch(snapshot.root_location_sha256)
+    ):
         return False
     sources = snapshot.sources
     if not isinstance(sources, tuple) or not 1 <= len(sources) <= MAX_SNAPSHOT_FILES:
@@ -173,7 +186,10 @@ def _validate_snapshot(snapshot: object) -> bool:
     if len(set(duplicate_keys)) != len(paths) or paths != sorted(paths):
         return False
     try:
-        return _sha256(_canonical_snapshot_payload(sources)) == snapshot.snapshot_sha256
+        return (
+            _sha256(_canonical_snapshot_payload(sources, snapshot.root_location_sha256))
+            == snapshot.snapshot_sha256
+        )
     except (TypeError, ValueError, OverflowError):
         return False
 
@@ -187,6 +203,45 @@ def _metadata(stat_result: os.stat_result) -> tuple[int, int, int, int, int, int
         getattr(stat_result, "st_ctime_ns", int(stat_result.st_ctime * 1_000_000_000)),
         getattr(stat_result, "st_file_attributes", 0),
     )
+
+
+def _configured_root_path(root: str | os.PathLike[str]) -> Path:
+    """Return an absolute, lexical path identity independent of root existence."""
+    try:
+        return Path(root).absolute()
+    except (OSError, TypeError, ValueError) as exc:
+        raise SnapshotAdmissionError("invalid_root") from exc
+
+
+def _prepare_root_path(root_path: Path) -> Path:
+    """Resolve a usable read root and reject an unsafe Windows root."""
+    if os.name == "nt":
+        try:
+            root_stat = root_path.lstat()
+        except FileNotFoundError:
+            raise
+        except OSError as exc:
+            raise SnapshotAdmissionError("invalid_root") from exc
+        if (
+            stat.S_ISLNK(root_stat.st_mode)
+            or _has_reparse_attribute(root_stat)
+            or not stat.S_ISDIR(root_stat.st_mode)
+        ):
+            raise SnapshotAdmissionError("root_must_be_real_directory")
+        try:
+            root_path = root_path.resolve(strict=True)
+        except OSError as exc:
+            raise SnapshotAdmissionError("invalid_root") from exc
+    return root_path
+
+
+def _root_location_sha256(root_path: Path) -> str:
+    """Hash the normalized configured path, not a physical-directory identity."""
+    value = os.path.normpath(os.fspath(root_path))
+    if os.name == "nt":
+        value = os.path.normcase(value)
+    payload = _ROOT_LOCATION_SCHEMA.encode("ascii") + b"\0" + os.fsencode(value)
+    return _sha256(payload)
 
 
 def _open_posix_relative(name: str, flags: int, parent_fd: int) -> int:
@@ -505,22 +560,12 @@ def _windows_read_stable_source(root: Path, relative_path: str) -> tuple[bytes, 
 
 def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathLike[str]]) -> SourceSnapshot:
     """Hash an explicit finite path list under ``root`` without directory scans."""
+    configured_root_path = _configured_root_path(root)
     try:
-        root_path = Path(root).absolute()
-    except (OSError, TypeError, ValueError) as exc:
+        root_path = _prepare_root_path(configured_root_path)
+    except FileNotFoundError as exc:
         raise SnapshotAdmissionError("invalid_root") from exc
-    if os.name == "nt":
-        try:
-            root_stat = root_path.lstat()
-            root_mode = root_stat.st_mode
-        except OSError as exc:
-            raise SnapshotAdmissionError("invalid_root") from exc
-        if stat.S_ISLNK(root_mode) or _has_reparse_attribute(root_stat) or not stat.S_ISDIR(root_mode):
-            raise SnapshotAdmissionError("root_must_be_real_directory")
-        try:
-            root_path = root_path.resolve(strict=True)
-        except OSError as exc:
-            raise SnapshotAdmissionError("invalid_root") from exc
+    root_location_sha256 = _root_location_sha256(configured_root_path)
 
     if isinstance(paths, (str, bytes, os.PathLike)):
         raise SnapshotAdmissionError("paths_must_be_finite_iterable")
@@ -552,7 +597,12 @@ def create_snapshot(root: str | os.PathLike[str], paths: Iterable[str | os.PathL
         records.append(SourceRecord(relative_path, len(data), _sha256(data)))
 
     sources = tuple(records)
-    return SourceSnapshot(_SCHEMA, sources, _sha256(_canonical_snapshot_payload(sources)))
+    return SourceSnapshot(
+        _SCHEMA,
+        sources,
+        _sha256(_canonical_snapshot_payload(sources, root_location_sha256)),
+        root_location_sha256,
+    )
 
 
 def retrieve_exact(
@@ -569,13 +619,10 @@ def retrieve_exact(
     if record is None:
         return RetrievalResult(RetrievalStatus.UNKNOWN_SOURCE, normalized)
     try:
-        root_path = Path(root).absolute()
-        if os.name == "nt":
-            root_stat = root_path.lstat()
-            root_mode = root_stat.st_mode
-            if stat.S_ISLNK(root_mode) or _has_reparse_attribute(root_stat) or not stat.S_ISDIR(root_mode):
-                return RetrievalResult(RetrievalStatus.UNSAFE, normalized)
-            root_path = root_path.resolve(strict=True)
+        configured_root_path = _configured_root_path(root)
+        if _root_location_sha256(configured_root_path) != snapshot.root_location_sha256:
+            return RetrievalResult(RetrievalStatus.UNKNOWN_SNAPSHOT)
+        root_path = _prepare_root_path(configured_root_path)
         data, _ = _read_stable_source(root_path, normalized)
     except FileNotFoundError:
         return RetrievalResult(RetrievalStatus.MISSING, normalized)

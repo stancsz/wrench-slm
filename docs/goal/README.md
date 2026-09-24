@@ -25,7 +25,10 @@
   assembly; does not claim full E0 completion.
 - [E0 snapshot identity and exact-source retrieval](wrench-e0-snapshot-retrieval/GOAL.md):
   accepted bounded source-manifest and stale-source retrieval increment;
-  POSIX-host pytest follow-up remains pending.
+  POSIX pytest follow-up is complete.
+- [E0 configured-root-bound snapshot identity](wrench-e0-snapshot-root-binding/GOAL.md):
+  accepted v2 snapshot hash binding to the normalized configured root path;
+  it is not physical-directory identity or authorization.
 - [E0 bounded artifact store](wrench-e0-artifact-store/GOAL.md):
   accepted standalone content-addressed persistence with a caller-owned
   preparation facade now using it; production request lifecycle integration

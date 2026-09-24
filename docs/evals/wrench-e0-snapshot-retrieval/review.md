@@ -63,8 +63,10 @@ were accounted for.
 
 - Source selection is explicit and finite. There is no recursive discovery,
   persistent source copy, index, cache, model, or provider integration.
-- The manifest and snapshot hash are in-memory content/path identity. They do
-  not bind a durable root identity or survive restart as a registered handle.
+- The v2 manifest and snapshot hash bind content/path identity to the
+  normalized configured root path. They do not identify a physical directory,
+  persist a durable root registration, or survive restart as a registered
+  handle.
 - Windows traversal pins the caller-selected root and each child handle, opens
   reparse points without following them, and denies write/delete sharing during
   the bounded read. Initial root resolution and filesystem sharing semantics
@@ -73,8 +75,8 @@ were accounted for.
   `O_DIRECTORY`, and `O_NOFOLLOW` for root and child components. It uses
   nonblocking final opens and post-read binding/hash checks. POSIX does not
   prevent writes through preexisting descriptors, so detected mutation fails
-  closed and hash mismatch never returns bytes. POSIX pytest fixtures remain
-  verified by the WSL POSIX pytest run above.
+  closed and hash mismatch never returns bytes. POSIX pytest fixtures were
+  verified by the WSL run above.
 - No power-loss durability, artifact retention, root discovery, request-lifetime
   pinning, namespace discovery, exact serialized-prompt accounting, or outcome
   receipts are implemented in this increment.
@@ -82,7 +84,8 @@ were accounted for.
 ## Remaining limits
 
 The manifest is an in-memory value, not a durable handle registry or a
-persistent artifact store. It is not bound to a particular root directory.
+persistent artifact store. Its v2 digest binds the normalized lexical
+configured root path, but does not identify a physical directory.
 Runtime-matched prompt/tokenizer identity, complete lifecycle accounting,
 and end-to-end authority evidence remain open E0 work. Matched-task utility
 across the three clients is an E4 gate. Keep E1-E4 and production claims open

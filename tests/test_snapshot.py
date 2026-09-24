@@ -38,6 +38,53 @@ def test_exact_round_trip_and_snapshot_order_independent(tmp_path):
     assert result.data == b"original a"
 
 
+def test_snapshot_is_bound_to_its_normalized_configured_root(tmp_path):
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    (first_root / "source.txt").write_bytes(b"same bytes")
+    (second_root / "source.txt").write_bytes(b"same bytes")
+
+    first = create_snapshot(first_root, ["source.txt"])
+    second = create_snapshot(second_root, ["source.txt"])
+
+    assert first.root_location_sha256 != second.root_location_sha256
+    assert first.snapshot_sha256 != second.snapshot_sha256
+    assert retrieve_exact(first_root, first, "source.txt").status is RetrievalStatus.OK
+    cross_root = retrieve_exact(second_root, first, "source.txt")
+    assert cross_root.status is RetrievalStatus.UNKNOWN_SNAPSHOT
+    assert cross_root.data is None
+    assert retrieve_exact(first_root / ".", first, "source.txt").status is RetrievalStatus.OK
+
+
+def test_root_pathlike_is_converted_once_for_identity_and_read(tmp_path):
+    root = tmp_path / "root"
+    other = tmp_path / "other"
+    root.mkdir()
+    other.mkdir()
+    (root / "source.txt").write_bytes(b"root content")
+    (other / "source.txt").write_bytes(b"other content")
+
+    class OneShotPath(os.PathLike):
+        def __init__(self):
+            self.calls = 0
+
+        def __fspath__(self):
+            self.calls += 1
+            return str(root if self.calls == 1 else other)
+
+    create_root = OneShotPath()
+    snapshot = create_snapshot(create_root, ["source.txt"])
+    assert create_root.calls == 1
+
+    retrieve_root = OneShotPath()
+    result = retrieve_exact(retrieve_root, snapshot, "source.txt")
+    assert retrieve_root.calls == 1
+    assert result.status is RetrievalStatus.OK
+    assert result.data == b"root content"
+
+
 def test_changed_missing_and_unknown_source_are_explicit_misses(tmp_path):
     (tmp_path / "source.txt").write_bytes(b"before")
     snapshot = create_snapshot(tmp_path, ["source.txt"])
@@ -55,6 +102,10 @@ def test_changed_missing_and_unknown_source_are_explicit_misses(tmp_path):
     unknown = retrieve_exact(tmp_path, snapshot, "other.txt")
     assert unknown.status is RetrievalStatus.UNKNOWN_SOURCE
     assert unknown.data is None
+
+    missing_root = retrieve_exact(tmp_path / "missing-root", snapshot, "source.txt")
+    assert missing_root.status is RetrievalStatus.UNKNOWN_SNAPSHOT
+    assert missing_root.data is None
 
 
 def test_unknown_or_tampered_snapshot_fails_closed(tmp_path):
@@ -80,12 +131,14 @@ def test_malformed_public_snapshot_handles_return_unknown_snapshot(tmp_path):
     )
     malformed = [
         replace(valid, sources=[]),
+        replace(valid, schema="wrench.source-snapshot.v1"),
+        replace(valid, root_location_sha256="0" * 64),
         replace(valid, sources=(SourceRecord("../escape", 1, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", True, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", MAX_SOURCE_BYTES + 1, valid_digest),)),
         replace(valid, sources=(SourceRecord("source.txt", 1, "not-a-digest"),)),
-        SourceSnapshot(valid.schema, too_many, valid_digest),
-        SourceSnapshot(valid.schema, too_large, valid_digest),
+        SourceSnapshot(valid.schema, too_many, valid_digest, valid.root_location_sha256),
+        SourceSnapshot(valid.schema, too_large, valid_digest, valid.root_location_sha256),
     ]
     for snapshot in malformed:
         result = retrieve_exact(tmp_path, snapshot, "source.txt")
