@@ -39,9 +39,10 @@
   not authentication or transaction proof.
 - [E0 OpenCode V2 context adapter contract](wrench-e0-opencode-context-adapter/GOAL.md):
   provider-free, release-pinned session-root validation and local admission
-  classification plus structural post-run session binding; the client remains
-  uninstalled and provider wire/token equivalence and dispatch veto remain
-  unresolved.
+  classification plus structural post-run session binding; OpenCode v2.0.15 is
+  isolated-installed and configured for the local gateway, with version/config
+  checks and a model-list GET only. No task or prompt has run; provider wire,
+  tokenizer equivalence, and dispatch veto remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.
@@ -52,6 +53,10 @@
 - [E1 Windows candidate identity verifier](wrench-e1-candidate-identity/GOAL.md):
   accepted synthetic-fixture mechanics for flat manifests on the reviewed
   Windows NTFS host; no model candidate was downloaded or evaluated.
+- [E1–E3 lifecycle gap audit](../reports/wrench-v2-realignment/e1-e3-lifecycle-gap-audit.md):
+  read-only review finds model/runtime identity, consented experience lineage,
+  and adapter activation/recovery incomplete; a synthetic-only lifecycle
+  component is the recommended next engineering increment.
 - [Wrench v2 realignment](wrench-v2-realignment/GOAL.md): current direction
   cleanup, v1 lessons and definition of the Layer 1 + continuous-LoRA experiment.
 - [Experiment v2](../northstar/V2_EXPERIMENT.md): planned product implementation

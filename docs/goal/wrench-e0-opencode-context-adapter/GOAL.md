@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free session-to-preparation seam, local admission classifier, and bounded context-hook projection implemented; client integration remains uninstalled and unrun
+Status: provider-free Wrench seams implemented; isolated OpenCode v2.0.15 CLI installed and configured for localhost, but no client prompt/task/request or Wrench hook integration has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -8,10 +8,12 @@ Started: 2026-09-24 (America/Edmonton)
 
 Define a small, reviewable first-client boundary for Wrench's deterministic
 Layer 1 context runtime. OpenCode V2 is the selected first integration target.
-This increment pins a candidate OpenCode release and implements provider-free
-validation from a hook session ID and returned session record to an existing
-source root. It adds no OpenCode plugin, dependency, install, provider call,
-dispatch gate, or production route.
+The original implementation increment pinned a candidate OpenCode release
+and implemented provider-free validation from a hook session ID and returned
+session record to an existing source root. It added no OpenCode plugin,
+dependency, provider call, dispatch gate, or production route. A later
+owner-requested local CLI install/configuration is separately recorded below;
+it does not change the boundaries of that source increment.
 
 ## Contract
 
@@ -57,8 +59,9 @@ dispatch gate, or production route.
   but its heuristic estimate cannot prevent every provider-specific overflow.
   This is not an exact E0 prompt gate.
 - The release candidate is OpenCode `v2.0.15`, tag commit `6f3639d`, with the
-  matching `@opencode/plugin` package at `2.0.15`. This is a source/API pin for
-  review, not evidence that the client or hook was installed or run.
+  matching `@opencode/plugin` package at `2.0.15`. Source and API are pinned
+  for review. The CLI was installed separately; no Wrench hook was registered
+  or run.
 - `resolve_opencode_session_root` accepts the event `sessionID` and returned
   session record as data, requires both IDs to satisfy the pinned `ses`
   prefix and the record `id` to match, accepts only an absolute usable
@@ -113,9 +116,10 @@ dispatch gate, or production route.
   explicitly bounded above.
 - Prompt-admission and model-context hooks are distinguished; the documented
   prompt failure behavior is not claimed as a final-request veto.
-- The release and matching plugin package are pinned to `v2.0.15`; runtime
-  hook behavior, callback failure semantics, provider serializer, tokenizer,
-  and dispatch authority remain unresolved.
+- The release and matching plugin package are pinned to `v2.0.15`; the local
+  CLI is also installed at `v2.0.15`. Runtime hook behavior, callback failure
+  semantics, provider serializer, tokenizer, and dispatch authority remain
+  unresolved.
 - Offline validation rejects mismatched IDs, missing/invalid roots, ambiguous
   subpaths, and unusable directories before snapshot creation; isolated resolver
   fixtures cover these cases and the pinned session-ID prefix.
@@ -157,7 +161,9 @@ The resolver and admission classifier are Wrench-side data checks, not a
 registered OpenCode hook. They do not establish exact provider payload
 reconstruction, model dispatch control, tokenizer parity, tool authority,
 recovery qualification, complete lifecycle accounting, or production fitness.
-The integration has not been installed or run.
+The isolated local CLI is installed and configured as recorded in the
+[installation report](../../reports/wrench-e0-opencode-context-adapter/local-client-install.md),
+but no Wrench plugin/hook integration or client prompt/task/request has run.
 
 Implementation details and review evidence are in the
 [session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
@@ -222,6 +228,31 @@ blinded verification. This can check harness behavior but cannot establish E4
 customer utility. The future source and oracle protocol are designated above;
 real utility work still needs owner-approved consent, use, access, retention,
 withdrawal, and deletion processes before collection.
+
+## Follow-up: isolated local CLI setup and mock runtime preflight
+
+At the owner's request, OpenCode CLI `v2.0.15` and its wrapper/config were
+installed in the isolated directory recorded in the
+[local CLI report](../../reports/wrench-e0-opencode-context-adapter/local-client-install.md).
+The only gateway request was `GET
+http://127.0.0.1:4000/v1/models`, which returned HTTP 200 and advertised
+`current`. No OpenCode prompt, task, chat, inference, or external provider
+request was made. The current config selects the generic OpenAI-compatible
+Chat Completions route and `wrench-local/current`. This differs from the E0
+Responses route and `gpt-4.1-2025-04-14` research pin; select and revalidate the
+route/model identity before characterization.
+
+The [synthetic mock runtime preflight](../../reports/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md)
+describes one success-only request using an isolated per-run config for
+`wrench-local/current` at `127.0.0.1:43117`. It is a plan, grants no run
+authority, and is **not ready to launch** until a process-level egress
+confinement mechanism is selected and validated. The
+`SessionHooks.context` Promise callback has no typed admission/veto result.
+This transport-only plan does not register or exercise a Wrench hook. Failure
+injection and any live hook integration require separate owner authorization.
+The [preflight evaluation](../../evals/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md)
+records API-contract and containment reviews, point-in-time resource evidence,
+the egress-confinement precondition, and the exact owner approval needed.
 
 The follow-on `prepare_opencode_e0_context` seam resolves the supplied session
 record and carries its `SourceRootBinding` into `prepare_e0_context`. To keep
