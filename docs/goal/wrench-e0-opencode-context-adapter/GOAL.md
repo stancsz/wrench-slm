@@ -658,8 +658,10 @@ The OpenCode profile targets `127.0.0.1:4000/v1`. Read-only inspection of the
 mounted gateway files found `active_model: openrouter` in force mode and a
 `current` virtual alias that resolves through the OpenRouter MiniMax M3 alias
 under that state. This is file-level configuration evidence only: the running
-gateway can override the state-file path and keeps route state in memory, so
-the live route remains unverified. No generation call or prompt was sent.
+gateway's non-secret `ACTIVE_MODEL_STATE_PATH` points to that mounted file,
+but the file changed after the container started and the process keeps route
+state in memory, so the live route remains unverified. No generation call or
+prompt was sent.
 Accordingly, verified Wrench token savings remain **not established** and
 local-SLM substitution is not demonstrated. See the [host route-state
 report](../../reports/wrench-e0-opencode-context-adapter/host-route-state-audit.md)

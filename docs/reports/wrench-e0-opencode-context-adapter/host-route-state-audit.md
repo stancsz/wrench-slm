@@ -20,12 +20,15 @@ The mounted router source rewrites requests to the active alias in force mode.
 Therefore the **inspected files** point `current` through OpenRouter's
 MiniMax M3 alias, rather than establishing a local SLM route.
 
-This is not proof of the live process route. The container may override the
-state-file path through `ACTIVE_MODEL_STATE_PATH`; that environment value was
-not inspected. The router loads state into memory at startup and request-time
-snapshots use that in-memory state. The current host file therefore does not
-prove which state the already-running process has loaded. No generation call,
-gateway status request, runtime log, or provider observation was made.
+This is not proof of the live process route. A follow-up inspection of the
+single non-secret `ACTIVE_MODEL_STATE_PATH` value found
+`/app/config/active_model.json`, the mounted file listed above. Docker reports
+the container started at `2026-09-23T14:22:01Z`; the host file's
+`LastWriteTimeUtc` is `2026-09-23T22:08:09Z`, after startup. The router loads
+state into memory at startup and request-time snapshots use that in-memory
+state. The current host file therefore does not prove which state the
+already-running process has loaded. No generation call, gateway status
+request, runtime log, or provider observation was made.
 
 The aliases contain no immutable weight revision, tokenizer bytes, or final
 template identity. Token use or savings cannot be calculated from this static
@@ -37,8 +40,9 @@ secret values were read.
 - `C:\Users\stanc\github\subroute\config\active_model.json`
 - `C:\Users\stanc\github\subroute\config\litellm.yaml`
 - `C:\Users\stanc\github\subroute\src\unified_llm_gateway\plugins\dynamic_router.py`
-- Docker container metadata for port mapping and host mounts; environment
-  variable **names only**, not their values
+- Docker container metadata for port mapping, host mounts, start time, and the
+  non-secret `ACTIVE_MODEL_STATE_PATH` value; other environment values were
+  not inspected
 
 Relevant source locations: `dynamic_router.py:25,113-145,183-230,258-275`;
 `litellm.yaml:4-9,37-49`.
