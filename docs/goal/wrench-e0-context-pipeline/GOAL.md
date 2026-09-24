@@ -401,6 +401,19 @@ snapshot: it does not enumerate a repository or detect omissions from a newly
 created manifest. See the [report](../../reports/wrench-e0-snapshot-coverage/complete-inventory.md)
 and [evaluation](../../evals/wrench-e0-snapshot-coverage/complete-inventory.md).
 
+## Follow-up: bounded OpenCode hook observation
+
+Status: implemented and committed as `67d2024`; 62 focused tests passed and
+independent review passed. The standalone observer wraps a callback matching
+the pinned awaited hook boundary, records invocation and outcome counters plus
+bounded monotonic durations, and re-raises callback errors unchanged. Failed
+or invalid clock samples leave timing unavailable without changing callback
+behavior. The observation is local, unauthenticated, and not joined to the
+partial lifecycle trace. No OpenCode plugin or client was registered or run;
+this does not prove hook execution, mutation application, dispatch enforcement,
+runtime parity, or full E0 acceptance. See the [report](../../reports/wrench-e0-opencode-context-adapter/hook-observation.md)
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/hook-observation.md).
+
 ## Current client setup status (2026-09-24)
 
 OpenCode `v2.0.15` is installed in an isolated directory under
