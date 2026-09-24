@@ -104,3 +104,28 @@ external activity, establish runtime serializer/tokenizer parity, or close
 E0/E4 acceptance. Details and independent findings are in the [composition
 fixture evaluation](../../evals/wrench-e0-context-pipeline/composition-fixture.md)
 and [pipeline report](../../reports/wrench-e0-context-pipeline/pipeline.md).
+
+## Follow-up: snapshot-bound deterministic rule route
+
+Status: bounded offline read-route component implemented; W4 integration and
+E0 acceptance remain open.
+
+`run_e0_rule_route` uses `mechanical_route` only to parse an allowlisted
+proposal, then reads exact bytes through `retrieve_exact` with the carried
+`SourceRootBinding` and supplied `SourceSnapshot`. It accepts only
+`read_file`, `read_lines`, and literal search over snapshot members. It rejects
+negated, contradictory, output-restricted, or consent/authorization-marked
+read/search requests before retrieval. Snapshot manifests are validated
+before route planning. Search is limited to 16 files and 512 KiB; reads are
+limited to 256 KiB per file; line windows to 500; literals and returned lines
+to 4,096 characters; and matches to the existing 200-match action cap.
+Stale, missing, non-text, ambiguous, unsupported, or capped evidence is
+represented as unknown or partial and never triggers a live-root executor.
+
+This component returns a local `route=none` result with content-free source
+hashes and exact-read counters. It does not consume `PreparationResult`, build
+or finalize the E0 outcome receipt, prove user intent, authenticate the caller,
+observe a client lifecycle, or veto OpenCode dispatch. A later E0 integration
+must join the route to normalized context and reconciled outcome accounting.
+Focused behavior and independent review are in the [rule-route report](../../reports/wrench-e0-context-pipeline/rule-route.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/rule-route.md).
