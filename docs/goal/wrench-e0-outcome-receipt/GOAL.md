@@ -46,6 +46,21 @@ consent, or task success. A caller must establish those facts before admission.
 This slice has no persistence, review workflow, transport, model/provider
 integration, or production-learning admission.
 
+## Post-run join follow-up
+
+The v2 follow-up in [the post-run join report](../../reports/wrench-e0-outcome-receipt/postrun-join-v2.md)
+joins a ready E0 preparation to caller-supplied post-task evidence references
+and the preparation-accounting digest. V2 verifier and outcome references use
+the post-task evidence namespace, and task/run/session/verifier/post-task IDs
+are constrained to compact opaque syntax. A missing session makes the receipt
+incomplete. Six focused fixture functions passed by direct invocation under
+Python 3.11.16; `pytest` is unavailable in the local runtimes.
+
+This follow-up is an unpersisted, unauthenticated local join. It does not
+capture a client lifecycle or prove verifier independence, consent, task truth,
+or E0 completion. See the [evaluation record](../../evals/wrench-e0-outcome-receipt/postrun-join-v2.md)
+for the bounded verification result and remaining gates.
+
 Serialization first copies nested built-in dictionaries, lists, tuples, and
 strings into a bounded owned tree. The exact output size and encoding are then
 computed from that copy, so later caller mutations cannot change the measured

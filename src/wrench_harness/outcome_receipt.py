@@ -21,6 +21,7 @@ MAX_REFERENCES = 256
 MAX_ID_CHARS = 256
 MAX_TEXT_CHARS = 512
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_OPAQUE_V2_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _HEX = frozenset("0123456789abcdef")
 
 
@@ -47,6 +48,11 @@ class ReceiptResult:
 
 def _is_id(value: object) -> bool:
     return type(value) is str and 1 <= len(value) <= MAX_ID_CHARS and all(ord(ch) >= 0x20 and ord(ch) != 0x7f for ch in value)
+
+
+def _is_opaque_v2_id(value: object) -> bool:
+    """Accept compact identifier syntax for caller-supplied v2 identities."""
+    return type(value) is str and _OPAQUE_V2_ID.fullmatch(value) is not None
 
 
 def _is_digest(value: object, *, optional: bool = False) -> bool:
@@ -211,25 +217,58 @@ def _failures(payload: object) -> list[str]:
     errors: list[str] = []
     if type(payload) is not dict:
         return ["payload_must_be_builtin_object"]
-    required = {
+    v1_fields = {
         "schema", "task_id", "run_id", "snapshot_sha256", "context_receipt_sha256",
         "selected_evidence_ids", "omitted_evidence_ids", "retrieval_misses", "actual_route",
         "attempts", "work_calls", "verifier", "outcome", "correction_refs", "accounting",
         "completeness", "missing_fields",
     }
+    schema = payload.get("schema")
+    if schema == "wrench.e0.outcome-receipt.v2":
+        required = v1_fields | {
+            "session_id", "preparation_accounting_sha256", "post_task_evidence_refs",
+        }
+    else:
+        required = v1_fields
     if _contains_forbidden_key(payload):
         errors.append("forbidden_raw_content_key")
     if set(payload) != required:
         errors.append("top_level_fields_invalid")
         return errors
-    if payload["schema"] != "wrench.e0.outcome-receipt.v1":
+    if schema not in {"wrench.e0.outcome-receipt.v1", "wrench.e0.outcome-receipt.v2"}:
         errors.append("schema_unsupported")
+    is_v2 = schema == "wrench.e0.outcome-receipt.v2"
     for key in ("task_id", "run_id"):
-        if not _is_id(payload[key]):
+        if not (_is_opaque_v2_id(payload[key]) if is_v2 else _is_id(payload[key])):
             errors.append(f"{key}_invalid")
     for key in ("snapshot_sha256", "context_receipt_sha256"):
         if not _is_digest(payload[key], optional=True):
             errors.append(f"{key}_invalid")
+    post_task_ids: set[str] = set()
+    if is_v2:
+        if payload["session_id"] is not None and not _is_opaque_v2_id(payload["session_id"]):
+            errors.append("session_id_invalid")
+        if not _is_digest(payload["preparation_accounting_sha256"]):
+            errors.append("preparation_accounting_digest_invalid")
+        post_task_refs = payload["post_task_evidence_refs"]
+        if type(post_task_refs) is not list or len(post_task_refs) > MAX_REFERENCES:
+            errors.append("post_task_evidence_refs_invalid")
+            post_task_refs = []
+        for reference in post_task_refs:
+            if type(reference) is not dict or set(reference) != {"evidence_id", "kind", "sha256"}:
+                errors.append("post_task_evidence_ref_shape_invalid")
+                continue
+            evidence_id = reference["evidence_id"]
+            if not _is_opaque_v2_id(evidence_id):
+                errors.append("post_task_evidence_ref_id_invalid")
+            else:
+                post_task_ids.add(evidence_id)
+            if reference["kind"] not in {"test_result", "diff", "review", "user_report", "other"}:
+                errors.append("post_task_evidence_ref_kind_invalid")
+            if not _is_digest(reference["sha256"]):
+                errors.append("post_task_evidence_ref_digest_invalid")
+        if len(post_task_ids) != len(post_task_refs):
+            errors.append("post_task_evidence_ref_duplicate_or_invalid_id")
 
     selected = payload["selected_evidence_ids"]
     omitted = payload["omitted_evidence_ids"]
@@ -239,6 +278,8 @@ def _failures(payload: object) -> list[str]:
         omitted = []
     if set(selected) & set(omitted):
         errors.append("selected_omitted_overlap")
+    if is_v2 and post_task_ids & (set(selected) | set(omitted)):
+        errors.append("context_post_task_evidence_id_overlap")
 
     misses = payload["retrieval_misses"]
     if type(misses) is not list or len(misses) > MAX_REFERENCES:
@@ -396,19 +437,22 @@ def _failures(payload: object) -> list[str]:
     if route == "unknown" and (calls["local"] or calls["frontier"]):
         errors.append("unknown_route_has_attributed_call")
 
+    evidence_scope = post_task_ids if is_v2 else set(selected)
     verifier = payload["verifier"]
     if type(verifier) is not dict or set(verifier) != {"identity", "result", "evidence_ids"}:
         errors.append("verifier_shape_invalid")
         verifier = {"identity": None, "result": "unknown", "evidence_ids": []}
     else:
-        if verifier["identity"] is not None and not _is_id(verifier["identity"]):
+        if verifier["identity"] is not None and not (
+            _is_opaque_v2_id(verifier["identity"]) if is_v2 else _is_id(verifier["identity"])
+        ):
             errors.append("verifier_identity_invalid")
         if verifier["result"] not in {"passed", "failed", "inconclusive", "not_run", "unknown"}:
             errors.append("verifier_result_invalid")
         if not _id_list(verifier["evidence_ids"], "verifier_evidence_ids", errors):
             verifier["evidence_ids"] = []
-        elif any(eid not in selected for eid in verifier["evidence_ids"]):
-            errors.append("verifier_evidence_not_selected")
+        elif any(eid not in evidence_scope for eid in verifier["evidence_ids"]):
+            errors.append("verifier_evidence_not_post_task" if is_v2 else "verifier_evidence_not_selected")
 
     outcome = payload["outcome"]
     if type(outcome) is not dict or set(outcome) != {"status", "provenance", "evidence_ids"}:
@@ -421,8 +465,8 @@ def _failures(payload: object) -> list[str]:
             errors.append("outcome_provenance_invalid")
         if not _id_list(outcome["evidence_ids"], "outcome_evidence_ids", errors):
             outcome["evidence_ids"] = []
-        elif any(eid not in selected for eid in outcome["evidence_ids"]):
-            errors.append("outcome_evidence_not_selected")
+        elif any(eid not in evidence_scope for eid in outcome["evidence_ids"]):
+            errors.append("outcome_evidence_not_post_task" if is_v2 else "outcome_evidence_not_selected")
         if outcome["provenance"] == "independently_verified" and (
             verifier["result"] not in {"passed", "failed", "inconclusive"} or not verifier["identity"]
             or not verifier["evidence_ids"] or not outcome["evidence_ids"]
@@ -538,7 +582,7 @@ def _failures(payload: object) -> list[str]:
     elif any(item not in {
         "snapshot_sha256", "context_receipt_sha256", "selected_evidence_ids", "omitted_evidence_ids",
         "retrieval_misses", "actual_route", "attempts", "work_calls", "verifier", "outcome",
-        "correction_refs", "accounting", "usage", "costs",
+        "correction_refs", "accounting", "usage", "costs", "session_id",
     } for item in missing):
         errors.append("missing_field_name_unknown")
     derived_missing: set[str] = set()
@@ -546,6 +590,8 @@ def _failures(payload: object) -> list[str]:
         derived_missing.add("snapshot_sha256")
     if payload["context_receipt_sha256"] is None:
         derived_missing.add("context_receipt_sha256")
+    if is_v2 and payload["session_id"] is None:
+        derived_missing.add("session_id")
     if route == "unknown":
         derived_missing.add("actual_route")
     if outcome.get("status") == "unknown" or outcome.get("provenance") == "unknown":
@@ -562,6 +608,8 @@ def _failures(payload: object) -> list[str]:
             errors.append("complete_receipt_missing_snapshot_identity")
         if payload["context_receipt_sha256"] is None:
             errors.append("complete_receipt_missing_context_identity")
+        if is_v2 and payload["session_id"] is None:
+            errors.append("complete_receipt_missing_session_identity")
         if route == "unknown":
             errors.append("complete_receipt_route_unknown")
         if outcome.get("status") == "unknown" or outcome.get("provenance") == "unknown":
@@ -571,6 +619,7 @@ def _failures(payload: object) -> list[str]:
         len(selected) + len(omitted) + len(misses) + len(corrections) + len(work_calls)
         + len(verifier.get("evidence_ids", [])) + len(outcome.get("evidence_ids", []))
         + sum(1 for attempt in attempts if type(attempt) is dict and attempt.get("retry_of") is not None)
+        + len(post_task_ids)
     )
     if reference_total > MAX_REFERENCES:
         errors.append("aggregate_reference_limit_exceeded")

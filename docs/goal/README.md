@@ -8,8 +8,9 @@
 - [E0 snapshot-backed structural index](wrench-e0-snapshot-structural-index/GOAL.md):
   accepted bounded candidate-index slice; it does not scan or execute code.
 - [E0 bounded outcome receipt](wrench-e0-outcome-receipt/GOAL.md):
-  accepted reference-only schema and accounting contract; caller-supplied
-  metadata does not prove truth, authority, or complete lifecycle capture.
+  accepted reference-only schema/accounting contract and a v2 preparation to
+  post-run evidence join; caller-supplied metadata does not prove truth,
+  authority, consent, or complete lifecycle capture.
 - [E0 serialized prompt budget gate](wrench-e0-serialized-prompt-gate/GOAL.md):
   accepted complete-message gate using injected serializer and token counter;
   fixture identities do not establish production runtime equivalence.
