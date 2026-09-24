@@ -1,6 +1,6 @@
 # E0 OpenCode V2 context adapter contract
 
-Status: provider-free session-to-preparation seam implemented; client integration remains uninstalled and unrun
+Status: provider-free session-to-preparation seam and local admission classifier implemented; client integration remains uninstalled and unrun
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
 Started: 2026-09-24 (America/Edmonton)
 
@@ -95,8 +95,15 @@ dispatch gate, or production route.
 - `prepare_opencode_e0_context` injects the resolved root into the existing
   preparation facade and carries session/root/snapshot identity with its result;
   fixture coverage includes invalid-session short-circuiting and the real
-  preparation path plus a mismatched-root case that expects no prompt. The new
-  fixtures have not been executed in this slice.
+  preparation path plus a mismatched-root case that expects no prompt. The
+  focused OpenCode and pipeline fixtures pass on the recorded Windows Python
+  3.11 environment.
+- `check_opencode_preparation_admission` returns READY only for a matching
+  session join with a READY preparation, inert `none` route, nonempty prompt,
+  READY prompt gate, VALID receipt, and no retrieval misses. Its typed failure
+  cases are fixture-covered. This is an internal classification only: callers
+  can ignore it, and it is not connected to or capable of vetoing OpenCode
+  dispatch.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -104,15 +111,16 @@ dispatch gate, or production route.
 
 ## Limits and evidence
 
-The resolver is a Wrench-side data boundary, not a registered OpenCode hook.
-It does not establish exact provider payload reconstruction, model dispatch
-control, tokenizer parity, tool authority, recovery qualification, complete
-lifecycle accounting, or production fitness. The integration has not been
-installed or run.
+The resolver and admission classifier are Wrench-side data checks, not a
+registered OpenCode hook. They do not establish exact provider payload
+reconstruction, model dispatch control, tokenizer parity, tool authority,
+recovery qualification, complete lifecycle accounting, or production fitness.
+The integration has not been installed or run.
 
 Implementation details and review evidence are in the
 [session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
-and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md).
+and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md),
+plus the [local admission-check report](../../reports/wrench-e0-opencode-context-adapter/admission-check.md).
 
 References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
 [tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),

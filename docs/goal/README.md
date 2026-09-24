@@ -37,8 +37,9 @@
   accepted v3 binding to the root filesystem object as well as its configured
   path; IDs are replacement signals, not authentication or transaction proof.
 - [E0 OpenCode V2 context adapter contract](wrench-e0-opencode-context-adapter/GOAL.md):
-  provider-free, release-pinned session-root validation seam; the client remains
-  uninstalled and provider wire/token equivalence and dispatch veto remain unresolved.
+  provider-free, release-pinned session-root validation and local admission
+  classification; the client remains uninstalled and provider wire/token
+  equivalence and dispatch veto remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.
