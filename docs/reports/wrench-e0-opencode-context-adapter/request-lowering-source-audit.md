@@ -86,5 +86,5 @@ not E0 completion.
 - OpenCode [`RouteBody.from`, route compilation, schema validation, and transport preparation](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/src/route/client.ts)
 - OpenCode [`@opencode/ai` v2.0.15 package manifest](https://raw.githubusercontent.com/anomalyco/opencode/v2.0.15/packages/ai/package.json)
 - OpenAI tiktoken [v0.9.0 `o200k_base` definition and expected encoding hash](https://raw.githubusercontent.com/openai/tiktoken/0.9.0/tiktoken_ext/openai_public.py)
-- OpenAI tiktoken [model-to-encoding mapping](https://github.com/openai/tiktoken/blob/main/tiktoken/model.py)
+- OpenAI tiktoken [v0.9.0 model-to-encoding mapping](https://github.com/openai/tiktoken/blob/0.9.0/tiktoken/model.py)
 - OpenAI [input-token counting guide](https://developers.openai.com/api/docs/guides/token-counting)

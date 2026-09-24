@@ -34,14 +34,26 @@ dispatch gate, or production route.
   callback prevents `llm.stream` for that attempt. This is source evidence,
   not a typed veto or runtime proof; session settlement, user-visible errors,
   scheduler retries, and the installed client's behavior remain unknown.
+- The public Promise context-hook type has no typed `kind` discriminator. In
+  the tagged implementation, request preparation currently adds an internal
+  `kind` field to the event before the Promise adapter forwards it. That
+  undocumented extra may be visible at runtime, but is not a supported hook
+  contract and must not be required for correct behavior.
 - The context hook receives the semantic request before provider protocol
-  lowering. OpenCode's later `http.request` hook can observe native HTTP
-  requests; WebSocket traffic follows separate experimental hooks. Neither
-  boundary supplies a provider-agnostic tokenizer or documented dispatch
-  veto. Automatic compaction starts from the latest response's provider input
-  usage when available, then adds output and newer content; without provider
-  usage, OpenCode estimates text, media, instructions, and tools locally. It
-  can retry a recognized overflow once when automatic compaction is enabled,
+  lowering. The pinned `OpenAIResponses.fromRequest` function lowers an
+  `LLMRequest` to a provider request body; it is not the complete final wire
+  serializer. Before and after that step, request preparation resolves model
+  defaults and capabilities, reconciles executable tools, transforms media,
+  options, and headers, and selects a route and transport. HTTP overlays/hooks
+  can alter the HTTP request, while WebSocket traffic follows separate
+  experimental hooks and framing. The seven-field hook projection alone
+  cannot reproduce or attest to the final outbound request. Neither the
+  context hook nor the later transport hooks supply a provider-agnostic
+  tokenizer or documented dispatch veto. Automatic compaction starts from the
+  latest response's provider input usage when available, then adds output and
+  newer content; without provider usage, OpenCode estimates text, media,
+  instructions, and tools locally. It can retry a recognized overflow once
+  when automatic compaction is enabled,
   but its heuristic estimate cannot prevent every provider-specific overflow.
   This is not an exact E0 prompt gate.
 - The release candidate is OpenCode `v2.0.15`, tag commit `6f3639d`, with the
@@ -65,17 +77,26 @@ dispatch gate, or production route.
   map unchanged. Do not treat tool descriptions or schemas as authorization.
 - Context-hook edits affect the outgoing model call. They do not rewrite
   persisted conversation history or establish an alternate no-model dispatch
-  path. The documentation provides no typed veto result and does not specify
-  callback failure behavior, so the adapter cannot claim to prevent dispatch
-  when preparation fails. The context hook type has no `kind` field for
-  distinguishing primary and auxiliary requests.
+  path. The public API provides no typed veto result or callback failure
+  guarantee. The source-level rejected-callback observation above applies to
+  `llm.stream` for one attempt only; it does not prove a durable dispatch gate,
+  request settlement, or user-visible failure behavior.
 - No exact final provider token budget or wire-equivalence claim is allowed
   until an OpenCode release, final request serializer, provider/model identity,
   and tokenizer are pinned and measured at the corresponding boundary. Any
   hosted token-count endpoint is a provider-specific external call and does
   not itself block a later model dispatch.
-- Authored fixtures may verify mechanics only. No consented matched-task
-  corpus or outcome oracle is designated; E4 utility remains unevaluated.
+- Authored fixtures may verify mechanics only. The proposed future matched-task
+  corpus is per-task opt-in OpenCode work on participant-authorized local
+  repository snapshots, initially code localization and failing-test/log
+  triage. This is a protocol choice, not collection authority: current
+  authorization covers only Wrench-authored synthetic fixtures. Before real
+  capture, the owner must approve consent, permitted use, source access,
+  retention, withdrawal, and deletion. For later E4 work, freeze task-specific
+  acceptance checks before replay and pair them with independent review blinded
+  to comparison arm; treat missing, flaky, or ambiguous checks as unknown.
+  This corpus/oracle choice does not authorize collection or establish E4
+  utility.
 
 ## Acceptance
 
@@ -162,31 +183,39 @@ prevent every provider-specific overflow.
 
 Implementing the actual OpenCode plugin remains gated on an owner-approved
 integration design and pinned runtime validation. Exact prompt gating remains
-gated on the provider/model serializer and tokenizer plus a documented or
-verified fail-closed dispatch contract. Select a consented matched-task corpus
-and outcome oracle before measuring E4 utility; the current pilot proposal is
-not capture authorization.
+gated on the complete provider/model request path, token counting for that
+request, and a documented or verified fail-closed dispatch contract. The future
+matched-task corpus and outcome-oracle protocol are selected below, but owner
+approval and participant consent remain prerequisites before any real capture
+or E4 utility measurement.
 
 The selected E0 characterization target is OpenCode `v2.0.15`, the OpenAI
-Responses route, and model `gpt-4.1-2025-04-14`. Pin the candidate serializer to
-the tagged `@opencode/ai@2.0.15` `OpenAIResponses.fromRequest` path and pin the
-local text tokenizer to `tiktoken==0.9.0`, explicitly loading `o200k_base`
+Responses route, and model `gpt-4.1-2025-04-14`. Pin the candidate provider-body
+lowering to the tagged `@opencode/ai@2.0.15` `OpenAIResponses.fromRequest`
+path, and separately pin the route, endpoint, transport, and any downstream
+request hooks before claiming final-request equivalence. Pin the local text
+tokenizer to `tiktoken==0.9.0`, explicitly loading `o200k_base`
 (encoding-file SHA-256
 `446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d`). These
 are source/research pins only; neither dependency was installed or run. The
 local tokenizer is not an exact count of a Responses request with tools,
 images, files, or provider-specific structure. Exact input counting requires
 the Responses input-token endpoint with the final equivalent request body;
-that sends request data to OpenAI and requires separate provider-data and
-spending approval before any call. The endpoint count also does not establish
-that the hook projection matches OpenCode's later request transformations or
-that failure blocks dispatch. Therefore the E0 prompt gate remains open.
+that would send request data to OpenAI and requires separate provider-data and
+spending approval before any call. A count of a submitted body would not itself
+establish that it is OpenCode's actual final request or that a later model call
+is blocked. The endpoint also does not establish that the hook projection
+matches OpenCode's later request transformations. Therefore the E0 prompt gate
+remains open. The pinned tokenizer's v0.9.0 model map also does not establish
+the selected model-to-encoding association; explicit `o200k_base` is a
+reproducible research pin only.
 
-For corpus mechanics, use only a small Wrench-authored synthetic matched-task
-fixture set with a deterministic task-specific test oracle and independent
+For corpus mechanics now, use only a small Wrench-authored synthetic
+matched-task fixture set with deterministic task-specific checks and independent
 blinded verification. This can check harness behavior but cannot establish E4
-customer utility. Real utility work still needs an approved, consented source
-and a reviewable retention/deletion process; none is designated here.
+customer utility. The future source and oracle protocol are designated above;
+real utility work still needs owner-approved consent, use, access, retention,
+withdrawal, and deletion processes before collection.
 
 The follow-on `prepare_opencode_e0_context` seam resolves the supplied session
 record and passes only its configured root to `prepare_e0_context`. It returns
