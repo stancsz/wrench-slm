@@ -245,6 +245,7 @@ class RequestLeaseBoundary:
         """Register one caller-owned prepared lease and return its one-use nonce."""
         if not _valid_lease_id(lease_id) or not callable(release):
             raise BoundaryError("lease_invalid")
+        start_error: BaseException | None = None
         with self._lock:
             if any(lease.lease_id == lease_id for lease in (*self._pending.values(), *self._active.values())):
                 raise BoundaryError("lease_id_in_use")
@@ -254,11 +255,26 @@ class RequestLeaseBoundary:
             if type(nonce) is not str or not nonce or len(nonce) > 128 or nonce in self._pending or nonce in self._used_nonces:
                 raise BoundaryError("nonce_invalid_or_reused")
             lease = _Lease(lease_id=lease_id, nonce=nonce, release=release, deadline=self._clock() + self._timeout)
-            self._pending[nonce] = lease
             lease.timer = threading.Timer(self._timeout, self._timeout_lease, args=(lease,))
             lease.timer.daemon = True
-            lease.timer.start()
-            return LeaseTicket(lease_id, nonce)
+            self._pending[nonce] = lease
+            try:
+                lease.timer.start()
+            except BaseException as exc:
+                # Roll back the unpublished lease before invoking caller code.
+                # If the thread partially started, ended prevents it from
+                # releasing a second time when its callback eventually runs.
+                self._pending.pop(nonce, None)
+                self._remember_used_nonce(nonce)
+                lease.ended = StreamEnd.FAILED
+                start_error = exc
+        if start_error is not None:
+            try:
+                lease.release_once()
+            except BaseException as release_error:
+                raise start_error from release_error
+            raise start_error
+        return LeaseTicket(lease_id, nonce)
 
     def dispatch(
         self,

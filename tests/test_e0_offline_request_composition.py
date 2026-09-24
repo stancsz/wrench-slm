@@ -1,0 +1,399 @@
+from __future__ import annotations
+
+import http.client
+import hashlib
+import json
+import socket
+import tempfile
+import time
+from dataclasses import replace
+from unittest.mock import patch
+from pathlib import Path
+
+from wrench_harness.artifact_store import ArtifactStore
+from wrench_harness.e0_offline_request_composition import (
+    CompositionStatus,
+    SYNTHETIC_SERIALIZER_ID,
+    SYNTHETIC_TOKENIZER_ID,
+    prepare_offline_e0_request,
+)
+import wrench_harness.e0_offline_request_composition as composition_module
+from wrench_harness.namespace_registry import NamespaceRegistry
+from wrench_harness.opencode_project_registry import OpenCodeProjectRegistry
+from wrench_harness.opencode_request_boundary import (
+    FixtureResponse,
+    LoopbackFixtureServer,
+    RequestLeaseBoundary,
+)
+
+
+TEST_TMP_ROOT = Path(
+    r"C:\wrench-slm-data\tmp\W2-NS-E0-OFFLINE-COMPOSITION-20260924"
+)
+SESSION_ID = "ses_offline_compose001"
+
+
+def _message(role: str, text: str) -> dict[str, object]:
+    return {"role": role, "content": [{"type": "text", "text": text}]}
+
+
+def _event() -> dict[str, object]:
+    return {
+        "sessionID": SESSION_ID,
+        "agent": "build",
+        "model": {"providerID": "synthetic-fixture", "id": "synthetic-fixture"},
+        "system": [{"type": "text", "text": "Synthetic fixture rules."}],
+        "messages": [
+            _message("system", "Use only synthetic fixture evidence."),
+            _message("user", "Explain synthetic_target."),
+        ],
+        "tools": {},
+        "options": {"temperature": 0},
+    }
+
+
+def _fixture(tmp_path: Path, *, fixture_response: FixtureResponse | object | None = None,
+             timeout_seconds: float = 5):
+    source_root = tmp_path / "repo"
+    (source_root / "src").mkdir(parents=True)
+    (source_root / "src" / "sample.py").write_text(
+        "def synthetic_target(value):\n    return value + 1\n",
+        encoding="utf-8",
+    )
+    (source_root / "README.md").write_text(
+        "Synthetic offline composition fixture.\n", encoding="utf-8"
+    )
+    data_root = tmp_path / "wrench-data"
+    data_root.mkdir()
+    registry = OpenCodeProjectRegistry(data_root)
+    registry.enroll_project(
+        "prj_offline_compose",
+        source_root,
+        ("README.md", "src/sample.py"),
+        max_file_bytes=16 * 1024,
+        max_total_bytes=32 * 1024,
+    )
+    store = ArtifactStore(data_root / "artifacts")
+    nonce_count = 0
+
+    def next_nonce() -> str:
+        nonlocal nonce_count
+        nonce_count += 1
+        return f"synthetic-composition-nonce-{nonce_count}"
+
+    boundary = RequestLeaseBoundary(nonce_factory=next_nonce, timeout_seconds=timeout_seconds)
+    response = fixture_response or FixtureResponse((b"data: synthetic-fixture\n\n",))
+    return source_root, data_root, registry, store, boundary, response
+
+
+def _prepare(tmp_path: Path, *, prompt_token_budget: int = 4096, lease_id: str = "fixture-lease",
+             fixture_response: FixtureResponse | object | None = None,
+             timeout_seconds: float = 5):
+    source_root, data_root, registry, store, boundary, response = _fixture(
+        tmp_path, fixture_response=fixture_response, timeout_seconds=timeout_seconds
+    )
+    event = _event()
+    result = prepare_offline_e0_request(
+        registry,
+        SESSION_ID,
+        {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+        ("src/sample.py", "README.md"),
+        event=event,
+        fixture_response=response,
+        store=store,
+        boundary=boundary,
+        namespace_registry=NamespaceRegistry(()),
+        query="synthetic_target",
+        lease_id=lease_id,
+        context_token_budget=128,
+        prompt_token_budget=prompt_token_budget,
+        context_position=1,
+        max_candidates=8,
+        max_tokens=16,
+    )
+    return result, store, boundary, response
+
+
+def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="compose-", dir=TEST_TMP_ROOT) as scratch:
+        root = Path(scratch)
+        source_root, data_root, registry, store, boundary, fixture_response = _fixture(root)
+        event = _event()
+        release_calls: dict[int, int] = {}
+        original_release = composition_module._PinScope.release_once
+
+        def counted_release(scope):
+            key = id(scope)
+            release_calls[key] = release_calls.get(key, 0) + 1
+            return original_release(scope)
+
+        with patch.object(composition_module._PinScope, "release_once", counted_release):
+            first = prepare_offline_e0_request(
+                registry,
+                SESSION_ID,
+                {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+                ("src/sample.py", "README.md"),
+                event=event,
+                fixture_response=fixture_response,
+                store=store,
+                boundary=boundary,
+                namespace_registry=NamespaceRegistry(()),
+                query="synthetic_target",
+                lease_id="fixture-lease-one",
+                context_token_budget=128,
+                prompt_token_budget=4096,
+                context_position=1,
+                max_candidates=8,
+                max_tokens=16,
+            )
+            second = prepare_offline_e0_request(
+                registry,
+                SESSION_ID,
+                {"id": SESSION_ID, "location": {"directory": str(source_root)}},
+                ("README.md", "src/sample.py"),
+                event=event,
+                fixture_response=fixture_response,
+                store=store,
+                boundary=boundary,
+                namespace_registry=NamespaceRegistry(()),
+                query="synthetic_target",
+                lease_id="fixture-lease-two",
+                context_token_budget=128,
+                prompt_token_budget=4096,
+                context_position=1,
+                max_candidates=8,
+                max_tokens=16,
+            )
+
+        assert first.status is CompositionStatus.READY
+        assert second.status is CompositionStatus.READY
+        assert first.request is not None and second.request is not None
+        assert first.ticket is not None and second.ticket is not None
+        assert first.receipt is not None and second.receipt is not None
+        assert first.artifact_scope_active and second.artifact_scope_active
+        assert first.receipt.candidate_count == 1
+        assert (
+            first.receipt.selected_candidate_order_sha256
+            == second.receipt.selected_candidate_order_sha256
+        )
+        assert first.receipt.source_hash_join_sha256 == second.receipt.source_hash_join_sha256
+        assert first.receipt.preparation_sha256 == second.receipt.preparation_sha256
+        assert first.receipt.serializer_id == SYNTHETIC_SERIALIZER_ID
+        assert first.receipt.tokenizer_id == SYNTHETIC_TOKENIZER_ID
+        assert first.receipt.exact_token_gate == "exact_gate_unavailable"
+        assert sum(store._pins.values()) > 0
+
+        with LoopbackFixtureServer(boundary, fixture_response) as server:
+            for result in (first, second):
+                assert result.request is not None
+                connection = http.client.HTTPConnection(*server.address, timeout=3)
+                connection.request(
+                    result.request.method,
+                    result.request.url,
+                    body=result.request.body,
+                    headers=dict(result.request.headers),
+                )
+                response = connection.getresponse()
+                assert response.status == 200
+                assert response.read() == b"data: synthetic-fixture\n\n"
+                connection.close()
+                if result is first:
+                    assert not first.artifact_scope_active
+                    assert second.artifact_scope_active
+                else:
+                    assert not second.artifact_scope_active
+
+        assert not store._pins
+        assert first._pin_scope is not None and second._pin_scope is not None
+        assert release_calls[id(first._pin_scope)] == 1
+        assert release_calls[id(second._pin_scope)] == 1
+        assert first.receipt is not None
+        assert first.request is not None
+        lowered = json.loads(first.request.body.decode("utf-8"))
+        assert hashlib.sha256(first.request.body).hexdigest() == first.receipt.request_body_sha256
+        context_matches = []
+        for message in lowered["messages"]:
+            wire_event_message = {
+                "role": message["role"],
+                "content": [{"type": "text", "text": message["content"]}],
+            }
+            canonical = json.dumps(
+                wire_event_message, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+            if hashlib.sha256(canonical).hexdigest() == first.receipt.context_message_sha256:
+                context_matches.append(message)
+        assert len(context_matches) == 1
+        assert "def synthetic_target(value)" in context_matches[0]["content"]
+        assert first.receipt.insertion_receipt_sha256
+        assert "return value + 1" not in repr(first.receipt)
+
+
+def test_non_ready_preparation_never_issues_request_or_retains_pins():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="reject-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, _ = _prepare(
+            Path(scratch), prompt_token_budget=1, lease_id="fixture-rejected-lease"
+        )
+        assert result.status is CompositionStatus.PREPARATION_REJECTED
+        assert result.request is None
+        assert result.ticket is None
+        assert result.receipt is None
+        assert not result.artifact_scope_active
+        assert not store._pins
+        assert not boundary._pending
+        assert not boundary._active
+
+
+def test_invalid_fixture_response_fails_before_lease_creation():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="response-reject-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, _ = _prepare(
+            Path(scratch), fixture_response=object(), lease_id="fixture-invalid-response"
+        )
+        assert result.status is CompositionStatus.PROJECT_REJECTED
+        assert result.request is None and result.ticket is None
+        assert not boundary._pending and not boundary._active
+        assert not store._pins
+
+
+def test_timer_start_failure_rolls_back_pending_lease_and_releases_once():
+    released: list[str] = []
+    boundary = RequestLeaseBoundary(
+        nonce_factory=lambda: "synthetic-timer-start-failure-nonce",
+        timeout_seconds=5,
+    )
+    try:
+        with patch(
+            "wrench_harness.opencode_request_boundary.threading.Timer.start",
+            side_effect=RuntimeError("synthetic timer start failure"),
+        ):
+            boundary.prepare("synthetic-timer-start-failure", lambda: released.append("released"))
+    except RuntimeError as exc:
+        assert "synthetic timer start failure" in str(exc)
+    else:
+        raise AssertionError("timer start failure was not propagated")
+
+    assert released == ["released"]
+    assert not boundary._pending
+    assert not boundary._active
+    assert "synthetic-timer-start-failure-nonce" in boundary._used_nonces
+    assert boundary.expire() == 0
+    assert released == ["released"]
+
+
+def test_boundary_rejection_consumes_lease_and_runs_release_once():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="boundary-reject-", dir=TEST_TMP_ROOT) as scratch:
+        release_calls: dict[int, int] = {}
+        original_release = composition_module._PinScope.release_once
+
+        def counted_release(scope):
+            key = id(scope)
+            release_calls[key] = release_calls.get(key, 0) + 1
+            return original_release(scope)
+
+        with patch.object(composition_module._PinScope, "release_once", counted_release):
+            result, store, boundary, fixture = _prepare(
+                Path(scratch), lease_id="fixture-boundary-reject"
+            )
+        assert result.status is CompositionStatus.READY
+        assert result.request is not None and result.ticket is not None
+        assert result.artifact_scope_active
+        rejected = replace(result.request, body=b"{}")
+
+        with LoopbackFixtureServer(boundary, fixture) as server:
+            connection = http.client.HTTPConnection(*server.address, timeout=3)
+            connection.request(
+                rejected.method,
+                rejected.url,
+                body=rejected.body,
+                headers=dict(rejected.headers),
+            )
+            response = connection.getresponse()
+            assert response.status == 400
+            response.read()
+            connection.close()
+
+        assert not result.artifact_scope_active
+        assert not store._pins
+        assert not boundary._pending and not boundary._active
+        assert result._pin_scope is not None
+        assert release_calls[id(result._pin_scope)] == 1
+
+
+def test_materialization_and_lowering_failures_leave_no_lease_or_pins():
+    for patched_name in (
+        "materialize_opencode_prepared_context",
+        "_lower_materialized_event",
+    ):
+        TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="prelease-fail-", dir=TEST_TMP_ROOT) as scratch:
+            with patch(
+                f"wrench_harness.e0_offline_request_composition.{patched_name}",
+                side_effect=RuntimeError("synthetic failure"),
+            ):
+                result, store, boundary, _ = _prepare(
+                    Path(scratch), lease_id=f"fixture-{patched_name}"
+                )
+            assert result.status is CompositionStatus.LOWERING_REJECTED
+            assert result.request is None and result.ticket is None
+            assert not result.artifact_scope_active
+            assert not boundary._pending and not boundary._active
+            assert not store._pins
+
+
+def test_active_timeout_keeps_composition_pins_until_writer_cleanup():
+    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
+    fixture = FixtureResponse((b"z" * 16_384,) * 64)
+    with tempfile.TemporaryDirectory(prefix="timeout-", dir=TEST_TMP_ROOT) as scratch:
+        result, store, boundary, _ = _prepare(
+            Path(scratch),
+            fixture_response=fixture,
+            timeout_seconds=0.5,
+            lease_id="fixture-active-timeout",
+        )
+        assert result.status is CompositionStatus.READY
+        assert result.request is not None and result.ticket is not None
+        assert result.artifact_scope_active
+
+        with LoopbackFixtureServer(boundary, fixture) as server:
+            sock = socket.create_connection(server.address, timeout=3)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)
+            request = result.request
+            header_lines = [
+                f"{request.method} {request.url} HTTP/1.1",
+                f"Host: 127.0.0.1:{server.address[1]}",
+                *(f"{name}: {value}" for name, value in request.headers),
+                f"Content-Length: {len(request.body)}",
+                "Connection: close",
+                "",
+                "",
+            ]
+            sock.sendall("\r\n".join(header_lines).encode("ascii") + request.body)
+            response_headers = bytearray()
+            while b"\r\n\r\n" not in response_headers:
+                part = sock.recv(1)
+                assert part
+                response_headers.extend(part)
+                assert len(response_headers) < 16_384
+            assert response_headers.startswith(b"HTTP/1.0 200") or response_headers.startswith(b"HTTP/1.1 200")
+
+            deadline = time.monotonic() + 3
+            active_lease = None
+            while time.monotonic() < deadline:
+                active_lease = boundary._active.get(result.ticket.nonce)
+                if active_lease is not None and active_lease.timeout_requested:
+                    break
+                time.sleep(0.01)
+            assert active_lease is not None and active_lease.timeout_requested
+            assert result.artifact_scope_active
+            assert sum(store._pins.values()) > 0
+
+            sock.close()
+            deadline = time.monotonic() + 3
+            while result.artifact_scope_active and time.monotonic() < deadline:
+                time.sleep(0.01)
+            assert not result.artifact_scope_active
+            assert not store._pins
+            assert result.ticket.nonce not in boundary._active

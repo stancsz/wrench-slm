@@ -601,3 +601,28 @@ remains unavailable. The review recommends delaying an insertion-capable
 plugin and treating any earlier bridge as synthetic input characterization.
 See the [snapshot-to-hook boundary report](../../reports/wrench-e0-opencode-context-adapter/snapshot-to-hook-boundary.md).
 No client, plugin, endpoint, provider, or real source was touched.
+
+## Follow-up: synthetic offline E0 composition
+
+The new `e0_offline_request_composition` seam carries an enrolled-project
+snapshot through deterministic structural candidate selection, exact retrieval
+and ArtifactStore roundtrip, existing E0 preparation, prepared-context
+materialization, final string-content message lowering, and the fixture request
+lease. The lowered body contains the prepared context message exactly once.
+The content-free receipt joins source/candidate, preparation, insertion, and
+request-body digests. Synthetic serializer and tokenizer IDs are explicit; the
+exact-token gate remains unavailable.
+
+The focused synthetic module passed seven directly invoked test functions on
+the existing CPython 3.11 environment. It covers deterministic composition,
+non-ready and pre-lease failures, request rejection, exact-once release at EOF,
+timer-start rollback, and active timeout retaining pins until writer cleanup.
+Independent read-only review passed the composition, timer rollback, and final
+EOF callback-count assertion. The concise
+[offline composition report](../../reports/wrench-e0-opencode-context-adapter/offline-e0-composition.md)
+records exact commands, hashes, and resource accounting.
+
+This establishes only synthetic offline fixture composition. It does not
+connect OpenCode or a plugin, forward a request, prove runtime route or
+tokenizer parity, provide complete lifecycle accounting, or close E0/E4.
+Exact-token acceptance remains closed.

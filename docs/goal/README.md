@@ -45,9 +45,11 @@
   boundary and a strict Wrench-owned project enrollment registry are
   independently reviewed; no Wrench hook integration or task/prompt request
   has run. The enrolled registry now feeds an in-memory selected-source
-  snapshot seam, covered only by synthetic tests and static review. Provider
-  wire, tokenizer equivalence, dispatch veto, and the exact-token E0 gate
-  remain unresolved.
+  snapshot seam, covered only by synthetic tests and static review. A
+  synthetic offline composition now joins candidate selection, exact retrieval
+  and store roundtrip, context preparation/materialization, final-message
+  lowering, and the fixture request lease. Provider wire, tokenizer
+  equivalence, dispatch veto, and the exact-token E0 gate remain unresolved.
 - [E0 ARB benchmark admission audit](wrench-e0-arb-benchmark-admission/GOAL.md):
   read-only review of the proposed public retrieval diagnostic; release metadata
   is pinned, while licensing and expanded-size evidence still block acquisition.
