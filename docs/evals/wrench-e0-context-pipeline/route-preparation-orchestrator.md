@@ -57,6 +57,31 @@ consent, client-hook provenance, dispatch/veto, final provider prompt or
 tokenizer parity, downstream latency, provider/tool/retry/auxiliary calls,
 usage/cost, task truth, or customer utility. It does not close complete E0
 accounting or E0 acceptance. Independent source review passed. The reviewer did
-not run tests; the separately recorded focused pytest run passed. The review
-did not dynamically exercise the inter-step filesystem race. This remains a
-bounded local slice, not full E0 acceptance.
+not run tests; the separately recorded focused pytest run passed. At the time,
+the review did not dynamically exercise the inter-step filesystem race. The
+later regression below covers the specific source-change boundary while
+preserving the limits above.
+
+## Inter-step source-change regression
+
+**Decision:** Pass for the specific route-to-preparation source-change case.
+The fixture mutates one source after the internal route completed and
+immediately before preparation reads the same snapshot. The orchestrator
+returns `EVIDENCE_JOIN_MISMATCH`, emits no route-preparation accounting
+receipt, and the receipt verifier rejects the absent receipt.
+
+**Verification:** `tests/test_e0_route_preparation.py`: **6 passed** on
+Windows Python 3.11.16 with the existing cached pytest runtime. No package was
+installed. `git diff --check` passed. Storage returned `WITHIN_LIMIT`; the
+10,000,000-byte reservation was released after the run, and test scratch under
+the approved data root is included in the reported total.
+
+**Independent review:** PASS, read-only, job
+`W2-NS-E0-ROUTEPREP-RACE-FINAL-REVIEW-20260925`, nonce
+`E0RACE-REV-7A62`. Reviewer confirmed the test targets the intended boundary
+and did not run tests. Test SHA-256:
+`6F7CD1B01FEF335442108D76EF06CC67422047C74DEDC181138D676E325BA40C`.
+
+This is one controlled filesystem-change fixture, not proof of general race
+freedom, atomic multi-file snapshots, authenticated execution, or dispatch
+prevention. E0 acceptance remains open.

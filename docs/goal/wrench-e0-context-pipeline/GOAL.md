@@ -291,3 +291,14 @@ and content hashes only. Caller provenance, dispatch enforcement, final
 request/tokenizer parity, complete lifecycle accounting, task truth, and E0
 acceptance remain open. See the [report](../../reports/wrench-e0-context-pipeline/route-trace-join.md)
 and [evaluation](../../evals/wrench-e0-context-pipeline/route-trace-join.md).
+
+## Follow-up: exercise the route/preparation source-change boundary
+
+Status: one authored inter-step source-change regression passed; independent
+read-only review passed. `route_and_prepare_e0_context` now has a fixture that
+mutates a routed source immediately before preparation reads the snapshot and
+verifies `EVIDENCE_JOIN_MISMATCH` with no accounting receipt. This covers the
+specific change case only. It does not prove general race freedom, atomic
+multi-file snapshots, client dispatch, or full E0 acceptance. See the
+[orchestrator report](../../reports/wrench-e0-context-pipeline/route-preparation-orchestrator.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-orchestrator.md).

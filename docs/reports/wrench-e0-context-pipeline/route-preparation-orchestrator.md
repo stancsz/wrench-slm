@@ -109,3 +109,28 @@ This bounded composition slice is accepted. Remaining E0 gates include pinned
 OpenCode runtime and dispatch evidence, final request/tokenizer parity,
 complete lifecycle accounting, authenticated outcome evidence, and customer
 utility. No commit was made by the worker.
+
+## Follow-up: source change between route and preparation
+
+Added `test_interstep_source_change_fails_closed_without_route_preparation_receipt`
+to `tests/test_e0_route_preparation.py`. The fixture lets the internal route
+complete, mutates one selected source immediately before the preparation
+function reads the same snapshot, and verifies the composed result is
+`EVIDENCE_JOIN_MISMATCH` with no route-preparation accounting receipt. The
+receipt verifier rejects the absent receipt. This closes the specific dynamic
+fixture gap from the prior review; it does not prove general race freedom,
+atomic multi-file snapshots, client behavior, or dispatch control.
+
+Focused verification: Python 3.11.16 with the existing cached pytest runtime
+ran `tests/test_e0_route_preparation.py`: **6 passed** in 1.61 seconds. No
+packages were installed. The 10,000,000-byte reservation was released after
+the run. The test scratch remains below `C:\wrench-slm-data\tmp` and is
+included in the storage inventory. Final status was `WITHIN_LIMIT`, with
+666,187,200 actual bytes and 103,000 bytes in other active reservations.
+
+Independent read-only review passed (`W2-NS-E0-ROUTEPREP-RACE-FINAL-REVIEW-20260925`,
+nonce `E0RACE-REV-7A62`). It confirmed the mutation occurs after route
+completion and immediately before preparation, and that the assertions
+support only the narrow source-change rejection claim. The reviewer did not
+run tests. Test SHA-256:
+`6F7CD1B01FEF335442108D76EF06CC67422047C74DEDC181138D676E325BA40C`.

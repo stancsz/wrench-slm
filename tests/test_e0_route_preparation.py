@@ -6,6 +6,7 @@ import subprocess
 from dataclasses import replace
 
 from wrench_harness import core
+from wrench_harness import e0_route_preparation
 from wrench_harness.artifact_store import ArtifactStore
 from wrench_harness.e0_context_pipeline import PreparationStatus
 from wrench_harness.e0_route_preparation import (
@@ -183,4 +184,33 @@ def test_accounting_join_rejects_digest_mutation_and_oversize_receipt(tmp_path):
     oversized = replace(receipt, payload_json=" " * (MAX_ROUTE_PREPARATION_RECEIPT_BYTES + 1))
     assert not verify_route_preparation_accounting_receipt(
         oversized, route_result=result.route_result, preparation=result.preparation
+    )
+
+
+def test_interstep_source_change_fails_closed_without_route_preparation_receipt(
+    tmp_path, monkeypatch
+):
+    original_prepare = e0_route_preparation.prepare_e0_context
+    mutations = []
+
+    def mutate_after_route_then_prepare(**kwargs):
+        service_file = kwargs["source_root"].configured_root / "src" / "service.py"
+        service_file.write_bytes(b"def normalize(value):\n    return value.lower()\n")
+        mutations.append(service_file)
+        return original_prepare(**kwargs)
+
+    monkeypatch.setattr(
+        e0_route_preparation, "prepare_e0_context", mutate_after_route_then_prepare
+    )
+    result, _, _, _ = _run(tmp_path)
+
+    assert len(mutations) == 1
+    assert result.route_result.status is RuleRouteStatus.COMPLETED
+    assert result.status is RoutePreparationStatus.EVIDENCE_JOIN_MISMATCH
+    assert result.preparation is not None
+    assert result.accounting_receipt is None
+    assert not verify_route_preparation_accounting_receipt(
+        result.accounting_receipt,
+        route_result=result.route_result,
+        preparation=result.preparation,
     )
