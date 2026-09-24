@@ -327,6 +327,17 @@ OpenCode executed the transition, validate the full nested client message
 schema, prevent dispatch, or establish final request/tokenizer parity. Runtime
 integration and overall E0 acceptance remain open.
 
+## Follow-up: isolated OpenCode localhost setup
+
+The isolated OpenCode v2.0.15 install is configured for
+`wrench-local/current` at `http://127.0.0.1:4000/v1` through the OpenAI-
+compatible Chat Completions provider, with no plugins. The client-side setup
+was verified without contacting port 4000 or running a prompt. The mounted
+gateway route is currently configured to force requests to OpenRouter's
+`openrouter/minimax/minimax-m3`; no generation was made, and the tokenizer or
+immutable serving revision remains unknown. See the
+[localhost install follow-up report](../../reports/wrench-e0-opencode-context-adapter/localhost-install-followup.md).
+
 ## Follow-up: pinned text-message subset
 
 The OpenCode preparation seam now serializes its inserted context and deferred
