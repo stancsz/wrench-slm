@@ -234,13 +234,24 @@ withdrawal, and deletion processes before collection.
 At the owner's request, OpenCode CLI `v2.0.15` and its wrapper/config were
 installed in the isolated directory recorded in the
 [local CLI report](../../reports/wrench-e0-opencode-context-adapter/local-client-install.md).
-The only gateway request was `GET
+The install setup check used `GET
 http://127.0.0.1:4000/v1/models`, which returned HTTP 200 and advertised
-`current`. No OpenCode prompt, task, chat, inference, or external provider
-request was made. The current config selects the generic OpenAI-compatible
-Chat Completions route and `wrench-local/current`. This differs from the E0
-Responses route and `gpt-4.1-2025-04-14` research pin; select and revalidate the
-route/model identity before characterization.
+`current`. Later read-only model-list checks on 2026-09-24 also showed
+`owned_by: openai` for that alias and several other model aliases in the list.
+Safe inspection of the mounted gateway config showed `current` maps to
+`openai/current`, while active routing state is `mode: force`,
+`active_model: openrouter`, policy version 4; that alias maps to
+`openrouter/minimax/minimax-m3`. Under that state, the mounted routing callback
+would rewrite requests to the forced alias. The running router supports an
+environment override for the state-file path, which was not inspected. This
+is configured-route evidence, not an observed generation request, but it means
+the local port does not establish local inference or no-spend behavior. No
+OpenCode prompt, task, chat,
+inference, or external provider request was made. The OpenCode config selects
+the generic OpenAI-compatible Chat Completions route and `wrench-local/current`.
+This differs from the E0 Responses route and `gpt-4.1-2025-04-14` research
+pin. The immutable MiniMax model revision and matching tokenizer remain
+unresolved; the exact prompt-token gate cannot claim runtime parity.
 
 The [synthetic mock runtime preflight](../../reports/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md)
 describes one success-only request using an isolated per-run config for
@@ -248,8 +259,14 @@ describes one success-only request using an isolated per-run config for
 authority, and is **not ready to launch** until a process-level egress
 confinement mechanism is selected and validated. The
 `SessionHooks.context` Promise callback has no typed admission/veto result.
-This transport-only plan does not register or exercise a Wrench hook. Failure
-injection and any live hook integration require separate owner authorization.
+The tagged v2.0.15 source trace now shows that a rejected context callback
+prevents a primary request attempt from reaching the downstream step, but
+auxiliary requests use separate hook kinds and installed-runtime error,
+settlement, and retry behavior remain unverified. This transport-only plan
+does not register or exercise a Wrench hook. Failure injection and any live
+hook integration require separate owner authorization. See the [route and
+hook-failure source review](../../evals/wrench-e0-opencode-context-adapter/runtime-route-and-veto-source-review.md)
+and [updated request-lowering source audit](../../reports/wrench-e0-opencode-context-adapter/request-lowering-source-audit.md).
 The [preflight evaluation](../../evals/wrench-e0-opencode-context-adapter/mock-runtime-preflight.md)
 records API-contract and containment reviews, point-in-time resource evidence,
 the egress-confinement precondition, and the exact owner approval needed.
