@@ -42,10 +42,11 @@ dispatch gate, or production route.
   matching `@opencode/plugin` package at `2.0.15`. This is a source/API pin for
   review, not evidence that the client or hook was installed or run.
 - `resolve_opencode_session_root` accepts the event `sessionID` and returned
-  session record as data, requires the record `id` to match, accepts only an
-  absolute usable `location.directory`, rejects parent path components, and
-  rejects nonempty or null `subpath` values. It never falls back to a cached
-  path, plugin location, process directory, or guessed worktree.
+  session record as data, requires both IDs to satisfy the pinned `ses`
+  prefix and the record `id` to match, accepts only an absolute usable
+  `location.directory`, rejects parent path components, and rejects nonempty
+  or null `subpath` values. It never falls back to a cached path, plugin
+  location, process directory, or guessed worktree.
 - The validated root remains a configured lexical path and can be passed to
   the existing snapshot API, which binds snapshot v2 to that configured root.
   Source selection remains an explicit finite path list.
@@ -83,7 +84,8 @@ dispatch gate, or production route.
   hook behavior, callback failure semantics, provider serializer, tokenizer,
   and dispatch authority remain unresolved.
 - Offline validation rejects mismatched IDs, missing/invalid roots, ambiguous
-  subpaths, and unusable directories before snapshot creation.
+  subpaths, and unusable directories before snapshot creation; isolated resolver
+  fixtures cover these cases and the pinned session-ID prefix.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -121,3 +123,17 @@ gated on the provider/model serializer and tokenizer plus a documented or
 verified fail-closed dispatch contract. Select a consented matched-task corpus
 and outcome oracle before measuring E4 utility; the current pilot proposal is
 not capture authorization.
+
+For bounded offline characterization, the proposed provider target is
+OpenCode's OpenAI Responses route with the fixed `gpt-4.1-2025-04-14` model
+snapshot and OpenAI's Responses input-token count endpoint. This is a candidate,
+not a production gate: it sends the prompt to OpenAI and requires separate
+provider-data and spending approval before any call. It does not establish that
+OpenCode's final request matches the count request or that a failure blocks
+dispatch.
+
+For corpus mechanics, use only a small Wrench-authored synthetic matched-task
+fixture set with a deterministic task-specific test oracle and independent
+blinded verification. This can check harness behavior but cannot establish E4
+customer utility. Real utility work still needs an approved, consented source
+and a reviewable retention/deletion process; none is designated here.

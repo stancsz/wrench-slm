@@ -36,6 +36,7 @@ class OpenCodeSessionRoot:
 def _valid_session_id(value: object) -> bool:
     return (
         isinstance(value, str)
+        and value.startswith("ses")
         and 0 < len(value) <= MAX_SESSION_ID_CHARS
         and not any(ord(character) < 0x20 or ord(character) == 0x7F for character in value)
     )
