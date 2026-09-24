@@ -84,3 +84,23 @@ companion remains in memory and separate from the outcome receipt. It does not
 authenticate measurements, observe arbitrary callback effects, or satisfy
 complete E0 lifecycle accounting. See the [pipeline report](../../reports/wrench-e0-context-pipeline/pipeline.md).
 Independent verification and critique are recorded in the [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md).
+
+## Follow-up: authored synthetic composition fixture
+
+Status: accepted as a narrow composition-mechanics regression after independent
+critic and verifier review (2026-09-24).
+
+The new scenario snapshots one authored text file and one opaque binary file,
+then calls the existing `prepare_e0_context` facade. It asserts selected text
+evidence in a locally gate-ready prompt, explicit omission of non-text
+evidence, `route == none`, an incomplete unknown-outcome receipt, a verifiable
+preparation accounting join, and zero direct facade model/provider/verifier/
+tool call-site counters. The preparation status is `SOURCE_MISSES` because the
+binary input is intentionally omitted even though required text is available.
+
+This is fixture mechanics only. It does not execute the task, compare against a
+downstream baseline, verify artifact readback or pin lifetime, prove zero
+external activity, establish runtime serializer/tokenizer parity, or close
+E0/E4 acceptance. Details and independent findings are in the [composition
+fixture evaluation](../../evals/wrench-e0-context-pipeline/composition-fixture.md)
+and [pipeline report](../../reports/wrench-e0-context-pipeline/pipeline.md).

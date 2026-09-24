@@ -98,6 +98,28 @@ that proves integrity, not measurement authenticity or callback completeness.
   provider call, or downstream task was exercised. This does not close E0's
   complete lifecycle accounting, authority, or client integration gates.
 - **Review record:** [accounting companion evaluation](../../evals/wrench-e0-context-pipeline/accounting-companion.md)
+
+## Follow-up: authored synthetic composition fixture
+
+- **Worker:** `e0_composition_supervisor`; integrated by the orchestrator
+- **Status/date:** accepted as a bounded mechanics fixture after separate
+  critic and verifier review, 2026-09-24
+- **Artifact:** `tests/test_e0_context_pipeline.py`,
+  `test_authored_synthetic_composition_keeps_valid_prompt_and_records_non_text_omission`
+- **Verification:** Windows Python 3.11.16 with cached pytest 8.3.5, focused
+  test: **1 passed in 0.84s**. `git diff --check` passed.
+- **Storage:** job `W2-NS-E0-COMPOSE-20260924` reserved 10,000,000 bytes and
+  released that reservation after the test. The final checker reported
+  654,114,954 actual bytes and 103,000 bytes in other active reservations.
+- **Review:** independent critic and verifier read the actual test and
+  concluded the `SOURCE_MISSES` plus locally READY prompt and incomplete
+  unknown-outcome receipt are coherent. They found no blocking issue and
+  emphasized the narrow synthetic scope.
+- **Limits:** no task execution, baseline comparison, artifact readback/pin
+  lifetime assertion, runtime token parity, client hook, dispatch veto, or
+  complete lifecycle accounting. The zero counters cover only direct facade
+  call sites. This does not establish E0 or E4 acceptance. See the
+  [composition fixture evaluation](../../evals/wrench-e0-context-pipeline/composition-fixture.md).
 - **Next:** connect the selected OpenCode preparation seam to an approved,
   pinned client lifecycle only after request-boundary, serializer/tokenizer,
   and dispatch contracts are established. The current helper does not install
