@@ -25,3 +25,10 @@ aggregate bytes; schema lookups cap at four. Caller selected source paths can
 be marked hot or required without needing to precompute their deterministic
 evidence IDs. The prompt serializer and token counter in the focused tests are
 fixture-only.
+
+The focused tripwire fixture patches the known worker/model, client/provider,
+mechanical route, proposal router, executor, subprocess, and common socket/HTTP
+entry points. It checks that this fixture run calls none of them while the
+facade has no execution parameter. This is scoped evidence for these patched
+ports and inert callbacks, not universal proof about arbitrary caller
+callbacks, future integrations, or every possible process/network path.

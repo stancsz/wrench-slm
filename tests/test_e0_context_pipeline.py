@@ -154,3 +154,61 @@ def test_facade_bounds_inputs_and_has_no_execution_surface(tmp_path):
         serializer_id="fixture", tokenizer_id="fixture",
     )
     assert invalid_messages.status is PreparationStatus.INVALID_INPUT
+
+
+def test_preparation_does_not_call_known_execution_or_network_tripwires(tmp_path, monkeypatch):
+    """Scoped local evidence: the facade avoids these known ports in this fixture."""
+    import http.client
+    import inspect
+    import socket
+    import subprocess
+    import urllib.request
+
+    from wrench_harness import client, core, mechanical, router, worker
+
+    calls = []
+
+    def tripwire(name):
+        def fail(*_args, **_kwargs):
+            calls.append(name)
+            raise AssertionError(f"unexpected tripwire call: {name}")
+        return fail
+
+    for module, attribute in (
+        (core, "execute_model_output"),
+        (core, "execute_proposal"),
+        (client, "execute_local_qwen"),
+        (mechanical, "mechanical_route"),
+        (router.ProposalRouter, "run"),
+        (worker.WrenchWorker, "propose"),
+        (subprocess, "Popen"),
+        (subprocess, "run"),
+        (subprocess, "call"),
+        (subprocess, "check_call"),
+        (subprocess, "check_output"),
+        (socket, "socket"),
+        (socket, "create_connection"),
+        (urllib.request, "urlopen"),
+        (http.client.HTTPConnection, "connect"),
+    ):
+        monkeypatch.setattr(module, attribute, tripwire(f"{module.__name__}.{attribute}"))
+
+    root = tmp_path / "src"
+    root.mkdir()
+    snapshot = _source(root)
+    store = ArtifactStore(tmp_path / "store")
+    result = _invoke(root, snapshot, store)
+
+    parameter_names = set(inspect.signature(prepare_e0_context).parameters)
+    assert parameter_names == {
+        "source_root", "snapshot", "paths", "store", "query", "source_order_start",
+        "context_token_budget", "prompt_token_budget", "namespace_registry",
+        "schema_lookups", "base_messages", "context_position", "serializer",
+        "tokenizer_counter", "serializer_id", "tokenizer_id", "required_evidence_ids",
+        "preserve_evidence_ids", "required_source_paths", "preserve_source_paths",
+        "max_candidates",
+    }
+    assert result.status is PreparationStatus.READY
+    assert result.route == "none"
+    assert result.prompt is not None
+    assert calls == []
