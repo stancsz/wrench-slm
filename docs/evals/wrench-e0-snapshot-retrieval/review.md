@@ -44,7 +44,7 @@ root-ancestor symlink replacement immediately before root-chain acquisition.
 Its temporary fixture files were removed.
 
 `git diff --check` passed. Public package exports imported successfully. The
-storage checker reported `WITHIN_LIMIT`: 589,351,874 actual bytes plus the
+storage checker reported `WITHIN_LIMIT`: 589,355,857 actual bytes plus the
 20,000,000-byte active reservation, below the 50,000,000,000-byte ceiling.
 
 ## Review notes and limits

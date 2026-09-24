@@ -1,6 +1,6 @@
 # E0 snapshot identity and exact-source retrieval
 
-Status: accepted bounded implementation increment; POSIX pytest follow-up pending
+Status: committed bounded implementation increment; POSIX pytest follow-up pending
 Supervisor: root agent as goal owner
 Started: 2026-09-23 (America/Edmonton)
 Baseline: `380c799f3199e08404908ecd6f7faa7496992367`
@@ -51,7 +51,8 @@ publish, deploy, collect user traces, or mutate source files through the runtime
 | --- | --- | --- |
 | Implement bounded source manifest and verified exact reads | Complete | `src/wrench_harness/snapshot.py` and focused tests |
 | Review path, hash, and resource failure cases | Accepted with POSIX pytest caveat | `docs/evals/wrench-e0-snapshot-retrieval/review.md` |
-| Integrate, commit, and choose next E0 gap | In progress | This goal and [goal index](../README.md) |
+| Integrate and commit this increment | Complete | Commit `b23f925` |
+| Run POSIX pytest fixtures and continue E0 | Pending | POSIX-host verification, then bounded artifact store and remaining E0 requirements |
 
 ## Next E0 work after this slice
 
