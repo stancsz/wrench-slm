@@ -73,4 +73,7 @@ accounting, authority-scoped rule/no-model route and zero-unauthorized-action
 evidence, and POSIX-host snapshot follow-up. Matched-task utility and full
 request-lifecycle accounting remain later E4 gates. Keep E1-E4 staged behind
 their defined gates. The continuous LoRA remains a required later stage of the
-full v2 experiment.
+full v2 experiment. A ten-case Wrench-authored synthetic matched-task seed now
+checks route mechanics and source-derived task oracles; see the [seed report](../../reports/wrench-e0-synthetic-matched-tasks/seed.md)
+and [independent evaluation](../../evals/wrench-e0-synthetic-matched-tasks/review.md).
+This open development fixture is not utility evidence or E0 acceptance.

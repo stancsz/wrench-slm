@@ -1,0 +1,478 @@
+{
+  "schema": "wrench.synthetic-matched-tasks.v1",
+  "provenance": "wrench_authored_synthetic_only",
+  "usage": "open_development_fixture_only",
+  "not_a_utility_claim": true,
+  "pairs": [
+    {
+      "group": "localization",
+      "pair_id": "loc-function-name",
+      "changed_boundary_fact": "the exact function identifier that checks expiry",
+      "cases": [
+        {
+          "case_id": "loc-a",
+          "prompt": "Read src/cache.py with a 1024 byte limit.",
+          "files": [
+            {
+              "path": "src/cache.py",
+              "content_utf8": "def is_expired(entry):\n    return entry.expires_at <= 0\n",
+              "sha256": "063fed81fafd7c385262d6d44304c3b05f51f86a10a7a3ac9e6f6e094f952766"
+            },
+            {
+              "path": "src/near_match.py",
+              "content_utf8": "def is_expired_preview(entry):\n    return False\n",
+              "sha256": "8b3bb430ea3672a1f32f5b771a214775d1cd34fdcf1d6b08baff10c721eb45f1"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "read_file",
+            "observation": {
+              "path": "src/cache.py",
+              "text": "def is_expired(entry):\n    return entry.expires_at <= 0\n"
+            }
+          },
+          "answer_oracle": {
+            "expected": {
+              "symbol": "is_expired",
+              "evidence": [
+                {
+                  "path": "src/cache.py",
+                  "line": 1
+                }
+              ]
+            },
+            "rule": {
+              "kind": "function_for_attribute",
+              "source_path": "src/cache.py",
+              "attribute": "expires_at"
+            }
+          }
+        },
+        {
+          "case_id": "loc-b",
+          "prompt": "Read src/cache.py with a 1024 byte limit.",
+          "files": [
+            {
+              "path": "src/cache.py",
+              "content_utf8": "def needs_refresh(entry):\n    return entry.expires_at <= 0\n",
+              "sha256": "08978a87715a1e0f67843a190aca99500015f9b1915bca3a1cdbd599c3c15a84"
+            },
+            {
+              "path": "src/near_match.py",
+              "content_utf8": "def is_expired_preview(entry):\n    return False\n",
+              "sha256": "8b3bb430ea3672a1f32f5b771a214775d1cd34fdcf1d6b08baff10c721eb45f1"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "read_file",
+            "observation": {
+              "path": "src/cache.py",
+              "text": "def needs_refresh(entry):\n    return entry.expires_at <= 0\n"
+            }
+          },
+          "answer_oracle": {
+            "expected": {
+              "symbol": "needs_refresh",
+              "evidence": [
+                {
+                  "path": "src/cache.py",
+                  "line": 1
+                }
+              ]
+            },
+            "rule": {
+              "kind": "function_for_attribute",
+              "source_path": "src/cache.py",
+              "attribute": "expires_at"
+            }
+          }
+        }
+      ],
+      "boundary": {
+        "kind": "text_token",
+        "path": "src/cache.py",
+        "values": {
+          "loc-a": "is_expired",
+          "loc-b": "needs_refresh"
+        }
+      }
+    },
+    {
+      "group": "failing_test_log_triage",
+      "pair_id": "triage-error-type",
+      "changed_boundary_fact": "the error type printed by the frozen synthetic failure log",
+      "cases": [
+        {
+          "case_id": "triage-a",
+          "prompt": "Read logs/failure.log with a 1024 byte limit.",
+          "files": [
+            {
+              "path": "logs/failure.log",
+              "content_utf8": "case=test_limit\nTypeError: comparison needs an integer\n",
+              "sha256": "1dd68b82395518d691c54a1c817309a2dbd4ad2eb759fe853fd7fd0f7060ccc2"
+            },
+            {
+              "path": "src/limit.py",
+              "content_utf8": "def accepts_limit(value):\n    return value >= 0\n",
+              "sha256": "c1431c1060474b70da4f3d44616958740cfc4c014b2d58a16a5de50aafacb5e3"
+            },
+            {
+              "path": "tests/test_limit.py",
+              "content_utf8": "def test_none_is_rejected():\n    assert not accepts_limit(None)\n",
+              "sha256": "a0564371156e63b7607031e6a5f7faf838bcf59c1bf238abf9c515fbb52778fd"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "read_file",
+            "observation": {
+              "path": "logs/failure.log",
+              "text": "case=test_limit\nTypeError: comparison needs an integer\n"
+            }
+          },
+          "answer_oracle": {
+            "rule": {
+              "kind": "log_error_type",
+              "source_path": "logs/failure.log",
+              "pattern": "^(TypeError|ValueError):"
+            },
+            "expected": {
+              "reported_error_type": "TypeError",
+              "evidence": [
+                {
+                  "path": "logs/failure.log",
+                  "line": 2
+                }
+              ]
+            }
+          }
+        },
+        {
+          "case_id": "triage-b",
+          "prompt": "Read logs/failure.log with a 1024 byte limit.",
+          "files": [
+            {
+              "path": "logs/failure.log",
+              "content_utf8": "case=test_limit\nValueError: comparison needs an integer\n",
+              "sha256": "459bbf4dee07ab29ab58134fb0fdc9603603f278c14924910baeb5c237c31834"
+            },
+            {
+              "path": "src/limit.py",
+              "content_utf8": "def accepts_limit(value):\n    return value >= 0\n",
+              "sha256": "c1431c1060474b70da4f3d44616958740cfc4c014b2d58a16a5de50aafacb5e3"
+            },
+            {
+              "path": "tests/test_limit.py",
+              "content_utf8": "def test_none_is_rejected():\n    assert not accepts_limit(None)\n",
+              "sha256": "a0564371156e63b7607031e6a5f7faf838bcf59c1bf238abf9c515fbb52778fd"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "read_file",
+            "observation": {
+              "path": "logs/failure.log",
+              "text": "case=test_limit\nValueError: comparison needs an integer\n"
+            }
+          },
+          "answer_oracle": {
+            "rule": {
+              "kind": "log_error_type",
+              "source_path": "logs/failure.log",
+              "pattern": "^(TypeError|ValueError):"
+            },
+            "expected": {
+              "reported_error_type": "ValueError",
+              "evidence": [
+                {
+                  "path": "logs/failure.log",
+                  "line": 2
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "boundary": {
+        "kind": "text_token",
+        "path": "logs/failure.log",
+        "values": {
+          "triage-a": "TypeError",
+          "triage-b": "ValueError"
+        }
+      }
+    },
+    {
+      "group": "context_selection",
+      "pair_id": "context-literal-boundary",
+      "changed_boundary_fact": "whether the selected snapshot source contains the requested exact identifier",
+      "cases": [
+        {
+          "case_id": "context-a",
+          "prompt": "Find the exact text 'AUTH_HEADER' below src, capped at 3 matches.",
+          "files": [
+            {
+              "path": "src/session.py",
+              "content_utf8": "AUTH_HEADER = 'X-Account'\n",
+              "sha256": "bf37c0432e17122910ea23bbe187a0aa8f70fc09261c37646ba71026dc619fe5"
+            },
+            {
+              "path": "src/legacy.py",
+              "content_utf8": "LEGACY_HEADER = 'X-Account'\n",
+              "sha256": "f09592340ae1f9d6fc34b4efa56b2725a0ba133d9d024c9caca70aae32c75986"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "literal_search",
+            "observation": {
+              "root": "src",
+              "literal": "AUTH_HEADER",
+              "matches": [
+                {
+                  "path": "src/session.py",
+                  "line": 1,
+                  "text": "AUTH_HEADER = 'X-Account'"
+                }
+              ],
+              "truncated": false,
+              "scope": "supplied_snapshot_sources"
+            }
+          },
+          "answer_oracle": {
+            "expected": {
+              "selected_evidence": [
+                "src/session.py"
+              ],
+              "omitted_distractors": [
+                "src/legacy.py"
+              ]
+            },
+            "rule": {
+              "kind": "literal_paths",
+              "root": "src",
+              "literal": "AUTH_HEADER"
+            }
+          }
+        },
+        {
+          "case_id": "context-b",
+          "prompt": "Find the exact text 'AUTH_HEADER' below src, capped at 3 matches.",
+          "files": [
+            {
+              "path": "src/session.py",
+              "content_utf8": "SESSION_HEADER = 'X-Account'\n",
+              "sha256": "c98e4f9c3b1c88b6a0f8a6098efd96ac45f6c24154c1f571b01f86af5067cc41"
+            },
+            {
+              "path": "src/legacy.py",
+              "content_utf8": "LEGACY_HEADER = 'X-Account'\n",
+              "sha256": "f09592340ae1f9d6fc34b4efa56b2725a0ba133d9d024c9caca70aae32c75986"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "literal_search",
+            "observation": {
+              "root": "src",
+              "literal": "AUTH_HEADER",
+              "matches": [],
+              "truncated": false,
+              "scope": "supplied_snapshot_sources"
+            }
+          },
+          "answer_oracle": {
+            "expected": {
+              "selected_evidence": [],
+              "omitted_distractors": [
+                "src/legacy.py",
+                "src/session.py"
+              ]
+            },
+            "rule": {
+              "kind": "literal_paths",
+              "root": "src",
+              "literal": "AUTH_HEADER"
+            }
+          }
+        }
+      ],
+      "boundary": {
+        "kind": "text_token",
+        "path": "src/session.py",
+        "values": {
+          "context-a": "AUTH_HEADER",
+          "context-b": "SESSION_HEADER"
+        }
+      }
+    },
+    {
+      "group": "missing_stale_ambiguous_evidence",
+      "pair_id": "evidence-availability",
+      "changed_boundary_fact": "whether the requested exact source is absent from the snapshot or stale after snapshot capture",
+      "cases": [
+        {
+          "case_id": "evidence-missing",
+          "prompt": "Read src/config.py with a 128 byte limit.",
+          "files": [
+            {
+              "path": "README.md",
+              "content_utf8": "Synthetic fixture only.\n",
+              "sha256": "ae577ab93a827a67f3f69305a1ea64d898e61f349c349826fa704b7ebed116a0"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "abstain",
+            "reason": "source_not_in_snapshot",
+            "action": "read_file"
+          },
+          "answer_oracle": {
+            "expected": {
+              "status": "unknown",
+              "evidence": []
+            },
+            "rule": {
+              "kind": "availability",
+              "requested_path": "src/config.py"
+            }
+          }
+        },
+        {
+          "case_id": "evidence-stale",
+          "prompt": "Read src/config.py with a 128 byte limit.",
+          "files": [
+            {
+              "path": "README.md",
+              "content_utf8": "Synthetic fixture only.\n",
+              "sha256": "ae577ab93a827a67f3f69305a1ea64d898e61f349c349826fa704b7ebed116a0"
+            },
+            {
+              "path": "src/config.py",
+              "content_utf8": "mode = 'safe'\n",
+              "sha256": "90f158e7eb90939cdd446e4a56ceb26cae2b734176a4c6ed334e9217aeef1298"
+            }
+          ],
+          "mutate_after_snapshot": {
+            "path": "src/config.py",
+            "content_utf8": "mode = 'changed'\n",
+            "sha256": "0e10c2e8a086555d4725d3e8ce74e1ea94ce0042ba938a6b1b80086985160b60"
+          },
+          "expected_mechanics": {
+            "status": "abstain",
+            "reason": "snapshot_read_changed",
+            "action": "read_file"
+          },
+          "answer_oracle": {
+            "expected": {
+              "status": "unknown",
+              "evidence": []
+            },
+            "rule": {
+              "kind": "availability",
+              "requested_path": "src/config.py"
+            }
+          }
+        }
+      ],
+      "boundary": {
+        "kind": "snapshot_source_state",
+        "path": "src/config.py",
+        "values": {
+          "evidence-missing": "missing",
+          "evidence-stale": "stale"
+        }
+      }
+    },
+    {
+      "group": "missing_stale_ambiguous_evidence",
+      "pair_id": "evidence-specificity",
+      "changed_boundary_fact": "whether the prompt names one source path or leaves the source ambiguous",
+      "cases": [
+        {
+          "case_id": "evidence-ambiguous",
+          "prompt": "Read the relevant config file with a 128 byte limit.",
+          "files": [
+            {
+              "path": "config/app.toml",
+              "content_utf8": "mode = 'safe'\n",
+              "sha256": "90f158e7eb90939cdd446e4a56ceb26cae2b734176a4c6ed334e9217aeef1298"
+            },
+            {
+              "path": "config/example.toml",
+              "content_utf8": "mode = 'example'\n",
+              "sha256": "7c44be050e60e086f295bf52f0700772c85ded9345c201aed9c6d3cf7d147bdc"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "abstain",
+            "reason": "ambiguous_or_unsupported_request",
+            "action": null
+          },
+          "answer_oracle": {
+            "expected": {
+              "status": "unknown",
+              "evidence": []
+            },
+            "rule": {
+              "kind": "ambiguous_sources",
+              "candidate_paths": [
+                "config/app.toml",
+                "config/example.toml"
+              ]
+            }
+          }
+        },
+        {
+          "case_id": "evidence-specific",
+          "prompt": "Read config/app.toml with a 128 byte limit.",
+          "files": [
+            {
+              "path": "config/app.toml",
+              "content_utf8": "mode = 'safe'\n",
+              "sha256": "90f158e7eb90939cdd446e4a56ceb26cae2b734176a4c6ed334e9217aeef1298"
+            },
+            {
+              "path": "config/example.toml",
+              "content_utf8": "mode = 'example'\n",
+              "sha256": "7c44be050e60e086f295bf52f0700772c85ded9345c201aed9c6d3cf7d147bdc"
+            }
+          ],
+          "expected_mechanics": {
+            "status": "completed",
+            "action": "read_file",
+            "observation": {
+              "path": "config/app.toml",
+              "text": "mode = 'safe'\n"
+            }
+          },
+          "answer_oracle": {
+            "expected": {
+              "status": "known",
+              "mode": "safe",
+              "evidence": [
+                {
+                  "path": "config/app.toml",
+                  "line": 1
+                }
+              ]
+            },
+            "rule": {
+              "kind": "config_value",
+              "source_path": "config/app.toml",
+              "key": "mode"
+            }
+          }
+        }
+      ],
+      "boundary": {
+        "kind": "prompt_value",
+        "values": {
+          "evidence-ambiguous": "the relevant config file",
+          "evidence-specific": "config/app.toml"
+        }
+      }
+    }
+  ]
+}
