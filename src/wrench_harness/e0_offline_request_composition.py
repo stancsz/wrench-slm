@@ -61,6 +61,15 @@ _FIXTURE_MODEL = "wrench-offline-fixture"
 _MAX_CANONICAL_BYTES = 65_536
 _ROLES = frozenset({"system", "developer", "user", "assistant"})
 _HEX = frozenset("0123456789abcdef")
+_OMISSION_REASONS = frozenset({
+    "active_token_budget", "not_selected", "preserved_unit_exceeds_active_budget",
+    "unit_exceeds_active_budget", "missing", "stale", "unsafe", "unknown_snapshot",
+    "unknown_source", "evicted", "limit_exceeded", "non_text",
+})
+_MISS_STATUSES = frozenset({
+    "missing", "stale", "unsafe", "unknown_snapshot", "unknown_source",
+    "evicted", "limit_exceeded", "non_text",
+})
 
 
 class CompositionStatus(str, Enum):
@@ -79,14 +88,24 @@ class OfflineCompositionReceipt:
 
     schema: str
     snapshot_sha256: str
+    accounting_state: str
     candidate_count: int
-    selected_candidate_order_sha256: str
-    source_hash_join_sha256: str
+    selected_candidate_order_sha256: str | None
+    source_hash_join_sha256: str | None
     preparation_sha256: str
-    insertion_receipt_sha256: str
-    context_message_sha256: str
-    semantic_projection_sha256: str
-    request_body_sha256: str
+    preparation_outcome_receipt_sha256: str
+    preparation_outcome_receipt_validation_status: str
+    preparation_outcome_status: str
+    preparation_status: str
+    selected_evidence_count: int
+    omitted_evidence_count: int
+    omission_reason_counts: tuple[tuple[str, int], ...]
+    retrieval_miss_count: int
+    retrieval_miss_status_counts: tuple[tuple[str, int], ...]
+    insertion_receipt_sha256: str | None
+    context_message_sha256: str | None
+    semantic_projection_sha256: str | None
+    request_body_sha256: str | None
     route_preparation_sha256: str | None
     serializer_id: str
     tokenizer_id: str
@@ -245,6 +264,82 @@ def _source_hash_join(snapshot_sha256: str, sources: Sequence[object]) -> str:
         )
     rows.sort(key=lambda row: (row["path_sha256"], row["source_sha256"]))
     return _sha256(_canonical({"snapshot_sha256": snapshot_sha256, "sources": rows}))
+
+
+def _status_counts(rows: Sequence[tuple[str, str]]) -> tuple[tuple[str, int], ...]:
+    """Aggregate content-free reason/status labels without retaining IDs."""
+    counts: dict[str, int] = {}
+    seen: set[str] = set()
+    for evidence_id, status in rows:
+        if type(evidence_id) is not str or not evidence_id or type(status) is not str or status not in _OMISSION_REASONS:
+            raise ValueError("preparation_accounting_rows_invalid")
+        if evidence_id in seen:
+            raise ValueError("preparation_accounting_duplicate_id")
+        seen.add(evidence_id)
+        counts[status] = counts.get(status, 0) + 1
+    return tuple(sorted(counts.items()))
+
+
+def _preparation_selection_summary(preparation: object) -> tuple[int, int, tuple[tuple[str, int], ...], int, tuple[tuple[str, int], ...]]:
+    """Check the PromptGate to facade join, then retain only count aggregates."""
+    selected = getattr(preparation, "selected_evidence_ids", None)
+    omitted = getattr(preparation, "omitted_evidence", None)
+    misses = getattr(preparation, "retrieval_misses", None)
+    gate = getattr(preparation, "prompt_gate", None)
+    if (
+        type(selected) is not tuple or len(selected) > 256
+        or any(type(item) is not str or not item for item in selected)
+        or len(set(selected)) != len(selected)
+        or type(omitted) is not tuple or len(omitted) > 10_000
+        or type(misses) is not tuple or len(misses) > 16
+    ):
+        raise ValueError("preparation_selection_shape_invalid")
+    omission_counts = _status_counts(omitted)
+    miss_counts = _status_counts(misses)
+    if gate is None:
+        if selected:
+            raise ValueError("preparation_selection_prompt_join_invalid")
+    else:
+        gate_selected = getattr(gate, "selected_evidence_ids", None)
+        gate_omitted = getattr(gate, "omitted_evidence", None)
+        if (
+            type(gate_selected) is not tuple
+            or gate_selected != selected
+            or type(gate_omitted) is not tuple
+        ):
+            raise ValueError("preparation_selection_prompt_join_invalid")
+        _status_counts(gate_omitted)
+        if not set(gate_omitted).issubset(set(omitted)):
+            raise ValueError("preparation_selection_prompt_join_invalid")
+    return len(selected), len(omitted), omission_counts, len(misses), miss_counts
+
+
+def _preparation_outcome_digest(preparation: object, snapshot_sha256: str) -> tuple[str, str]:
+    """Validate the preparation's content-free outcome receipt and bind its hash."""
+    from .outcome_receipt import ReceiptResult, ReceiptStatus, validate_outcome_receipt
+
+    result = getattr(preparation, "outcome_receipt", None)
+    if type(result) is not ReceiptResult or type(result.status) is not ReceiptStatus or result.receipt is None:
+        raise ValueError("preparation_outcome_receipt_invalid")
+    validated = validate_outcome_receipt(result.receipt)
+    if (
+        validated.status not in (ReceiptStatus.VALID, ReceiptStatus.INCOMPLETE)
+        or result.status is not validated.status
+        or validated.receipt is None
+    ):
+        raise ValueError("preparation_outcome_receipt_invalid")
+    try:
+        payload = json.loads(validated.receipt.payload_json)
+    except (TypeError, ValueError, RecursionError):
+        raise ValueError("preparation_outcome_receipt_invalid") from None
+    if (
+        type(payload) is not dict
+        or payload.get("schema") != "wrench.e0.outcome-receipt.v1"
+        or payload.get("snapshot_sha256") != snapshot_sha256
+        or payload.get("context_receipt_sha256") != getattr(preparation, "aggregate_sha256", None)
+    ):
+        raise ValueError("preparation_outcome_receipt_identity_invalid")
+    return validated.receipt.sha256, validated.status.value
 
 
 def _fixture_serializer_for_projection(
@@ -502,6 +597,81 @@ def prepare_offline_e0_request(
             or preparation.metrics.structural_index_candidate_count < 1
         ):
             pin_scope.release_once()
+            incomplete_receipt = None
+            # SOURCE_MISSES is the one rejected preparation outcome that has
+            # a complete, validated reference-only outcome join. Preserve its
+            # counts without issuing a request or claiming prompt accounting.
+            if (
+                preparation.status.value == "source_misses"
+                and preparation.aggregate_sha256 is not None
+                and preparation.outcome_receipt is not None
+                and project_snapshot.snapshot.snapshot_sha256
+            ):
+                try:
+                    outcome_digest, outcome_status = _preparation_outcome_digest(
+                        preparation, project_snapshot.snapshot.snapshot_sha256
+                    )
+                    selected_count, omitted_count, omission_counts, miss_count, miss_counts = _preparation_selection_summary(preparation)
+                    payload = {
+                        "schema": "wrench.e0-offline-composition-receipt.v2",
+                        "snapshot_sha256": project_snapshot.snapshot.snapshot_sha256,
+                        "accounting_state": "incomplete_preparation",
+                        "candidate_count": max(0, preparation.metrics.structural_index_candidate_count or 0)
+                        if preparation.metrics is not None else 0,
+                        "selected_candidate_order_sha256": None,
+                        "source_hash_join_sha256": None,
+                        "preparation_sha256": preparation.aggregate_sha256,
+                        "preparation_outcome_receipt_sha256": outcome_digest,
+                        "preparation_outcome_receipt_validation_status": "valid",
+                        "preparation_outcome_status": outcome_status,
+                        "preparation_status": preparation.status.value,
+                        "selected_evidence_count": selected_count,
+                        "omitted_evidence_count": omitted_count,
+                        "omission_reason_counts": [list(row) for row in omission_counts],
+                        "retrieval_miss_count": miss_count,
+                        "retrieval_miss_status_counts": [list(row) for row in miss_counts],
+                        "insertion_receipt_sha256": None,
+                        "context_message_sha256": None,
+                        "semantic_projection_sha256": None,
+                        "request_body_sha256": None,
+                        "route_preparation_sha256": None,
+                        "serializer_id": SYNTHETIC_SERIALIZER_ID,
+                        "tokenizer_id": SYNTHETIC_TOKENIZER_ID,
+                        "exact_token_gate": ExactTokenGateStatus.UNAVAILABLE.value,
+                        "terminal_outcome": None,
+                    }
+                    incomplete_receipt = OfflineCompositionReceipt(
+                        schema=payload["schema"],
+                        snapshot_sha256=payload["snapshot_sha256"],
+                        accounting_state=payload["accounting_state"],
+                        candidate_count=payload["candidate_count"],
+                        selected_candidate_order_sha256=None,
+                        source_hash_join_sha256=None,
+                        preparation_sha256=payload["preparation_sha256"],
+                        preparation_outcome_receipt_sha256=outcome_digest,
+                        preparation_outcome_receipt_validation_status="valid",
+                        preparation_outcome_status=outcome_status,
+                        preparation_status=preparation.status.value,
+                        selected_evidence_count=selected_count,
+                        omitted_evidence_count=omitted_count,
+                        omission_reason_counts=omission_counts,
+                        retrieval_miss_count=miss_count,
+                        retrieval_miss_status_counts=miss_counts,
+                        insertion_receipt_sha256=None,
+                        context_message_sha256=None,
+                        semantic_projection_sha256=None,
+                        request_body_sha256=None,
+                        route_preparation_sha256=None,
+                        serializer_id=SYNTHETIC_SERIALIZER_ID,
+                        tokenizer_id=SYNTHETIC_TOKENIZER_ID,
+                        exact_token_gate=ExactTokenGateStatus.UNAVAILABLE.value,
+                        terminal_outcome=None,
+                        receipt_sha256=_sha256(_canonical(payload)),
+                    )
+                    if not verify_offline_e0_composition_receipt(incomplete_receipt):
+                        incomplete_receipt = None
+                except (TypeError, ValueError, UnicodeError, RecursionError):
+                    incomplete_receipt = None
             return OfflineCompositionResult(
                 CompositionStatus.PREPARATION_REJECTED,
                 preparation.reason or preparation.status.value,
@@ -510,9 +680,11 @@ def prepare_offline_e0_request(
                 route_status=(route_preparation.route_result.status.value if route_preparation else None),
                 candidate_count=(preparation.metrics.structural_index_candidate_count or 0)
                 if preparation.metrics is not None else 0,
+                receipt=incomplete_receipt,
             )
 
         candidate_count = preparation.metrics.structural_index_candidate_count
+        selected_count, omitted_count, omission_counts, miss_count, miss_counts = _preparation_selection_summary(preparation)
         source_join_digest = _source_hash_join(
             project_snapshot.snapshot.snapshot_sha256,
             tuple(preparation.sources),
@@ -559,12 +731,26 @@ def prepare_offline_e0_request(
             )
         semantic_projection_sha256 = materialized_projection.projection.projection_sha256
         receipt_payload = {
-            "schema": "wrench.e0-offline-composition-receipt.v1",
+            "schema": "wrench.e0-offline-composition-receipt.v2",
             "snapshot_sha256": project_snapshot.snapshot.snapshot_sha256,
+            "accounting_state": "complete",
             "candidate_count": candidate_count,
             "selected_candidate_order_sha256": candidate_digest,
             "source_hash_join_sha256": source_join_digest,
             "preparation_sha256": preparation.aggregate_sha256,
+            "preparation_outcome_receipt_sha256": _preparation_outcome_digest(
+                preparation, project_snapshot.snapshot.snapshot_sha256
+            )[0],
+            "preparation_outcome_receipt_validation_status": "valid",
+            "preparation_outcome_status": _preparation_outcome_digest(
+                preparation, project_snapshot.snapshot.snapshot_sha256
+            )[1],
+            "preparation_status": preparation.status.value,
+            "selected_evidence_count": selected_count,
+            "omitted_evidence_count": omitted_count,
+            "omission_reason_counts": [list(row) for row in omission_counts],
+            "retrieval_miss_count": miss_count,
+            "retrieval_miss_status_counts": [list(row) for row in miss_counts],
             "insertion_receipt_sha256": materialized.transition_receipt.receipt_sha256,
             "context_message_sha256": preparation.prompt_gate.context_message_sha256,
             "semantic_projection_sha256": semantic_projection_sha256,
@@ -582,10 +768,20 @@ def prepare_offline_e0_request(
         receipt = OfflineCompositionReceipt(
             schema=receipt_payload["schema"],
             snapshot_sha256=receipt_payload["snapshot_sha256"],
+            accounting_state=receipt_payload["accounting_state"],
             candidate_count=receipt_payload["candidate_count"],
             selected_candidate_order_sha256=receipt_payload["selected_candidate_order_sha256"],
             source_hash_join_sha256=receipt_payload["source_hash_join_sha256"],
             preparation_sha256=receipt_payload["preparation_sha256"],
+            preparation_outcome_receipt_sha256=receipt_payload["preparation_outcome_receipt_sha256"],
+            preparation_outcome_receipt_validation_status=receipt_payload["preparation_outcome_receipt_validation_status"],
+            preparation_outcome_status=receipt_payload["preparation_outcome_status"],
+            preparation_status=receipt_payload["preparation_status"],
+            selected_evidence_count=receipt_payload["selected_evidence_count"],
+            omitted_evidence_count=receipt_payload["omitted_evidence_count"],
+            omission_reason_counts=tuple(tuple(row) for row in receipt_payload["omission_reason_counts"]),
+            retrieval_miss_count=receipt_payload["retrieval_miss_count"],
+            retrieval_miss_status_counts=tuple(tuple(row) for row in receipt_payload["retrieval_miss_status_counts"]),
             insertion_receipt_sha256=receipt_payload["insertion_receipt_sha256"],
             context_message_sha256=receipt_payload["context_message_sha256"],
             semantic_projection_sha256=receipt_payload["semantic_projection_sha256"],
@@ -647,10 +843,20 @@ def _receipt_payload(
     return {
         "schema": receipt.schema,
         "snapshot_sha256": receipt.snapshot_sha256,
+        "accounting_state": receipt.accounting_state,
         "candidate_count": receipt.candidate_count,
         "selected_candidate_order_sha256": receipt.selected_candidate_order_sha256,
         "source_hash_join_sha256": receipt.source_hash_join_sha256,
         "preparation_sha256": receipt.preparation_sha256,
+        "preparation_outcome_receipt_sha256": receipt.preparation_outcome_receipt_sha256,
+        "preparation_outcome_receipt_validation_status": receipt.preparation_outcome_receipt_validation_status,
+        "preparation_outcome_status": receipt.preparation_outcome_status,
+        "preparation_status": receipt.preparation_status,
+        "selected_evidence_count": receipt.selected_evidence_count,
+        "omitted_evidence_count": receipt.omitted_evidence_count,
+        "omission_reason_counts": [list(row) for row in receipt.omission_reason_counts],
+        "retrieval_miss_count": receipt.retrieval_miss_count,
+        "retrieval_miss_status_counts": [list(row) for row in receipt.retrieval_miss_status_counts],
         "insertion_receipt_sha256": receipt.insertion_receipt_sha256,
         "context_message_sha256": receipt.context_message_sha256,
         "semantic_projection_sha256": receipt.semantic_projection_sha256,
@@ -671,13 +877,72 @@ def verify_offline_e0_composition_receipt(
         type(receipt) is not OfflineCompositionReceipt
         or type(receipt.terminal_outcome) not in (str, type(None))
         or (receipt.terminal_outcome is not None and receipt.terminal_outcome not in {item.value for item in StreamEnd})
+        or receipt.schema != "wrench.e0-offline-composition-receipt.v2"
         or receipt.exact_token_gate != ExactTokenGateStatus.UNAVAILABLE.value
         or receipt.serializer_id != SYNTHETIC_SERIALIZER_ID
         or receipt.tokenizer_id != SYNTHETIC_TOKENIZER_ID
     ):
         return False
     try:
-        return _sha256(_canonical(_receipt_payload(receipt, terminal_outcome=receipt.terminal_outcome))) == receipt.receipt_sha256
+        if (
+            type(receipt.candidate_count) is not int or not 0 <= receipt.candidate_count <= 10_000
+            or type(receipt.selected_evidence_count) is not int or not 0 <= receipt.selected_evidence_count <= 256
+            or type(receipt.omitted_evidence_count) is not int or not 0 <= receipt.omitted_evidence_count <= 10_000
+            or type(receipt.retrieval_miss_count) is not int or not 0 <= receipt.retrieval_miss_count <= 16
+            or type(receipt.omission_reason_counts) is not tuple
+            or type(receipt.retrieval_miss_status_counts) is not tuple
+            or any(type(row) is not tuple or len(row) != 2 or type(row[0]) is not str or not row[0] or type(row[1]) is not int or row[1] < 0 for row in (*receipt.omission_reason_counts, *receipt.retrieval_miss_status_counts))
+            or any(name not in _OMISSION_REASONS for name, _ in receipt.omission_reason_counts)
+            or any(name not in _MISS_STATUSES for name, _ in receipt.retrieval_miss_status_counts)
+            or tuple(name for name, _ in receipt.omission_reason_counts) != tuple(sorted(dict(receipt.omission_reason_counts)))
+            or tuple(name for name, _ in receipt.retrieval_miss_status_counts) != tuple(sorted(dict(receipt.retrieval_miss_status_counts)))
+            or sum(count for _, count in receipt.omission_reason_counts) != receipt.omitted_evidence_count
+            or sum(count for _, count in receipt.retrieval_miss_status_counts) != receipt.retrieval_miss_count
+            or type(receipt.preparation_sha256) is not str or len(receipt.preparation_sha256) != 64 or any(c not in _HEX for c in receipt.preparation_sha256)
+            or type(receipt.preparation_outcome_receipt_sha256) is not str or len(receipt.preparation_outcome_receipt_sha256) != 64 or any(c not in _HEX for c in receipt.preparation_outcome_receipt_sha256)
+            or receipt.preparation_outcome_status not in {"valid", "incomplete"}
+            or receipt.preparation_outcome_receipt_validation_status != "valid"
+        ):
+            return False
+        digest = _sha256(_canonical(_receipt_payload(receipt, terminal_outcome=receipt.terminal_outcome)))
+        if digest != receipt.receipt_sha256:
+            return False
+        if receipt.accounting_state == "incomplete_preparation":
+            return (
+                type(receipt.snapshot_sha256) is str and len(receipt.snapshot_sha256) == 64 and all(c in _HEX for c in receipt.snapshot_sha256)
+                and receipt.selected_evidence_count >= 0
+                and receipt.preparation_outcome_status == "incomplete"
+                and receipt.preparation_status == "source_misses"
+                and receipt.selected_candidate_order_sha256 is None
+                and receipt.source_hash_join_sha256 is None
+                and receipt.insertion_receipt_sha256 is None
+                and receipt.context_message_sha256 is None
+                and receipt.semantic_projection_sha256 is None
+                and receipt.request_body_sha256 is None
+                and receipt.route_preparation_sha256 is None
+                and receipt.terminal_outcome is None
+                and receipt.omitted_evidence_count > 0
+                and receipt.retrieval_miss_count > 0
+            )
+        if receipt.accounting_state != "complete":
+            return False
+        required_digests = (
+            receipt.snapshot_sha256, receipt.selected_candidate_order_sha256,
+            receipt.source_hash_join_sha256, receipt.preparation_sha256,
+            receipt.preparation_outcome_receipt_sha256, receipt.insertion_receipt_sha256,
+            receipt.context_message_sha256, receipt.semantic_projection_sha256,
+            receipt.request_body_sha256,
+        )
+        return (
+            all(type(value) is str and len(value) == 64 and all(c in _HEX for c in value) for value in required_digests)
+            and (receipt.route_preparation_sha256 is None or (type(receipt.route_preparation_sha256) is str and len(receipt.route_preparation_sha256) == 64))
+            and receipt.selected_evidence_count > 0
+            and receipt.retrieval_miss_count == 0
+            and receipt.retrieval_miss_status_counts == ()
+            and receipt.preparation_status == "ready"
+            and receipt.preparation_outcome_status == "incomplete"
+            and (receipt.terminal_outcome is None or receipt.terminal_outcome in {item.value for item in StreamEnd})
+        )
     except (TypeError, ValueError, UnicodeError, RecursionError):
         return False
 

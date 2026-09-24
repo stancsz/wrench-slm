@@ -302,6 +302,33 @@ def test_compiler_message_reaches_loopback_request_and_pins_release_at_eof():
 
         assert first.status is CompositionStatus.READY
         assert second.status is CompositionStatus.READY
+        assert first.receipt is not None
+        assert first.receipt.accounting_state == "complete"
+        assert first.receipt.selected_evidence_count == len(gate_preparations[0].selected_evidence_ids) > 0
+        assert first.receipt.omitted_evidence_count == len(gate_preparations[0].omitted_evidence)
+        assert sum(count for _, count in first.receipt.omission_reason_counts) == first.receipt.omitted_evidence_count
+        assert first.receipt.retrieval_miss_count == 0
+        assert first.receipt.retrieval_miss_status_counts == ()
+        assert first.receipt.exact_token_gate == "exact_gate_unavailable"
+        assert first.receipt.serializer_id == SYNTHETIC_SERIALIZER_ID
+        assert first.receipt.tokenizer_id == SYNTHETIC_TOKENIZER_ID
+        forged_label = replace(
+            first.receipt,
+            omission_reason_counts=(("C:/secret/sample.py", first.receipt.omitted_evidence_count),),
+        )
+        forged_payload = composition_module._receipt_payload(forged_label, terminal_outcome=None)
+        forged_label = replace(
+            forged_label,
+            receipt_sha256=composition_module._sha256(composition_module._canonical(forged_payload)),
+        )
+        assert not verify_offline_e0_composition_receipt(forged_label)
+        forged_count = replace(first.receipt, omitted_evidence_count=first.receipt.omitted_evidence_count + 1)
+        forged_payload = composition_module._receipt_payload(forged_count, terminal_outcome=None)
+        forged_count = replace(
+            forged_count,
+            receipt_sha256=composition_module._sha256(composition_module._canonical(forged_payload)),
+        )
+        assert not verify_offline_e0_composition_receipt(forged_count)
         assert first.request is not None and second.request is not None
         assert first.ticket is not None and second.ticket is not None
         assert first.receipt is not None and second.receipt is not None

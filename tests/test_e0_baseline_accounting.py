@@ -122,8 +122,13 @@ def test_baseline_accounting_joins_complete_inventory_projection_and_fixture_ter
         assert receipt.enrolled_omission_count is None
         assert receipt.context_candidate_count == result.receipt.candidate_count
         assert receipt.context_selected_candidate_order_sha256 == result.receipt.selected_candidate_order_sha256
-        assert receipt.context_selected_candidate_count is None
-        assert receipt.context_omitted_candidate_count is None
+        assert receipt.context_selected_evidence_count == result.receipt.selected_evidence_count > 0
+        assert receipt.context_omitted_evidence_count == result.receipt.omitted_evidence_count
+        assert receipt.accounting_state == "complete" and receipt.inventory_complete is True
+        assert receipt.exact_token_gate == "exact_gate_unavailable"
+        assert receipt.preparation_outcome_receipt_sha256 == result.receipt.preparation_outcome_receipt_sha256
+        assert receipt.context_omission_reason_counts == result.receipt.omission_reason_counts
+        assert receipt.context_retrieval_miss_status_counts == result.receipt.retrieval_miss_status_counts
         assert receipt.route_preparation_sha256 == result.receipt.route_preparation_sha256
         assert receipt.synthetic_token_count == receipt.synthetic_envelope_chars
         assert receipt.synthetic_envelope_bytes > receipt.synthetic_envelope_chars
@@ -164,3 +169,133 @@ def test_baseline_accounting_joins_complete_inventory_projection_and_fixture_ter
         root.rename(retired_root)
         root.mkdir()
         _assert_raises(ValueError, "source_freshness", lambda: build_e0_baseline_accounting_receipt(*join_args))
+
+
+def test_stale_preparation_emits_only_hash_bound_incomplete_accounting():
+    _TMP.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="baseline-stale-accounting-", dir=_TMP) as scratch:
+        root = Path(scratch) / "repo"
+        root.mkdir()
+        source = root / "sample.py"
+        source.write_text("def synthetic_target(value):\n    return value + 1\n", encoding="utf-8")
+        (root / "README.md").write_text("synthetic_target documentation fixture\n", encoding="utf-8")
+        data = Path(scratch) / "data"
+        data.mkdir()
+        registry = OpenCodeProjectRegistry(data)
+        registry.enroll_project("prj_stale_accounting", root, ("sample.py", "README.md"), max_file_bytes=16 * 1024, max_total_bytes=32 * 1024)
+        record = {"id": _SESSION, "location": {"directory": str(root)}}
+        captured = {}
+        original_snapshot = composition.prepare_opencode_project_snapshot
+        original_prepare = composition.prepare_opencode_e0_context
+
+        def capture_snapshot(*args, **kwargs):
+            result = original_snapshot(*args, **kwargs)
+            captured["project_snapshot"] = result
+            return result
+
+        def change_before_exact_read(*args, **kwargs):
+            source.write_text("def synthetic_target(value):\n    return value + 2\n", encoding="utf-8")
+            return original_prepare(*args, **kwargs)
+
+        store = ArtifactStore(data / "artifacts")
+        boundary = RequestLeaseBoundary(nonce_factory=lambda: "synthetic-stale-accounting-nonce")
+        with patch.object(composition, "prepare_opencode_project_snapshot", side_effect=capture_snapshot), patch.object(
+            composition, "prepare_opencode_e0_context", side_effect=change_before_exact_read
+        ):
+            result = prepare_offline_e0_request(
+                registry,
+                _SESSION,
+                record,
+                ("sample.py", "README.md"),
+                event={
+                    "sessionID": _SESSION,
+                    "agent": "build",
+                    "model": {"providerID": "synthetic-fixture", "id": "synthetic-fixture"},
+                    "system": [],
+                    "messages": [{"role": "user", "content": [{"type": "text", "text": "Explain synthetic_target."}]}],
+                    "tools": {},
+                    "options": {},
+                },
+                fixture_response=FixtureResponse((b"data: fixture\n\n",)),
+                store=store,
+                boundary=boundary,
+                namespace_registry=NamespaceRegistry(()),
+                query="synthetic_target",
+                lease_id="baseline-stale-accounting-lease",
+            )
+        assert result.status is CompositionStatus.PREPARATION_REJECTED
+        assert result.preparation_status == "source_misses"
+        incomplete = result.receipt
+        assert incomplete is not None and incomplete.accounting_state == "incomplete_preparation"
+        assert composition.verify_offline_e0_composition_receipt(incomplete)
+        assert incomplete.preparation_outcome_status == "incomplete"
+        assert incomplete.selected_evidence_count > 0
+        assert incomplete.omitted_evidence_count > 0
+        assert incomplete.retrieval_miss_status_counts == (("stale", 1),)
+        assert incomplete.request_body_sha256 is None
+        assert incomplete.semantic_projection_sha256 is None
+        assert incomplete.insertion_receipt_sha256 is None
+        assert incomplete.terminal_outcome is None
+        assert result.request is None and result.ticket is None
+        assert not result.artifact_scope_active and not store._pins
+        project_snapshot = captured["project_snapshot"]
+        inventory = build_snapshot_inventory_receipt(project_snapshot.snapshot, project_snapshot.binding)
+        assert inventory.complete is False
+        baseline = build_e0_baseline_accounting_receipt(
+            project_snapshot, inventory, incomplete, incomplete, None, None
+        )
+        assert verify_e0_baseline_accounting_receipt(baseline)
+        assert baseline.accounting_state == "incomplete_preparation"
+        assert baseline.inventory_complete is False
+        assert baseline.exact_read_status_counts == (("changed", 1), ("ok", 1))
+        assert baseline.context_retrieval_miss_status_counts == (("stale", 1),)
+        assert baseline.synthetic_token_count is None
+        assert baseline.lowered_request_body_sha256 is None and baseline.terminal_outcome is None
+        assert "sample.py" not in repr(incomplete) and "synthetic_target" not in repr(incomplete)
+        assert "sample.py" not in repr(baseline) and "synthetic_target" not in repr(baseline)
+
+        forged = replace(incomplete, request_body_sha256="0" * 64)
+        forged_payload = composition._receipt_payload(forged, terminal_outcome=None)
+        forged = replace(forged, receipt_sha256=hashlib.sha256(composition._canonical(forged_payload)).hexdigest())
+        assert not composition.verify_offline_e0_composition_receipt(forged)
+        forged_label = replace(incomplete, omission_reason_counts=(("C:/secret/sample.py", incomplete.omitted_evidence_count),))
+        forged_payload = composition._receipt_payload(forged_label, terminal_outcome=None)
+        forged_label = replace(forged_label, receipt_sha256=hashlib.sha256(composition._canonical(forged_payload)).hexdigest())
+        assert not composition.verify_offline_e0_composition_receipt(forged_label)
+        forged_baseline = replace(baseline, terminal_outcome="complete", receipt_sha256="0" * 64)
+        forged_payload = json.dumps(
+            _baseline_payload(forged_baseline), ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")
+        forged_baseline = replace(forged_baseline, receipt_sha256=hashlib.sha256(forged_payload).hexdigest())
+        assert not verify_e0_baseline_accounting_receipt(forged_baseline)
+        forged_label = replace(
+            baseline,
+            context_omission_reason_counts=(("C:/secret/sample.py", baseline.context_omitted_evidence_count),),
+            receipt_sha256="0" * 64,
+        )
+        forged_payload = json.dumps(
+            _baseline_payload(forged_label), ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")
+        forged_label = replace(forged_label, receipt_sha256=hashlib.sha256(forged_payload).hexdigest())
+        assert not verify_e0_baseline_accounting_receipt(forged_label)
+        forged_status = replace(
+            baseline,
+            context_retrieval_miss_count=2,
+            context_retrieval_miss_status_counts=(("stale", 2),),
+            receipt_sha256="0" * 64,
+        )
+        forged_payload = json.dumps(
+            _baseline_payload(forged_status), ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")
+        forged_status = replace(forged_status, receipt_sha256=hashlib.sha256(forged_payload).hexdigest())
+        assert not verify_e0_baseline_accounting_receipt(forged_status)
+        forged_bounds = replace(baseline, inventory_entry_count=0, receipt_sha256="0" * 64)
+        forged_payload = json.dumps(
+            _baseline_payload(forged_bounds), ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")
+        forged_bounds = replace(forged_bounds, receipt_sha256=hashlib.sha256(forged_payload).hexdigest())
+        assert not verify_e0_baseline_accounting_receipt(forged_bounds)

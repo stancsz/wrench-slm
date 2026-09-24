@@ -499,3 +499,15 @@ unavailable. The current report records fixture and review evidence:
 [supplied-manifest baseline accounting](../../reports/wrench-e0-context-pipeline/supplied-manifest-baseline-accounting.md).
 This does not close E0 or establish OpenCode runtime, provider, dispatch,
 tokenizer, or real-task evidence.
+
+## Follow-up: omissions and stale misses
+
+The composition receipt now records selected and omitted evidence, omission
+reasons, and retrieval misses as separate content-free aggregates. Baseline
+schema v3 has a fail-closed incomplete `SOURCE_MISSES` variant with no request,
+insertion, projection, body, token-count, or terminal measurements. Fresh
+supplied-manifest reads reconcile stale-miss statuses only by aggregate
+counts; source-level identity matching remains unavailable. The
+[implementation report](../../reports/wrench-e0-context-pipeline/omissions-stale-miss-accounting.md)
+and [review](../../evals/wrench-e0-context-pipeline/omissions-stale-miss-accounting.md)
+record the focused synthetic evidence and limits. E0 remains open.
