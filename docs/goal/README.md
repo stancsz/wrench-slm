@@ -1,5 +1,9 @@
 # Goals
 
+- [Measure acceptable local work](wrench-local-acceptability/GOAL.md): first
+  deterministic synthetic mechanics envelope measured; local SLM acceptability
+  and real-work utility remain unmeasured pending model identity and consented
+  outcome-verified tasks.
 - [North Star pilot readiness](wrench-northstar-pilot-readiness/GOAL.md):
   proposed opt-in OpenCode corpus and task-oracle protocol; customer discovery,
   consent, and capture remain unapproved and unperformed.
