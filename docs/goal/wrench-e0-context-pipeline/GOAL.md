@@ -244,3 +244,19 @@ remain component evidence; neither establishes whole-repository coverage.
 All additions remain offline mechanics and do not close runtime parity,
 dispatch enforcement, authenticated lifecycle accounting, independent task
 truth, or E0 acceptance.
+
+## Follow-up: rule-route to preparation composition
+
+Status: authored synthetic composition fixture accepted after independent
+review.
+
+The fixture runs bounded literal search over one source, one log, and one test
+file in the same validated snapshot. It carries the caller-owned route result
+and matched paths into E0 preparation, then checks that exact-read source
+hashes join to the route evidence and all required/preserved IDs are selected
+when budget permits. With a one-token budget, it verifies no prompt, explicit
+omission reasons for all required evidence, and an incomplete outcome receipt.
+The route result and path selection remain caller-supplied and unauthenticated;
+the fixture does not establish task truth, utility, runtime parity, or dispatch
+enforcement. See the [composition report](../../reports/wrench-e0-context-pipeline/route-preparation-composition.md)
+and [evaluation](../../evals/wrench-e0-context-pipeline/route-preparation-composition.md).
