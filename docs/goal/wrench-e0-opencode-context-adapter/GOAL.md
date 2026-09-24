@@ -100,10 +100,16 @@ dispatch gate, or production route.
   3.11 environment.
 - `check_opencode_preparation_admission` returns READY only for a matching
   session join with a READY preparation, inert `none` route, nonempty prompt,
-  READY prompt gate, VALID receipt, and no retrieval misses. Its typed failure
-  cases are fixture-covered. This is an internal classification only: callers
-  can ignore it, and it is not connected to or capable of vetoing OpenCode
-  dispatch.
+  READY prompt gate, canonical INCOMPLETE preparation receipt with the expected
+  snapshot/context identities and only the outcome field missing, and no
+  retrieval misses. Its typed failure cases are fixture-covered. This is an
+  internal classification only: callers can ignore it, and it is not connected
+  to or capable of vetoing OpenCode dispatch.
+- `finalize_opencode_preparation_outcome` binds the caller-supplied post-run
+  session ID to the OpenCode preparation join before delegating to the generic
+  receipt finalizer. Matching, null, and mismatched session fixtures pass.
+  This is structural equality over caller-supplied values; it does not
+  authenticate the session or observe the client lifecycle.
 - The parent E0 goal and goal index point to this slice and retain all broader
   E0/E4 gates as open.
 - Independent read-only review and `git diff --check` complete; commit contains
@@ -120,7 +126,8 @@ The integration has not been installed or run.
 Implementation details and review evidence are in the
 [session-root resolution report](../../reports/wrench-e0-opencode-context-adapter/session-root-resolution.md)
 and [evaluation](../../evals/wrench-e0-opencode-context-adapter/review.md),
-plus the [local admission-check report](../../reports/wrench-e0-opencode-context-adapter/admission-check.md).
+plus the [local admission-check report](../../reports/wrench-e0-opencode-context-adapter/admission-check.md)
+and [session-bound outcome report](../../reports/wrench-e0-opencode-context-adapter/session-outcome-binding.md).
 
 References: official [OpenCode v2.0.15 release](https://github.com/anomalyco/opencode/releases/tag/v2.0.15),
 [tagged plugin package manifest](https://github.com/anomalyco/opencode/blob/v2.0.15/packages/plugin/package.json),
