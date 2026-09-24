@@ -36,11 +36,11 @@ it does not change the boundaries of that source increment.
   callback prevents `llm.stream` for that attempt. This is source evidence,
   not a typed veto or runtime proof; session settlement, user-visible errors,
   scheduler retries, and the installed client's behavior remain unknown.
-- The public Promise context-hook type has no typed `kind` discriminator. In
-  the tagged implementation, request preparation currently adds an internal
-  `kind` field to the event before the Promise adapter forwards it. That
-  undocumented extra may be visible at runtime, but is not a supported hook
-  contract and must not be required for correct behavior.
+- The public Promise context-hook type has no `kind` field, and the tagged
+  implementation constructs the context event from the request draft plus
+  `agent` and `tools`. The `kind` discriminator belongs to the later
+  `model.request` and transport hooks. Context-hook code must not inspect or
+  require `kind`.
 - The context hook receives the semantic request before provider protocol
   lowering. The pinned `OpenAIResponses.fromRequest` function lowers an
   `LLMRequest` to a provider request body; it is not the complete final wire
@@ -424,3 +424,26 @@ preparation engine; it must reject on every bridge or preparation failure.
 This still requires a separately authorized, process-confined runtime test
 before any dispatch-denial or E0 acceptance claim. See the
 [fail-closed boundary evaluation](../../evals/wrench-e0-opencode-context-adapter/runtime-fail-closed-boundary.md).
+
+## Follow-up: bounded bridge implementation feasibility
+
+The proposed project-local plugin and Python subprocess bridge were not
+implemented in this source-only increment. Independent audits found that the
+existing Python seam is not a JSON-callable preparation operation: it requires
+an existing snapshot, explicit source paths, budgets, a namespace registry,
+serializer/tokenizer callbacks and IDs, and an `ArtifactStore`.
+`prepare_opencode_e0_context` derives its source root from the OpenCode session
+record, while the bridge boundary requires the project root and inventory
+policy to come from explicit Wrench-owned configuration. The per-root artifact
+store uses process-local locking and disallows concurrent instances, so a
+subprocess per hook is not a qualified lifecycle.
+
+OpenCode `v2.0.15` provides a source-level rejection point: the plugin callback
+may reject, and the primary runner awaits it before that model attempt. The API
+has no typed veto result, and source tracing does not establish user-visible
+settlement, retries, or runtime dispatch denial. Implementation can resume
+when Wrench has a concrete configuration contract for the root/session binding,
+scope-to-source policy, artifact-store ownership, and serializer/tokenizer
+posture. No client, localhost endpoint, provider, model, or plugin was run for
+this review. See the [bridge feasibility report](../../reports/wrench-e0-opencode-context-adapter/bridge-implementation-preflight.md)
+and [independent evaluation](../../evals/wrench-e0-opencode-context-adapter/bridge-implementation-preflight.md).
