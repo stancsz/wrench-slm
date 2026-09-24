@@ -11,8 +11,10 @@ Provide a small local persistence primitive for exact source evidence. A caller
 supplies bytes and binds them to snapshot, path, and content identity. The store
 keeps content-addressed objects under an explicit dedicated root, supports
 request-scoped pins, and returns explicit missing, evicted, or corrupt results.
-It never searches for sources, chooses a default directory, invokes a model, or
-integrates with another runtime module.
+The store primitive does not orchestrate other runtime modules. A separate
+caller-owned preparation facade composes it with snapshot and context helpers.
+The store never searches for sources, chooses a default directory, or invokes
+a model.
 
 ## Acceptance
 

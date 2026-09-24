@@ -66,6 +66,11 @@ Every later artifact job still requires a fresh status/admission. Preserve
 
 The [completion audit](../../evals/wrench-v2-realignment/review.md) records
 observed checks, repaired findings and independent acceptance. This
-realignment is complete. The next product implementation step is E0's snapshot,
-context packet, bounded artifact retrieval and accounting baseline. The
-continuous LoRA remains a required later stage of the full v2 experiment.
+realignment is complete. E0 preparation slices have since been implemented and
+accepted, but the E0 milestone is not accepted. Exit still requires
+runtime-matched prompt and tokenizer identity, complete deterministic-baseline
+accounting, authority-scoped rule/no-model route and zero-unauthorized-action
+evidence, and POSIX-host snapshot follow-up. Matched-task utility and full
+request-lifecycle accounting remain later E4 gates. Keep E1-E4 staged behind
+their defined gates. The continuous LoRA remains a required later stage of the
+full v2 experiment.
