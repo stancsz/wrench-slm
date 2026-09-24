@@ -1,5 +1,12 @@
 # Selected segment source references
 
+> **Historical scope, superseded by later integration.** This report records
+> the helper-only milestone. Its statement below that the helper was not
+> connected to `PreparationResult` described the state at that milestone. The
+> current preparation integration is documented in the [integration
+> report](./preparation-source-lineage-integration.md) and [integration
+> evaluation](../../evals/wrench-e0-context-pipeline/preparation-source-lineage-integration.md).
+
 ## Job record
 
 - Job: `W2-NS-W2-SOURCE-REFS-20260924`
@@ -28,11 +35,12 @@ prove that an artifact pin remains live. Parser-reported line spans do not
 establish byte offsets or parser confidence. The signature segment’s content
 is not reproduced in this receipt.
 
-This is an additive helper, not connected to `PreparationResult` construction.
-The current preparation return value discards structural candidates, so a
-caller that has only that value cannot obtain symbol line spans through this
-helper; those rows remain unavailable unless the exact candidate records are
-also supplied. It does not prove selected IDs came from a particular assembly,
+At this helper-only milestone, the helper was not connected to
+`PreparationResult` construction. The preparation return value then discarded
+structural candidates, so a caller with only that value could not obtain
+symbol line spans; those rows remained unavailable unless exact candidate
+records were also supplied. This integration gap was later addressed as
+documented in the linked current integration report. Neither milestone proves
 full prompt contents, OpenCode request parity, runtime dispatch, task outcome,
 or full E0 lifecycle evidence.
 

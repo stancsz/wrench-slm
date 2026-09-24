@@ -1,5 +1,11 @@
 # Selected source reference review
 
+> **Historical helper-only evaluation, superseded for current integration
+> status.** The “no integration into the preparation return value” limitation
+> below describes the state at this helper milestone. See the [current
+> integration report](../../reports/wrench-e0-context-pipeline/preparation-source-lineage-integration.md)
+> and [current integration evaluation](./preparation-source-lineage-integration.md).
+
 **Status:** PASS, independent read-only review.
 
 This fixture-only evaluation covers the additive source-reference builder in
@@ -18,8 +24,8 @@ This fixture-only evaluation covers the additive source-reference builder in
 | Duplicate selected IDs are rejected | Covered |
 | Focused tests | 9 passed, Windows Python 3.11.16, pytest 8.4.2 |
 
-Limits: synthetic fixture only; no integration into the preparation return
-value; no automatic candidate retention; no summary lineage; no full-prompt,
+Historical limits at the time of this helper evaluation: synthetic fixture
+only; no automatic candidate retention; no summary lineage; no full-prompt,
 tokenizer, OpenCode, dispatch, task-utility, or end-to-end lifecycle claim.
 
 Reviewer job `W2-NS-REFS-IMMUTABLE-REVIEW-20260924`, nonce
