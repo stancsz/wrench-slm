@@ -57,6 +57,10 @@
   read-only review finds model/runtime identity, consented experience lineage,
   and adapter activation/recovery incomplete; a synthetic-only lifecycle
   component is the recommended next engineering increment.
+- [E3 synthetic model-version lifecycle](wrench-e3-synthetic-version-lifecycle/GOAL.md):
+  accepted bounded, offline version state-machine mechanics with hash-bound
+  manifests, admission, request pins, rollback/reset, and recovery fixtures;
+  production compatibility and recovery remain unproven.
 - [Wrench v2 realignment](wrench-v2-realignment/GOAL.md): current direction
   cleanup, v1 lessons and definition of the Layer 1 + continuous-LoRA experiment.
 - [Experiment v2](../northstar/V2_EXPERIMENT.md): planned product implementation
