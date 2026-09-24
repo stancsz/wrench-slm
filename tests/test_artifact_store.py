@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -245,6 +246,79 @@ def test_request_pins_block_eviction_then_release_and_tombstone(tmp_path):
     assert second.object_bytes_reclaimed == len(b"pinned")
     assert store.read(pinned).status is ArtifactReadStatus.EVICTED
     assert ArtifactStore(tmp_path / "store").read(pinned).status is ArtifactReadStatus.EVICTED
+
+
+def test_request_pin_scope_duration_is_null_while_open_then_measured(tmp_path, monkeypatch):
+    clock_values = iter((100, 137))
+    monkeypatch.setattr(
+        store_module, "time", SimpleNamespace(monotonic_ns=lambda: next(clock_values))
+    )
+    store = ArtifactStore(tmp_path / "store")
+    request = store.request()
+
+    assert request.pin_scope_duration_ns is None
+    with request:
+        assert request.pin_scope_duration_ns is None
+
+    assert request.pin_scope_duration_ns == 37
+
+
+def test_request_pin_scope_duration_is_recorded_on_exception_exit(tmp_path, monkeypatch):
+    clock_values = iter((200, 245))
+    monkeypatch.setattr(
+        store_module, "time", SimpleNamespace(monotonic_ns=lambda: next(clock_values))
+    )
+    store = ArtifactStore(tmp_path / "store")
+    request = store.request()
+
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        with request:
+            request.pin(
+                _put(
+                    store,
+                    "snapshot",
+                    "exception.py",
+                    b"pinned",
+                    disposition="disposable",
+                    expires_at_unix_seconds=10,
+                )
+            )
+            raise RuntimeError("synthetic failure")
+
+    assert request.pin_scope_duration_ns == 45
+    evicted = store.evict(target_bytes=len(b"pinned"), now_unix_seconds=10)
+    assert len(evicted.handles) == 1
+
+
+def test_request_pin_scope_duration_is_unchanged_by_repeated_exit(tmp_path, monkeypatch):
+    clock_values = iter((300, 360))
+    monkeypatch.setattr(
+        store_module, "time", SimpleNamespace(monotonic_ns=lambda: next(clock_values))
+    )
+    request = ArtifactStore(tmp_path / "store").request()
+    request.__enter__()
+    request.__exit__(None, None, None)
+    duration = request.pin_scope_duration_ns
+    request.__exit__(None, None, None)
+
+    assert duration == 60
+    assert request.pin_scope_duration_ns == duration
+
+
+def test_separate_request_pin_scopes_have_independent_durations(tmp_path, monkeypatch):
+    clock_values = iter((400, 405, 500, 512))
+    monkeypatch.setattr(
+        store_module, "time", SimpleNamespace(monotonic_ns=lambda: next(clock_values))
+    )
+    store = ArtifactStore(tmp_path / "store")
+
+    with store.request() as first:
+        assert first.pin_scope_duration_ns is None
+    with store.request() as second:
+        assert second.pin_scope_duration_ns is None
+
+    assert first.pin_scope_duration_ns == 5
+    assert second.pin_scope_duration_ns == 12
 
 
 def test_eviction_is_deterministic_by_generation_then_handle_id(tmp_path):

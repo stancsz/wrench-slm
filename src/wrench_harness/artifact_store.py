@@ -14,6 +14,7 @@ import re
 import shutil
 import stat
 import threading
+import time
 import uuid
 from dataclasses import dataclass
 from enum import Enum
@@ -797,13 +798,32 @@ class ArtifactRequest:
         self._pinned: set[str] = set()
         self._entered = False
         self._closed = False
+        self._entered_at_monotonic_ns: int | None = None
+        self._closed_at_monotonic_ns: int | None = None
 
     def __enter__(self) -> "ArtifactRequest":
         with self._store._lock:
             if self._entered or self._closed:
                 raise ArtifactRequestError("request scope cannot be entered more than once")
+            self._entered_at_monotonic_ns = time.monotonic_ns()
             self._entered = True
         return self
+
+    @property
+    def pin_scope_duration_ns(self) -> int | None:
+        """Return the locally measured open-scope duration after it closes.
+
+        This is process-local pin lifetime only. It is not task, client, or
+        downstream request latency. The monotonic clock origin is never exposed.
+        """
+        with self._store._lock:
+            if (
+                not self._closed
+                or self._entered_at_monotonic_ns is None
+                or self._closed_at_monotonic_ns is None
+            ):
+                return None
+            return max(0, self._closed_at_monotonic_ns - self._entered_at_monotonic_ns)
 
     def is_active_for(self, store: ArtifactStore) -> bool:
         """Return whether this open scope belongs to ``store``."""
@@ -832,6 +852,11 @@ class ArtifactRequest:
         with self._store._lock:
             if not self._entered or self._closed:
                 return None
+            try:
+                self._closed_at_monotonic_ns = time.monotonic_ns()
+            except Exception:
+                # Instrumentation must not prevent release of request pins.
+                self._closed_at_monotonic_ns = None
             self._entered = False
             self._closed = True
             for handle_id in tuple(self._pinned):
