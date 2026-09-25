@@ -1,13 +1,12 @@
 # Goals
 
-- [Measure acceptable local work](wrench-local-acceptability/GOAL.md): first
-  deterministic proposal screen and a ten-case route-to-executor operation
-  screen plus a six-case bounded line-range read screen measured on exposed
-  synthetic fixtures. Exact reads, line reads, literal searches, and one
-  explicit whole-line removal draft operation have narrow mechanics evidence;
-  generic patch drafting and all local SLM task classes remain unaccepted.
-  Real-work utility and frontier-token savings remain unmeasured pending
-  consented, outcome-verified matched tasks and complete usage receipts.
+- [Measure acceptable local work](wrench-local-acceptability/GOAL.md): exposed
+  synthetic screens cover exact reads, line ranges, literal searches, and four
+  bounded review-only patch operations with exact diff/application oracles and
+  abstention boundaries. These are mechanics results only; open-ended patch
+  work and local SLM task classes remain unaccepted. Real-work utility and
+  frontier-token savings remain unmeasured pending consented, outcome-verified
+  matched tasks and complete usage receipts.
 - [North Star pilot readiness](wrench-northstar-pilot-readiness/GOAL.md):
   proposed opt-in OpenCode corpus and task-oracle protocol; customer discovery,
   consent, and capture remain unapproved and unperformed.
