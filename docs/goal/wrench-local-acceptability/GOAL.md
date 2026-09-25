@@ -3,9 +3,10 @@
 Status: active; the deterministic proposal route passed a 176-case synthetic
 development screen across six bounded action families. Open-fixture
 route-to-executor screens now cover exact file reads, line-range reads and
-literal searches with evidence-bound abstentions. The first local SLM screen
-failed all five classes. Real-work utility and frontier-token savings remain
-unmeasured.
+literal searches with evidence-bound abstentions. An explicit whole-line
+removal route-to-diff screen passed 3/3 positive cases and 6/6 boundaries as
+narrow draft mechanics only. The first local SLM screen failed all five
+classes. Real-work utility and frontier-token savings remain unmeasured.
 
 ## Objective
 
@@ -19,14 +20,22 @@ learned controller.
 The current scope decision is recorded in the [local task acceptance
 envelope](../../reports/wrench-local-acceptability/local-acceptance-envelope-20260925.md):
 exact snapshot file reads, line-range reads, and literal searches have
-mechanics evidence only; Git status, health reads, and review-only patch drafts
-have proposal evidence only; and no semantic local SLM class is accepted. The
-first fresh-fixture route-to-verifier screen for review-only patch drafts
+mechanics evidence only; Git status, health reads, and generic review-only
+patch drafts have proposal evidence only; and no semantic local SLM class is
+accepted. A
+separate screen accepts only explicit whole-line removal draft mechanics on
+the tested synthetic LF files. The first fresh-fixture route-to-verifier
+screen for generic review-only patch drafts
 failed its exact positive-oracle rule (1/3), although all three boundaries
 abstained and all fixture trees stayed unchanged. See the [screen report](../../reports/wrench-local-acceptability/patch-draft-screen-01.md).
 The identified parser defects passed 33 focused tests after repair, but the
 screen was not repeated, so patch drafting remains unaccepted. See the
 [repair follow-up](../../reports/wrench-local-acceptability/patch-draft-screen-01-followup.md).
+The follow-up [screen 02](../../reports/wrench-local-acceptability/patch-draft-screen-02.md)
+matched 3/4 positive drafts and all six boundaries; its remove-setting result
+failed the exact target oracle. The new [whole-line removal screen](../../reports/wrench-local-acceptability/patch-whole-line-screen-01.md)
+passed 3/3 explicit line removals and 6/6 boundaries, but this narrow result
+does not accept generic patch drafting or completed coding work.
 The M3 tokenizer proxy is secondary because prompt size cannot decide task
 acceptability. Training stays stopped until a preregistered, held-out task
 class passes its outcome and safety criteria.
@@ -158,10 +167,12 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    split before any calls. The [pilot-readiness goal](../wrench-northstar-pilot-readiness/GOAL.md)
    holds the owner decisions and study design.
 
-4. Prioritize the [review-only patch-draft acceptance screen](../../reports/wrench-local-acceptability/local-acceptance-envelope-20260925.md)
-   over additional training or token-size proxy work. Use a fresh fixture,
-   exact diff oracle, independent verifier, boundary abstentions, and a
-   source-tree immutability check. Keep any pass scoped to draft mechanics.
+4. Keep generic review-only patch drafting unaccepted after screen 02's
+   exact-oracle failure. The explicit whole-line removal screen passed only
+   that narrow operation. Before broadening the draft envelope, preregister a
+   fresh full operation screen for replacement, append, insert, and whole-line
+   removal with an exact diff oracle, independent applier, boundary abstentions,
+   and source-tree immutability. Keep any pass scoped to draft mechanics.
 
 No additional model training, provider request, OpenCode routing, client
 prompt, or real workflow capture is authorized by this goal. The local
