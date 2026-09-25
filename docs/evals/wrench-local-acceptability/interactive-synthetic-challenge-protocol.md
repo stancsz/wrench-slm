@@ -2,10 +2,10 @@
 
 Status: run `qwen35-0.8b-synthetic-20260925-01` stopped before its first
 `model.generate` call because the runner treated the tokenizer's `BatchEncoding`
-as a flat tensor. It is invalid as model-quality evidence. The current user
-request to begin measuring local acceptability is preregistered here as one
-separate follow-up run after the serialization fix. This document does not
-authorize training, provider traffic, or capture of real workflows.
+as a flat tensor. It is invalid as model-quality evidence. The separately
+preregistered corrected run 02 completed, but all five task-class screens
+scored 0/2. Neither run authorizes training, provider traffic, or capture of
+real workflows.
 
 Scope: one open-development synthetic capability diagnostic
 Fixture: `tests/fixtures/e0_synthetic_matched_tasks_v1/manifest.json`
@@ -56,9 +56,29 @@ It records a single pre-generation harness failure and nine `not_run` cases;
 it must not be combined with run 02 or scored as model behavior. Run 02 uses the
 same pinned model, fixture, prompts, serializer, tool protocol, and oracles,
 with the runner normalizing `BatchEncoding["input_ids"]` before counting,
-device transfer, or generation. Run 02 has its own durable output path ending
-in `-02.json`; it is a new preregistered run, not a retry inside run 01. Any
-generation/runtime error stops run 02 without retrying a case.
+device transfer, or generation. Run 02 has its own durable output at
+`C:\wrench-slm-data\artifacts\wrench-local-acceptability\qwen35-0.8b-synthetic-20260925-02.json`
+with SHA-256
+`d2cce0fd3dee7a420cffa23e9f8f4bc8bb24368dab842353de8c85fce43598f8`.
+The output path was confirmed absent and the aggregate storage gate was
+`WITHIN_LIMIT` before this single run; the existing job reservation was
+`W2-NS-LOCAL-QWEN3-SYNTH-20260925`. This was a new preregistered run, not a
+retry inside run 01. Any generation/runtime error would stop a run without
+retrying a case.
+
+Run 02 completed all ten cases and made zero tool calls. Every case failed
+the exact tool flow, schema, and case-pass checks; each task class scored 0/2.
+The model returned `known` twice with unsupported source claims and returned
+`unknown` eight times. Five `unknown` responses were false abstentions on
+answerable tasks. Three unknown responses matched the expected broad
+abstention intent for missing, stale, or ambiguous evidence, but none qualifies
+as a strict correct abstention because the required evidence tool was not
+called and the reason string did not match the required enum. Strict grounded
+accepts and strict correct abstentions were both 0/10. No disallowed tool
+attempts or mutations were observed. The final-answer schema has no escalation
+state, so escalation was not measurable in this challenge. See the run 02
+report and evaluation for per-class counts. This outcome does not establish
+real-work utility or training labels.
 
 Model files must be under `C:\wrench-slm-data\weights`; output checkpoints,
 `HF_HOME`, and `TORCH_HOME` must be under `C:\wrench-slm-data`. Output is

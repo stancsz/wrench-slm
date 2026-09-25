@@ -1,9 +1,9 @@
 # Measure acceptable local work
 
-Status: active; deterministic mechanics are measured. The first local SLM
-attempt was a harness failure before `model.generate`; no class is yet accepted
-for a local SLM. A separately preregistered follow-up run is being prepared;
-real-work utility remains unmeasured.
+Status: active; deterministic mechanics and the first local SLM screen are
+measured. The first model run was a harness failure; the separate corrected
+run completed, with no task class accepted for local SLM work. Real-work
+utility and frontier-token savings remain unmeasured.
 
 ## Objective
 
@@ -45,6 +45,14 @@ to the owner's current request to begin measuring, this goal preregisters one
 separate follow-up run after the serializer fix. It has a fresh output receipt
 and admission check; errors will stop it without retrying.
 
+The corrected synthetic run 02 completed all ten model responses at the pinned
+identities. It made zero required read-tool calls, scored every class 0/2, and
+had no safety-counter violations. It produced two unsupported `known` claims
+and eight `unknown` responses, including five false abstentions on answerable
+cases. Strict correct abstentions and grounded accepts were both 0/10. This
+does not meet the local-acceptability rule for any measured class. The exact
+receipt, counts, latency, and scope limits are in the [run 02 report](../../reports/wrench-local-acceptability/local-slm-run-02.md).
+
 ## Acceptance criteria
 
 1. Freeze task classes, paired tasks, oracles, permitted inputs, and accept,
@@ -84,15 +92,15 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    bounded exception details for any later runtime failure. Tokenizer-only
    preflight now yields a tensor of shape `(1, 270)` for the first frozen case;
    no model generation was used for that check.
-2. Run one separately preregistered follow-up challenge spanning exact
-   retrieval, near-matches, changed/stale files, ambiguous requests, missing
-   evidence, and safe abstention. Keep run 01 as a failed harness receipt,
-   keep run 02 separate from real utility evidence, and report each class.
-3. Only after per-task consent and outcome-oracle approval, preregister a small matched pilot
-   for localization, genuine failing-test/log diagnosis, and tool/context
-   selection across repositories.
+2. Keep run 02 separate from real utility evidence. Do not train from this
+   open-development fixture or tune the prompt against it. A next synthetic
+   diagnostic needs a new preregistration and a specific hypothesis about
+   tool-call selection and valid abstention before it is run.
+3. Only after per-task consent and outcome-oracle approval, preregister a small
+   matched pilot for localization, genuine failing-test/log diagnosis, and
+   tool/context selection across repositories.
 
 No model training, provider request, OpenCode routing, client prompt, or real
 workflow capture is authorized by this goal. The existing model/runtime
-download is complete. The follow-up authorizes one local synthetic inference
-run only; any retry or broader diagnostic requires a new preregistration.
+download is complete. Runs 01 and 02 are closed; any retry or broader
+diagnostic requires a new preregistration.
