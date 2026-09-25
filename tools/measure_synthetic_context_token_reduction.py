@@ -194,13 +194,13 @@ def _verify_asset_inventory() -> dict[str, Any]:
     if inventory.get("selected_tokenizer_metadata_bytes") != SELECTED_ASSET_BYTES:
         raise ValueError("tokenizer_inventory_total_mismatch")
     for name, (size, digest) in EXPECTED_ASSETS.items():
-        path = TOKENIZER_ROOT / name if name == "LICENSE" else TOKENIZER_DIR / name
+        path = TOKENIZER_DIR / name
         if _is_reparse_point(path):
             raise ValueError("tokenizer_asset_reparse_point_rejected:" + name)
-        _require_below(path, TOKENIZER_ROOT if name == "LICENSE" else TOKENIZER_DIR, "tokenizer_asset_outside_pinned_root:" + name)
+        _require_below(path, TOKENIZER_DIR, "tokenizer_asset_outside_pinned_root:" + name)
         if path.stat().st_size != size or _file_sha256(path) != digest:
             raise ValueError("tokenizer_asset_identity_mismatch:" + name)
-    expected_tokenizer_names = set(EXPECTED_ASSETS) - {"LICENSE"}
+    expected_tokenizer_names = set(EXPECTED_ASSETS)
     actual_tokenizer_names = {path.name for path in TOKENIZER_DIR.iterdir() if path.is_file()}
     if actual_tokenizer_names != expected_tokenizer_names:
         raise ValueError("unexpected_tokenizer_directory_files")
