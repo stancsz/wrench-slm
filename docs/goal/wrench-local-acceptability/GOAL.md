@@ -21,7 +21,7 @@ learned controller.
 The current scope decision is recorded in the [local task acceptance
 envelope](../../reports/wrench-local-acceptability/local-acceptance-envelope-20260925.md):
 exact snapshot file reads, line-range reads, and literal searches have
-mechanics evidence only; Git status, health reads, and generic review-only
+mechanics evidence only; Git status, health reads, and open-ended or multi-file
 patch drafts have proposal evidence only; and no semantic local SLM class is
 accepted. The fresh patch-operation screen matched 12/12 exact diffs and
 independent target applications, with 9/9 boundaries abstaining and fixture
@@ -34,8 +34,9 @@ and [evaluation](../../evals/wrench-local-acceptability/patch-operations-screen-
 The first fresh-fixture route-to-verifier screen for generic review-only patch drafts
 failed its exact positive-oracle rule (1/3), although all three boundaries
 abstained and all fixture trees stayed unchanged. See the [screen report](../../reports/wrench-local-acceptability/patch-draft-screen-01.md).
-The identified parser defects passed 33 focused tests after repair, but the
-screen was not repeated, so patch drafting remains unaccepted. See the
+The identified parser defects passed 33 focused tests after repair, but that
+generic screen was not repeated, so its generic patch scope remains
+unaccepted. See the
 [repair follow-up](../../reports/wrench-local-acceptability/patch-draft-screen-01-followup.md).
 The follow-up [screen 02](../../reports/wrench-local-acceptability/patch-draft-screen-02.md)
 matched 3/4 positive drafts and all six boundaries; its remove-setting result
