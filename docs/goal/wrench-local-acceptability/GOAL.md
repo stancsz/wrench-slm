@@ -7,7 +7,11 @@ searches with evidence-bound abstentions. A fresh patch-operation screen
 matched 12/12 exact draft oracles across replacement, append, insert-after,
 and explicit whole-line removal, plus 9/9 abstention boundaries. These are
 draft mechanics only. The first local SLM screen failed all five classes.
-Real-work utility and frontier-token savings remain unmeasured.
+The fresh 18-case prompt-only screen also passed no generative task class:
+0/12 answerable cases met the exact answer/schema/evidence oracle, while 3/6
+boundary examples were correctly abstained. Training remains stopped pending
+a held-out, tool-backed outcome screen. Real-work utility and frontier-token
+savings remain unmeasured.
 
 ## Objective
 
@@ -90,6 +94,19 @@ and RTX 5060 Ti capability are verified. Do not infer a local route from an
 API server listening on localhost. The owner's request authorizes only the
 bounded synthetic local measurement described here. It does not authorize
 training, provider traffic, OpenCode routing, or a real workflow capture.
+
+The separate [prompt-only local work screen](../../reports/wrench-local-acceptability/prompt-only-local-work-screen-01.md)
+completed all 18 synthetic generations. It accepted no positive answer under
+the frozen exact oracle, passed only three correct abstentions, and failed all
+three classes. Log mapping cited source lines but returned exception names
+instead of normalized categories; config responses often violated the exact
+JSON schema; localization omitted the property-access evidence and guessed on
+boundaries. These results nominate no semantic work for LoRA training. Keep
+the outputs untrusted and do not tune on this exposed fixture. This separate
+prompt-only diagnostic has no tool result, held-out split, real-task oracle,
+or frontier usage, so it does not meet the goal's local SLM gate and provides
+no token-savings number. See the [result evaluation](../../evals/wrench-local-acceptability/prompt-only-local-work-screen-01-result.md)
+and [frozen protocol](../../evals/wrench-local-acceptability/prompt-only-local-work-screen-01-protocol.md).
 
 The first pinned runtime/model load completed within the resource reserve, but
 run 01 failed before the model call: `apply_chat_template` returned a
