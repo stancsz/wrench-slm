@@ -146,6 +146,17 @@ tokens and the deterministic seed's 10/10 fixture result do not enter this
 metric. The exact evidence and remaining permission/runtime gates are in the
 [frontier measurement readiness review](../../evals/wrench-local-acceptability/frontier-token-readiness.md).
 
+An offline [attempt-ledger bridge](../../reports/wrench-local-acceptability/frontier-attempt-ledger-bridge.md)
+now adapts complete, caller-supplied frontier-only ledgers into the reporter's
+existing receipt format. It requires exact token counts, known cost for every
+frontier call, and explicit zero local-model, tool, and verifier calls; it
+rejects mixed routes, fallbacks, unrun attempts, and unknown outcomes. CLI
+stdout stays reporter-compatible, with detailed arm exclusions on stderr.
+Eleven standard-library fixture checks pass. This only verifies conversion and
+exclusion mechanics. It is not valid for Wrench SLM or mixed workflows, does
+not authenticate telemetry, and adds no observed savings pair. Average
+frontier savings remain N/A with zero eligible pairs.
+
 ## Acceptance criteria
 
 1. Freeze task classes, paired tasks, oracles, permitted inputs, and accept,
