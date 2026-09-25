@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -16,6 +17,7 @@ RUNTIME_PYTHON = DATA_ROOT / "envs" / "wrench-local-synthetic-cp313" / "Scripts"
 RUNNER = ROOT / "tools" / "measure_local_prompt_only_work.py"
 LOG_ROOT = DATA_ROOT / "logs" / "wrench-local-acceptability"
 HARD_TIMEOUT_SECONDS = 25 * 60
+SUPERVISOR_POLL_SECONDS = 30
 JOB_ID = "W2-LOCAL-PROMPTONLY-SCREEN-20260925-01"
 
 
@@ -94,8 +96,19 @@ def main() -> int:
     with stdout_path.open("xb") as stdout, stderr_path.open("xb") as stderr:
         child = subprocess.Popen(command, cwd=ROOT, env=child_env, stdout=stdout,
                                  stderr=stderr, shell=False, creationflags=creationflags)
+        deadline = time.monotonic() + HARD_TIMEOUT_SECONDS
         try:
-            code = child.wait(timeout=HARD_TIMEOUT_SECONDS)
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(command, HARD_TIMEOUT_SECONDS)
+                try:
+                    code = child.wait(timeout=min(SUPERVISOR_POLL_SECONDS, remaining))
+                    break
+                except subprocess.TimeoutExpired:
+                    if time.monotonic() >= deadline:
+                        raise
+                    _assert_storage_admitted()
         except subprocess.TimeoutExpired:
             child.kill()
             child.wait()
@@ -104,6 +117,13 @@ def main() -> int:
                               "receipt": str(output), "receipt_marked": receipt_marked,
                               "stdout": str(stdout_path), "stderr": str(stderr_path)}))
             return 124
+        except Exception as exc:
+            child.kill()
+            child.wait()
+            print(json.dumps({"status": "STOPPED_STORAGE_ADMISSION", "error_type": type(exc).__name__,
+                              "error": str(exc), "receipt": str(output),
+                              "stdout": str(stdout_path), "stderr": str(stderr_path)}))
+            return 125
     print(json.dumps({"status": "CHILD_EXITED", "exit_code": code, "receipt": str(output),
                       "stdout": str(stdout_path), "stderr": str(stderr_path)}))
     return code
