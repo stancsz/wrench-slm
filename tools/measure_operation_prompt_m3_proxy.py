@@ -32,8 +32,8 @@ REVIEW_PATH = ROOT / "docs" / "evals" / "wrench-e0-synthetic-matched-tasks" / "r
 ARTIFACT_ROOT = Path(r"C:\wrench-slm-data\artifacts\wrench-local-acceptability")
 TMP_ROOT = ARTIFACT_ROOT / "tmp"
 
-JOB_ID = "LOCAL-M3-OPS-PROXY-20260925-01"
-NONCE = "M3OP01-91A7"
+JOB_ID = "LOCAL-M3-OPS-PROXY-20260925-02"
+NONCE = "M3OP02-A42C"
 SCHEMA = "wrench.synthetic-operation-m3-input-proxy.v1"
 MODEL_REVISION = "f0e1c1e04d40177e4673a22097036854f536e9c0"
 EXPECTED_MANIFEST_SHA256 = "871814333d9f582df9595ec486eb59fbf5f66c397cb451f6b67d9519d2bb72c5"
@@ -260,21 +260,35 @@ def _route_matches_operation_oracle(case: dict[str, Any], route) -> bool:
     return True
 
 
+def _untrusted_payload(context_message_content: str) -> str:
+    begin = "BEGIN UNTRUSTED SOURCE JSON STRING\n"
+    end = "\nEND UNTRUSTED SOURCE JSON STRING"
+    if context_message_content.count(begin) != 1 or context_message_content.count(end) != 1:
+        raise ValueError("untrusted_context_wrapper_markers_invalid")
+    payload_start = context_message_content.index(begin) + len(begin)
+    payload_end = context_message_content.index(end, payload_start)
+    payload = json.loads(context_message_content[payload_start:payload_end])
+    if type(payload) is not str:
+        raise ValueError("untrusted_context_payload_not_text")
+    return payload
+
+
 def _oracle_context_complete(case: dict[str, Any], prompt: str, content: str, route) -> tuple[bool, str | None]:
+    assembled_context = _untrusted_payload(content)
     oracle = case["expected_mechanics"]["observation"]
     if case["expected_mechanics"]["action"] == "read_file":
         path = oracle["path"]
         source = next((row for row in case["files"] if row["path"] == path), None)
-        if source is None or path not in prompt or source["content_utf8"] not in content:
+        if source is None or path not in prompt or source["content_utf8"] not in assembled_context:
             return False, "required_path_or_exact_source_not_visible"
         return True, None
 
     matches = oracle["matches"]
     if matches:
         for match in matches:
-            if match["path"] not in prompt and match["path"] not in content:
+            if match["path"] not in prompt and match["path"] not in assembled_context:
                 return False, "matched_source_path_not_visible"
-            if match["text"] not in content:
+            if match["text"] not in assembled_context:
                 return False, "matched_source_quote_not_visible"
         return True, None
 
@@ -282,7 +296,7 @@ def _oracle_context_complete(case: dict[str, Any], prompt: str, content: str, ro
     # search root was carried through route evidence into the context message.
     scoped = [row for row in case["files"] if row["path"].startswith(oracle["root"].rstrip("/") + "/")]
     for source in scoped:
-        if source["content_utf8"] not in content:
+        if source["content_utf8"] not in assembled_context:
             return False, "empty_search_scope_source_not_visible"
     if len(route.evidence) != len(scoped) or not scoped:
         return False, "empty_search_scope_evidence_incomplete"
@@ -470,7 +484,7 @@ def measure(output: Path) -> dict[str, object]:
     rows: list[dict[str, object]] = []
     output.parent.mkdir(parents=True, exist_ok=True)
     TMP_ROOT.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="m3-operation-proxy-01-", dir=TMP_ROOT) as scratch_name:
+    with tempfile.TemporaryDirectory(prefix="m3-operation-proxy-02-", dir=TMP_ROOT) as scratch_name:
         scratch = Path(scratch_name)
         for case_id in CASE_IDS:
             rows.append(_measure_case(cases[case_id], tokenizer, scratch))

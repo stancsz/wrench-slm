@@ -1,8 +1,9 @@
-# Explicit-operation synthetic M3 input-token proxy 01
+# Explicit-operation synthetic M3 input-token proxy 02
 
-Status: superseded before execution after source-evidence audit; no cases run.
-Job id: `LOCAL-M3-OPS-PROXY-20260925-01`
-Nonce: `M3OP01-91A7`
+Status: superseded before execution after independent validity review; no cases
+were run and no tokenizer was loaded.
+Job id: `LOCAL-M3-OPS-PROXY-20260925-02`
+Nonce: `M3OP02-A42C`
 
 ## Question and claim boundary
 
@@ -16,6 +17,11 @@ Wrench-authored open-development fixtures. It measures prompt input size only.
 It does not measure successful task completion, local SLM ability, real-work
 utility, OpenCode request construction, provider billing, frontier-token
 savings, or paid-cost reduction. `frontier_token_savings_percent` stays null.
+Protocol 01 is preserved as a pre-measurement failure and is not combined.
+This protocol is retained as a second pre-measurement failure and is not
+authorized for execution. The audit findings are recorded in
+[screen 02](operation-prompt-m3-token-proxy-screen-02.md). Any future prompt
+size run needs a fresh protocol and job identity.
 
 ## Frozen inputs and arms
 
@@ -40,15 +46,18 @@ savings, or paid-cost reduction. `frontier_token_savings_percent` stays null.
 - Use the same untrusted-context wrapper implementation in both arms. The
   baseline labels every full-snapshot file with its path; Wrench uses the
   compiler's native `[context:<evidence-id>]` section format, which may omit
-  path labels. Such a task is eligible only if every exact
-  path and source quote required by its operation oracle is visible across the
-  unchanged user message and the actual Wrench context message. Incomplete
-  evidence is an exclusion, not a saving.
+  path labels. A task is eligible only if every exact path and source quote
+  required by its operation oracle is visible across the unchanged user
+  message and the actual Wrench context message. Incomplete evidence is an
+  exclusion, not a saving.
 - For the empty literal-search case, eligibility requires every exact source
   text in the bounded search scope to be present in Wrench context. For a
   positive search, every returned match's exact path and line text must be
-  visible. Use expected observations only after route/preparation to determine
-  eligibility; never use them to construct the prompt or route.
+  visible. Decode the compiler's JSON-quoted untrusted payload before checking
+  source text. Compare the actual route status/action and frozen operation
+  observation after routing, before eligibility. Use expected observations
+  only for this post-route check; never use them to construct the prompt or
+  route.
 - Compare the baseline/Wrench messages after removing context. They must be
   structurally identical. Both context messages must have role `user` and be
   inserted at the same position.
@@ -64,14 +73,14 @@ loading. Use the installed CPython 3.13.15 / Transformers 5.17.0 / Tokenizers
 weights or create a second Hugging Face cache copy.
 
 For each complete message list, call
-`tokenizer.apply_chat_template(messages, tokenize=True,
-add_generation_prompt=True)` and count the returned `input_ids`. If the result
-is a mapping or batch wrapper, read its `input_ids` field and unwrap exactly
-one conversation. Never count `len(BatchEncoding)`. Count through the
-generation prefix; make no model call and count no generated tokens. Verify
-the context compiler's tokenizer callback count equals the independent full
-message-list count for every READY Wrench arm. Record the actual chat-template
-SHA-256 and runtime package versions.
+`tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True)`
+and count the returned `input_ids`. If the result is a mapping or batch wrapper,
+read its `input_ids` field and unwrap exactly one conversation. Never count
+`len(BatchEncoding)`. Count through the generation prefix; make no model call
+and count no generated tokens. Verify the context compiler's tokenizer
+callback count equals the independent full message-list count for every READY
+Wrench arm. Record the actual chat-template SHA-256 and runtime package
+versions.
 
 ## Eligibility, exclusions and metric
 
@@ -107,12 +116,5 @@ storage/resource reserve breach. Do not retry this job.
 ## Frozen command
 
 ```powershell
-C:\\wrench-slm-data\\envs\\wrench-local-synthetic-cp313\\Scripts\\python.exe tools\\measure_operation_prompt_m3_proxy.py --output C:\\wrench-slm-data\\artifacts\\wrench-local-acceptability\\operation-prompt-m3-proxy-20260925-01.json
+C:\\wrench-slm-data\\envs\\wrench-local-synthetic-cp313\\Scripts\\python.exe tools\\measure_operation_prompt_m3_proxy.py --output C:\\wrench-slm-data\\artifacts\\wrench-local-acceptability\\operation-prompt-m3-proxy-20260925-02.json
 ```
-
-Before execution, root review found that exact source quotes are JSON-escaped
-inside Wrench's untrusted-context wrapper. The initial eligibility check
-searched the escaped wrapper directly and did not explicitly compare the
-route result to the frozen operation oracle. No cases were run; this job's
-reservation was released. The corrected decoder/oracle check and fresh job
-identity were carried into [protocol 02](operation-prompt-m3-token-proxy-protocol-02.md), then that protocol was itself superseded before execution after independent review found additional evidence-binding and route-gating gaps. See [screen 02](operation-prompt-m3-token-proxy-screen-02.md).
