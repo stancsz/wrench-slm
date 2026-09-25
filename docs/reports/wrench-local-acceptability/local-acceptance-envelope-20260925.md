@@ -15,7 +15,7 @@ real-work utility.
 | Bounded line-range read | Route matched 6/6 cases; executor returned exact lines for 2/2 answerable cases; 4/4 boundary cases abstained. | Exact requested line ranges on the supplied snapshot. |
 | Literal search | Included in the 7/7 read/search executor observations, including a positive and an empty result. | Exact literal results over the bounded supplied snapshot, not repository-wide or semantic search. |
 | Git status, health read | Proposal recognition only in the 176-case route screen. | Not accepted for local execution yet. |
-| Review-only patch draft | Proposal recognition only; patch application was never attempted. | Not accepted as a verified draft artifact yet. |
+| Review-only patch draft | Screen 02 produced 3/4 exact positive drafts and passed all 6/6 deterministic boundary abstentions. One positive failed the exact diff and target oracle despite a deep TTC pass. | Not accepted. See [screen 02](patch-draft-screen-02.md). |
 | Semantic work by the pinned Qwen 0.8B SLM | Run 02 scored 0/10; every measured class scored 0/2, with no required evidence-tool calls. | No accepted local SLM task class. Training stays stopped. |
 
 ## Acceptance rule
@@ -42,10 +42,11 @@ to tune or train.
 - Proposal-only families: [work envelope 01](local-work-envelope-20260924-01.md).
 - Local SLM: [Qwen run 02](local-slm-run-02.md).
 - Review-only patch draft: [screen 01](patch-draft-screen-01.md) failed its
-  exact positive-oracle rule at 1/3; all three boundaries abstained and no
-  fixture changed. The subsequent parser repair passed 33 focused tests, but
-  the measurement was not repeated; patch drafting remains unaccepted. See
-  [follow-up](patch-draft-screen-01-followup.md).
+  exact positive-oracle rule at 1/3; its route repairs were followed by screen
+  02. Screen 02 passed 3/4 positive drafts and all 6/6 boundaries, but the
+  full-line removal oracle failed. Patch drafting remains unaccepted. See the
+  [repair follow-up](patch-draft-screen-01-followup.md) and
+  [screen 02](patch-draft-screen-02.md).
 - Real utility and observed frontier savings remain unmeasured. The paired
   reporter has zero eligible matched usage pairs, so the average per-task
   frontier-token savings is **N/A**, not zero.
@@ -57,11 +58,11 @@ route-oracle gaps; no M3 proxy result is used here.
 
 ## Next measurement
 
-The first frozen `patch_draft` screen failed. Its parser defects were repaired
-and covered by focused tests, but that does not change the screen result.
-Prepare a new protocol and new synthetic cases for any next measurement, and
-label it as open-development mechanics because this failure informed
-implementation. Keep patch drafting unaccepted until every frozen positive
-diff matches its oracle and every boundary abstains with an unchanged fixture
-tree. A later held-out SLM screen needs a separate task hypothesis and cases
-not exposed to training or tuning.
+The deterministic local acceptance boundary remains exact file reads, line
+reads and literal search over explicit synthetic snapshots. Screen 02 provides
+a specific next development target: define whether a remove request targets a
+substring or a whole line, then require a fresh, open-development screen with
+new cases before accepting patch drafting. No semantic local SLM task class is
+accepted; run 02 failed every measured class, and training stays stopped. A
+later SLM screen needs separate authority for inference and a task hypothesis
+with cases not exposed to training or tuning.
