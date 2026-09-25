@@ -32,10 +32,10 @@ for both the function definition and the matching property access.
 - Runner: `tools/measure_local_prompt_only_work.py`
 - Runner SHA-256: `c0fe54bdfeb6a4829303fcd06999a28f4b3f753c9ab3e3a6bec99ccb55fef58a`
 - Hard-deadline supervisor: `tools/run_local_prompt_only_work_with_deadline.py`
-- Supervisor SHA-256: `4d3f6833ce41a6eb6002a30e234a176ae3f0d2d06ac044e1c1e89634ea35b275`
+- Supervisor SHA-256: `f88dcfa4f77b214c9cacdf32a9dbbc385a0ca70685b4f9eb0b3e7a0201fd5178`
 - Pinned loader/watchdog: `tools/run_local_synthetic_challenge.py`
 - Loader/watchdog SHA-256: `417ee3574c48b7dc6efc0ab7f0add2e292611d1fead38b69ad5a14a76200f23e`
-- Measurement code revision: `6b52aacaa1b34e1967fdff8c1b12f07da501c2da`; exact repository HEAD at run start is recorded in the receipt.
+- Harness and fixture commit: `6b52aacaa1b34e1967fdff8c1b12f07da501c2da`; exact repository HEAD at run start is recorded in the receipt.
 - Output: `C:\wrench-slm-data\artifacts\wrench-local-acceptability\prompt-only-work-01.json`
 - Network: disabled by the pinned local loader; no provider, client, or
   localhost request.
@@ -78,10 +78,7 @@ N/A.
 
 Stop without retry if the runtime/model identity is not exact, RAM or VRAM free
 falls below 10%, a response takes over 60 seconds, an output or log path
-already exists, or the storage admission is no longer valid. The runner checks
-the aggregate storage budget before every checkpoint and at 30-second resource
-sampling intervals; the supervisor checks it before opening logs and when
-marking a timeout. A native call that does not return is bounded by the
+already exists, or the storage admission is no longer valid. The runner checks the aggregate storage budget before every checkpoint and at 30-second resource sampling intervals. The supervisor checks before opening logs, then every 30 seconds while the child runs; each check is bounded by the remaining hard deadline. It terminates the child if admission fails. Any receipt left at `running` after a supervisor stop is incomplete and must not be counted. A native call that does not return is bounded by the
 supervisor's hard 25-minute process deadline. The job reservation is
 150,000,000 bytes; check destination free space and resources immediately
 before inference and check storage again after the receipt is finalized, then
