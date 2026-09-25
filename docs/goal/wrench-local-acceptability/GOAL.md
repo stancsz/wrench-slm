@@ -1,9 +1,10 @@
 # Measure acceptable local work
 
 Status: active; the deterministic proposal route passed a 176-case synthetic
-development screen across six bounded action families. The first local SLM
-screen failed all five classes. Real-work utility and frontier-token savings
-remain unmeasured.
+development screen across six bounded action families, and a separate
+route-to-executor screen passed all five open-fixture operation pairs. The
+first local SLM screen failed all five classes. Real-work utility and
+frontier-token savings remain unmeasured.
 
 ## Objective
 
@@ -14,11 +15,12 @@ learned controller.
 
 ## Current decision
 
-The current provider-free rule route has a narrow acceptable envelope: bounded
-exact reads, literal searches, and source-tied extraction when the requested
-fact is present and unambiguous in the supplied snapshot. It must abstain when
-required evidence is missing, stale, or ambiguous. It does not establish
-general code editing, root-cause diagnosis, or local SLM capability.
+The current provider-free rule route has a narrow measured operation envelope:
+bounded exact file reads and literal searches on an explicit supplied
+snapshot, with correct abstention when evidence is missing, stale, or
+ambiguous. This is retrieval and observation, not semantic answer generation
+or natural-language coding-task completion. It does not establish general code
+editing, root-cause diagnosis, or local SLM capability.
 
 A broader deterministic proposal-route screen now covers `read_file`,
 `read_lines`, `literal_search`, `git_read_status`, `health_read`, and
@@ -61,6 +63,16 @@ and eight `unknown` responses, including five false abstentions on answerable
 cases. Strict correct abstentions and grounded accepts were both 0/10. This
 does not meet the local-acceptability rule for any measured class. The exact
 receipt, counts, latency, and scope limits are in the [run 02 report](../../reports/wrench-local-acceptability/local-slm-run-02.md).
+
+The [corrected deterministic operation screen](../../reports/wrench-local-acceptability/local-exec-acceptability-02.md)
+joined the snapshot-bound E0 route to the independent bounded core executor
+on the same ten admitted synthetic cases. Exact route outcomes were 10/10;
+the executor returned 7/7 exact read/search observations; E0 made 3/3 correct
+missing/stale/ambiguous abstentions. All five fixture pairs passed their
+operation screen, with zero false abstentions or mutations. The initial
+attempt is preserved as [scorer-invalid](../../reports/wrench-local-acceptability/local-exec-acceptability-01.md).
+Both runs are open-development mechanics only; the read/search prompts are
+explicit operations and do not evaluate the separate semantic answer oracle.
 
 The existing [paired frontier-savings reporter](../../../tools/report_paired_frontier_savings.py)
 validates complete matched outcome receipts and computes both the arithmetic
@@ -105,9 +117,10 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 
 ## Next steps
 
-1. Keep run 01 harness-invalid and run 02 as a failed synthetic SLM screen.
-   Keep the 176-case route screen as exposed development evidence. Do not tune
-   against or train on either fixture.
+1. Keep operation screen 01 scorer-invalid, operation screen 02 as exposed
+   mechanics-only evidence, the 176-case route screen as proposal-only, and
+   Qwen run 02 as a failed synthetic SLM screen. Do not tune against or train
+   on these exposed fixtures.
 2. Use the paired receipt reporter for a savings figure only when both arms
    have complete exact usage receipts for the same tasks, source snapshots,
    preregistered arm definitions, downstream route and token convention. The
@@ -125,7 +138,9 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    holds the owner decisions and study design.
 
 No additional model training, provider request, OpenCode routing, client
-prompt, or real workflow capture is authorized by this goal. The current local
-proposal measurement is complete. A complete verifier/executor measurement
-needs its own preregistered bounded task set. Provider-backed work still needs
-the separate authority described above.
+prompt, or real workflow capture is authorized by this goal. The local
+proposal and synthetic operation-path measurements are complete at their
+limited scopes. Natural-language task completion, held-out generalization,
+and real-work utility remain unmeasured; they need an independently reviewed
+outcome oracle and, for real-work claims, consented authorized tasks.
+Provider-backed work still needs the separate authority described above.
