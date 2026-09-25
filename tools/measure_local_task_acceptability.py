@@ -38,6 +38,7 @@ SOURCE_PATHS = (
     ROOT / "src" / "wrench_harness" / "snapshot.py",
     ROOT / "src" / "wrench_harness" / "core.py",
     ROOT / "src" / "wrench_harness" / "synthetic_fixture_admission.py",
+    ROOT / "tools" / "measure_local_task_acceptability.py",
 )
 
 
@@ -104,6 +105,17 @@ def _expected_core_observation(expected: dict[str, Any]) -> dict[str, Any]:
     return observation
 
 
+def _expected_observation(case: dict[str, Any], *, include_scope: bool) -> dict[str, Any]:
+    expected = case["expected_mechanics"]
+    observation = dict(expected["observation"])
+    if expected.get("action") == "read_file":
+        source = next(item for item in case["files"] if item["path"] == observation["path"])
+        observation["bytes"] = len(source["content_utf8"].encode("utf-8"))
+    if not include_scope:
+        observation.pop("scope", None)
+    return observation
+
+
 def _case_source_state(case: dict[str, Any], root: Path) -> dict[str, str]:
     paths = {item["path"]: item["sha256"] for item in case["files"]}
     mutation = case.get("mutate_after_snapshot")
@@ -119,6 +131,20 @@ def _case_source_state(case: dict[str, Any], root: Path) -> dict[str, str]:
         observed[relative] = actual
         if actual != expected_hash:
             raise ValueError(f"fixture source identity mismatch for {relative}")
+    tree: dict[str, str] = {}
+    for current, directories, filenames in os.walk(root, topdown=True, followlinks=False):
+        current_path = Path(current)
+        for name in [*directories, *filenames]:
+            path = current_path / name
+            if path.is_symlink():
+                raise ValueError("symlink appeared in isolated fixture tree")
+            relative = path.relative_to(root).as_posix()
+            if path.is_file():
+                tree[relative] = _sha256(path.read_bytes())
+            elif not path.is_dir():
+                raise ValueError("non-regular entry appeared in isolated fixture tree")
+    if tree != observed:
+        raise ValueError("isolated fixture tree differs from its frozen file inventory")
     return observed
 
 
@@ -161,7 +187,7 @@ def measure(output_path: Path) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="local-exec-accept-", dir=TEMP_ROOT) as scratch_name:
         scratch = Path(scratch_name)
         for pair in manifest["pairs"]:
-            group = pair["group"]
+            group = pair["pair_id"]
             for case in pair["cases"]:
                 case_started = time.perf_counter()
                 fixture_root = scratch / case["case_id"]
@@ -195,11 +221,12 @@ def measure(output_path: Path) -> dict[str, Any]:
                     if routed.observation is not None
                     else None
                 )
+                expected_route_observation = _expected_observation(case, include_scope=True) if expected_status == "completed" else None
                 route_exact = (
                     route_status == expected_status
                     and routed.action == expected.get("action")
                     and (routed.reason == expected.get("reason") if expected_status == "abstain" else True)
-                    and route_observation == expected.get("observation")
+                    and route_observation == expected_route_observation
                 )
 
                 executor_called = False
@@ -226,7 +253,9 @@ def measure(output_path: Path) -> dict[str, Any]:
                     observed_executor = executed.get("observation")
                     if isinstance(observed_executor, dict):
                         observed_executor = _normalize_executor_observation(observed_executor, fixture_root)
-                    expected_executor = _expected_core_observation(expected.get("observation", {}))
+                    expected_executor = _expected_core_observation(
+                        _expected_observation(case, include_scope=False)
+                    )
                     executor_exact = (
                         executor_status == "accepted"
                         and executed.get("action") == expected.get("action")
@@ -242,6 +271,7 @@ def measure(output_path: Path) -> dict[str, Any]:
                 row = {
                     "case_id": case["case_id"],
                     "group": group,
+                    "fixture_group": pair["group"],
                     "expected_status": expected_status,
                     "expected_action": expected.get("action"),
                     "route_status": route_status,
@@ -291,9 +321,10 @@ def measure(output_path: Path) -> dict[str, Any]:
         "fixture_review_receipt_sha256": _sha256(REVIEW_PATH.read_bytes()),
         "fixture_usage": admission.usage,
         "source_sha256": {path.relative_to(ROOT).as_posix(): _sha256(path.read_bytes()) for path in SOURCE_PATHS},
+        "measurement_runner_sha256": _sha256(Path(__file__).read_bytes()),
         "action_allowlist": sorted(ALLOWED_EXECUTOR_ACTIONS),
         "case_count": len(rows),
-        "exact_route_observations": sum(row["route_observation_exact"] for row in rows),
+        "exact_route_outcomes": sum(row["route_observation_exact"] for row in rows),
         "exact_executor_observations": sum(row["executor_observation_exact"] is True for row in rows),
         "correct_abstentions": sum(row["expected_status"] == "abstain" and row["case_pass"] for row in rows),
         "false_abstentions": sum(row["expected_status"] == "completed" and row["route_status"] == "abstain" for row in rows),
@@ -327,7 +358,7 @@ def main() -> int:
     print(json.dumps({
         "status": receipt["status"],
         "case_count": receipt["case_count"],
-        "exact_route_observations": receipt["exact_route_observations"],
+        "exact_route_outcomes": receipt["exact_route_outcomes"],
         "exact_executor_observations": receipt["exact_executor_observations"],
         "correct_abstentions": receipt["correct_abstentions"],
         "false_abstentions": receipt["false_abstentions"],
