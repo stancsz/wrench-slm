@@ -13,14 +13,19 @@ import tempfile
 import time
 from pathlib import Path
 
+# Direct `python tools/...` execution does not add `src/` to sys.path.
+REPO_SRC = Path(__file__).resolve().parents[1] / "src"
+if str(REPO_SRC) not in sys.path:
+    sys.path.insert(0, str(REPO_SRC))
+
 from wrench_harness.core import execute_model_output
 from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
 from wrench_harness.mechanical import mechanical_route
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
-JOB_ID = "LOCAL-READLINES-ACCEPT-20260925-01"
-NONCE = "RL01-B7D4"
+JOB_ID = "LOCAL-READLINES-ACCEPT-20260925-02"
+NONCE = "RL02-C9A1"
 SCHEMA = "wrench.local-read-lines-screen.v1"
 CASES = (
     {
