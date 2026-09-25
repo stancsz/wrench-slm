@@ -1,10 +1,11 @@
 # Measure acceptable local work
 
 Status: active; the deterministic proposal route passed a 176-case synthetic
-development screen across six bounded action families, and a separate
-route-to-executor screen passed all five open-fixture operation pairs. The
-first local SLM screen failed all five classes. Real-work utility and
-frontier-token savings remain unmeasured.
+development screen across six bounded action families. Open-fixture
+route-to-executor screens now cover exact file reads, line-range reads and
+literal searches with evidence-bound abstentions. The first local SLM screen
+failed all five classes. Real-work utility and frontier-token savings remain
+unmeasured.
 
 ## Objective
 
@@ -16,11 +17,15 @@ learned controller.
 ## Current decision
 
 The current provider-free rule route has a narrow measured operation envelope:
-bounded exact file reads and literal searches on an explicit supplied
-snapshot, with correct abstention when evidence is missing, stale, or
-ambiguous. This is retrieval and observation, not semantic answer generation
-or natural-language coding-task completion. It does not establish general code
-editing, root-cause diagnosis, or local SLM capability.
+bounded exact file reads, line-range reads and literal searches on an explicit
+supplied snapshot, with correct abstention on the measured missing, stale,
+out-of-range and ambiguous evidence cases. These are retrieval and observation
+mechanics, not semantic answer generation or natural-language coding-task
+completion. They do not establish general code editing, root-cause diagnosis,
+real-repository utility or local SLM capability. The latest [line-range
+screen](../../reports/wrench-local-acceptability/local-read-lines-acceptability-03.md)
+passed 6/6 routes, 2/2 exact executor observations and 4/4 abstentions on its
+exposed six-case fixture; independent receipt review passed.
 
 A broader deterministic proposal-route screen now covers `read_file`,
 `read_lines`, `literal_search`, `git_read_status`, `health_read`, and
@@ -117,10 +122,11 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 
 ## Next steps
 
-1. Keep operation screen 01 scorer-invalid, operation screen 02 as exposed
-   mechanics-only evidence, the 176-case route screen as proposal-only, and
-   Qwen run 02 as a failed synthetic SLM screen. Do not tune against or train
-   on these exposed fixtures.
+1. Keep the first route-to-executor attempt scorer-invalid and its corrected
+   ten-case run as exposed mechanics-only evidence. Keep line-range screen 03
+   as a separate six-case mechanics result, the 176-case route screen as
+   proposal-only, and Qwen run 02 as a failed synthetic SLM screen. Do not tune
+   against or train on these exposed fixtures.
 2. Use the paired receipt reporter for a savings figure only when both arms
    have complete exact usage receipts for the same tasks, source snapshots,
    preregistered arm definitions, downstream route and token convention. The
@@ -143,4 +149,6 @@ proposal and synthetic operation-path measurements are complete at their
 limited scopes. Natural-language task completion, held-out generalization,
 and real-work utility remain unmeasured; they need an independently reviewed
 outcome oracle and, for real-work claims, consented authorized tasks.
-Provider-backed work still needs the separate authority described above.
+Keep training stopped: the local SLM has zero accepted task classes.
+Provider-backed savings still have zero eligible matched usage pairs and need
+the separate authority described above.
