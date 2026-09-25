@@ -1,4 +1,4 @@
-"""Summarize fully accounted matched frontier-token receipts.
+"""Summarize structurally validated paired frontier-token receipts.
 
 Input is a JSON object with schema ``wrench.paired-frontier-savings-input.v1``,
 a frozen ``comparison`` identity, and ``tasks``. Every task declares its
@@ -7,12 +7,14 @@ receipts, each represented as ``payload_json`` plus its SHA-256. Only valid,
 complete, exact-usage pairs with a nonzero baseline
 denominator enter token arithmetic. Failed task outcomes remain in those
 totals. This utility reports token arithmetic, not product utility or savings
-claims; callers must supply an authorized, preregistered corpus.
+claims; callers must supply an authorized, preregistered corpus. Per-task rows
+use a SHA-256 reference instead of exposing the input task ID.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -104,7 +106,7 @@ def _exact_frontier_counts(payload: dict[str, Any], token_convention_id: str) ->
 
 
 def summarize(document: object) -> dict[str, Any]:
-    """Validate paired receipts and report aggregate savings without raw IDs."""
+    """Validate supplied receipt pairs and report savings without raw IDs."""
     if type(document) is not dict or set(document) != {"schema", "comparison", "tasks"}:
         raise InputError("input_shape_invalid")
     if document["schema"] != SCHEMA:
@@ -130,6 +132,7 @@ def summarize(document: object) -> dict[str, Any]:
     excluded: Counter[str] = Counter()
     outcome_counts: dict[str, Counter[str]] = {arm: Counter() for arm in ARMS}
     valid_rows: list[tuple[int, int]] = []
+    task_rows: list[dict[str, Any]] = []
     sums = {"baseline": 0, "wrench": 0}
     for task in tasks:
         payloads: dict[str, dict[str, Any] | None] = {}
@@ -150,10 +153,13 @@ def summarize(document: object) -> dict[str, Any]:
             )
         ):
             excluded["task_snapshot_mismatch"] += 1
+            task_rows.append(_excluded_task_row(task["task_id"], "task_snapshot_mismatch"))
             continue
         if errors:
             # One pair is counted once, with a stable priority when both arms fail.
-            excluded[sorted(errors)[0]] += 1
+            reason = sorted(errors)[0]
+            excluded[reason] += 1
+            task_rows.append(_excluded_task_row(task["task_id"], reason))
             continue
         counts: dict[str, tuple[int, int]] = {}
         for arm in ARMS:
@@ -163,23 +169,35 @@ def summarize(document: object) -> dict[str, Any]:
             else:
                 counts[arm] = result
         if errors:
-            excluded[sorted(errors)[0]] += 1
+            reason = sorted(errors)[0]
+            excluded[reason] += 1
+            task_rows.append(_excluded_task_row(task["task_id"], reason))
             continue
         baseline = sum(counts["baseline"])
         wrench = sum(counts["wrench"])
         if baseline == 0:
             excluded["zero_baseline_frontier_tokens"] += 1
+            task_rows.append(_excluded_task_row(task["task_id"], "zero_baseline_frontier_tokens"))
             continue
         valid_rows.append((baseline, wrench))
+        task_rows.append({
+            "task_ref_sha256": hashlib.sha256(task["task_id"].encode("utf-8")).hexdigest(),
+            "status": "valid",
+            "baseline_frontier_tokens": baseline,
+            "wrench_frontier_tokens": wrench,
+            "savings_percent": round(100.0 * (1.0 - wrench / baseline), 6),
+            "excluded_reason": None,
+        })
         sums["baseline"] += baseline
         sums["wrench"] += wrench
 
     pair_percentages = [100.0 * (1.0 - wrench / baseline) for baseline, wrench in valid_rows]
     pair_count = len(valid_rows)
     return {
-        "schema": "wrench.paired-frontier-savings-report.v1",
+        "schema": "wrench.paired-frontier-savings-report.v2",
         "comparison": dict(comparison),
         "input_task_count": len(tasks),
+        "per_task": task_rows,
         "valid_pair_count": pair_count,
         "excluded_pair_count": sum(excluded.values()),
         "excluded_by_reason": dict(sorted(excluded.items())),
@@ -202,6 +220,17 @@ def summarize(document: object) -> dict[str, Any]:
     }
 
 
+def _excluded_task_row(task_id: str, reason: str) -> dict[str, Any]:
+    return {
+        "task_ref_sha256": hashlib.sha256(task_id.encode("utf-8")).hexdigest(),
+        "status": "excluded",
+        "baseline_frontier_tokens": None,
+        "wrench_frontier_tokens": None,
+        "savings_percent": None,
+        "excluded_reason": reason,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path, help="authorized paired receipt JSON")
@@ -210,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
         document = json.loads(args.input.read_text(encoding="utf-8"))
         result = summarize(document)
     except (OSError, UnicodeError, json.JSONDecodeError, InputError) as exc:
-        print(json.dumps({"schema": "wrench.paired-frontier-savings-report.v1", "error": str(exc)}, sort_keys=True))
+        print(json.dumps({"schema": "wrench.paired-frontier-savings-report.v2", "error": str(exc)}, sort_keys=True))
         return 2
     print(json.dumps(result, sort_keys=True, allow_nan=False))
     return 0

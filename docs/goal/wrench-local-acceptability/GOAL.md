@@ -53,6 +53,15 @@ cases. Strict correct abstentions and grounded accepts were both 0/10. This
 does not meet the local-acceptability rule for any measured class. The exact
 receipt, counts, latency, and scope limits are in the [run 02 report](../../reports/wrench-local-acceptability/local-slm-run-02.md).
 
+The existing [paired frontier-savings reporter](../../../tools/report_paired_frontier_savings.py)
+validates complete matched outcome receipts and computes both the arithmetic
+mean of per-task savings and the ratio-of-sums. It now also emits per-task
+counts, percentage, or exclusion reason, keyed by a hashed task reference.
+There are still zero eligible matched frontier-usage pairs. Run 02's local
+tokens and the deterministic seed's 10/10 fixture result do not enter this
+metric. The exact evidence and remaining permission/runtime gates are in the
+[frontier measurement readiness review](../../evals/wrench-local-acceptability/frontier-token-readiness.md).
+
 ## Acceptance criteria
 
 1. Freeze task classes, paired tasks, oracles, permitted inputs, and accept,
@@ -87,20 +96,25 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 
 ## Next steps
 
-1. Keep run 01 as harness-invalid. Normalize the pinned tokenizer's
-   `BatchEncoding["input_ids"]` before counting or device transfer, and retain
-   bounded exception details for any later runtime failure. Tokenizer-only
-   preflight now yields a tensor of shape `(1, 270)` for the first frozen case;
-   no model generation was used for that check.
-2. Keep run 02 separate from real utility evidence. Do not train from this
-   open-development fixture or tune the prompt against it. A next synthetic
-   diagnostic needs a new preregistration and a specific hypothesis about
-   tool-call selection and valid abstention before it is run.
-3. Only after per-task consent and outcome-oracle approval, preregister a small
-   matched pilot for localization, genuine failing-test/log diagnosis, and
-   tool/context selection across repositories.
+1. Keep run 01 harness-invalid and run 02 as a failed synthetic SLM screen.
+   Do not tune against or train on this open-development fixture.
+2. Use the paired receipt reporter for a savings figure only when both arms
+   have complete exact usage receipts for the same tasks, source snapshots,
+   preregistered arm definitions, downstream route and token convention. The
+   reporter validates declared identities; it does not prove prompt/information
+   parity or authenticate traces. The current result is N/A, with zero valid
+   pairs. The route through localhost:4000 is a mutable gateway route to
+   OpenRouter/MiniMax, not a pinned local model or a verified client/tokenizer
+   pair.
+3. Before provider-backed measurement, obtain the separate authority required
+   by `COLLABORATION_CONTRACT.json` for provider usage/spend. For real-work
+   claims, also approve participant/task consent, source authorization,
+   capture/retention/deletion terms and an independent outcome oracle. Then
+   freeze the client, model/route, accounting convention, protocol, and task
+   split before any calls. The [pilot-readiness goal](../wrench-northstar-pilot-readiness/GOAL.md)
+   holds the owner decisions and study design.
 
-No model training, provider request, OpenCode routing, client prompt, or real
-workflow capture is authorized by this goal. The existing model/runtime
-download is complete. Runs 01 and 02 are closed; any retry or broader
-diagnostic requires a new preregistration.
+No additional model training, provider request, OpenCode routing, client
+prompt, or real workflow capture is authorized by this goal. The existing
+model/runtime download is complete. Runs 01 and 02 are closed; any retry or
+broader diagnostic requires a new preregistration and applicable authority.

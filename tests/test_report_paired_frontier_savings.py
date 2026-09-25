@@ -96,6 +96,25 @@ def test_reports_arithmetic_mean_and_ratio_of_sums_separately_and_keeps_failures
     assert report["ratio_of_sums_savings_percent"] == 5.0
     assert report["task_outcome_counts_by_arm"]["baseline"] == {"completed": 1, "failed": 1}
     assert report["excluded_pair_count"] == 0
+    assert report["per_task"] == [
+        {
+            "task_ref_sha256": hashlib.sha256(b"task-a").hexdigest(),
+            "status": "valid",
+            "baseline_frontier_tokens": 100,
+            "wrench_frontier_tokens": 50,
+            "savings_percent": 50.0,
+            "excluded_reason": None,
+        },
+        {
+            "task_ref_sha256": hashlib.sha256(b"task-b").hexdigest(),
+            "status": "valid",
+            "baseline_frontier_tokens": 900,
+            "wrench_frontier_tokens": 900,
+            "savings_percent": 0.0,
+            "excluded_reason": None,
+        },
+    ]
+    assert all("task_id" not in row for row in report["per_task"])
 
 
 def test_missing_usage_is_unavailable_and_pair_is_excluded_by_reason():
@@ -106,6 +125,50 @@ def test_missing_usage_is_unavailable_and_pair_is_excluded_by_reason():
     assert report["average_per_task_savings_percent"] is None
     assert report["ratio_of_sums_savings_percent"] is None
     assert report["excluded_by_reason"] == {"incomplete_receipt": 1}
+    assert report["per_task"][0]["status"] == "excluded"
+    assert report["per_task"][0]["savings_percent"] is None
+    assert report["per_task"][0]["excluded_reason"] == "incomplete_receipt"
+
+
+def test_invalid_arm_shape_has_a_per_task_exclusion_row():
+    document = _document([("task-a", 100, 50, "completed")])
+    document["tasks"][0]["baseline"] = None
+    report = summarize(document)
+    assert report["per_task"] == [{
+        "task_ref_sha256": hashlib.sha256(b"task-a").hexdigest(),
+        "status": "excluded",
+        "baseline_frontier_tokens": None,
+        "wrench_frontier_tokens": None,
+        "savings_percent": None,
+        "excluded_reason": "invalid_arm_record_shape",
+    }]
+
+
+def test_invalid_receipt_shape_has_a_per_task_exclusion_row():
+    document = _document([("task-a", 100, 50, "completed")])
+    document["tasks"][0]["baseline"]["receipt"] = {"payload_json": "missing-digest"}
+    report = summarize(document)
+    assert report["per_task"][0]["status"] == "excluded"
+    assert report["per_task"][0]["excluded_reason"] == "invalid_receipt_shape"
+
+
+def test_estimated_frontier_usage_is_reported_as_unavailable_for_that_task():
+    document = _document([("task-a", 100, 50, "completed")])
+    arm = document["tasks"][0]["wrench"]
+    receipt = arm["receipt"]
+    payload = json.loads(receipt["payload_json"])
+    payload["accounting"]["token_count_status"] = "estimated"
+    payload["attempts"][0]["usage"]["status"] = "estimated"
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    receipt["payload_json"] = canonical
+    receipt["sha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    report = summarize(document)
+    assert report["valid_pair_count"] == 0
+    assert report["per_task"][0]["status"] == "excluded"
+    assert report["per_task"][0]["baseline_frontier_tokens"] is None
+    assert report["per_task"][0]["wrench_frontier_tokens"] is None
+    assert report["per_task"][0]["savings_percent"] is None
+    assert report["per_task"][0]["excluded_reason"] == "usage_not_exact"
 
 
 def test_zero_baseline_is_excluded_instead_of_dividing_by_zero():
