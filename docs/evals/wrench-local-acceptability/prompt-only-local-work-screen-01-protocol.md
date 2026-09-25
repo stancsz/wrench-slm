@@ -32,7 +32,7 @@ for both the function definition and the matching property access.
 - Runner: `tools/measure_local_prompt_only_work.py`
 - Runner SHA-256: `c0fe54bdfeb6a4829303fcd06999a28f4b3f753c9ab3e3a6bec99ccb55fef58a`
 - Hard-deadline supervisor: `tools/run_local_prompt_only_work_with_deadline.py`
-- Supervisor SHA-256: `e1dcbb8a2dcd8e367e5f054572a066c0b1fc25f44eccec35ef2c4351f7b53c11`
+- Supervisor SHA-256: `4d3f6833ce41a6eb6002a30e234a176ae3f0d2d06ac044e1c1e89634ea35b275`
 - Pinned loader/watchdog: `tools/run_local_synthetic_challenge.py`
 - Loader/watchdog SHA-256: `417ee3574c48b7dc6efc0ab7f0add2e292611d1fead38b69ad5a14a76200f23e`
 - Measurement code revision: `6b52aacaa1b34e1967fdff8c1b12f07da501c2da`; exact repository HEAD at run start is recorded in the receipt.
