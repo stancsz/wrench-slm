@@ -50,7 +50,7 @@ savings remain N/A, with zero valid matched frontier usage pairs.
 - Candidate revision: `5e9ce91`; router source SHA-256: recorded in the receipt.
 - Selected case subset SHA-256: recorded in the receipt; final rows were not scored or included in that digest.
 - Receipt: `C:\wrench-slm-data\artifacts\wrench-local-acceptability\local-work-envelope-20260924-01.json`.
-- Receipt SHA-256: `138fee0c901bc09ab815aabb0c304b73bf59d9218ca28102660fac526d8547fe`.
+- Receipt SHA-256 of the saved file: `9b2fb7979e7a67f7c102f3deb7301aac5ed72fa5b025bd6c03b63e2e303c1cba`.
 - Actions executed: 0. Verifier runs: 0. Model calls: 0. Provider calls: 0.
 - Route elapsed time: recorded in the receipt; this measures only local parsing and proposal construction.
 - Frontier-token savings: N/A.

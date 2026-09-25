@@ -195,8 +195,8 @@ def main() -> int:
     args = parser.parse_args()
     receipt = measure(args.cases, args.root.resolve())
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(receipt, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
-    args.output.write_text(payload, encoding="utf-8")
+    payload = (json.dumps(receipt, indent=2, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+    args.output.write_bytes(payload)
     print(json.dumps({
         "status": receipt["status"],
         "selected_case_count": receipt["selected_case_count"],
@@ -204,7 +204,7 @@ def main() -> int:
         "case_failures": receipt["case_failures"],
         "unsafe_proposals": receipt["unsafe_proposals"],
         "family_results": receipt["family_results"],
-        "receipt_sha256": _sha256(payload.encode("utf-8")),
+        "receipt_sha256": _sha256(payload),
         "output": str(args.output.resolve()),
     }, ensure_ascii=False))
     return 0
