@@ -1,0 +1,279 @@
+{
+  "schema": "wrench.local_prompt_only_work.v1",
+  "cases": [
+    {
+      "id": "log-type-01",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|TimeoutError: connection to cache expired",
+      "expected": {
+        "status": "known",
+        "answer": "timeout",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "TimeoutError: connection to cache expired"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "log-type-02",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|PermissionError: writing the report was denied",
+      "expected": {
+        "status": "known",
+        "answer": "permission",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "PermissionError: writing the report was denied"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "log-type-03",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|TypeError: expected an integer, received text",
+      "expected": {
+        "status": "known",
+        "answer": "type",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "TypeError: expected an integer, received text"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "log-type-04",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|ValueError: port must be between 1 and 65535",
+      "expected": {
+        "status": "known",
+        "answer": "value",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "ValueError: port must be between 1 and 65535"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "log-type-05",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|INFO: cache warmup completed",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "not_present"
+      }
+    },
+    {
+      "id": "log-type-06",
+      "class": "log_type_mapping",
+      "prompt": "Classify the exception in this log.\n1|TimeoutError: first attempt expired\n2|PermissionError: retry was denied",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "ambiguous"
+      }
+    },
+    {
+      "id": "config-value-01",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `mode`?\n1|[service]\n2|mode = \"offline\"\n3|retries = 2",
+      "expected": {
+        "status": "known",
+        "answer": "offline",
+        "evidence": [
+          {
+            "line": 2,
+            "quote": "mode = \"offline\""
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "config-value-02",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `cache_size`?\n1|cache_size = 128\n2|enabled = true",
+      "expected": {
+        "status": "known",
+        "answer": "128",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "cache_size = 128"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "config-value-03",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `region`?\n1|[storage]\n2|region = \"west-2\"\n3|bucket = \"samples\"",
+      "expected": {
+        "status": "known",
+        "answer": "west-2",
+        "evidence": [
+          {
+            "line": 2,
+            "quote": "region = \"west-2\""
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "config-value-04",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `retry_limit`?\n1|retry_limit: 4\n2|backoff: linear",
+      "expected": {
+        "status": "known",
+        "answer": "4",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "retry_limit: 4"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "config-value-05",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `mode`?\n1|[service]\n2|retries = 2",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "not_present"
+      }
+    },
+    {
+      "id": "config-value-06",
+      "class": "config_value_extraction",
+      "prompt": "What is the value of `mode`?\n1|[service]\n2|mode = \"offline\"\n3|[worker]\n4|mode = \"batch\"",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "ambiguous"
+      }
+    },
+    {
+      "id": "locate-01",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `job.exit_code`? Give its function name and cite the `def` line.\n1|def result_status(job):\n2|    if job.exit_code == 0:\n3|        return \"complete\"\n4|    return \"failed\"",
+      "expected": {
+        "status": "known",
+        "answer": "result_status",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "def result_status(job):"
+          },
+          {
+            "line": 2,
+            "quote": "    if job.exit_code == 0:"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "locate-02",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `record.schema_version`? Give its function name and cite the `def` line.\n1|def is_supported(record, version):\n2|    return record.schema_version == version\n3|\n4|def record_name(record):\n5|    return record.name",
+      "expected": {
+        "status": "known",
+        "answer": "is_supported",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "def is_supported(record, version):"
+          },
+          {
+            "line": 2,
+            "quote": "    return record.schema_version == version"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "locate-03",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `session.is_active`? Give its function name and cite the `def` line.\n1|def active_session(session):\n2|    if session.is_active:\n3|        return session\n4|    return None",
+      "expected": {
+        "status": "known",
+        "answer": "active_session",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "def active_session(session):"
+          },
+          {
+            "line": 2,
+            "quote": "    if session.is_active:"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "locate-04",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `package.digest`? Give its function name and cite the `def` line.\n1|def has_expected_digest(package, digest):\n2|    return package.digest == digest\n3|\n4|def package_label(package):\n5|    return package.name",
+      "expected": {
+        "status": "known",
+        "answer": "has_expected_digest",
+        "evidence": [
+          {
+            "line": 1,
+            "quote": "def has_expected_digest(package, digest):"
+          },
+          {
+            "line": 2,
+            "quote": "    return package.digest == digest"
+          }
+        ],
+        "reason": null
+      }
+    },
+    {
+      "id": "locate-05",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `artifact.signature`? Give its function name and cite the `def` line.\n1|def artifact_name(artifact):\n2|    return artifact.name\n3|",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "not_present"
+      }
+    },
+    {
+      "id": "locate-06",
+      "class": "snippet_function_localization",
+      "prompt": "Which function reads `document.signature`? Give its function name and cite the `def` line.\n1|def document_is_valid(document):\n2|    return document.signature is not None\n3|\n4|def document_signature_length(document):\n5|    return len(document.signature)",
+      "expected": {
+        "status": "unknown",
+        "answer": null,
+        "evidence": null,
+        "reason": "ambiguous"
+      }
+    }
+  ]
+}

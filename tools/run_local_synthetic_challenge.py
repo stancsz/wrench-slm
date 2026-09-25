@@ -762,6 +762,7 @@ def load_with_resource_watchdog(
     report: dict[str, Any],
     output: Path,
     resource_check: Callable[[], dict[str, Any]],
+    checkpoint_guard: Callable[[], Any] | None = None,
 ) -> tuple[Any, Any, dict[str, Any]]:
     """Watch system reserves while Transformers performs blocking model loads.
 
@@ -774,6 +775,11 @@ def load_with_resource_watchdog(
     observations: list[dict[str, Any]] = []
     failure: list[str] = []
     load_started = time.monotonic()
+
+    def write_failure_checkpoint() -> None:
+        if checkpoint_guard is not None:
+            checkpoint_guard()
+        _write_checkpoint(output, report)
 
     def watch() -> None:
         while not stop.wait(1.0):
@@ -790,7 +796,7 @@ def load_with_resource_watchdog(
                     report["run_status"] = "stopped_runtime_load_sample_limit"
                     report["run_failure"] = failure[-1]
                     try:
-                        _write_checkpoint(output, report)
+                        write_failure_checkpoint()
                     except BaseException:
                         pass
                     finally:
@@ -802,7 +808,7 @@ def load_with_resource_watchdog(
                 report["run_status"] = "stopped_resource_reserve"
                 report["run_failure"] = failure[-1]
                 try:
-                    _write_checkpoint(output, report)
+                    write_failure_checkpoint()
                 except BaseException:
                     pass
                 finally:
@@ -824,7 +830,7 @@ def load_with_resource_watchdog(
                 report["run_status"] = "stopped_runtime_load_watchdog"
                 report["run_failure"] = failure[-1]
                 try:
-                    _write_checkpoint(output, report)
+                    write_failure_checkpoint()
                 except BaseException:
                     pass
                 finally:
