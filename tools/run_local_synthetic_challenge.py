@@ -453,6 +453,8 @@ def classify_response(raw: str) -> tuple[str, Any]:
 
 
 def _ids_to_list(value: Any) -> list[int]:
+    if hasattr(value, "get") and "input_ids" in value:
+        value = value["input_ids"]
     if hasattr(value, "tolist"):
         value = value.tolist()
     if value and isinstance(value[0], list):
@@ -476,6 +478,8 @@ class Transcript:
             self.messages, tokenize=True, add_generation_prompt=True,
             return_tensors="pt",
         )
+        if hasattr(input_ids, "get") and "input_ids" in input_ids:
+            input_ids = input_ids["input_ids"]
         flat = _ids_to_list(input_ids)
         input_count = len(flat)
         if input_count + max_new_tokens > MAX_CONTEXT:
@@ -638,7 +642,8 @@ def run_case(case_id: str, prompt: str, case: dict[str, Any], model: Any, tokeni
         failure = str(exc)
         stop_run = True
     except Exception as exc:
-        failure = str(exc) if isinstance(exc, ChallengeError) else f"generation_or_runtime_failure:{type(exc).__name__}"
+        detail = str(exc).replace("\r", " ").replace("\n", " ")[:300]
+        failure = str(exc) if isinstance(exc, ChallengeError) else f"generation_or_runtime_failure:{type(exc).__name__}:{detail}"
         stop_run = True
     score = score_answer(final_raw, oracle) if final_raw is not None else {
         "valid_json_schema": False, "answer_correct": False, "abstention_correct": False,

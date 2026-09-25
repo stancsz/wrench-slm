@@ -1,7 +1,10 @@
 # Interactive synthetic local-model challenge protocol
 
-Status: one bounded synthetic local-model diagnostic is authorized after the
-identity, storage, and resource gates below pass. This document does not
+Status: run `qwen35-0.8b-synthetic-20260925-01` stopped before its first
+`model.generate` call because the runner treated the tokenizer's `BatchEncoding`
+as a flat tensor. It is invalid as model-quality evidence. The current user
+request to begin measuring local acceptability is preregistered here as one
+separate follow-up run after the serialization fix. This document does not
 authorize training, provider traffic, or capture of real workflows.
 
 Scope: one open-development synthetic capability diagnostic
@@ -46,6 +49,16 @@ installed package set against every pinned lock entry, allowing only the
 environment's `pip` bootstrap package as an extra. The lock contains the
 official Windows wheel URL and SHA-256 for Torch plus hashes for the resolved
 Windows package set. Any identity mismatch blocks the run.
+
+Run 01's durable report is retained at
+`C:\wrench-slm-data\artifacts\wrench-local-acceptability\qwen35-0.8b-synthetic-20260925-01.json`.
+It records a single pre-generation harness failure and nine `not_run` cases;
+it must not be combined with run 02 or scored as model behavior. Run 02 uses the
+same pinned model, fixture, prompts, serializer, tool protocol, and oracles,
+with the runner normalizing `BatchEncoding["input_ids"]` before counting,
+device transfer, or generation. Run 02 has its own durable output path ending
+in `-02.json`; it is a new preregistered run, not a retry inside run 01. Any
+generation/runtime error stops run 02 without retrying a case.
 
 Model files must be under `C:\wrench-slm-data\weights`; output checkpoints,
 `HF_HOME`, and `TORCH_HOME` must be under `C:\wrench-slm-data`. Output is

@@ -1,8 +1,9 @@
 # Measure acceptable local work
 
-Status: active; the first deterministic mechanics envelope is measured. A
-user-requested, one-run local SLM diagnostic is being prepared; real-work
-utility remains unmeasured.
+Status: active; deterministic mechanics are measured. The first local SLM
+attempt was a harness failure before `model.generate`; no class is yet accepted
+for a local SLM. A separately preregistered follow-up run is being prepared;
+real-work utility remains unmeasured.
 
 ## Objective
 
@@ -24,16 +25,25 @@ on 10/10 authored synthetic cases: 7 completed answers and 3 correct
 abstentions. Results are broken out by class in the [measurement report](../../reports/wrench-local-acceptability/initial-mechanics.md).
 This is fixture mechanics only, not a production acceptance rate.
 
-No pinned model weights or inference runtime were found under the approved
-Wrench data root, so a local SLM capability run is not yet eligible. The
-candidate metadata names Qwen3.5-0.8B revision
-`2fc06364715b967f1860aea9cf38778875588b17` and lists upstream bytes, but no
-local shard identity has been verified. Do not infer a local route from an API
-server listening on localhost. The owner has now asked for a bounded local
-acceptability measurement; this supersedes this goal's earlier no-download
-planning boundary only for the frozen, one-run synthetic diagnostic below.
-It does not authorize training, provider traffic, OpenCode routing, or a real
-workflow capture.
+The pinned Qwen3.5-0.8B revision
+`2fc06364715b967f1860aea9cf38778875588b17` is now stored under the approved
+Wrench data root with all 13 files hash-verified. The Windows CPython 3.13.15
+runtime is pinned and installed, and the exact 35-package lock, CUDA 13.2,
+and RTX 5060 Ti capability are verified. Do not infer a local route from an
+API server listening on localhost. The owner's request authorizes only the
+bounded synthetic local measurement described here. It does not authorize
+training, provider traffic, OpenCode routing, or a real workflow capture.
+
+The first pinned runtime/model load completed within the resource reserve, but
+run 01 failed before the model call: `apply_chat_template` returned a
+`BatchEncoding`, and the runner attempted to parse the object key as a token.
+The durable failure report is
+`C:\wrench-slm-data\artifacts\wrench-local-acceptability\qwen35-0.8b-synthetic-20260925-01.json`.
+It has zero generated tokens, zero completed cases, one failed case, and nine
+not-run cases. It is harness evidence, not model-quality evidence. In response
+to the owner's current request to begin measuring, this goal preregisters one
+separate follow-up run after the serializer fix. It has a fresh output receipt
+and admission check; errors will stop it without retrying.
 
 ## Acceptance criteria
 
@@ -69,18 +79,20 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 
 ## Next steps
 
-1. Freeze the model/runtime serializer identity and harden the run journal.
-   The owner-requested diagnostic may download only its fully inventoried,
-   revision-pinned model and hash-locked native runtime under the approved root,
-   after a fresh storage reservation. Stop if package/runtime or resource
-   admission cannot be reproduced.
-2. Run the single preregistered, open-development challenge spanning exact retrieval, near-matches,
-   changed/stale files, ambiguous requests, missing evidence, and safe
-   abstention. Keep it explicitly separate from real utility evidence and
-   report each class separately.
+1. Keep run 01 as harness-invalid. Normalize the pinned tokenizer's
+   `BatchEncoding["input_ids"]` before counting or device transfer, and retain
+   bounded exception details for any later runtime failure. Tokenizer-only
+   preflight now yields a tensor of shape `(1, 270)` for the first frozen case;
+   no model generation was used for that check.
+2. Run one separately preregistered follow-up challenge spanning exact
+   retrieval, near-matches, changed/stale files, ambiguous requests, missing
+   evidence, and safe abstention. Keep run 01 as a failed harness receipt,
+   keep run 02 separate from real utility evidence, and report each class.
 3. Only after per-task consent and outcome-oracle approval, preregister a small matched pilot
    for localization, genuine failing-test/log diagnosis, and tool/context
    selection across repositories.
 
-No model training, download, provider request, or client prompt is authorized
-by this goal.
+No model training, provider request, OpenCode routing, client prompt, or real
+workflow capture is authorized by this goal. The existing model/runtime
+download is complete. The follow-up authorizes one local synthetic inference
+run only; any retry or broader diagnostic requires a new preregistration.
