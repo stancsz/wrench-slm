@@ -71,7 +71,7 @@ _WORD_NUMBERS = {
 
 _DEFAULT_READ_MAX_BYTES = 256 * 1024
 _EXPLICIT_REPLACEMENT_RE = re.compile(
-    r"\b(?:replace|change|update)\s+(['\"`])(?P<old>.*?)\1\s+"
+    r"\b(?:replac(?:e|ing)|change|update)\s+(['\"`])(?P<old>.*?)\1\s+"
     r"(?:with|to)\s+(['\"`])(?P<new>.*?)\3\s+"
     r"(?:in|within|inside)\s+(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
     re.IGNORECASE | re.DOTALL,
@@ -493,10 +493,19 @@ def _explicit_text_patch(
         updated = prefix + original
     elif operation == "insert_after":
         anchor = match.group("anchor")
-        if not anchor or original.count(anchor) != 1:
+        if not anchor or "\n" in anchor or "\r" in anchor or original.count(anchor) != 1:
             return None
-        insertion = text if text.endswith("\n") else text + "\n"
-        updated = original.replace(anchor, anchor + "\n" + insertion, 1)
+        # Path.read_text normalizes input line endings, so generated diffs use
+        # the same canonical newline convention as the other edit operations.
+        newline = "\n"
+        tail = original[original.index(anchor) + len(anchor):]
+        insertion = text.rstrip("\r\n")
+        separator_after = "" if tail.startswith(("\n", "\r")) else newline
+        updated = original.replace(
+            anchor,
+            anchor + newline + insertion + separator_after,
+            1,
+        )
     else:
         if original.count(text) != 1:
             return None
@@ -578,7 +587,7 @@ def _explicit_boundary_abstention(prompt: str, lowered: str) -> dict[str, Any] |
         review_only = bool(_REVIEW_ONLY_RE.search(prompt))
         has_unified_diff = bool(re.search(r"(?m)^---\s+a/.*\n^\+\+\+\s+b/", prompt))
         has_change_spec = bool(
-            re.search(r"\b(?:replace|update|add|insert|rename|set|remove|append|prepend)\b", lowered)
+            re.search(r"\b(?:replac(?:e|ing)|update|add|insert|rename|set|remove|append|prepend)\b", lowered)
             or re.search(r"['\"].+['\"].+\bto\b", prompt, re.IGNORECASE | re.DOTALL)
         )
         if review_only and _path(prompt) and not has_unified_diff and not has_change_spec:

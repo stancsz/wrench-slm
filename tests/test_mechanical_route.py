@@ -135,6 +135,25 @@ def test_mechanical_route_builds_a_review_patch_for_one_explicit_replacement(tmp
     assert target.read_text(encoding="utf-8") == "before\nkeep\nafter\n"
 
 
+def test_mechanical_route_builds_exact_diff_for_replacing_verb_form(tmp_path):
+    target = tmp_path / "settings.txt"
+    target.write_text("mode=old\n", encoding="utf-8")
+
+    proposal = mechanical_route(
+        "Draft a review-only change replacing `mode=old` with `mode=new` in settings.txt and do not apply it.",
+        allowed_root=tmp_path,
+    )
+
+    assert proposal == {
+        "schema": "wrench.proposal.v1",
+        "action": "patch_draft",
+        "files": ["settings.txt"],
+        "review_only": True,
+        "diff": "--- a/settings.txt\n+++ b/settings.txt\n@@ -1 +1 @@\n-mode=old\n+mode=new\n",
+    }
+    assert target.read_text(encoding="utf-8") == "mode=old\n"
+
+
 def test_mechanical_route_defers_ambiguous_replacement_to_model(tmp_path):
     target = tmp_path / "README.md"
     target.write_text("before\nbefore\n", encoding="utf-8")
@@ -167,6 +186,36 @@ def test_mechanical_route_builds_bounded_text_patch(tmp_path, instruction, befor
     assert removed in proposal["diff"]
     assert added in proposal["diff"]
     assert target.read_text(encoding="utf-8") == before
+
+
+def test_mechanical_route_inserts_after_unique_line_without_blank_line(tmp_path):
+    target = tmp_path / "config.txt"
+    target.write_text("alpha\nomega\n", encoding="utf-8")
+
+    proposal = mechanical_route(
+        "Draft a review-only change insert `middle` after the unique text `alpha` in config.txt and do not apply it.",
+        allowed_root=tmp_path,
+    )
+
+    assert proposal == {
+        "schema": "wrench.proposal.v1",
+        "action": "patch_draft",
+        "files": ["config.txt"],
+        "review_only": True,
+        "diff": "--- a/config.txt\n+++ b/config.txt\n@@ -1,2 +1,3 @@\n alpha\n+middle\n omega\n",
+    }
+    assert target.read_text(encoding="utf-8") == "alpha\nomega\n"
+
+
+def test_mechanical_route_defers_multiline_insert_anchor(tmp_path):
+    target = tmp_path / "config.txt"
+    target.write_text("alpha\nbeta\nomega\n", encoding="utf-8")
+
+    assert mechanical_route(
+        "Draft a review-only change insert `middle` after the unique text `alpha\nbeta` in config.txt and do not apply it.",
+        allowed_root=tmp_path,
+    ) is None
+    assert target.read_text(encoding="utf-8") == "alpha\nbeta\nomega\n"
 
 
 def test_reference_patch_route_recovers_exact_old_diff():
