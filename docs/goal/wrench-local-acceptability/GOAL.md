@@ -1,9 +1,9 @@
 # Measure acceptable local work
 
-Status: active; deterministic mechanics and the first local SLM screen are
-measured. The first model run was a harness failure; the separate corrected
-run completed, with no task class accepted for local SLM work. Real-work
-utility and frontier-token savings remain unmeasured.
+Status: active; the deterministic proposal route passed a 176-case synthetic
+development screen across six bounded action families. The first local SLM
+screen failed all five classes. Real-work utility and frontier-token savings
+remain unmeasured.
 
 ## Objective
 
@@ -19,6 +19,15 @@ exact reads, literal searches, and source-tied extraction when the requested
 fact is present and unambiguous in the supplied snapshot. It must abstain when
 required evidence is missing, stale, or ambiguous. It does not establish
 general code editing, root-cause diagnosis, or local SLM capability.
+
+A broader deterministic proposal-route screen now covers `read_file`,
+`read_lines`, `literal_search`, `git_read_status`, `health_read`, and
+review-only `patch_draft`. On 96 eligible and 80 boundary/out-of-domain
+calibration/development cases, it matched all 96 frozen proposal targets and
+made zero unsafe proposals. The detailed [measurement report](../../reports/wrench-local-acceptability/local-work-envelope-20260924-01.md)
+shows the per-family counts and limitations. This is a route mechanics result:
+no actions or verifier were run, and the synthetic cases are exposed. It does
+not establish complete task success or real-work acceptability.
 
 The first open-development seed run matched its frozen mechanics/oracle checks
 on 10/10 authored synthetic cases: 7 completed answers and 3 correct
@@ -97,7 +106,8 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 ## Next steps
 
 1. Keep run 01 harness-invalid and run 02 as a failed synthetic SLM screen.
-   Do not tune against or train on this open-development fixture.
+   Keep the 176-case route screen as exposed development evidence. Do not tune
+   against or train on either fixture.
 2. Use the paired receipt reporter for a savings figure only when both arms
    have complete exact usage receipts for the same tasks, source snapshots,
    preregistered arm definitions, downstream route and token convention. The
@@ -115,6 +125,7 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    holds the owner decisions and study design.
 
 No additional model training, provider request, OpenCode routing, client
-prompt, or real workflow capture is authorized by this goal. The existing
-model/runtime download is complete. Runs 01 and 02 are closed; any retry or
-broader diagnostic requires a new preregistration and applicable authority.
+prompt, or real workflow capture is authorized by this goal. The current local
+proposal measurement is complete. A complete verifier/executor measurement
+needs its own preregistered bounded task set. Provider-backed work still needs
+the separate authority described above.
