@@ -21,10 +21,15 @@ envelope](../../reports/wrench-local-acceptability/local-acceptance-envelope-202
 exact snapshot file reads, line-range reads, and literal searches have
 mechanics evidence only; Git status, health reads, and review-only patch drafts
 have proposal evidence only; and no semantic local SLM class is accepted. The
-next acceptance measurement is a fresh-fixture route-to-verifier screen for a
-review-only patch draft. The M3 tokenizer proxy is secondary because prompt
-size cannot decide task acceptability. Training stays stopped until a
-preregistered, held-out task class passes its outcome and safety criteria.
+first fresh-fixture route-to-verifier screen for review-only patch drafts
+failed its exact positive-oracle rule (1/3), although all three boundaries
+abstained and all fixture trees stayed unchanged. See the [screen report](../../reports/wrench-local-acceptability/patch-draft-screen-01.md).
+The identified parser defects passed 33 focused tests after repair, but the
+screen was not repeated, so patch drafting remains unaccepted. See the
+[repair follow-up](../../reports/wrench-local-acceptability/patch-draft-screen-01-followup.md).
+The M3 tokenizer proxy is secondary because prompt size cannot decide task
+acceptability. Training stays stopped until a preregistered, held-out task
+class passes its outcome and safety criteria.
 
 The current provider-free rule route has a narrow measured operation envelope:
 bounded exact file reads, line-range reads and literal searches on an explicit

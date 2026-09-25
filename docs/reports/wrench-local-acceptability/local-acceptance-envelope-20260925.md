@@ -41,6 +41,11 @@ to tune or train.
 - Line ranges: [operation screen 03](local-read-lines-acceptability-03.md).
 - Proposal-only families: [work envelope 01](local-work-envelope-20260924-01.md).
 - Local SLM: [Qwen run 02](local-slm-run-02.md).
+- Review-only patch draft: [screen 01](patch-draft-screen-01.md) failed its
+  exact positive-oracle rule at 1/3; all three boundaries abstained and no
+  fixture changed. The subsequent parser repair passed 33 focused tests, but
+  the measurement was not repeated; patch drafting remains unaccepted. See
+  [follow-up](patch-draft-screen-01-followup.md).
 - Real utility and observed frontier savings remain unmeasured. The paired
   reporter has zero eligible matched usage pairs, so the average per-task
   frontier-token savings is **N/A**, not zero.
@@ -52,9 +57,11 @@ route-oracle gaps; no M3 proxy result is used here.
 
 ## Next measurement
 
-Run one bounded, fresh-fixture `patch_draft` route-to-verifier screen. Freeze an
-independent exact diff oracle and boundary cases before execution. Keep the
-patch as a review artifact and prove no source mutation. Report it as
-reviewable patch-draft mechanics if it passes. Do not call it code repair,
-semantic task completion, or utility. A later held-out SLM screen needs a new
-task hypothesis and cases not exposed to training or tuning.
+The first frozen `patch_draft` screen failed. Its parser defects were repaired
+and covered by focused tests, but that does not change the screen result.
+Prepare a new protocol and new synthetic cases for any next measurement, and
+label it as open-development mechanics because this failure informed
+implementation. Keep patch drafting unaccepted until every frozen positive
+diff matches its oracle and every boundary abstains with an unchanged fixture
+tree. A later held-out SLM screen needs a separate task hypothesis and cases
+not exposed to training or tuning.
