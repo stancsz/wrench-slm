@@ -40,7 +40,7 @@ PyTorch 2.14.0+cu132 with CUDA 13.2. It loads text-only inference through
 `0ef09f214eaa6d9bca297988afc1454b5827b2c7`). The serializer identity is
 `direct_transformers.apply_chat_template.v1`; the runner records the loaded
 class names, installed Python executable, runtime-lock SHA-256
-`9abfd22a1c10320f6213714290ed5933de0488d3ed067b42089020bfc73b6277`, and
+`0ed35342ae184741886fff2764f87c44df8babfde3912c54a9e1cd73ffbf2420`, and
 template SHA-256 in the report. Before loading, the runner verifies the full
 installed package set against every pinned lock entry, allowing only the
 environment's `pip` bootstrap package as an extra. The lock contains the

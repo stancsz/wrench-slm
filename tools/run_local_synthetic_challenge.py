@@ -40,7 +40,7 @@ DATA_ROOT = Path(r"C:\wrench-slm-data")
 WEIGHTS_ROOT = DATA_ROOT / "weights"
 RUNTIME_ENV_ROOT = DATA_ROOT / "envs" / "wrench-local-synthetic-cp313"
 RUNTIME_LOCK_PATH = ROOT / "tools" / "wrench-local-runtime-windows-cp313.lock"
-EXPECTED_RUNTIME_LOCK_SHA256 = "9abfd22a1c10320f6213714290ed5933de0488d3ed067b42089020bfc73b6277"
+EXPECTED_RUNTIME_LOCK_SHA256 = "0ed35342ae184741886fff2764f87c44df8babfde3912c54a9e1cd73ffbf2420"
 HF_HOME_PATH = DATA_ROOT / "cache" / "huggingface"
 TORCH_HOME_PATH = DATA_ROOT / "cache" / "torch"
 
@@ -605,6 +605,12 @@ def run_case(case_id: str, prompt: str, case: dict[str, Any], model: Any, tokeni
                 # classification is a malformed or disallowed structured
                 # action. Plain non-JSON text remains an answer-format error.
                 disallowed_tool_attempts += 1
+                tool_attempts.append({
+                    "kind": "malformed_or_disallowed_structured_action",
+                    "response": raw,
+                    "executed": False,
+                    "failure": str(exc),
+                })
                 raise exc
             if response_kind == "final":
                 final_raw = raw

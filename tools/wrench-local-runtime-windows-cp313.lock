@@ -7,7 +7,7 @@
 # filelock; typing-extensions>=4.10.0; setuptools>=77.0.3; sympy>=1.13.3;
 # networkx>=2.5.1; jinja2; fsspec>=0.8.5, plus the core input pins above.
 # PyTorch wheel URL and published SHA256:
-torch @ https://download.pytorch.org/whl/cu132/torch/torch-2.14.0%2Bcu132-cp313-cp313-win_amd64.whl \
+torch @ https://download-r2.pytorch.org/whl/cu132/torch-2.14.0%2Bcu132-cp313-cp313-win_amd64.whl \
     --hash=sha256:3a7224b43f44c8438f7d3d6c268c816b2113efa73ffe473196e82e2e98bce4aa
 # Install only after storage/resource admission, using pip --require-hashes --only-binary=:all: -r this file.
 # Resolver target command (the Torch wheel itself is not fetched by this metadata-only closure resolution):
