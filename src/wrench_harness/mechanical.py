@@ -98,6 +98,12 @@ _EXPLICIT_REMOVE_RE = re.compile(
     r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
     re.IGNORECASE | re.DOTALL,
 )
+_EXPLICIT_REMOVE_LINE_RE = re.compile(
+    r"\bremove\s+the\s+entire\s+line\s+containing\s+"
+    r"(['\"`])(?P<text>.*?)\1\s+(?:from|in)\s+"
+    r"(?P<path>(?:[A-Za-z0-9_.-]+[/\\])*[A-Za-z0-9_.-]+\.[A-Za-z0-9_-]+)",
+    re.IGNORECASE | re.DOTALL,
+)
 _REVIEW_ONLY_RE = re.compile(
     r"\b(?:review(?:[- ]only)?(?:\s+patch)?|for\s+review|"
     r"leav\w*\s+.*?\bunchanged|do\s+not\s+apply|unapplied)\b",
@@ -392,7 +398,10 @@ def _is_risky(prompt: str) -> bool:
     if any(marker in lowered for marker in _OUT_OF_DOMAIN_MARKERS):
         return True
     if any(re.search(rf"\b{word}\b", lowered) for word in ("delete", "remove", "destroy", "erase")):
-        bounded_text_remove = _EXPLICIT_REMOVE_RE.search(prompt) is not None and bool(_REVIEW_ONLY_RE.search(prompt))
+        bounded_text_remove = (
+            _EXPLICIT_REMOVE_RE.search(prompt) is not None
+            or _EXPLICIT_REMOVE_LINE_RE.search(prompt) is not None
+        ) and bool(_REVIEW_ONLY_RE.search(prompt))
         if not bounded_text_remove:
             return True
     if re.search(r"\bapply\b", lowered) and not re.search(r"\b(?:do not|don't|never) apply\b|\bunapplied\b", lowered):
@@ -477,6 +486,7 @@ def _explicit_text_patch(
         ("append", _EXPLICIT_APPEND_RE.search(prompt)),
         ("prepend", _EXPLICIT_PREPEND_RE.search(prompt)),
         ("insert_after", _EXPLICIT_INSERT_AFTER_RE.search(prompt)),
+        ("remove_line", _EXPLICIT_REMOVE_LINE_RE.search(prompt)),
         ("remove", _EXPLICIT_REMOVE_RE.search(prompt)),
     ):
         if candidate is not None:
@@ -522,6 +532,15 @@ def _explicit_text_patch(
             anchor + newline + insertion + separator_after,
             1,
         )
+    elif operation == "remove_line":
+        if "\n" in text or "\r" in text:
+            return None
+        lines = original.splitlines(keepends=True)
+        matching = [index for index, line in enumerate(lines) if text in line]
+        if len(matching) != 1:
+            return {"status": "abstain", "fallback_reason": "patch_target_not_unique"}
+        del lines[matching[0]]
+        updated = "".join(lines)
     else:
         if original.count(text) != 1:
             return {"status": "abstain", "fallback_reason": "patch_target_not_unique"}
