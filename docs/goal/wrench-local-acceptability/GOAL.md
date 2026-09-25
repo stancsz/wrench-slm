@@ -16,6 +16,16 @@ learned controller.
 
 ## Current decision
 
+The current scope decision is recorded in the [local task acceptance
+envelope](../../reports/wrench-local-acceptability/local-acceptance-envelope-20260925.md):
+exact snapshot file reads, line-range reads, and literal searches have
+mechanics evidence only; Git status, health reads, and review-only patch drafts
+have proposal evidence only; and no semantic local SLM class is accepted. The
+next acceptance measurement is a fresh-fixture route-to-verifier screen for a
+review-only patch draft. The M3 tokenizer proxy is secondary because prompt
+size cannot decide task acceptability. Training stays stopped until a
+preregistered, held-out task class passes its outcome and safety criteria.
+
 The current provider-free rule route has a narrow measured operation envelope:
 bounded exact file reads, line-range reads and literal searches on an explicit
 supplied snapshot, with correct abstention on the measured missing, stale,
@@ -142,6 +152,11 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    freeze the client, model/route, accounting convention, protocol, and task
    split before any calls. The [pilot-readiness goal](../wrench-northstar-pilot-readiness/GOAL.md)
    holds the owner decisions and study design.
+
+4. Prioritize the [review-only patch-draft acceptance screen](../../reports/wrench-local-acceptability/local-acceptance-envelope-20260925.md)
+   over additional training or token-size proxy work. Use a fresh fixture,
+   exact diff oracle, independent verifier, boundary abstentions, and a
+   source-tree immutability check. Keep any pass scoped to draft mechanics.
 
 No additional model training, provider request, OpenCode routing, client
 prompt, or real workflow capture is authorized by this goal. The local
