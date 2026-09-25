@@ -47,6 +47,16 @@ The M3 tokenizer proxy is secondary because prompt size cannot decide task
 acceptability. Training stays stopped until a preregistered, held-out task
 class passes its outcome and safety criteria.
 
+The first frozen M3 context-token screen measured five of seven positive
+evidence selections and all four abstention boundaries. Five eligible cases
+reduced complete input tokens by an 11.64% arithmetic mean and 12.11% by
+ratio-of-sums. The two function-location cases failed the required answer
+evidence check, so the screen acceptance is FAIL and those pairs are excluded.
+The accepted rows cover only exposed synthetic log triage, exhaustive literal
+search, and exact config reads. No model ran, and frontier-token savings remain
+N/A. See the [screen result](../../evals/wrench-local-acceptability/synthetic-context-token-reduction-screen-01.md)
+and [frozen protocol](../../evals/wrench-local-acceptability/synthetic-context-token-reduction-protocol-06.md).
+
 The current provider-free rule route has a narrow measured operation envelope:
 bounded exact file reads, line-range reads and literal searches on an explicit
 supplied snapshot, with correct abstention on the measured missing, stale,
@@ -177,14 +187,13 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 4. Keep the patch-operation screen result scoped to the four explicit
    single-file draft forms and synthetic UTF-8 LF inputs. Open-ended,
    multi-file, semantic repair and completed coding claims remain outside it.
-5. For the next local acceptability measure, preregister a fresh synthetic
-   context-selection screen for one narrow localization task: locate the
-   implementation and sole call site of a named `load_retry_policy` function
-   in a small synthetic configuration subsystem. Freeze an independent
-   required-path and source-evidence oracle first. Include missing evidence,
-   stale source identity, ambiguous duplicate call sites, and a context budget
-   too small to contain the required evidence. Count a case complete only when
-   selected paths and evidence match the oracle; abstentions must be exact.
+5. Diagnose why the two exposed function-location cases failed the required
+   answer-evidence check. Do not tune on those exposed fixtures. Then
+   preregister a fresh, independent localization fixture with source-derived
+   required-path and quote oracles, missing/stale/ambiguous boundaries, and an
+   over-budget boundary. Count a case complete only when exact evidence is
+   present and all abstentions match; report token reductions only for eligible
+   cases and keep semantic SLM acceptance separate.
 
 No additional model training, provider request, OpenCode routing, client
 prompt, or real workflow capture is authorized by this goal. The local
