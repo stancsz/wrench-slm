@@ -67,8 +67,11 @@ savings reporter.
   containing the entire exact source bytes. Each required oracle line and quote
   must be inside that same path/hash-bound section. For exhaustive literal
   search questions, require the full bounded search scope, including files
-  with no matches. The host-side oracle is checked after context construction
-  and is never passed to routing or preparation.
+  with no matches. Wrench sections are rendered as `[context:<evidence-id>]`, a
+  newline, then raw source text; do not add a `Path:` line or
+  retain any bytes outside the ordered section join. The host-side oracle is
+  checked after context construction and is never passed to routing or
+  preparation.
 - A positive case enters the token-reduction mean only if its route and
   preparation are ready, source identities join exactly, every required path
   and quote is visible, both prompt arms render, and the prompt-gate token count
