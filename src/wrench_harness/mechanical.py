@@ -414,6 +414,18 @@ def _bounded_patch_path(raw_path: str, allowed_root: str | os.PathLike[str] | No
     return candidate, relative.as_posix()
 
 
+def _read_patch_source(path: Path) -> str | dict[str, str] | None:
+    """Read only canonical, newline-terminated UTF-8 sources for diff drafting."""
+    try:
+        raw = path.read_bytes()
+        text = raw.decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    if not raw or b"\r" in raw or not raw.endswith(b"\n"):
+        return {"status": "abstain", "fallback_reason": "patch_source_format_unsupported"}
+    return text
+
+
 def _explicit_replacement_patch(
     prompt: str,
     *,
@@ -430,12 +442,13 @@ def _explicit_replacement_patch(
     new = match.group("new")
     if not old or old == new:
         return None
-    try:
-        original = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    original = _read_patch_source(path)
+    if isinstance(original, dict):
+        return original
+    if original is None:
         return None
     if original.count(old) != 1:
-        return None
+        return {"status": "abstain", "fallback_reason": "patch_target_not_unique"}
     updated = original.replace(old, new, 1)
     diff = "".join(
         difflib.unified_diff(
@@ -479,9 +492,10 @@ def _explicit_text_patch(
     text = match.group("text")
     if not text:
         return None
-    try:
-        original = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+    original = _read_patch_source(path)
+    if isinstance(original, dict):
+        return original
+    if original is None:
         return None
     if operation == "append":
         separator = "" if not original or original.endswith("\n") else "\n"
@@ -493,10 +507,12 @@ def _explicit_text_patch(
         updated = prefix + original
     elif operation == "insert_after":
         anchor = match.group("anchor")
-        if not anchor or "\n" in anchor or "\r" in anchor or original.count(anchor) != 1:
+        if not anchor or "\n" in anchor or "\r" in anchor:
             return None
-        # Path.read_text normalizes input line endings, so generated diffs use
-        # the same canonical newline convention as the other edit operations.
+        if original.count(anchor) != 1:
+            return {"status": "abstain", "fallback_reason": "patch_anchor_not_unique"}
+        # The source reader admitted LF-only input, so generated diffs use its
+        # canonical newline convention.
         newline = "\n"
         tail = original[original.index(anchor) + len(anchor):]
         insertion = text.rstrip("\r\n")
@@ -508,7 +524,7 @@ def _explicit_text_patch(
         )
     else:
         if original.count(text) != 1:
-            return None
+            return {"status": "abstain", "fallback_reason": "patch_target_not_unique"}
         updated = original.replace(text, "", 1)
     if updated == original:
         return None
