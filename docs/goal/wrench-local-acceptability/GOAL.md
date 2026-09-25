@@ -146,6 +146,16 @@ tokens and the deterministic seed's 10/10 fixture result do not enter this
 metric. The exact evidence and remaining permission/runtime gates are in the
 [frontier measurement readiness review](../../evals/wrench-local-acceptability/frontier-token-readiness.md).
 
+A receipt-only join of the existing failing-log pair further separates the
+local operation from task completion: deterministic exact log retrieval passed
+2/2 cases, while the Qwen SLM made 0/2 required tool calls and completed 0/2
+triage outcomes. The source fixture was exposed, and the operation arm asked
+for an exact read rather than the SLM's semantic classification, so this is a
+diagnostic, not a matched-prompt or held-out result. It accepts only the
+retrieval mechanics; semantic local SLM acceptance remains at zero classes.
+See the [triage-stage diagnostic](../../reports/wrench-local-acceptability/local-triage-stage-diagnostic-20260925.md)
+and [evaluation](../../evals/wrench-local-acceptability/local-triage-stage-diagnostic-20260925.md).
+
 An offline [attempt-ledger bridge](../../reports/wrench-local-acceptability/frontier-attempt-ledger-bridge.md)
 now adapts complete, caller-supplied frontier-only ledgers into the reporter's
 existing receipt format. It requires exact token counts, known cost for every
