@@ -151,12 +151,12 @@ def _verify_asset_inventory() -> dict[str, Any]:
         raise ValueError("tokenizer_directory_reparse_point_rejected")
     _require_below(TOKENIZER_ROOT, ARTIFACT_ROOT, "tokenizer_root_outside_approved_artifact_root")
     _require_below(TOKENIZER_DIR, TOKENIZER_ROOT, "tokenizer_dir_outside_tokenizer_root")
-    inventory_bytes = ASSET_INVENTORY.read_bytes()
-    receipt_bytes = ASSET_RECEIPT.read_bytes()
     for path in (ASSET_INVENTORY, ASSET_RECEIPT):
         if _is_reparse_point(path):
             raise ValueError("tokenizer_metadata_reparse_point_rejected:" + path.name)
         _require_below(path, TOKENIZER_ROOT, "tokenizer_metadata_outside_pinned_root:" + path.name)
+    inventory_bytes = ASSET_INVENTORY.read_bytes()
+    receipt_bytes = ASSET_RECEIPT.read_bytes()
     if _sha256(inventory_bytes) != TOKENIZER_INVENTORY_SHA256:
         raise ValueError("tokenizer_inventory_identity_mismatch")
     if _sha256(receipt_bytes) != FETCH_RECEIPT_SHA256:
@@ -359,6 +359,8 @@ def _baseline_message(files: list[dict[str, Any]], snapshot_sha256: str) -> dict
 
 def _derive_route_observation(case: dict[str, Any]) -> dict[str, Any] | None:
     expected = case["expected_mechanics"]
+    if expected.get("status") != "completed":
+        return None
     action = expected.get("action")
     files = {source["path"]: source for source in case["files"]}
     if action == "read_file":

@@ -7,7 +7,7 @@ are not execution authority.
 Job ID: `W2-SYN-M3-CTX-REDUCTION-20260925-01`  
 Nonce: `SYNCTX03-74D1`  
 Runner: `tools/measure_synthetic_context_token_reduction.py`  
-Runner SHA-256: `066870c79b386b99aa004df664af14840eb6c08737013012def9c2f392109282`  
+Runner SHA-256: `71dd14ae42866dcd383c65ada07a8dc6927ebd1d1602da37ab6667811c9957cc`
 Frozen one-shot output: `C:\wrench-slm-data\artifacts\wrench-local-acceptability\synthetic-context-m3-reduction-01.json`
 
 ## Question and claim boundary
