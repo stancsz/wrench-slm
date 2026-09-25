@@ -38,8 +38,8 @@ from wrench_harness.snapshot import bind_source_root, create_snapshot
 from wrench_harness.synthetic_fixture_admission import validate_synthetic_fixture_admission
 
 
-JOB_ID = "W2-SYN-M3-CTX-REDUCTION-20260925-01"
-NONCE = "SYNCTX03-74D1"
+JOB_ID = "W2-SYN-M3-CTX-REDUCTION-20260925-02"
+NONCE = "SYNCTX04-91A7"
 SCHEMA = "wrench.synthetic-context-m3-input-reduction.v1"
 FIXTURE_REL = "tests/fixtures/e0_synthetic_matched_tasks_v1/manifest.json"
 FIXTURE_SHA256 = "871814333d9f582df9595ec486eb59fbf5f66c397cb451f6b67d9519d2bb72c5"
@@ -47,7 +47,7 @@ CHALLENGE_REL = "tools/run_local_synthetic_challenge.py"
 CHALLENGE_SHA256 = "85c7857252814fe89a9f1bc08ce4432f09499f126dddb4692deb1922f1aafb56"
 SYSTEM_PROMPT_SHA256 = "5078f6f4ebadb81375726eca9cf7d34559165283517a7f7f5233d62cd020b2fa"
 REVIEW_REL = "docs/evals/wrench-e0-synthetic-matched-tasks/review.md"
-PROTOCOL_REL = "docs/evals/wrench-local-acceptability/synthetic-context-token-reduction-protocol-02.md"
+PROTOCOL_REL = "docs/evals/wrench-local-acceptability/synthetic-context-token-reduction-protocol-03.md"
 MANIFEST_PATH = ROOT / FIXTURE_REL
 SIDECAR_PATH = MANIFEST_PATH.with_name("manifest.sha256")
 CHALLENGE_PATH = ROOT / CHALLENGE_REL
@@ -90,7 +90,7 @@ OVER_BUDGET_CASE_ID = "evidence-specific"
 ARTIFACT_ROOT = Path(r"C:\wrench-slm-data\artifacts\wrench-local-acceptability")
 DATA_ROOT = Path(r"C:\wrench-slm-data")
 TMP_ROOT = ARTIFACT_ROOT / "tmp"
-OUTPUT_DEFAULT = ARTIFACT_ROOT / "synthetic-context-m3-reduction-01.json"
+OUTPUT_DEFAULT = ARTIFACT_ROOT / "synthetic-context-m3-reduction-02.json"
 
 
 def _sha256(data: bytes) -> str:
@@ -253,11 +253,17 @@ def _challenge_constants() -> tuple[str, dict[str, str], str]:
     wanted = {"SYSTEM_PROMPT", "CHALLENGE_CASES"}
     found: dict[str, object] = {}
     for node in tree.body:
-        if not isinstance(node, ast.Assign):
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+            value = node.value
+        elif isinstance(node, ast.AnnAssign):
+            targets = [node.target]
+            value = node.value
+        else:
             continue
-        for target in node.targets:
-            if isinstance(target, ast.Name) and target.id in wanted:
-                found[target.id] = ast.literal_eval(node.value)
+        for target in targets:
+            if isinstance(target, ast.Name) and target.id in wanted and value is not None:
+                found[target.id] = ast.literal_eval(value)
     if set(found) != wanted:
         raise ValueError("challenge_prompt_constants_missing")
     system = found["SYSTEM_PROMPT"]
@@ -935,7 +941,7 @@ def measure(output: Path) -> dict[str, object]:
         raise ValueError("artifact_output_directory_reparse_point_rejected")
     positives: list[dict[str, object]] = []
     abstentions: list[dict[str, object]] = []
-    with tempfile.TemporaryDirectory(prefix="synthetic-context-m3-01-", dir=TMP_ROOT) as scratch_name:
+    with tempfile.TemporaryDirectory(prefix="synthetic-context-m3-02-", dir=TMP_ROOT) as scratch_name:
         scratch = Path(scratch_name)
         _require_below(scratch, TMP_ROOT, "scratch_directory_outside_scratch_root")
         if _is_reparse_point(scratch):
@@ -996,7 +1002,7 @@ def measure(output: Path) -> dict[str, object]:
     payload = _canonical_bytes(report) + b"\n"
     if len(payload) > 1_000_000:
         raise ValueError("receipt_byte_limit_exceeded")
-    descriptor, temporary_name = tempfile.mkstemp(prefix="synthetic-context-m3-01-", suffix=".tmp", dir=output.parent)
+    descriptor, temporary_name = tempfile.mkstemp(prefix="synthetic-context-m3-02-", suffix=".tmp", dir=output.parent)
     temporary = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "wb") as stream:
