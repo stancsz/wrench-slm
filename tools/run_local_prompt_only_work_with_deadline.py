@@ -27,10 +27,10 @@ def _inside(path: Path, root: Path) -> Path:
     return resolved
 
 
-def _assert_storage_admitted() -> None:
+def _assert_storage_admitted(timeout_seconds: float = 60) -> None:
     checker = ROOT / "tools" / "check_wrench_storage_budget.py"
     done = subprocess.run([sys.executable, str(checker), "status"], cwd=ROOT,
-                          capture_output=True, text=True, timeout=60, check=True)
+                          capture_output=True, text=True, timeout=timeout_seconds, check=True)
     budget = json.loads(done.stdout)
     if (budget.get("status") != "WITHIN_LIMIT" or budget.get("errors") or
             JOB_ID not in budget.get("reservations", []) or
@@ -106,9 +106,10 @@ def main() -> int:
                     code = child.wait(timeout=min(SUPERVISOR_POLL_SECONDS, remaining))
                     break
                 except subprocess.TimeoutExpired:
-                    if time.monotonic() >= deadline:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
                         raise
-                    _assert_storage_admitted()
+                    _assert_storage_admitted(timeout_seconds=min(60, remaining))
         except subprocess.TimeoutExpired:
             child.kill()
             child.wait()
