@@ -9,7 +9,7 @@ authority.
 Job ID: `W2-SYN-M3-CTX-REDUCTION-20260925-03`  
 Nonce: `SYNCTX05-B3C8`  
 Runner: `tools/measure_synthetic_context_token_reduction.py`  
-Runner SHA-256: `c4a0a7e1f57da3f186add941ee9ed15c70e03338b99709ea6ae6584b42eea564`
+Runner SHA-256: `99b3be8e475b0945603c5d5b5e918f0c40109c7e9de0f1b7907e3efb205fd746`
 Frozen one-shot output: `C:\wrench-slm-data\artifacts\wrench-local-acceptability\synthetic-context-m3-reduction-03.json`
 
 ## Question and claim boundary
