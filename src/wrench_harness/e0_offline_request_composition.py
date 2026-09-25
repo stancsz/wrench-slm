@@ -796,7 +796,17 @@ def prepare_offline_e0_request(
         # Register the lease only after all content validation, lowering, and
         # digest construction have succeeded. No fallible user callback runs
         # after registration.
-        ticket = boundary.prepare(lease_id, pin_scope.release_once)
+        expected_request = LoweredRequest(
+            method="POST",
+            url=ROUTE,
+            headers=((CONTENT_TYPE_HEADER, "application/json"),),
+            body=body,
+        )
+        ticket = boundary.prepare(
+            lease_id,
+            pin_scope.release_once,
+            expected_request=expected_request,
+        )
         lowered_request = LoweredRequest(
             method="POST",
             url=ROUTE,

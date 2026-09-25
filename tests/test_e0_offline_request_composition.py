@@ -27,9 +27,12 @@ from wrench_harness.opencode_hook_projection import (
 )
 from wrench_harness.opencode_project_registry import OpenCodeProjectRegistry
 from wrench_harness.opencode_request_boundary import (
+    CONTENT_TYPE_HEADER,
     FixtureResponse,
+    LoweredRequest,
     LoopbackFixtureServer,
     RequestLeaseBoundary,
+    ROUTE,
     StreamEnd,
 )
 
@@ -608,12 +611,26 @@ def test_timer_start_failure_rolls_back_pending_lease_and_releases_once():
         nonce_factory=lambda: "synthetic-timer-start-failure-nonce",
         timeout_seconds=5,
     )
+    expected_request = LoweredRequest(
+        "POST",
+        ROUTE,
+        ((CONTENT_TYPE_HEADER, "application/json"),),
+        json.dumps({
+            "model": "wrench-offline-fixture",
+            "messages": [{"role": "user", "content": "timer fixture"}],
+            "stream": True,
+        }, separators=(",", ":")).encode(),
+    )
     try:
         with patch(
             "wrench_harness.opencode_request_boundary.threading.Timer.start",
             side_effect=RuntimeError("synthetic timer start failure"),
         ):
-            boundary.prepare("synthetic-timer-start-failure", lambda: released.append("released"))
+            boundary.prepare(
+                "synthetic-timer-start-failure",
+                lambda: released.append("released"),
+                expected_request=expected_request,
+            )
     except RuntimeError as exc:
         assert "synthetic timer start failure" in str(exc)
     else:

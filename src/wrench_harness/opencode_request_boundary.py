@@ -9,6 +9,7 @@ request writer stop and close.
 from __future__ import annotations
 
 import json
+import hashlib
 import secrets
 import threading
 import time
@@ -55,6 +56,7 @@ class RejectReason(str, Enum):
     LEASE_EXPIRED = "lease_expired"
     ROUTE_UNSUPPORTED = "route_unsupported"
     CONTENT_UNSUPPORTED = "content_unsupported"
+    REQUEST_MISMATCH = "request_mismatch"
 
 
 @dataclass(frozen=True)
@@ -220,6 +222,39 @@ def _valid_chat_request(request: LoweredRequest) -> RejectReason | None:
     return None
 
 
+def _request_fingerprint(request: LoweredRequest) -> str:
+    """Hash the semantic lowered request, excluding correlation and HTTP framing."""
+    if type(request) is not LoweredRequest:
+        raise BoundaryError("request_fingerprint_invalid")
+    headers = sorted(
+        (name.lower(), value)
+        for name, value in request.headers
+        if name.lower() not in {
+            CORRELATION_HEADER,
+            "host",
+            "connection",
+            "content-length",
+            "transfer-encoding",
+            "accept-encoding",
+        }
+    )
+    body_sha256 = hashlib.sha256(request.body).hexdigest()
+    payload = json.dumps(
+        {
+            "method": request.method,
+            "url": request.url,
+            "headers": headers,
+            "body_sha256": body_sha256,
+            "body_bytes": len(request.body),
+        },
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("ascii")
+    return hashlib.sha256(payload).hexdigest()
+
+
 class RequestLeaseBoundary:
     """One-shot nonce correlation and bounded local fixture stream ownership."""
 
@@ -241,10 +276,22 @@ class RequestLeaseBoundary:
         self._used_nonces: set[str] = set()
         self._used_nonce_order: deque[str] = deque()
 
-    def prepare(self, lease_id: str, release: Callable[[], object]) -> LeaseTicket:
-        """Register one caller-owned prepared lease and return its one-use nonce."""
+    def prepare(
+        self,
+        lease_id: str,
+        release: Callable[[], object],
+        *,
+        expected_request: LoweredRequest,
+    ) -> LeaseTicket:
+        """Register a prepared lease bound to one exact lowered request."""
         if not _valid_lease_id(lease_id) or not callable(release):
             raise BoundaryError("lease_invalid")
+        expected_invalid = _valid_chat_request(expected_request)
+        if expected_invalid is not None or any(
+            name.lower() == CORRELATION_HEADER for name, _ in expected_request.headers
+        ):
+            raise BoundaryError("expected_request_invalid")
+        request_fingerprint = _request_fingerprint(expected_request)
         start_error: BaseException | None = None
         with self._lock:
             if any(lease.lease_id == lease_id for lease in (*self._pending.values(), *self._active.values())):
@@ -254,7 +301,13 @@ class RequestLeaseBoundary:
             nonce = self._nonce_factory()
             if type(nonce) is not str or not nonce or len(nonce) > 128 or nonce in self._pending or nonce in self._used_nonces:
                 raise BoundaryError("nonce_invalid_or_reused")
-            lease = _Lease(lease_id=lease_id, nonce=nonce, release=release, deadline=self._clock() + self._timeout)
+            lease = _Lease(
+                lease_id=lease_id,
+                nonce=nonce,
+                request_fingerprint=request_fingerprint,
+                release=release,
+                deadline=self._clock() + self._timeout,
+            )
             lease.timer = threading.Timer(self._timeout, self._timeout_lease, args=(lease,))
             lease.timer.daemon = True
             self._pending[nonce] = lease
@@ -308,6 +361,9 @@ class RequestLeaseBoundary:
         if invalid is not None:
             self._finish(lease, StreamEnd.FAILED)
             return RejectedRequest(invalid)
+        if _request_fingerprint(request) != lease.request_fingerprint:
+            self._finish(lease, StreamEnd.FAILED)
+            return RejectedRequest(RejectReason.REQUEST_MISMATCH)
         return FixtureResponseStream(
             self,
             lease,
@@ -748,6 +804,7 @@ class LoopbackFixtureServer:
 class _Lease:
     lease_id: str
     nonce: str = field(repr=False)
+    request_fingerprint: str = field(repr=False)
     release: Callable[[], object] = field(repr=False)
     deadline: float
     consumed: bool = False

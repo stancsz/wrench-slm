@@ -50,12 +50,26 @@ def _request(nonce, *, route=ROUTE, headers=None, body=None):
     )
 
 
-def _boundary(clock=None, *, nonce="nonce-1", timeout=5):
+def _expected_request(*, route=ROUTE, headers=None, body=None):
+    request = _request("unused", route=route, headers=headers, body=body)
+    return LoweredRequest(
+        request.method,
+        request.url,
+        tuple((name, value) for name, value in request.headers if name.lower() != CORRELATION_HEADER),
+        request.body,
+    )
+
+
+def _boundary(clock=None, *, nonce="nonce-1", timeout=5, expected_request=None):
     calls = []
     boundary = RequestLeaseBoundary(
         clock=clock or Clock(), nonce_factory=lambda: nonce, timeout_seconds=timeout
     )
-    ticket = boundary.prepare("lease-1", lambda: calls.append("released"))
+    ticket = boundary.prepare(
+        "lease-1",
+        lambda: calls.append("released"),
+        expected_request=expected_request or _expected_request(),
+    )
     return boundary, ticket, calls
 
 
@@ -75,7 +89,15 @@ class RequestBoundaryTests(unittest.TestCase):
     def test_loopback_server_uses_ephemeral_loopback_and_fixture_only(self):
         released = []
         boundary = RequestLeaseBoundary(nonce_factory=lambda: "loopback-nonce")
-        ticket = boundary.prepare("loopback-lease", lambda: released.append(True))
+        body = json.dumps({
+            "model": "wrench-offline-fixture",
+            "messages": [{"role": "user", "content": "synthetic local fixture"}],
+            "stream": True,
+            "max_tokens": 2,
+        }).encode()
+        ticket = boundary.prepare(
+            "loopback-lease", lambda: released.append(True), expected_request=_expected_request(body=body)
+        )
         fixture = FixtureResponse((b"data: synthetic-one\n\n", b"data: synthetic-two\n\n"))
 
         with LoopbackFixtureServer(boundary, fixture) as server:
@@ -83,12 +105,6 @@ class RequestBoundaryTests(unittest.TestCase):
             self.assertEqual(host, "127.0.0.1")
             self.assertNotEqual(port, 4000)
             connection = http.client.HTTPConnection(host, port, timeout=3)
-            body = json.dumps({
-                "model": "wrench-offline-fixture",
-                "messages": [{"role": "user", "content": "synthetic local fixture"}],
-                "stream": True,
-                "max_tokens": 2,
-            }).encode()
             connection.request(
                 "POST",
                 ROUTE,
@@ -105,7 +121,7 @@ class RequestBoundaryTests(unittest.TestCase):
     def test_loopback_oversized_body_releases_correlated_lease_without_reading_it(self):
         released = []
         boundary = RequestLeaseBoundary(nonce_factory=lambda: "oversized-loopback-nonce")
-        ticket = boundary.prepare("oversized-loopback-lease", lambda: released.append(True))
+        ticket = boundary.prepare("oversized-loopback-lease", lambda: released.append(True), expected_request=_expected_request())
         with LoopbackFixtureServer(boundary, FixtureResponse(())) as server:
             host, port = server.address
             connection = http.client.HTTPConnection(host, port, timeout=3)
@@ -122,7 +138,7 @@ class RequestBoundaryTests(unittest.TestCase):
     def test_raw_aggregate_header_cap_rejects_and_releases_known_lease(self):
         released = []
         boundary = RequestLeaseBoundary(nonce_factory=lambda: "aggregate-header-nonce")
-        ticket = boundary.prepare("aggregate-header-lease", lambda: released.append(True))
+        ticket = boundary.prepare("aggregate-header-lease", lambda: released.append(True), expected_request=_expected_request())
         with LoopbackFixtureServer(boundary, FixtureResponse(())) as server:
             sock = socket.create_connection(server.address, timeout=3)
             sock.sendall(
@@ -151,7 +167,7 @@ class RequestBoundaryTests(unittest.TestCase):
             with self.subTest(name=name):
                 released = []
                 boundary = RequestLeaseBoundary(nonce_factory=lambda: f"framing-{name}")
-                ticket = boundary.prepare(f"framing-{name}-lease", lambda: released.append(True))
+                ticket = boundary.prepare(f"framing-{name}-lease", lambda: released.append(True), expected_request=_expected_request())
                 with LoopbackFixtureServer(boundary, FixtureResponse(())) as server:
                     sock = socket.create_connection(server.address, timeout=3)
                     wire = (
@@ -178,7 +194,7 @@ class RequestBoundaryTests(unittest.TestCase):
                 boundary = RequestLeaseBoundary(
                     nonce_factory=lambda: f"parser-{name}-nonce", timeout_seconds=0.05
                 )
-                ticket = boundary.prepare(f"parser-{name}-lease", lambda: released.append(True))
+                ticket = boundary.prepare(f"parser-{name}-lease", lambda: released.append(True), expected_request=_expected_request())
                 with LoopbackFixtureServer(boundary, FixtureResponse(())) as server:
                     sock = socket.create_connection(server.address, timeout=3)
                     wire = (
@@ -203,7 +219,6 @@ class RequestBoundaryTests(unittest.TestCase):
             release_event.set()
 
         boundary = RequestLeaseBoundary(nonce_factory=lambda: "disconnect-nonce")
-        ticket = boundary.prepare("disconnect-lease", release)
         fixture = FixtureResponse((b"x" * 16_384,) * 64)
         with LoopbackFixtureServer(boundary, fixture) as server:
             sock = socket.create_connection(server.address, timeout=3)
@@ -213,6 +228,9 @@ class RequestBoundaryTests(unittest.TestCase):
                 "messages": [{"role": "user", "content": "disconnect fixture"}],
                 "stream": True,
             }).encode()
+            ticket = boundary.prepare(
+                "disconnect-lease", release, expected_request=_expected_request(body=body)
+            )
             sock.sendall(
                 (
                     f"POST {ROUTE} HTTP/1.1\r\n"
@@ -244,7 +262,6 @@ class RequestBoundaryTests(unittest.TestCase):
         boundary = RequestLeaseBoundary(
             nonce_factory=lambda: "loopback-timeout-nonce", timeout_seconds=0.5
         )
-        ticket = boundary.prepare("loopback-timeout-lease", release)
         fixture = FixtureResponse((b"y" * 16_384,) * 64)
         with LoopbackFixtureServer(boundary, fixture) as server:
             sock = socket.create_connection(server.address, timeout=3)
@@ -254,6 +271,9 @@ class RequestBoundaryTests(unittest.TestCase):
                 "messages": [{"role": "user", "content": "timeout fixture"}],
                 "stream": True,
             }).encode()
+            ticket = boundary.prepare(
+                "loopback-timeout-lease", release, expected_request=_expected_request(body=body)
+            )
             sock.sendall(
                 (
                     f"POST {ROUTE} HTTP/1.1\r\n"
@@ -332,7 +352,10 @@ class RequestBoundaryTests(unittest.TestCase):
 
         for content_type in ("Application/Json", "application/json; charset=UTF-8"):
             with self.subTest(content_type=content_type):
-                boundary, ticket, released = _boundary()
+                expected_request = _expected_request(
+                    headers=((CONTENT_TYPE_HEADER, content_type),)
+                )
+                boundary, ticket, released = _boundary(expected_request=expected_request)
                 request = _request(
                     ticket.nonce,
                     headers=((CORRELATION_HEADER, ticket.nonce), (CONTENT_TYPE_HEADER, content_type)),
@@ -341,6 +364,35 @@ class RequestBoundaryTests(unittest.TestCase):
                 self.assertNotIsInstance(stream, RejectedRequest)
                 self.assertEqual(list(stream), [])
                 self.assertEqual(released, ["released"])
+
+    def test_request_lease_rejects_valid_body_substitution_and_consumes_nonce(self):
+        boundary, ticket, released = _boundary()
+        changed = _request(ticket.nonce, body=json.dumps({
+            "model": "wrench-offline-fixture",
+            "messages": [{"role": "user", "content": "different valid synthetic request"}],
+            "stream": True,
+            "max_tokens": 4,
+        }, separators=(",", ":")).encode())
+        self.assertEqual(
+            boundary.dispatch(changed, FixtureResponse(())),
+            RejectedRequest(RejectReason.REQUEST_MISMATCH),
+        )
+        self.assertEqual(released, ["released"])
+        self.assertEqual(
+            boundary.dispatch(_request(ticket.nonce), FixtureResponse(())),
+            RejectedRequest(RejectReason.CORRELATION_STALE),
+        )
+
+    def test_request_fingerprint_ignores_nonce_and_header_order_but_not_body(self):
+        boundary, ticket, released = _boundary()
+        equivalent = _request(
+            "different-correlation-value-is-replaced",
+            headers=((CONTENT_TYPE_HEADER, "application/json"), (CORRELATION_HEADER, ticket.nonce)),
+        )
+        stream = boundary.dispatch(equivalent, FixtureResponse(()))
+        self.assertNotIsInstance(stream, RejectedRequest)
+        self.assertEqual(list(stream), [])
+        self.assertEqual(released, ["released"])
 
     def test_loopback_requires_json_media_type_and_releases_correlated_lease(self):
         scenarios = (
@@ -358,7 +410,7 @@ class RequestBoundaryTests(unittest.TestCase):
             with self.subTest(name=name):
                 released = []
                 boundary = RequestLeaseBoundary(nonce_factory=lambda: f"media-{name}-nonce")
-                ticket = boundary.prepare(f"media-{name}-lease", lambda: released.append(True))
+                ticket = boundary.prepare(f"media-{name}-lease", lambda: released.append(True), expected_request=_expected_request(body=body))
                 with LoopbackFixtureServer(boundary, FixtureResponse(())) as server:
                     sock = socket.create_connection(server.address, timeout=3)
                     media = "".join(media_headers)
