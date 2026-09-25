@@ -528,17 +528,25 @@ def _context_evidence_complete(case: dict[str, Any], snapshot, prep) -> tuple[bo
         raise ValueError("wrench_context_message_shape_invalid")
     payload = _untrusted_payload(context["content"])
     expected_ids: set[str] = set()
+    sections_by_id: dict[str, str] = {}
     for path, row in source_rows.items():
         fixture_source = next((item for item in case["files"] if item["path"] == path), None)
         if fixture_source is None or row.content_sha256 != fixture_source["sha256"]:
             return False, len(required_paths), _sha256(_canonical_bytes([]))
         evidence_id = _evidence_id(snapshot.snapshot_sha256, path, row.content_sha256)
         expected_ids.add(evidence_id)
-        section = f"[context:{evidence_id}]\nPath: {path}\n{fixture_source['content_utf8']}"
+        section = f"[context:{evidence_id}]\n{fixture_source['content_utf8']}"
+        sections_by_id[evidence_id] = section
         if payload.count(section) != 1:
             return False, len(required_paths), _sha256(_canonical_bytes([]))
     section_ids = re.findall(r"\[context:([0-9a-f]{64})\]", payload)
-    if selected != expected_ids or set(section_ids) != expected_ids or len(section_ids) != len(expected_ids):
+    if (
+        selected != expected_ids
+        or set(section_ids) != expected_ids
+        or len(section_ids) != len(expected_ids)
+        or tuple(section_ids) != tuple(prep.prompt_gate.selected_evidence_ids)
+        or payload != "\n\n".join(sections_by_id[evidence_id] for evidence_id in section_ids)
+    ):
         return False, len(required_paths), _sha256(_canonical_bytes([]))
     missing = 0
     for path in required_paths:
@@ -668,7 +676,13 @@ def _case_row(case: dict[str, Any], tokenizer, system: str, challenge_prompts: d
     wrench_tokens = _template_tokens(tokenizer, wrench_messages)
     wrench_rendered = _render(tokenizer, wrench_messages)
     serializer_count = len(_token_ids(tokenizer(wrench_rendered, add_special_tokens=False)["input_ids"]))
-    if serializer_count != wrench_tokens or prep.prompt_gate.exact_token_count != wrench_tokens:
+    if (
+        serializer_count != wrench_tokens
+        or prep.prompt_gate.exact_token_count != wrench_tokens
+        or prep.prompt != wrench_rendered
+        or prep.prompt_gate.prompt_sha256 != _sha256(wrench_rendered.encode("utf-8"))
+        or prep.prompt_gate.serialized_bytes != len(wrench_rendered.encode("utf-8"))
+    ):
         raise ValueError("wrench_prompt_gate_token_count_mismatch")
     complete, missing_count, source_set_digest = _context_evidence_complete(case, snapshot, prep)
     reduction = 100.0 * (1.0 - wrench_tokens / baseline_tokens) if complete and baseline_tokens > 0 else None
