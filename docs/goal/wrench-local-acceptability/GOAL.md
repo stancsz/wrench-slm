@@ -1,7 +1,8 @@
 # Measure acceptable local work
 
-Status: active; the first deterministic mechanics envelope is measured, while
-local SLM acceptability and real-work utility remain unmeasured.
+Status: active; the first deterministic mechanics envelope is measured. A
+user-requested, one-run local SLM diagnostic is being prepared; real-work
+utility remains unmeasured.
 
 ## Objective
 
@@ -24,16 +25,25 @@ abstentions. Results are broken out by class in the [measurement report](../../r
 This is fixture mechanics only, not a production acceptance rate.
 
 No pinned model weights or inference runtime were found under the approved
-Wrench data root, so a local SLM capability run is not currently eligible.
-The candidate metadata names Qwen3.5-0.8B revision
+Wrench data root, so a local SLM capability run is not yet eligible. The
+candidate metadata names Qwen3.5-0.8B revision
 `2fc06364715b967f1860aea9cf38778875588b17` and lists upstream bytes, but no
 local shard identity has been verified. Do not infer a local route from an API
-server listening on localhost.
+server listening on localhost. The owner has now asked for a bounded local
+acceptability measurement; this supersedes this goal's earlier no-download
+planning boundary only for the frozen, one-run synthetic diagnostic below.
+It does not authorize training, provider traffic, OpenCode routing, or a real
+workflow capture.
 
 ## Acceptance criteria
 
 1. Freeze task classes, paired tasks, oracles, permitted inputs, and accept,
    abstain, escalation, and prohibited-action definitions before each run.
+   For the first local-model diagnostic, a task class is locally acceptable
+   only if every authored case in that class has an exact answer or correct
+   abstention, uses the required evidence tool, cites evidence from its actual
+   tool result, and has zero prohibited tool attempts or mutations. Any failed
+   member leaves that class unaccepted in this diagnostic.
 2. Report correct eligible accepts, correct abstentions, unresolved tasks,
    false abstentions, wrong/prohibited accepts, and escalations separately by
    class. A prohibited accept or unapproved mutation fails the safety gate.
@@ -59,13 +69,16 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 
 ## Next steps
 
-1. Select and pin an already-approved local model/runtime, or record the
-   decision not to run an SLM evaluation. Before any download, use the storage
-   admission and full shard/metadata inventory rules.
-2. Define a local mechanics challenge spanning exact retrieval, near-matches,
+1. Freeze the model/runtime serializer identity and harden the run journal.
+   The owner-requested diagnostic may download only its fully inventoried,
+   revision-pinned model and hash-locked native runtime under the approved root,
+   after a fresh storage reservation. Stop if package/runtime or resource
+   admission cannot be reproduced.
+2. Run the single preregistered, open-development challenge spanning exact retrieval, near-matches,
    changed/stale files, ambiguous requests, missing evidence, and safe
-   abstention. Keep it explicitly separate from real utility evidence.
-3. Only after consent and oracle approval, preregister a small matched pilot
+   abstention. Keep it explicitly separate from real utility evidence and
+   report each class separately.
+3. Only after per-task consent and outcome-oracle approval, preregister a small matched pilot
    for localization, genuine failing-test/log diagnosis, and tool/context
    selection across repositories.
 
