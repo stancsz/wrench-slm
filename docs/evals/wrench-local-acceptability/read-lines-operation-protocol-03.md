@@ -1,8 +1,8 @@
-# Deterministic line-range operation screen 02
+# Deterministic line-range operation screen 03
 
-Status: superseded before execution after independent scoring review; no cases run.
-Job id: `LOCAL-READLINES-ACCEPT-20260925-02`
-Nonce: `RL02-C9A1`
+Status: preregistered offline mechanics measurement; no model call.
+Job id: `LOCAL-READLINES-ACCEPT-20260925-03`
+Nonce: `RL03-E1F6`
 
 ## Question and claim boundary
 
@@ -15,8 +15,8 @@ This is a six-case Wrench-authored fixture mechanics screen. It does not
 measure natural-language coding-task completion, held-out generalization,
 local SLM capability, real-work utility, production readiness, or frontier
 token savings. The fixture is open development data and cannot be used for
-training or tuning. Protocol 01 is preserved as a failed launch and is not
-combined with these results.
+training or tuning. Protocols 01 and 02 are preserved as pre-measurement
+failures and are not combined with these results.
 
 ## Frozen fixture and scoring
 
@@ -29,10 +29,12 @@ combined with these results.
 - Derive every proposal solely from its literal prompt using
   `mechanical_route`. Never seed a proposal from the expected observation.
 - Run each prompt through `run_e0_rule_route` using a fresh exact-source
-  snapshot. Require the frozen route status, action, reason and complete
-  expected line observation. Only the two completed `read_lines` proposals
-  reach `execute_model_output`; pass the proposal derived from that prompt to
-  the independent executor against the isolated case root. Compare normalized
+  snapshot. Compare the exact route enum status and action for every case.
+  For completed routes also compare the full expected line observation; for
+  abstentions compare the exact reason. `partial` is never normalized to
+  abstain. Only the two completed `read_lines` proposals reach
+  `execute_model_output`; pass the proposal derived from that prompt to the
+  independent executor against the isolated case root. Compare normalized
   relative path, start, end and all returned lines to the independently frozen
   oracle.
 - Hash the complete case-root file inventory immediately before and after
@@ -58,11 +60,5 @@ release this reservation only after the output is accounted for.
 ## Frozen command
 
 ```powershell
-python tools/measure_read_lines_acceptability.py --output C:\\wrench-slm-data\\artifacts\\wrench-local-acceptability\\read-lines-acceptability-20260925-02.json
+python tools/measure_read_lines_acceptability.py --output C:\\wrench-slm-data\\artifacts\\wrench-local-acceptability\\read-lines-acceptability-20260925-03.json
 ```
-
-Before measurement, an independent reviewer found that the runner collapsed
-`partial` into `abstain` and did not compare actions for abstentions. This
-could let an incorrect route pass. The reservation was released; no cases ran.
-See [protocol 02 review](read-lines-operation-screen-02.md). The corrected
-scoring and new run identity are frozen in [protocol 03](read-lines-operation-protocol-03.md).

@@ -19,13 +19,13 @@ if str(REPO_SRC) not in sys.path:
     sys.path.insert(0, str(REPO_SRC))
 
 from wrench_harness.core import execute_model_output
-from wrench_harness.e0_rule_route import RuleRouteStatus, run_e0_rule_route
+from wrench_harness.e0_rule_route import run_e0_rule_route
 from wrench_harness.mechanical import mechanical_route
 from wrench_harness.snapshot import bind_source_root, create_snapshot
 
 
-JOB_ID = "LOCAL-READLINES-ACCEPT-20260925-02"
-NONCE = "RL02-C9A1"
+JOB_ID = "LOCAL-READLINES-ACCEPT-20260925-03"
+NONCE = "RL03-E1F6"
 SCHEMA = "wrench.local-read-lines-screen.v1"
 CASES = (
     {
@@ -52,6 +52,7 @@ CASES = (
         "prompt": "Read lines 2-3 of src/missing.py.",
         "files": {"src/cache.py": "one\ntwo\nthree\n"},
         "expected_status": "abstain",
+        "expected_action": "read_lines",
         "expected_reason": "source_not_in_snapshot",
     },
     {
@@ -61,6 +62,7 @@ CASES = (
         "files": {"src/cache.py": "one\ntwo\nthree\n"},
         "mutate_after_snapshot": {"src/cache.py": "one\nchanged\nthree\n"},
         "expected_status": "abstain",
+        "expected_action": "read_lines",
         "expected_reason": "snapshot_read_changed",
     },
     {
@@ -69,6 +71,7 @@ CASES = (
         "prompt": "Read lines 9-10 of src/cache.py.",
         "files": {"src/cache.py": "one\ntwo\nthree\n"},
         "expected_status": "abstain",
+        "expected_action": "read_lines",
         "expected_reason": "line_end_out_of_range",
     },
     {
@@ -77,6 +80,7 @@ CASES = (
         "prompt": "Read lines 2-3 of the relevant file.",
         "files": {"src/cache.py": "one\ntwo\nthree\n"},
         "expected_status": "abstain",
+        "expected_action": None,
         "expected_reason": "ambiguous_or_unsupported_request",
     },
 )
@@ -137,9 +141,12 @@ def _run_case(base: Path, case: dict[str, object]) -> dict[str, object]:
     route = run_e0_rule_route(prompt, root_binding=binding, snapshot=snapshot)
     route_ns = time.perf_counter_ns() - route_start
 
-    actual_status = "completed" if route.status is RuleRouteStatus.COMPLETED else "abstain"
+    actual_status = route.status.value
     actual_reason = route.reason
-    route_exact = actual_status == case["expected_status"]
+    route_exact = (
+        actual_status == case["expected_status"]
+        and route.action == case["expected_action"]
+    )
     if actual_status == "completed":
         route_exact = route_exact and route.action == case["expected_action"]
         route_exact = route_exact and route.observation == {
@@ -184,6 +191,7 @@ def _run_case(base: Path, case: dict[str, object]) -> dict[str, object]:
         "case_id": case["case_id"],
         "pair_id": case["pair_id"],
         "expected_status": case["expected_status"],
+        "expected_action": case["expected_action"],
         "expected_reason": case.get("expected_reason"),
         "route_status": actual_status,
         "route_action": route.action,
@@ -236,6 +244,7 @@ def main() -> int:
         "case_count": len(cases),
         "route_exact_count": sum(case["route_exact"] is True for case in cases),
         "completed_routes": completed,
+        "abstentions": abstained,
         "correct_abstentions": sum(case["expected_status"] == "abstain" and case["route_exact"] is True for case in cases),
         "executor_calls": executor_called,
         "executor_exact_count": sum(case["executor_exact"] is True for case in cases),
