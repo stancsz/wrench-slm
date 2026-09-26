@@ -238,7 +238,8 @@ def _load_tokenizer():
     versions = {name: importlib.metadata.version(name) for name in RUNTIME_VERSIONS}
     if versions != RUNTIME_VERSIONS:
         raise ValueError("tokenizer_runtime_package_version_mismatch")
-    if _file_sha256(RUNTIME_LOCK) != RUNTIME_LOCK_SHA256:
+    runtime_lock_bytes = RUNTIME_LOCK.read_bytes().replace(b"\r\n", b"\n")
+    if _sha256(runtime_lock_bytes) != RUNTIME_LOCK_SHA256:
         raise ValueError("runtime_lock_hash_mismatch")
     os.environ["HF_HOME"] = str(Path(r"C:\wrench-slm-data\cache\huggingface"))
     os.environ["TORCH_HOME"] = str(Path(r"C:\wrench-slm-data\cache\torch"))

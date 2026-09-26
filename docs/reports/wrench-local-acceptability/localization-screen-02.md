@@ -1,6 +1,6 @@
-# Localization screen 02: E0 tokenizer profile preparation
+# Localization screen 02: E0 tokenizer profile attempt
 
-Status: **profile prepared and reviewed; measurement not run**
+Status: **stopped before tokenizer loading and case scoring; no measurement result**
 
 - Date: 2026-09-26
 - Goal: [Measure acceptable local work](../../goal/wrench-local-acceptability/GOAL.md)
@@ -33,17 +33,22 @@ more specific internal cause is not established. The separate local-model
 screen failed to make required evidence-tool calls and asserted unsupported
 answers. Neither exposed screen was used to tune the fresh fixture.
 
-The new screen has not produced a token-reduction number. Its execution requires
-a clean tracked source tree and no uncommitted paths; the current workspace is
-dirty. Storage admission and host-resource checks must be repeated before that
-future tokenizer job. The existing frozen protocol 06 and its historical receipt
-remain unchanged. The in-place runner change means protocol 06's old runner hash
-will reject a legacy rerun against this source; no historical result was
-rewritten.
+The new screen has not produced a token-reduction number. A one-shot attempt
+from clean revision `de8bdddf3a30fa93db9c06974f7fb737cbe17743` passed its
+fixture and runner pins, then stopped before tokenizer import because
+`tools/wrench-local-runtime-windows-cp313.lock` was checked out with CRLF. The
+protocol's expected LF-normalized SHA-256 is
+`0ed35342ae184741886fff2764f87c44df8babfde3912c54a9e1cd73ffbf2420`; the raw
+Windows checkout SHA-256 was `7be9a7de4f27d220a0f07b1711a92e0acae4a748e08c3ead4e24fad4bc8cba2e`.
+The runner stopped before tokenizer loading or case iteration. There are no
+token counts, scored cases, or receipt. The fixture was loaded during profile
+admission and is exposed; do not rerun or tune against it. A future measurement
+needs a fresh fixture and a line-ending-stable runtime-lock check. Frozen
+protocol 06 and its historical receipt remain unchanged.
 
 No model, training, client, provider, endpoint, network download, or tokenizer
-measurement was run. There is still no evidence of semantic SLM task acceptance
-or frontier-token savings.
+measurement completed. There is still no evidence of semantic SLM task
+acceptance or frontier-token savings.
 
 ## Review and verification
 
@@ -68,8 +73,8 @@ headroom.
 
 ## Next action
 
-After the owner resolves the dirty workspace and commits the reviewed source,
-repeat storage and host-resource admission and decide separately whether to run
-the pinned tokenizer-only profile. Do not bypass its clean-source gate. Model
-inference, SLM acceptance, real-task capture, and provider-backed savings remain
-outside this profile.
+Do not rerun this exposed fixture. First make runtime-lock identity line-ending
+stable, then author and freeze a new independent fixture and protocol. Repeat
+storage and host-resource admission from a clean source tree before that future
+tokenizer-only measurement. Model inference, semantic SLM acceptance, real-task
+capture, and provider-backed savings remain outside this profile.

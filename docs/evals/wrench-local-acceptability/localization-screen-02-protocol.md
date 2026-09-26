@@ -1,6 +1,6 @@
 # Localization screen 02: E0 tokenizer profile
 
-Status: **profile and fixture prepared only; measurement not run**
+Status: **attempt stopped at runtime identity gate; no tokenizer cases scored**
 
 - Profile ID: `localization-screen-02`
 - Job ID: `WRENCH-E0-LOCAL-MEASURE-20260926-03`
@@ -8,8 +8,9 @@ Status: **profile and fixture prepared only; measurement not run**
 - Fixture: `tests/fixtures/localization_screen_02.json`
 - Fixture canonical SHA-256: `b7bc026058361e70edcafcb230f8427a8f9a55630510fdef1323674bd7b0c368`
 - Runner: `tools/measure_synthetic_context_token_reduction.py`
-Runner SHA-256: `52e242693f8130fab1dc7939a7256915b8a4eceab9e376481d4c7644ac87b742`
+Runner SHA-256: `74326ef888892934dc514bdb353fe63e230f2a537a5c081b7126d18ddbbe42c2`
 The runner hash is over UTF-8 source with CRLF normalized to LF.
+- Runtime lock SHA-256: `0ed35342ae184741886fff2764f87c44df8babfde3912c54a9e1cd73ffbf2420` (CRLF normalized to LF)
 
 ## Question and claim boundary
 
@@ -116,13 +117,19 @@ a generated answer or actual avoided frontier calls.
 
 ## Execution status and limits
 
-The current task prepared code and fixture only. It did not run the measurement,
-tokenizer, tests, model, client, provider, or endpoint. The repository is dirty
-and the existing storage admission explicitly prohibits the measurement in
-this task; any later measurement needs its own authority, clean-source/storage
-admission, resource reserve check, and fresh one-shot receipt path. Fixture
-visibility as open development means it must not be reported as held-out
-generalization evidence.
+Attempt `WRENCH-LOC02-E0-MEASURE-20260926-D` ran from clean revision
+`de8bdddf3a30fa93db9c06974f7fb737cbe17743`, after fresh storage and host
+admission. Runner and fixture pins matched, and the fixture was loaded for
+admission. Tokenizer initialization then stopped at `runtime_lock_hash_mismatch`:
+the frozen LF-normalized lock hash was `0ed35342ae184741886fff2764f87c44df8babfde3912c54a9e1cd73ffbf2420`, while the Windows checkout's raw CRLF hash was
+`7be9a7de4f27d220a0f07b1711a92e0acae4a748e08c3ead4e24fad4bc8cba2e`. The
+guard runs before importing or loading the tokenizer and before iterating any
+case. No tokenizer counts, case scores, or receipt were produced. The fixture
+is now exposed and must not be rerun or tuned against; a future profile needs a
+fresh independent fixture and the CRLF-normalized lock identity check.
+
+The attempt used no model, client, provider, or endpoint and generated no model
+tokens. Its open-development fixture cannot support held-out generalization.
 
 The legacy no-argument invocation, frozen IDs, fixture/admission validation,
 and historical receipt contract remain unchanged in source behavior. The
@@ -130,5 +137,6 @@ legacy protocol 06 pins the prior complete runner source hash, so it correctly
 rejects a repeat under this extended source until that legacy experiment is
 separately re-pinned. Protocol 06 and its historical receipt were not modified.
 
-This protocol grants no inference, training, client installation, provider
-traffic, real-task capture, spend, publication, or production authority.
+This protocol grants no model inference, training, client installation,
+provider traffic, real-task capture, spend, publication, or production
+authority.
