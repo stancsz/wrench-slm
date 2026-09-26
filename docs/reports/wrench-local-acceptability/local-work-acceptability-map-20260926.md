@@ -12,6 +12,12 @@ fixture is quarantined from reruns.
 
 ## Measured envelope
 
+The newest five-case E0 context integration attempt recorded the expected
+synthetic mechanics branches, but is inadmissible because the required separate
+orchestrator admission record is missing. It adds no accepted scope. The
+fixture is exposed and quarantined; details are in the [diagnostic report](local-context-integration-screen-01.md)
+and [evaluation](../../evals/wrench-local-acceptability/local-context-integration-screen-01-result.md).
+
 | Work type | Observed result | What the result supports |
 | --- | --- | --- |
 | Deterministic failing-test evidence packet, screen 01 | Aborted on the first positive packet comparison; 0/3 positive cases completed, 0/3 boundaries reached; no score | Runner defect only. The fresh fixture is exposed; no task acceptance or rejection follows. See the [failure evaluation](../../evals/wrench-local-acceptability/failing-test-evidence-packet-screen-01.md). |
@@ -23,6 +29,10 @@ fixture is quarantined from reruns.
 | Local SLM semantic work: localization, triage, context selection, evidence-grounded answers | Prior tool-backed Qwen screen: 0/10 cases; 5 false abstentions and 2 unsupported known claims. Prompt-only screen: 0/12 positive accepts, 3/18 total passes. | No semantic task class is accepted for the local SLM. These are exposed synthetic diagnostics, not customer-work estimates. |
 | Local SLM configuration edit review | Latest run: 0/2 attempted cases passed, then stopped; 10/12 not run | The first answer proposed no change and skipped its evidence read; the next answer was invalid JSON. This workflow currently fails its local gate. |
 | Frontier-token savings | 0 actual matched exact-usage pairs; 0 pairs with independently verified completion in both arms | **N/A**, not 0%. The reporter separates all-usage diagnostics from the success-qualified mean. No provider calls or matched downstream usage receipts exist. |
+
+The 11.64% figure above remains a synthetic prompt-input proxy from an earlier
+tokenizer-only screen; it is not end-to-end savings. No practical frontier
+token-saving rate is measurable yet.
 
 ## Interpretation
 

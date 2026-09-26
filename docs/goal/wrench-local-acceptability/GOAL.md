@@ -16,6 +16,12 @@ successful-task mean. Both remain N/A on actual evidence: zero matched usage
 pairs are admitted. Real-work utility and frontier-token savings remain
 unmeasured.
 
+A five-case E0 context integration diagnostic recorded the expected mechanics
+branches, but is inadmissible as an acceptance screen: its required separate
+orchestrator admission record was not retained. The exposed fixture is
+quarantined from reruns. This adds no accepted task class; see the [report](../../reports/wrench-local-acceptability/local-context-integration-screen-01.md)
+and [evaluation](../../evals/wrench-local-acceptability/local-context-integration-screen-01-result.md).
+
 The next proposed deterministic failing-test evidence-packet screen was
 attempted once on a fresh synthetic fixture, then aborted before scoring due
 to a runner/oracle comparison defect. Its fixture is exposed and must not be
