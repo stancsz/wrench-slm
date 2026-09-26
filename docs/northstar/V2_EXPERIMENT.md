@@ -1,8 +1,28 @@
 # Experiment v2: useful Layer 1 decisions that improve from experience
 
-Status: defined; bounded E0 components exist, end-to-end E0 acceptance and model trials have not started
+Status: staged; E0 is not accepted. The owner stopped the tested small local
+semantic-controller direction on 2026-09-26. Full v2 acceptance and end-to-end
+frontier-token savings remain unmeasured.
 Owner: human product owner
 Planning date: 2026-09-23 (America/Edmonton)
+
+## Owner decision, 2026-09-26
+
+The owner concluded that a small local SLM as the primary OpenCode agent or
+semantic controller is not feasible for the intended Wrench workflow. The
+tested Qwen 0.8B route failed repeated synthetic semantic acceptance screens,
+including evidence/tool-use and output-contract requirements. The pasted
+discussion about 2B models is rationale for the product decision, not Wrench
+measurement; no 2B model was tested, so this is not a universal claim about
+every 2B model or workflow.
+
+The local semantic-controller investigation is closed. Do not continue model
+screening, tuning, or training under this direction. The deterministic
+context-preparation hypothesis is separate and remains unproven: its 11.64%
+synthetic input-token reduction does not measure full-lifecycle frontier
+savings. No eligible matched frontier-usage pairs exist, so actual savings
+remain N/A. This decision does not mark E0-E4 or the complete v2 experiment as
+accepted.
 
 ## Question and intended product
 

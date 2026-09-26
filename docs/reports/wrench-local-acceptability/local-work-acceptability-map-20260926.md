@@ -2,21 +2,27 @@
 
 ## Decision
 
-Current evidence supports **bounded deterministic mechanics on synthetic
-fixtures**, not semantic work completed by the local SLM. No real-work class
-has passed an end-to-end outcome check. Keep training paused until one narrow
-semantic class passes a fresh, independently scored local screen.
+Closed 2026-09-26 by owner decision: the small local SLM as an OpenCode
+primary agent or semantic controller is not feasible for the intended
+workflow. Existing Qwen 0.8B semantic screens failed their acceptance gates.
+No real-work class passed an end-to-end outcome check. Training remains
+stopped. See the [direction closure report](direction-closure-20260926.md)
+and [evaluation](../../evals/wrench-local-acceptability/direction-closure-20260926.md).
+
+This is a scoped product decision, not proof that all 2B models fail. No 2B
+model was tested. Full-lifecycle frontier savings and the deterministic
+context-preparation hypothesis remain unmeasured.
+
 The fresh failing-test evidence-packet screen stopped before scoring because
 of a runner/oracle comparison defect; it adds no accepted scope. Its exposed
 fixture is quarantined from reruns.
 
 ## Measured envelope
 
-Candidate next local-controller measurement: the proposed [evidence-selection
-screen](local-evidence-selection-screen-proposal-20260926.md) would test one
-fresh synthetic fixture with 8 positive selection cases and 4 abstention
-boundaries. Its fixture, runner, and oracle are not yet authored; no model has
-run, and separate inference authority remains pending. This is proposal only.
+An evidence-selection protocol, fixture, test, and runner were prepared after
+the owner decision. They were not run and are outside the closed result.
+Separate inference authority remains pending. See the
+[protocol](../../evals/wrench-local-acceptability/local-evidence-selection-screen-01-protocol.md).
 
 The newest five-case E0 context integration attempt recorded the expected
 synthetic mechanics branches, but is inadmissible because the required separate

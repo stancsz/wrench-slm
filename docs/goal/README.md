@@ -1,6 +1,12 @@
 # Goals
 
-- [Measure acceptable local work](wrench-local-acceptability/GOAL.md): exposed
+- [Measure acceptable local work](wrench-local-acceptability/GOAL.md) (closed
+  2026-09-26 by owner decision): the 0.8B local SLM did not pass semantic
+  acceptance screens, and the small-model OpenCode primary/controller direction
+  is not feasible for the intended workflow. End-to-end frontier savings remain
+  N/A with zero eligible matched pairs; the closure is not full v2 acceptance.
+  See the [decision report](../reports/wrench-local-acceptability/direction-closure-20260926.md).
+  Historical evidence: exposed
   synthetic screens cover exact reads, line ranges, literal searches, and four
   bounded review-only patch operations with exact diff/application oracles and
   abstention boundaries. The fresh E0 localization tokenizer profile stopped

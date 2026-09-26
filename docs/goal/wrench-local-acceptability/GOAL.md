@@ -1,6 +1,13 @@
 # Measure acceptable local work
 
-Status: active; the deterministic proposal route passed a 176-case synthetic
+Status: closed 2026-09-26 by owner decision. The small local SLM as an
+OpenCode primary or semantic controller is not feasible for the intended
+workflow. This closes the local semantic-controller experiment; it does not
+claim end-to-end frontier savings or full v2 acceptance. See the
+[closure report](../../reports/wrench-local-acceptability/direction-closure-20260926.md)
+and [evaluation](../../evals/wrench-local-acceptability/direction-closure-20260926.md).
+
+Historical results: the deterministic proposal route passed a 176-case synthetic
 development screen across six bounded action families. Open-fixture
 route-to-executor screens cover exact file reads, line-range reads and literal
 searches with evidence-bound abstentions. A fresh patch-operation screen
@@ -16,12 +23,12 @@ successful-task mean. Both remain N/A on actual evidence: zero matched usage
 pairs are admitted. Real-work utility and frontier-token savings remain
 unmeasured.
 
-The next proposed local-controller screen is a fresh 12-case evidence-selection
-diagnostic: 8 exact selections and 4 abstention boundaries, with no tools. Its
-fixture, runner, and oracle are not yet authored, and it has not run. Separate
-model-inference authority is pending. A passing result could only justify a
-larger held-out diagnostic; it would not establish frontier savings or
-completed coding work. See the [proposal](../../reports/wrench-local-acceptability/local-evidence-selection-screen-proposal-20260926.md).
+An evidence-selection protocol, fixture, test, and runner were later prepared
+in the working tree, but the screen was not run and separate inference
+authority remains pending. These artifacts are outside the experiment result
+and do not change the closure decision or token-savings evidence. See the
+[protocol](../../evals/wrench-local-acceptability/local-evidence-selection-screen-01-protocol.md)
+and [closure report](../../reports/wrench-local-acceptability/direction-closure-20260926.md).
 
 A five-case E0 context integration diagnostic recorded the expected mechanics
 branches, but is inadmissible as an acceptance screen: its required separate
@@ -262,7 +269,11 @@ counts. Separately report ratio-of-sums savings
 `100 * (1 - sum(W_i) / sum(B_i))`. If either count is unavailable or the
 baseline count is zero, that task's percentage is unavailable, not zero.
 
-## Next steps
+## Original gates retained for history
+
+The following requirements describe the original experiment plan. The owner
+closed this goal on 2026-09-26, so they are not active next steps or authority
+to run more local-model, provider, client, or real-work experiments.
 
 1. Keep the first route-to-executor attempt scorer-invalid and its corrected
    ten-case run as exposed mechanics-only evidence. Keep line-range screen 03
@@ -314,5 +325,5 @@ limited scopes. Natural-language task completion, held-out generalization,
 and real-work utility remain unmeasured; they need an independently reviewed
 outcome oracle and, for real-work claims, consented authorized tasks.
 Keep training stopped: the local SLM has zero accepted task classes.
-Provider-backed savings still have zero eligible matched usage pairs and need
-the separate authority described above.
+Provider-backed savings still have zero eligible matched usage pairs. No
+follow-up work is active under this closed goal.

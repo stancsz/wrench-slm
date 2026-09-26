@@ -101,10 +101,19 @@ See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture
 
 ## Current work
 
+The owner closed the small local SLM semantic-controller experiment on
+2026-09-26: using the tested 0.8B route as an OpenCode primary or semantic
+controller is not feasible for the intended workflow. This does not establish
+that all 2B models fail, and the 2B configuration was not tested. Synthetic
+context-input reduction is not frontier savings; actual matched frontier
+savings remain N/A. See the [decision record](../reports/wrench-local-acceptability/direction-closure-20260926.md).
+
 The [realignment goal](../goal/wrench-v2-realignment/GOAL.md) covers cleanup,
 v1 lessons and the experiment definition. E0 component slices exist, but the
 deterministic context baseline is not integrated or accepted end to end. Full
-v2 implementation and learning have not been measured.
+v2 implementation and learning have not been accepted. The local-model
+direction decision is scoped to the semantic controller and does not validate
+or reject the deterministic context runtime's end-to-end savings hypothesis.
 The [v1 postmortem](V1_LEARNINGS.md) explains the restart and the
 [reuse inventory](../reports/wrench-v2-realignment/reuse-audit.md) identifies
 surviving implementation and missing capabilities.
