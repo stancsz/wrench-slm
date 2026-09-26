@@ -1326,7 +1326,7 @@ def _localization_summary(rows: list[dict[str, object]]) -> dict[str, object]:
 def _verify_localization_profile_protocol() -> str:
     protocol = LOCALIZATION_PROTOCOL_PATH.read_text(encoding="utf-8")
     runner_pin = re.search(r"^Runner SHA-256: `([0-9a-f]{64})`$", protocol, re.MULTILINE)
-    fixture_pin = re.search(r"^Fixture canonical SHA-256: `([0-9a-f]{64})`$", protocol, re.MULTILINE)
+    fixture_pin = re.search(r"^(?:- )?Fixture canonical SHA-256: `([0-9a-f]{64})`$", protocol, re.MULTILINE)
     # Git may check out this pinned Windows runtime with CRLF even though the
     # protocol hash was frozen from the canonical LF source. Hash canonical
     # text bytes so the same tracked runner has one identity on either checkout.
