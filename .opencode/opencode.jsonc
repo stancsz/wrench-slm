@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Template only. No provider or default model is active.
+  // GET http://127.0.0.1:4000/v1/models returned an OpenAI-shaped model list,
+  // but it mixes remote/subscription routes and does not identify a local model.
+  // Verify the locally hosted model ID and whether it accepts chat-completions
+  // or responses requests before enabling one of these examples.
+  //
+  // For a verified /v1/chat/completions model:
+  // "providers": {
+  //   "wrench-local": {
+  //     "package": "@opencode/ai/providers/openai-compatible",
+  //     "settings": { "baseURL": "http://127.0.0.1:4000/v1" },
+  //     "models": { "<verified-local-model-id>": { "name": "<verified-local-model-name>" } }
+  //   }
+  // },
+  // "model": "wrench-local/<verified-local-model-id>"
+}
