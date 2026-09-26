@@ -8,7 +8,8 @@ Status: **profile and fixture prepared only; measurement not run**
 - Fixture: `tests/fixtures/localization_screen_02.json`
 - Fixture canonical SHA-256: `b7bc026058361e70edcafcb230f8427a8f9a55630510fdef1323674bd7b0c368`
 - Runner: `tools/measure_synthetic_context_token_reduction.py`
-Runner SHA-256: `15995a9683f35ee246a149595e9e879293df9b3b6d173fd8ab156076f1a5f431`
+Runner SHA-256: `2efa3ea29c230b63417966cc932340a475c5781d2f5b529620b0deb5ad3b5b81`
+The runner hash is over UTF-8 source with CRLF normalized to LF.
 
 ## Question and claim boundary
 

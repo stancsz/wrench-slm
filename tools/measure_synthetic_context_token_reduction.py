@@ -1327,7 +1327,11 @@ def _verify_localization_profile_protocol() -> str:
     protocol = LOCALIZATION_PROTOCOL_PATH.read_text(encoding="utf-8")
     runner_pin = re.search(r"^Runner SHA-256: `([0-9a-f]{64})`$", protocol, re.MULTILINE)
     fixture_pin = re.search(r"^Fixture canonical SHA-256: `([0-9a-f]{64})`$", protocol, re.MULTILINE)
-    if runner_pin is None or runner_pin.group(1) != _file_sha256(Path(__file__).resolve()):
+    # Git may check out this pinned Windows runtime with CRLF even though the
+    # protocol hash was frozen from the canonical LF source. Hash canonical
+    # text bytes so the same tracked runner has one identity on either checkout.
+    runner_bytes = Path(__file__).resolve().read_bytes().replace(b"\r\n", b"\n")
+    if runner_pin is None or runner_pin.group(1) != _sha256(runner_bytes):
         raise ValueError("localization_profile_runner_hash_mismatch")
     if fixture_pin is None or fixture_pin.group(1) != LOCALIZATION_FIXTURE_SHA256:
         raise ValueError("localization_profile_protocol_fixture_hash_mismatch")
