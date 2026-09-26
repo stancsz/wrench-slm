@@ -1,0 +1,228 @@
+{
+  "schema": "wrench.failing-test-evidence-packet-screen.v1",
+  "fixture_id": "wrench-failing-test-evidence-packet-screen-01",
+  "provenance": "wrench_authored_fresh_synthetic_only",
+  "usage": "open_development_operation_mechanics_only",
+  "not_a_utility_claim": true,
+  "limits": {
+    "max_cases": 20,
+    "max_files_per_case": 8,
+    "max_file_bytes": 8192,
+    "max_total_fixture_bytes": 2097152,
+    "execution_budget_seconds": 30
+  },
+  "cases": [
+    {
+      "case_id": "packet-positive-multiple-failures-01",
+      "kind": "answerable",
+      "files": [
+        {
+          "path": "tests/test_cache.py",
+          "content_utf8": "def test_refresh_after_expiry():\n    assert next_expiry(0) == 30\n\ndef test_preserves_fresh_entry():\n    assert should_refresh(12, 30) is False\n",
+          "sha256": "8e7cf13b39ef2777c84fe390b77d6b6d801743f6915fd035f6d327d6ec61bc9b"
+        },
+        {
+          "path": "logs/pytest.log",
+          "content_utf8": "platform win32 -- Python 3.11\ncollected 4 items\nFAILED tests/test_cache.py::test_refresh_after_expiry - AssertionError: expected 30, got 0\nwarning: optional cache backend unavailable\nPASSED tests/test_cache.py::test_eviction_is_bounded\nFAILED tests/test_cache.py::test_preserves_fresh_entry - AssertionError: expected False, got True\n2 failed, 2 passed\n",
+          "sha256": "08de167359f459d703724d53517acec4cc1b8353ec73bdfe92c30a9bb053454d"
+        }
+      ],
+      "requests": [
+        {
+          "path": "tests/test_cache.py",
+          "prompt": "Read tests/test_cache.py with a 4096 byte limit.",
+          "expected_sha256": "8e7cf13b39ef2777c84fe390b77d6b6d801743f6915fd035f6d327d6ec61bc9b"
+        },
+        {
+          "path": "logs/pytest.log",
+          "prompt": "Read logs/pytest.log with a 4096 byte limit.",
+          "expected_sha256": "08de167359f459d703724d53517acec4cc1b8353ec73bdfe92c30a9bb053454d"
+        }
+      ],
+      "expected_packet": [
+        {
+          "test_id": "tests/test_cache.py::test_refresh_after_expiry",
+          "source_path": "tests/test_cache.py",
+          "source_line": 1,
+          "source_quote": "def test_refresh_after_expiry():",
+          "log_path": "logs/pytest.log",
+          "log_line": 3,
+          "log_quote": "FAILED tests/test_cache.py::test_refresh_after_expiry - AssertionError: expected 30, got 0"
+        },
+        {
+          "test_id": "tests/test_cache.py::test_preserves_fresh_entry",
+          "source_path": "tests/test_cache.py",
+          "source_line": 4,
+          "source_quote": "def test_preserves_fresh_entry():",
+          "log_path": "logs/pytest.log",
+          "log_line": 6,
+          "log_quote": "FAILED tests/test_cache.py::test_preserves_fresh_entry - AssertionError: expected False, got True"
+        }
+      ]
+    },
+    {
+      "case_id": "packet-positive-noisy-build-log-02",
+      "kind": "answerable",
+      "files": [
+        {
+          "path": "tests/test_queue.py",
+          "content_utf8": "def test_retries_transient_send():\n    assert send_with_retry('x') == 'sent'\n\ndef test_does_not_duplicate_ack():\n    assert ack_count('x') == 1\n",
+          "sha256": "6ccadc5e5deba9370d95dc3b1a21592e95edbd467b6a7f8c99497a2f88c3dd13"
+        },
+        {
+          "path": "artifacts/ci-output.txt",
+          "content_utf8": "worker: linux-x64\nnoise: downloading test metadata\ncollected 5 items\nFAILED tests/test_queue.py::test_retries_transient_send - TimeoutError: send exceeded deadline\nwarning: slow fixture setup\nPASSED tests/test_queue.py::test_serializes_payload\nFAILED tests/test_queue.py::test_does_not_duplicate_ack - AssertionError: expected 1, got 2\nsummary: 2 failed, 3 passed\n",
+          "sha256": "677e46002c0b277f132f396059348400db22d1ac562c3bf729583975b0ad84a5"
+        }
+      ],
+      "requests": [
+        {
+          "path": "tests/test_queue.py",
+          "prompt": "Read tests/test_queue.py with a 4096 byte limit.",
+          "expected_sha256": "6ccadc5e5deba9370d95dc3b1a21592e95edbd467b6a7f8c99497a2f88c3dd13"
+        },
+        {
+          "path": "artifacts/ci-output.txt",
+          "prompt": "Read artifacts/ci-output.txt with a 4096 byte limit.",
+          "expected_sha256": "677e46002c0b277f132f396059348400db22d1ac562c3bf729583975b0ad84a5"
+        }
+      ],
+      "expected_packet": [
+        {
+          "test_id": "tests/test_queue.py::test_retries_transient_send",
+          "source_path": "tests/test_queue.py",
+          "source_line": 1,
+          "source_quote": "def test_retries_transient_send():",
+          "log_path": "artifacts/ci-output.txt",
+          "log_line": 4,
+          "log_quote": "FAILED tests/test_queue.py::test_retries_transient_send - TimeoutError: send exceeded deadline"
+        },
+        {
+          "test_id": "tests/test_queue.py::test_does_not_duplicate_ack",
+          "source_path": "tests/test_queue.py",
+          "source_line": 4,
+          "source_quote": "def test_does_not_duplicate_ack():",
+          "log_path": "artifacts/ci-output.txt",
+          "log_line": 7,
+          "log_quote": "FAILED tests/test_queue.py::test_does_not_duplicate_ack - AssertionError: expected 1, got 2"
+        }
+      ]
+    },
+    {
+      "case_id": "packet-positive-mixed-failure-noise-03",
+      "kind": "answerable",
+      "files": [
+        {
+          "path": "tests/test_manifest.py",
+          "content_utf8": "def test_manifest_keeps_order():\n    assert keys({'b': 1, 'a': 2}) == ['b', 'a']\n\ndef test_rejects_duplicate_name():\n    assert validate(['x', 'x']) is False\n",
+          "sha256": "ff5f9bdcca9547061ccc82b4b8d53be39dfc4c85f3e7cf12da5cdf1a98262107"
+        },
+        {
+          "path": "logs/test-run.log",
+          "content_utf8": "pytest session starts\ncollected 6 items\nINFO: retrying log upload\nFAILED tests/test_manifest.py::test_manifest_keeps_order - AssertionError: order changed\nPASSED tests/test_manifest.py::test_empty_manifest\nDEBUG: captured 18 unrelated lines\nFAILED tests/test_manifest.py::test_rejects_duplicate_name - ValueError: duplicate accepted\n3 passed, 2 failed, 1 skipped\n",
+          "sha256": "01e600e59af7c0fc75fff45c26ae81999396bcd7541d28b0e38b035d047e1c79"
+        }
+      ],
+      "requests": [
+        {
+          "path": "tests/test_manifest.py",
+          "prompt": "Read tests/test_manifest.py with a 4096 byte limit.",
+          "expected_sha256": "ff5f9bdcca9547061ccc82b4b8d53be39dfc4c85f3e7cf12da5cdf1a98262107"
+        },
+        {
+          "path": "logs/test-run.log",
+          "prompt": "Read logs/test-run.log with a 4096 byte limit.",
+          "expected_sha256": "01e600e59af7c0fc75fff45c26ae81999396bcd7541d28b0e38b035d047e1c79"
+        }
+      ],
+      "expected_packet": [
+        {
+          "test_id": "tests/test_manifest.py::test_manifest_keeps_order",
+          "source_path": "tests/test_manifest.py",
+          "source_line": 1,
+          "source_quote": "def test_manifest_keeps_order():",
+          "log_path": "logs/test-run.log",
+          "log_line": 4,
+          "log_quote": "FAILED tests/test_manifest.py::test_manifest_keeps_order - AssertionError: order changed"
+        },
+        {
+          "test_id": "tests/test_manifest.py::test_rejects_duplicate_name",
+          "source_path": "tests/test_manifest.py",
+          "source_line": 4,
+          "source_quote": "def test_rejects_duplicate_name():",
+          "log_path": "logs/test-run.log",
+          "log_line": 7,
+          "log_quote": "FAILED tests/test_manifest.py::test_rejects_duplicate_name - ValueError: duplicate accepted"
+        }
+      ]
+    },
+    {
+      "case_id": "packet-boundary-missing-log",
+      "kind": "boundary",
+      "files": [
+        {
+          "path": "tests/test_cache.py",
+          "content_utf8": "def test_one():\n    assert True\n",
+          "sha256": "465d277b382257dbcffc27da1605c3cf55c2ccdd4576de480bd34dc3e0abe3b5"
+        }
+      ],
+      "requests": [
+        {
+          "path": "logs/missing.log",
+          "prompt": "Read logs/missing.log with a 4096 byte limit.",
+          "expected_status": "abstain",
+          "expected_reason": "source_not_in_snapshot"
+        }
+      ],
+      "expected_packet": null
+    },
+    {
+      "case_id": "packet-boundary-stale-log",
+      "kind": "boundary",
+      "files": [
+        {
+          "path": "logs/stale.log",
+          "content_utf8": "FAILED tests/test_stale.py::test_old - AssertionError: old\n",
+          "sha256": "4231da36818e439edd2bc42c0bb78a6136140c9a379da57a372d990253f73209"
+        }
+      ],
+      "mutate_after_snapshot": {
+        "logs/stale.log": "FAILED tests/test_stale.py::test_new - AssertionError: changed\n"
+      },
+      "requests": [
+        {
+          "path": "logs/stale.log",
+          "prompt": "Read logs/stale.log with a 4096 byte limit.",
+          "expected_status": "abstain",
+          "expected_reason": "snapshot_read_changed"
+        }
+      ],
+      "expected_packet": null
+    },
+    {
+      "case_id": "packet-boundary-ambiguous-log",
+      "kind": "boundary",
+      "files": [
+        {
+          "path": "logs/unit.log",
+          "content_utf8": "FAILED tests/test_unit.py::test_a - AssertionError\n",
+          "sha256": "063c0c07c75bb838f46ddb13da965d90794613a52beaab70f8a487b0e884e69a"
+        },
+        {
+          "path": "logs/integration.log",
+          "content_utf8": "FAILED tests/test_integration.py::test_b - TimeoutError\n",
+          "sha256": "3cfb5028480e6c2baa3e6952864e7448b4b469843bad4673d754e36092c35c70"
+        }
+      ],
+      "requests": [
+        {
+          "path": null,
+          "prompt": "Read the relevant failing test log with a 4096 byte limit.",
+          "expected_status": "abstain",
+          "expected_reason": "ambiguous_or_unsupported_request"
+        }
+      ],
+      "expected_packet": null
+    }
+  ]
+}
