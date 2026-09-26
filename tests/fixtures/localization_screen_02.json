@@ -1,0 +1,290 @@
+{
+  "schema": "wrench.e0-localization-token-profile.v1",
+  "profile_id": "localization-screen-02",
+  "fixture_id": "wrench-localization-screen-02-e0-tokenizer-only-v1",
+  "provenance": "wrench_authored_fresh_synthetic_only",
+  "usage": "open_development_fixture_only",
+  "not_a_utility_claim": true,
+  "admission": {
+    "profile_id": "localization-screen-02",
+    "declared_usage": [
+      "open_development_fixture_only"
+    ],
+    "sealed": false,
+    "final": false,
+    "split": "open_development",
+    "lineage": {
+      "kind": "independent_inline_synthetic",
+      "parent_manifest_sha256": null
+    }
+  },
+  "cases": [
+    {
+      "case_id": "loc02-positive-01",
+      "kind": "answerable",
+      "route_prompt": "Read src/billing/settle.py with a 4096 byte limit.",
+      "task": "Locate the function that commits a settled invoice in src/billing/settle.py. Give its exact function name, definition line, operation line, and quotes for both lines.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/billing/settle.py",
+          "content_utf8": "def settle_invoice(invoice_id, ledger):\n    ledger.commit_settlement(invoice_id)\n    return True\n",
+          "sha256": "04bf8d38db17fbc19fc4c1226231ff7caeb0ad0215115b5f2f5fd03c11edc9bf"
+        },
+        {
+          "path": "src/billing/preview.py",
+          "content_utf8": "def preview_invoice(invoice_id):\n    return {\"id\": invoice_id, \"ready\": True}\n",
+          "sha256": "8ba3e169134818a98941b865dbf5d194397b68b34ff14af26667f29d5833c121"
+        }
+      ],
+      "required_evidence": [
+        {
+          "path": "src/billing/settle.py",
+          "line": 1,
+          "quote": "def settle_invoice(invoice_id, ledger):"
+        },
+        {
+          "path": "src/billing/settle.py",
+          "line": 2,
+          "quote": "    ledger.commit_settlement(invoice_id)"
+        }
+      ],
+      "expected_route": {
+        "status": "completed",
+        "action": "read_file",
+        "reason": null,
+        "paths": [
+          "src/billing/settle.py"
+        ]
+      },
+      "expected_function": "settle_invoice"
+    },
+    {
+      "case_id": "loc02-positive-02",
+      "kind": "answerable",
+      "route_prompt": "Read src/cache/warmup.py with a 4096 byte limit.",
+      "task": "Locate the function that enqueues a cache warmup in src/cache/warmup.py. Give its exact function name, definition line, operation line, and quotes for both lines.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/cache/warmup.py",
+          "content_utf8": "class WarmupQueue:\n    def enqueue_key(self, key, queue):\n        queue.push(key)\n        return key\n",
+          "sha256": "bdd6baa39ad2972e565055b68580335ed3c6c28b556f1a6cc75e431dd147b59e"
+        },
+        {
+          "path": "src/cache/eviction.py",
+          "content_utf8": "def evict_oldest(entries):\n    return entries.pop(0)\n",
+          "sha256": "118e89495ad7229f346e9e490e7f59f80ad8a564d0472dd5f57c64e98d1e72a2"
+        }
+      ],
+      "required_evidence": [
+        {
+          "path": "src/cache/warmup.py",
+          "line": 2,
+          "quote": "    def enqueue_key(self, key, queue):"
+        },
+        {
+          "path": "src/cache/warmup.py",
+          "line": 3,
+          "quote": "        queue.push(key)"
+        }
+      ],
+      "expected_route": {
+        "status": "completed",
+        "action": "read_file",
+        "reason": null,
+        "paths": [
+          "src/cache/warmup.py"
+        ]
+      },
+      "expected_function": "WarmupQueue.enqueue_key"
+    },
+    {
+      "case_id": "loc02-positive-03",
+      "kind": "answerable",
+      "route_prompt": "Read src/archive/write_bundle.py with a 4096 byte limit.",
+      "task": "Locate the function that writes each encoded record in src/archive/write_bundle.py. Give its exact function name, definition line, operation line, and quotes for both lines.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/archive/write_bundle.py",
+          "content_utf8": "def write_bundle(records, sink):\n    for record in records:\n        sink.write(encode_record(record))\n    return sink.position\n",
+          "sha256": "f405faca74f1b58daad4edf0f5ec35a8515aef081d1e618ded21f740a1494149"
+        },
+        {
+          "path": "src/archive/inspect.py",
+          "content_utf8": "def bundle_size(sink):\n    return sink.position\n",
+          "sha256": "8d2ecf309926bc32be23e9b49dfdc4b28e6f71d0456b965da5b90aa408d07a94"
+        }
+      ],
+      "required_evidence": [
+        {
+          "path": "src/archive/write_bundle.py",
+          "line": 1,
+          "quote": "def write_bundle(records, sink):"
+        },
+        {
+          "path": "src/archive/write_bundle.py",
+          "line": 3,
+          "quote": "        sink.write(encode_record(record))"
+        }
+      ],
+      "expected_route": {
+        "status": "completed",
+        "action": "read_file",
+        "reason": null,
+        "paths": [
+          "src/archive/write_bundle.py"
+        ]
+      },
+      "expected_function": "write_bundle"
+    },
+    {
+      "case_id": "loc02-positive-04",
+      "kind": "answerable",
+      "route_prompt": "Read src/delivery/ack.py with a 4096 byte limit.",
+      "task": "Locate the function that sends an acknowledgement after delivery in src/delivery/ack.py. Give its exact function name, definition line, operation line, and quotes for both lines.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/delivery/ack.py",
+          "content_utf8": "async def acknowledge(message, transport):\n    if message.delivered:\n        await transport.send_ack(message.key)\n        return True\n    return False\n",
+          "sha256": "dcbc7587a7f226c0217790dccb0d3f531578b7a6d5a4d595709ced0f8b448e5e"
+        },
+        {
+          "path": "src/delivery/retry.py",
+          "content_utf8": "def retry_delay(attempt):\n    return min(attempt * 2, 30)\n",
+          "sha256": "219d443b8dc9e5ebc45568efe3dc499c1db54bbd7cb6663f55984f6372f5c52f"
+        }
+      ],
+      "required_evidence": [
+        {
+          "path": "src/delivery/ack.py",
+          "line": 1,
+          "quote": "async def acknowledge(message, transport):"
+        },
+        {
+          "path": "src/delivery/ack.py",
+          "line": 3,
+          "quote": "        await transport.send_ack(message.key)"
+        }
+      ],
+      "expected_route": {
+        "status": "completed",
+        "action": "read_file",
+        "reason": null,
+        "paths": [
+          "src/delivery/ack.py"
+        ]
+      },
+      "expected_function": "acknowledge"
+    },
+    {
+      "case_id": "loc02-boundary-missing",
+      "kind": "missing_path_boundary",
+      "route_prompt": "Read src/ledger/not_in_snapshot.py with a 4096 byte limit.",
+      "task": "Read the requested path from the supplied source snapshot.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/ledger/available.py",
+          "content_utf8": "def ledger_version():\n    return 4\n",
+          "sha256": "53b30d03c7378c9b1ea3b33920bc9554f34209d934a6bca75ebdc2f664a2827d"
+        }
+      ],
+      "required_evidence": [],
+      "expected_route": {
+        "status": "abstain",
+        "action": "read_file",
+        "reason": "source_not_in_snapshot",
+        "paths": []
+      }
+    },
+    {
+      "case_id": "loc02-boundary-stale",
+      "kind": "stale_snapshot_boundary",
+      "route_prompt": "Read src/policy/current.py with a 4096 byte limit.",
+      "task": "Read the exact snapshotted policy source.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/policy/current.py",
+          "content_utf8": "def active_policy():\n    return \"amber\"\n",
+          "sha256": "e82ba30ac3aed21723b820903eb9d9a4e1661450a817da31a9fc5586d498d1be"
+        }
+      ],
+      "mutate_after_snapshot": {
+        "path": "src/policy/current.py",
+        "content_utf8": "def active_policy():\n    return \"violet\"\n",
+        "sha256": "b40dd2dbb9574eda064f5e716ecad5bc2ae399fb1cbfb08b9cdbd920588d7ff9"
+      },
+      "required_evidence": [],
+      "expected_route": {
+        "status": "abstain",
+        "action": "read_file",
+        "reason": "snapshot_read_changed",
+        "paths": []
+      }
+    },
+    {
+      "case_id": "loc02-boundary-unsupported",
+      "kind": "unsupported_route_boundary",
+      "route_prompt": "Review the localization request and decide which source should be inspected.",
+      "task": "Resolve the localization request from available context.",
+      "context_token_budget": 8192,
+      "files": [
+        {
+          "path": "src/routing/sample.py",
+          "content_utf8": "def sample_route(request):\n    return request.path\n",
+          "sha256": "4961b54245a7a3a384dde1f0fa6c12a0085fa5e0a0244422751bb4f47e466b61"
+        }
+      ],
+      "required_evidence": [],
+      "expected_route": {
+        "status": "abstain",
+        "action": null,
+        "reason": "ambiguous_or_unsupported_request",
+        "paths": []
+      }
+    },
+    {
+      "case_id": "loc02-boundary-context-budget",
+      "kind": "context_budget_boundary",
+      "route_prompt": "Read src/budget/target.py with a 4096 byte limit.",
+      "task": "Read the required source evidence while respecting the one-token E0 context budget.",
+      "context_token_budget": 1,
+      "files": [
+        {
+          "path": "src/budget/target.py",
+          "content_utf8": "def required_operation(value):\n    return value.strip()\n",
+          "sha256": "7a9598b94c47bfc9e29108aeb47af12b8265b9ef6fd6289d85552e8110cfcc3c"
+        }
+      ],
+      "required_evidence": [
+        {
+          "path": "src/budget/target.py",
+          "line": 1,
+          "quote": "def required_operation(value):"
+        },
+        {
+          "path": "src/budget/target.py",
+          "line": 2,
+          "quote": "    return value.strip()"
+        }
+      ],
+      "expected_route": {
+        "status": "completed",
+        "action": "read_file",
+        "reason": null,
+        "paths": [
+          "src/budget/target.py"
+        ]
+      },
+      "expected_preparation": {
+        "status": "prompt_rejected",
+        "gate_status": "required_evidence_omitted"
+      },
+      "expected_function": "required_operation"
+    }
+  ]
+}

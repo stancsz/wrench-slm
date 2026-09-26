@@ -20,6 +20,14 @@ SUPPORTED_REVIEW_PATH = "docs/evals/wrench-e0-synthetic-matched-tasks/review.md"
 SUPPORTED_REVIEW_STATE = "fixture_mechanics_reviewed"
 SUPPORTED_REVIEW_SCOPES = frozenset({"fixture_integrity", "mechanics", "oracle_consistency"})
 
+# Separate one-entry admission identity for the tokenizer-only localization
+# profile. Keep this independent from the historical matched-task manifest
+# identity above: adding an open synthetic profile must not broaden or mutate
+# the legacy admission contract.
+LOCALIZATION_PROFILE_ID = "localization-screen-02"
+LOCALIZATION_PROFILE_SCHEMA = "wrench.e0-localization-token-profile.v1"
+LOCALIZATION_PROFILE_MANIFEST_SHA256 = "b7bc026058361e70edcafcb230f8427a8f9a55630510fdef1323674bd7b0c368"
+
 
 @dataclass(frozen=True)
 class SyntheticFixtureAdmission:
@@ -114,4 +122,101 @@ def validate_synthetic_fixture_admission(
     ):
         return reject("review_receipt_hash_mismatch")
 
+    return SyntheticFixtureAdmission(True, SUPPORTED_USAGE, None)
+
+
+def validate_localization_profile_admission(
+    manifest: Any,
+    *,
+    manifest_sha256: str,
+    profile_id: str,
+    requested_usage: str,
+) -> SyntheticFixtureAdmission:
+    """Validate the separately pinned tokenizer-only localization fixture.
+
+    This is structural admission for one Wrench-authored open-development
+    fixture. It neither represents an independent-review receipt nor grants
+    authority for inference, training, customer data, or utility claims.
+    """
+
+    def reject(reason: str) -> SyntheticFixtureAdmission:
+        return SyntheticFixtureAdmission(False, None, reason)
+
+    if type(manifest) is not dict:
+        return reject("manifest_not_object")
+    try:
+        canonical = json.dumps(
+            manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    except (TypeError, ValueError, UnicodeEncodeError):
+        return reject("manifest_not_canonicalizable")
+    actual_digest = hashlib.sha256(canonical).hexdigest()
+    if (
+        profile_id != LOCALIZATION_PROFILE_ID
+        or manifest_sha256 != LOCALIZATION_PROFILE_MANIFEST_SHA256
+        or actual_digest != LOCALIZATION_PROFILE_MANIFEST_SHA256
+    ):
+        return reject("localization_profile_identity_mismatch")
+    if (
+        manifest.get("schema") != LOCALIZATION_PROFILE_SCHEMA
+        or manifest.get("profile_id") != LOCALIZATION_PROFILE_ID
+        or manifest.get("fixture_id") != "wrench-localization-screen-02-e0-tokenizer-only-v1"
+    ):
+        return reject("localization_profile_schema_or_id_mismatch")
+    if (
+        manifest.get("provenance") != "wrench_authored_fresh_synthetic_only"
+        or manifest.get("usage") != SUPPORTED_USAGE
+        or requested_usage != SUPPORTED_USAGE
+        or manifest.get("not_a_utility_claim") is not True
+    ):
+        return reject("localization_profile_usage_or_claim_mismatch")
+    admission = manifest.get("admission")
+    if type(admission) is not dict:
+        return reject("localization_profile_admission_missing")
+    if (
+        admission.get("profile_id") != LOCALIZATION_PROFILE_ID
+        or admission.get("declared_usage") != [SUPPORTED_USAGE]
+        or admission.get("sealed") is not False
+        or admission.get("final") is not False
+        or admission.get("split") != "open_development"
+        or admission.get("lineage") != {
+            "kind": "independent_inline_synthetic", "parent_manifest_sha256": None
+        }
+    ):
+        return reject("localization_profile_admission_fields_invalid")
+
+    cases = manifest.get("cases")
+    if type(cases) is not list or len(cases) != 8:
+        return reject("localization_profile_case_set_invalid")
+    case_ids: set[str] = set()
+    for case in cases:
+        if type(case) is not dict or type(case.get("case_id")) is not str or case["case_id"] in case_ids:
+            return reject("localization_profile_case_set_invalid")
+        case_ids.add(case["case_id"])
+        files = case.get("files")
+        if type(files) is not list or not files:
+            return reject("localization_profile_sources_invalid")
+        source_paths: set[str] = set()
+        for source in files:
+            if type(source) is not dict or type(source.get("path")) is not str or type(source.get("content_utf8")) is not str:
+                return reject("localization_profile_sources_invalid")
+            path = source["path"]
+            content = source["content_utf8"]
+            if path in source_paths or "\\" in path or path.startswith("/") or any(part in {"", ".", ".."} for part in path.split("/")):
+                return reject("localization_profile_source_path_invalid")
+            source_paths.add(path)
+            if source.get("sha256") != hashlib.sha256(content.encode("utf-8")).hexdigest():
+                return reject("localization_profile_source_hash_mismatch")
+        mutation = case.get("mutate_after_snapshot")
+        if mutation is not None:
+            if type(mutation) is not dict or mutation.get("path") not in source_paths or type(mutation.get("content_utf8")) is not str:
+                return reject("localization_profile_mutation_invalid")
+            if mutation.get("sha256") != hashlib.sha256(mutation["content_utf8"].encode("utf-8")).hexdigest():
+                return reject("localization_profile_mutation_hash_mismatch")
+    if case_ids != {
+        "loc02-positive-01", "loc02-positive-02", "loc02-positive-03", "loc02-positive-04",
+        "loc02-boundary-missing", "loc02-boundary-stale", "loc02-boundary-unsupported",
+        "loc02-boundary-context-budget",
+    }:
+        return reject("localization_profile_case_set_invalid")
     return SyntheticFixtureAdmission(True, SUPPORTED_USAGE, None)
