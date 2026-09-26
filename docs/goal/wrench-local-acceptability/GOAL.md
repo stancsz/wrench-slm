@@ -10,8 +10,28 @@ draft mechanics only. The first local SLM screen failed all five classes.
 The fresh 18-case prompt-only screen also passed no generative task class:
 0/12 answerable cases met the exact answer/schema/evidence oracle, while 3/6
 boundary examples were correctly abstained. Training remains stopped pending
-a held-out, tool-backed outcome screen. Real-work utility and frontier-token
-savings remain unmeasured.
+a held-out, tool-backed outcome screen. The paired savings reporter now
+separates all exact-usage diagnostics from an independently verified
+successful-task mean. Both remain N/A on actual evidence: zero matched usage
+pairs are admitted. Real-work utility and frontier-token savings remain
+unmeasured.
+
+The next proposed deterministic failing-test evidence-packet screen was
+attempted once on a fresh synthetic fixture, then aborted before scoring due
+to a runner/oracle comparison defect. Its fixture is exposed and must not be
+rerun or tuned. The failure is documented in the
+[screen report](../../reports/wrench-local-acceptability/failing-test-evidence-packet-screen-01.md)
+and [evaluation](../../evals/wrench-local-acceptability/failing-test-evidence-packet-screen-01.md).
+This adds no accepted task class. Training remains stopped.
+
+A fresh opt-in E0 localization profile was prepared to measure exact source
+evidence selection against full-source prompts, but its only attempt stopped
+before tokenizer loading or case scoring. The profile has four synthetic
+positive cases plus missing, stale, unsupported-route, and over-budget
+boundaries; it is tokenizer-only and does not test SLM answer quality. Its
+fixture is exposed and must not be rerun. The runtime-lock CRLF mismatch and
+handoff are recorded in the [screen 02 protocol](../../evals/wrench-local-acceptability/localization-screen-02-protocol.md)
+and [task report](../../reports/wrench-local-acceptability/localization-screen-02.md).
 
 ## Objective
 
@@ -137,14 +157,20 @@ attempt is preserved as [scorer-invalid](../../reports/wrench-local-acceptabilit
 Both runs are open-development mechanics only; the read/search prompts are
 explicit operations and do not evaluate the separate semantic answer oracle.
 
-The existing [paired frontier-savings reporter](../../../tools/report_paired_frontier_savings.py)
-validates complete matched outcome receipts and computes both the arithmetic
-mean of per-task savings and the ratio-of-sums. It now also emits per-task
-counts, percentage, or exclusion reason, keyed by a hashed task reference.
-There are still zero eligible matched frontier-usage pairs. Run 02's local
-tokens and the deterministic seed's 10/10 fixture result do not enter this
-metric. The exact evidence and remaining permission/runtime gates are in the
-[frontier measurement readiness review](../../evals/wrench-local-acceptability/frontier-token-readiness.md).
+The [paired frontier-savings reporter](../../../tools/report_paired_frontier_savings.py)
+validates declared matched receipt identities and reports two scopes. The
+all-exact usage diagnostic includes failed outcomes. The success-qualified
+mean and ratio-of-sums require both arms to have exact frontier usage, a
+nonzero baseline, completed outcomes, independently verified provenance, and
+a passed verifier with evidence required by the receipt schema. Per-task rows
+show eligibility and exclusion reason. Structural receipt validation does
+not authenticate telemetry, task truth, or prompt parity. There are still
+zero actual eligible matched pairs, so both savings results remain N/A.
+Run 02's local tokens and the deterministic seed's 10/10 fixture result do
+not enter the metric. See the
+[metric change report](../../reports/wrench-local-acceptability/success-qualified-frontier-savings-metric-20260926.md),
+[evaluation](../../evals/wrench-local-acceptability/success-qualified-frontier-savings-metric-20260926.md),
+and [frontier measurement readiness review](../../evals/wrench-local-acceptability/frontier-token-readiness.md).
 
 A receipt-only join of the existing failing-log pair further separates the
 local operation from task completion: deterministic exact log retrieval passed
@@ -164,9 +190,18 @@ unknown outcomes. Exact tokens remain eligible for token savings when cost is
 explicitly unknown; the receipt marks only costs incomplete, and the reporter
 counts those pairs while keeping cost unknown. Missing or invalid token usage
 still excludes the pair. Focused standard-library checks cover this split.
-The bridge does not authenticate telemetry or support Wrench SLM/mixed
-workflows, and it adds no observed savings pair. Average frontier savings
-remain N/A with zero eligible pairs.
+The frontier-only bridge still does not support Wrench SLM/mixed workflows.
+A separate [mixed-lifecycle adapter](../../reports/wrench-local-acceptability/mixed-lifecycle-ledger-bridge-20260926.md)
+maps caller-supplied local/frontier attempts, retries, fallbacks, tools, and
+verifier calls into the same reporter input. A static-review finding where a
+`not_run` local/frontier call was counted as executed is fixed: those rows now
+reject, while `none/not_run` remains a non-call. The focused synthetic suite
+passes 7/7. The fixture's 29.03% arithmetic remains plumbing-only:
+caller-declared independent verification is downgraded to user-reported,
+yielding zero success-qualified pairs. Neither adapter authenticates
+telemetry, dispatch, tokenizer parity, or outcome truth; actual average
+frontier savings remain N/A with zero eligible pairs. See the
+[evaluation](../../evals/wrench-local-acceptability/mixed-lifecycle-ledger-bridge-20260926.md).
 
 The latest bounded config-draft diagnostic attempted two of twelve cases on
 the pinned Qwen runtime and stopped after the second response failed JSON
@@ -221,15 +256,23 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    as a separate six-case mechanics result, the 176-case route screen as
    proposal-only, and Qwen run 02 as a failed synthetic SLM screen. Do not tune
    against or train on these exposed fixtures.
-2. Use the paired receipt reporter for a savings figure only when both arms
-   have complete exact usage receipts for the same tasks, source snapshots,
+2. Use the success-qualified paired receipt reporter for the average-per-
+   successful-task figure only when both arms have token-complete exact usage
+   receipts for the same tasks, source snapshots,
    preregistered arm definitions, downstream route and token convention. The
-   reporter validates declared identities; it does not prove prompt/information
-   parity or authenticate traces. The current result is N/A, with zero valid
-   pairs. The bridge supports frontier-only arms and cannot represent local,
-   tool, verifier or fallback calls in a complete Wrench lifecycle. The route
-   through localhost:4000 is a mutable gateway route to OpenRouter/MiniMax, not
-   a pinned local model or a verified client/tokenizer pair.
+   success-qualified mean also requires both receipts to declare
+   independently verified completion. Cost may remain unknown because it is
+   not needed for token arithmetic. The all-exact diagnostic remains separate
+   and includes failures. The reporter validates declared identities and
+   evidence structure; it does not authenticate telemetry or outcome truth,
+   or prove prompt/information parity. The current result is N/A, with zero
+   actual usage pairs. The frontier-only bridge remains narrow; the separate
+   mixed-lifecycle adapter can represent local, tool, verifier, retry and
+   fallback calls, but its caller-supplied receipts are untrusted and cannot
+   qualify for the success mean. Neither adapter authenticates actual
+   dispatch or usage. The route through localhost:4000 is a mutable gateway route to
+   OpenRouter/MiniMax, not a pinned local model or a verified local
+   client/tokenizer pair.
 3. Before provider-backed measurement, obtain the separate authority required
    by `COLLABORATION_CONTRACT.json` for provider usage/spend. For real-work
    claims, also approve participant/task consent, source authorization,
@@ -241,13 +284,15 @@ baseline count is zero, that task's percentage is unavailable, not zero.
 4. Keep the patch-operation screen result scoped to the four explicit
    single-file draft forms and synthetic UTF-8 LF inputs. Open-ended,
    multi-file, semantic repair and completed coding claims remain outside it.
-5. Diagnose why the two exposed function-location cases failed the required
-   answer-evidence check. Do not tune on those exposed fixtures. Then
-   preregister a fresh, independent localization fixture with source-derived
-   required-path and quote oracles, missing/stale/ambiguous boundaries, and an
-   over-budget boundary. Count a case complete only when exact evidence is
-   present and all abstentions match; report token reductions only for eligible
-   cases and keep semantic SLM acceptance separate.
+5. Keep the two exposed function-location cases quarantined. Their source and
+   prompt text is absent from the receipt, so their more specific failure cause
+   is unknown. Localization screen 02's fresh fixture is also exposed after a
+   runtime-lock hash mismatch stopped its only run before tokenizer loading or
+   case scoring. Do not rerun either exposed fixture. Any future E0 measurement
+   needs a newly authored fixture, a line-ending-stable runtime-lock check, and
+   fresh clean-source, storage, and host-resource admission. Keep deterministic
+   context-token reduction separate from semantic SLM acceptance and
+   frontier-token savings.
 
 No additional model training, provider request, OpenCode routing, client
 prompt, or real workflow capture is authorized by this goal. The local

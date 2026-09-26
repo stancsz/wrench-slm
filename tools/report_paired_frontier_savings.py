@@ -113,6 +113,22 @@ def _exact_frontier_counts(payload: dict[str, Any], token_convention_id: str) ->
     return input_total, output_total
 
 
+def _successful_pair_exclusion(payloads: dict[str, dict[str, Any]]) -> str | None:
+    """Require both arms to complete with independently verified outcomes."""
+    ineligible: list[str] = []
+    for arm in ARMS:
+        payload = payloads[arm]
+        outcome = payload["outcome"]
+        verifier = payload["verifier"]
+        if (
+            outcome["status"] != "completed"
+            or outcome["provenance"] != "independently_verified"
+            or verifier["result"] != "passed"
+        ):
+            ineligible.append(arm)
+    return None if not ineligible else "+".join(ineligible) + "_arm_not_independently_verified_success"
+
+
 def summarize(document: object) -> dict[str, Any]:
     """Validate supplied receipt pairs and report savings without raw IDs."""
     if type(document) is not dict or set(document) != {"schema", "comparison", "tasks"}:
@@ -138,8 +154,10 @@ def summarize(document: object) -> dict[str, Any]:
         raise InputError("duplicate_task_id")
 
     excluded: Counter[str] = Counter()
+    successful_excluded: Counter[str] = Counter()
     outcome_counts: dict[str, Counter[str]] = {arm: Counter() for arm in ARMS}
     valid_rows: list[tuple[int, int]] = []
+    successful_rows: list[tuple[int, int]] = []
     task_rows: list[dict[str, Any]] = []
     sums = {"baseline": 0, "wrench": 0}
     cost_unknown_pair_count = 0
@@ -162,12 +180,14 @@ def summarize(document: object) -> dict[str, Any]:
             )
         ):
             excluded["task_snapshot_mismatch"] += 1
+            successful_excluded["task_snapshot_mismatch"] += 1
             task_rows.append(_excluded_task_row(task["task_id"], "task_snapshot_mismatch"))
             continue
         if errors:
             # One pair is counted once, with a stable priority when both arms fail.
             reason = sorted(errors)[0]
             excluded[reason] += 1
+            successful_excluded[reason] += 1
             task_rows.append(_excluded_task_row(task["task_id"], reason))
             continue
         counts: dict[str, tuple[int, int]] = {}
@@ -180,15 +200,22 @@ def summarize(document: object) -> dict[str, Any]:
         if errors:
             reason = sorted(errors)[0]
             excluded[reason] += 1
+            successful_excluded[reason] += 1
             task_rows.append(_excluded_task_row(task["task_id"], reason))
             continue
         baseline = sum(counts["baseline"])
         wrench = sum(counts["wrench"])
         if baseline == 0:
             excluded["zero_baseline_frontier_tokens"] += 1
+            successful_excluded["zero_baseline_frontier_tokens"] += 1
             task_rows.append(_excluded_task_row(task["task_id"], "zero_baseline_frontier_tokens"))
             continue
         valid_rows.append((baseline, wrench))
+        successful_exclusion_reason = _successful_pair_exclusion(payloads)
+        if successful_exclusion_reason is None:
+            successful_rows.append((baseline, wrench))
+        else:
+            successful_excluded[successful_exclusion_reason] += 1
         if any(payloads[arm]["accounting"]["cost_status"] == "unknown" for arm in ARMS):
             cost_unknown_pair_count += 1
         task_rows.append({
@@ -198,14 +225,22 @@ def summarize(document: object) -> dict[str, Any]:
             "wrench_frontier_tokens": wrench,
             "savings_percent": round(100.0 * (1.0 - wrench / baseline), 6),
             "excluded_reason": None,
+            "successful_task_eligible": successful_exclusion_reason is None,
+            "successful_task_excluded_reason": successful_exclusion_reason,
         })
         sums["baseline"] += baseline
         sums["wrench"] += wrench
 
     pair_percentages = [100.0 * (1.0 - wrench / baseline) for baseline, wrench in valid_rows]
+    successful_pair_percentages = [100.0 * (1.0 - wrench / baseline) for baseline, wrench in successful_rows]
     pair_count = len(valid_rows)
+    successful_pair_count = len(successful_rows)
+    successful_sums = {
+        "baseline": sum(baseline for baseline, _ in successful_rows),
+        "wrench": sum(wrench for _, wrench in successful_rows),
+    }
     return {
-        "schema": "wrench.paired-frontier-savings-report.v2",
+        "schema": "wrench.paired-frontier-savings-report.v3",
         "comparison": dict(comparison),
         "input_task_count": len(tasks),
         "per_task": task_rows,
@@ -225,10 +260,29 @@ def summarize(document: object) -> dict[str, Any]:
         "ratio_of_sums_savings_percent": (
             round(100.0 * (1.0 - sums["wrench"] / sums["baseline"]), 6) if pair_count else None
         ),
+        "successful_pair_count": successful_pair_count,
+        "excluded_from_successful_pairs_count": sum(successful_excluded.values()),
+        "excluded_from_successful_pairs_by_reason": dict(sorted(successful_excluded.items())),
+        "successful_frontier_token_totals": {
+            "baseline": successful_sums["baseline"] if successful_pair_count else None,
+            "wrench": successful_sums["wrench"] if successful_pair_count else None,
+        },
+        "average_per_successful_task_savings_percent": (
+            round(sum(successful_pair_percentages) / successful_pair_count, 6)
+            if successful_pair_count else None
+        ),
+        "ratio_of_sums_successful_task_savings_percent": (
+            round(100.0 * (1.0 - successful_sums["wrench"] / successful_sums["baseline"]), 6)
+            if successful_pair_count else None
+        ),
         "task_outcome_counts_by_arm": {
             arm: dict(sorted(outcome_counts[arm].items())) for arm in ARMS
         },
-        "metric_scope": "exact paired frontier input+output tokens; task outcomes are reported separately",
+        "metric_scope": "all exact paired frontier input+output tokens, including failures; diagnostic only",
+        "successful_metric_scope": (
+            "exact paired frontier input+output tokens where both receipt payloads "
+            "declare completed, independently verified outcomes with passed verifiers"
+        ),
     }
 
 
@@ -240,6 +294,8 @@ def _excluded_task_row(task_id: str, reason: str) -> dict[str, Any]:
         "wrench_frontier_tokens": None,
         "savings_percent": None,
         "excluded_reason": reason,
+        "successful_task_eligible": False,
+        "successful_task_excluded_reason": reason,
     }
 
 
@@ -251,7 +307,7 @@ def main(argv: list[str] | None = None) -> int:
         document = json.loads(args.input.read_text(encoding="utf-8"))
         result = summarize(document)
     except (OSError, UnicodeError, json.JSONDecodeError, InputError) as exc:
-        print(json.dumps({"schema": "wrench.paired-frontier-savings-report.v2", "error": str(exc)}, sort_keys=True))
+        print(json.dumps({"schema": "wrench.paired-frontier-savings-report.v3", "error": str(exc)}, sort_keys=True))
         return 2
     print(json.dumps(result, sort_keys=True, allow_nan=False))
     return 0

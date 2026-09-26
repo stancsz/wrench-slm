@@ -3,10 +3,14 @@
 - [Measure acceptable local work](wrench-local-acceptability/GOAL.md): exposed
   synthetic screens cover exact reads, line ranges, literal searches, and four
   bounded review-only patch operations with exact diff/application oracles and
-  abstention boundaries. These are mechanics results only; open-ended patch
-  work and local SLM task classes remain unaccepted. Real-work utility and
-  frontier-token savings remain unmeasured pending consented, outcome-verified
-  matched tasks and complete usage receipts.
+  abstention boundaries. The fresh E0 localization tokenizer profile stopped
+  before loading its tokenizer or scoring cases because of a Windows lockfile
+  hash mismatch; its exposed fixture is quarantined. These are mechanics results
+  only; open-ended patch work and local SLM task classes remain unaccepted. A
+  fresh deterministic failing-test evidence-packet attempt also stopped before
+  scoring due to a runner defect; its exposed fixture is quarantined. Real-work
+  utility and frontier-token savings remain unmeasured pending consented,
+  outcome-verified matched tasks and complete usage receipts.
 - [North Star pilot readiness](wrench-northstar-pilot-readiness/GOAL.md):
   proposed opt-in OpenCode corpus and task-oracle protocol; customer discovery,
   consent, and capture remain unapproved and unperformed.
