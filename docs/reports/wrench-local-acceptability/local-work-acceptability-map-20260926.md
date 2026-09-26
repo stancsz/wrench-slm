@@ -12,6 +12,12 @@ fixture is quarantined from reruns.
 
 ## Measured envelope
 
+Candidate next local-controller measurement: the proposed [evidence-selection
+screen](local-evidence-selection-screen-proposal-20260926.md) would test one
+fresh synthetic fixture with 8 positive selection cases and 4 abstention
+boundaries. Its fixture, runner, and oracle are not yet authored; no model has
+run, and separate inference authority remains pending. This is proposal only.
+
 The newest five-case E0 context integration attempt recorded the expected
 synthetic mechanics branches, but is inadmissible because the required separate
 orchestrator admission record is missing. It adds no accepted scope. The

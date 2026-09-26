@@ -16,6 +16,13 @@ successful-task mean. Both remain N/A on actual evidence: zero matched usage
 pairs are admitted. Real-work utility and frontier-token savings remain
 unmeasured.
 
+The next proposed local-controller screen is a fresh 12-case evidence-selection
+diagnostic: 8 exact selections and 4 abstention boundaries, with no tools. Its
+fixture, runner, and oracle are not yet authored, and it has not run. Separate
+model-inference authority is pending. A passing result could only justify a
+larger held-out diagnostic; it would not establish frontier savings or
+completed coding work. See the [proposal](../../reports/wrench-local-acceptability/local-evidence-selection-screen-proposal-20260926.md).
+
 A five-case E0 context integration diagnostic recorded the expected mechanics
 branches, but is inadmissible as an acceptance screen: its required separate
 orchestrator admission record was not retained. The exposed fixture is
