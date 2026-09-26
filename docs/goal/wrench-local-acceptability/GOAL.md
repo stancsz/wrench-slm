@@ -167,6 +167,20 @@ exclusion mechanics. It is not valid for Wrench SLM or mixed workflows, does
 not authenticate telemetry, and adds no observed savings pair. Average
 frontier savings remain N/A with zero eligible pairs.
 
+The latest bounded config-draft diagnostic attempted two of twelve cases on
+the pinned Qwen runtime and stopped after the second response failed JSON
+parsing. The first answer proposed the unchanged port value without the
+required evidence read; the second produced invalid JSON. Zero attempted cases
+passed and ten were not run. This adds no accepted local SLM class or frontier
+savings pair. See the [screen result](../../evals/wrench-local-acceptability/local-config-review-draft-screen-01-result.md).
+
+OpenCode 2.0.18 was installed under the approved data root at the owner's
+request. The project-scoped [endpoint template](../../../.opencode/opencode.jsonc)
+is inactive because localhost:4000 metadata lists mixed provider/subscription
+routes without identifying a local model ID or request mode; `/health` timed
+out. No OpenCode model request or provider call was made. Installation does
+not authorize routing or spending.
+
 ## Acceptance criteria
 
 1. Freeze task classes, paired tasks, oracles, permitted inputs, and accept,
@@ -211,9 +225,10 @@ baseline count is zero, that task's percentage is unavailable, not zero.
    preregistered arm definitions, downstream route and token convention. The
    reporter validates declared identities; it does not prove prompt/information
    parity or authenticate traces. The current result is N/A, with zero valid
-   pairs. The route through localhost:4000 is a mutable gateway route to
-   OpenRouter/MiniMax, not a pinned local model or a verified client/tokenizer
-   pair.
+   pairs. The bridge supports frontier-only arms and cannot represent local,
+   tool, verifier or fallback calls in a complete Wrench lifecycle. The route
+   through localhost:4000 is a mutable gateway route to OpenRouter/MiniMax, not
+   a pinned local model or a verified client/tokenizer pair.
 3. Before provider-backed measurement, obtain the separate authority required
    by `COLLABORATION_CONTRACT.json` for provider usage/spend. For real-work
    claims, also approve participant/task consent, source authorization,
