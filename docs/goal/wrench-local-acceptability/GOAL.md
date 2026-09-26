@@ -157,15 +157,16 @@ See the [triage-stage diagnostic](../../reports/wrench-local-acceptability/local
 and [evaluation](../../evals/wrench-local-acceptability/local-triage-stage-diagnostic-20260925.md).
 
 An offline [attempt-ledger bridge](../../reports/wrench-local-acceptability/frontier-attempt-ledger-bridge.md)
-now adapts complete, caller-supplied frontier-only ledgers into the reporter's
-existing receipt format. It requires exact token counts, known cost for every
-frontier call, and explicit zero local-model, tool, and verifier calls; it
-rejects mixed routes, fallbacks, unrun attempts, and unknown outcomes. CLI
-stdout stays reporter-compatible, with detailed arm exclusions on stderr.
-Eleven standard-library fixture checks pass. This only verifies conversion and
-exclusion mechanics. It is not valid for Wrench SLM or mixed workflows, does
-not authenticate telemetry, and adds no observed savings pair. Average
-frontier savings remain N/A with zero eligible pairs.
+adapts caller-supplied frontier-only ledgers into the reporter's receipt
+format. It requires exact token counts and explicit zero local-model, tool,
+and verifier calls; it rejects mixed routes, fallbacks, unrun attempts, and
+unknown outcomes. Exact tokens remain eligible for token savings when cost is
+explicitly unknown; the receipt marks only costs incomplete, and the reporter
+counts those pairs while keeping cost unknown. Missing or invalid token usage
+still excludes the pair. Focused standard-library checks cover this split.
+The bridge does not authenticate telemetry or support Wrench SLM/mixed
+workflows, and it adds no observed savings pair. Average frontier savings
+remain N/A with zero eligible pairs.
 
 The latest bounded config-draft diagnostic attempted two of twelve cases on
 the pinned Qwen runtime and stopped after the second response failed JSON

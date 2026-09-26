@@ -20,14 +20,15 @@ local-model, tool-using, verifier-using, fallback, or mixed-route workflows
 until the ledger and accounting contract are explicitly extended for those
 calls. Declared call counts are checked, not inferred from omissions.
 
-The converter requires exact nonnegative input and output token counts and
-known nonnegative cost microunits for every frontier call before constructing
-a complete receipt. It binds rows to attempt IDs, rejects duplicate task or
-attempt IDs, and records duplicate, unmatched, missing, malformed, non-exact,
-or wrong-counter usage as an incomplete arm. If any arm usage is incomplete,
-all usage for that arm remains unknown; the existing receipt validator and
-paired reporter exclude that pair. Failed task outcomes remain attached to
-valid complete receipts and are counted separately by the reporter.
+The converter requires exact nonnegative input and output token counts for
+every frontier call. Cost is tracked separately: a call may have known,
+nonnegative microunits or explicitly unknown cost. An arm with exact tokens
+but unknown cost has an incomplete receipt with `missing_fields: ["costs"]`;
+the paired reporter admits it to token arithmetic and reports its cost-unknown
+pair count. Missing, duplicate, unmatched, malformed, non-exact, or
+wrong-counter usage makes token accounting incomplete, so all usage for that
+arm remains unknown and the pair is excluded. Failed task outcomes remain
+attached to receipts and are counted separately by the reporter.
 
 The converter delegates canonical receipt construction and validation to
 `build_outcome_receipt()` and `validate_outcome_receipt()`. It does not
@@ -51,10 +52,10 @@ file.
 
 Focused stdlib `unittest` checks cover an exact two-arm conversion, failed
 outcomes, missing/duplicate/unmatched usage, wrong token convention,
-token-only and missing-cost exclusion, duplicate task identity, nonzero or
-omitted local/tool/verifier call declarations, non-frontier routes, fallback
-calls, `not_run` attempts, and unknown outcomes. All checks use synthetic
-in-memory fixtures. A captured CLI test checks parseable reporter JSON on
-stdout and the missing-usage reason in the single stderr audit record. The
-broader pytest suite was not run because pytest is unavailable in the current
-Python environment.
+exact-token/unknown-cost inclusion and malformed-cost exclusion, duplicate
+task identity, nonzero or omitted local/tool/verifier call declarations,
+non-frontier routes, fallback calls, `not_run` attempts, and unknown outcomes.
+All checks use synthetic in-memory fixtures. A captured CLI test checks
+parseable reporter JSON on stdout and the missing-usage reason in the single
+stderr audit record. The broader pytest suite was not run because pytest is
+unavailable in the current Python environment.

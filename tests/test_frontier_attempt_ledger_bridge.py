@@ -1,5 +1,6 @@
 """Offline synthetic checks for frontier usage ledger conversion."""
 
+import hashlib
 import json
 import io
 import unittest
@@ -127,20 +128,46 @@ class AttemptLedgerBridgeTests(unittest.TestCase):
         audit = next(row for row in converted.arm_audit if row["arm"] == "wrench")
         self.assertIn("non_exact_or_mismatched_usage", audit["reasons"])
 
-    def test_token_only_usage_is_incomplete_because_cost_is_not_known(self):
-        ledger = _ledger()
-        usage = ledger["tasks"][0]["wrench"]["usage_rows"][0]
-        usage["cost_status"] = "unknown"
-        usage["cost_microunits"] = None
+    def test_exact_tokens_remain_eligible_when_cost_is_unknown(self):
+        ledger = _ledger(wrench=((40, 10), (5, 1)))
+        unknown_cost_usage = ledger["tasks"][0]["wrench"]["usage_rows"][0]
+        unknown_cost_usage["cost_status"] = "unknown"
+        unknown_cost_usage["cost_microunits"] = None
         converted = bridge(ledger)
         report = summarize(converted.paired_input)
-        self.assertEqual(report["valid_pair_count"], 0)
-        self.assertEqual(report["excluded_by_reason"], {"incomplete_receipt": 1})
+        self.assertEqual(report["valid_pair_count"], 1)
+        self.assertEqual(report["cost_unknown_valid_pair_count"], 1)
+        self.assertEqual(report["frontier_token_totals"], {"baseline": 100, "wrench": 56})
+        self.assertEqual(report["average_per_task_savings_percent"], 44.0)
+        arm = converted.paired_input["tasks"][0]["wrench"]
+        receipt = json.loads(arm["receipt"]["payload_json"])
+        self.assertEqual(receipt["completeness"], "incomplete")
+        self.assertEqual(receipt["missing_fields"], ["costs"])
+        self.assertEqual(receipt["accounting"]["token_count_status"], "exact")
+        self.assertEqual(receipt["accounting"]["cost_status"], "unknown")
+        audit = next(row for row in converted.arm_audit if row["arm"] == "wrench")
+        self.assertEqual(audit["status"], "token_complete_cost_unknown")
+        self.assertEqual(audit["reasons"], "cost_unknown")
 
     def test_missing_cost_fields_fail_closed(self):
         ledger = _ledger()
         del ledger["tasks"][0]["wrench"]["usage_rows"][0]["cost_status"]
         converted = bridge(ledger)
+        report = summarize(converted.paired_input)
+        self.assertEqual(report["valid_pair_count"], 0)
+        self.assertEqual(report["excluded_by_reason"], {"incomplete_receipt": 1})
+
+    def test_cost_known_receipt_cannot_claim_cost_only_incompleteness(self):
+        converted = bridge(_ledger())
+        arm = converted.paired_input["tasks"][0]["wrench"]
+        receipt = arm["receipt"]
+        payload = json.loads(receipt["payload_json"])
+        payload["completeness"] = "incomplete"
+        payload["missing_fields"] = ["costs"]
+        canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        receipt["payload_json"] = canonical
+        receipt["sha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
         report = summarize(converted.paired_input)
         self.assertEqual(report["valid_pair_count"], 0)
         self.assertEqual(report["excluded_by_reason"], {"incomplete_receipt": 1})

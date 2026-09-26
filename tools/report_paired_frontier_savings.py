@@ -3,9 +3,10 @@
 Input is a JSON object with schema ``wrench.paired-frontier-savings-input.v1``,
 a frozen ``comparison`` identity, and ``tasks``. Every task declares its
 expected snapshot digest and pairs ``baseline`` and ``wrench`` E0 outcome
-receipts, each represented as ``payload_json`` plus its SHA-256. Only valid,
-complete, exact-usage pairs with a nonzero baseline
-denominator enter token arithmetic. Failed task outcomes remain in those
+receipts, each represented as ``payload_json`` plus its SHA-256. Only token-
+complete, exact-usage pairs with a nonzero baseline denominator enter token
+arithmetic. Receipts may be incomplete solely because costs are unknown; all
+other incomplete receipts remain excluded. Failed task outcomes remain in the
 totals. This utility reports token arithmetic, not product utility or savings
 claims; callers must supply an authorized, preregistered corpus. Per-task rows
 use a SHA-256 reference instead of exposing the input task ID.
@@ -60,7 +61,14 @@ def _read_receipt(value: object, task_id: str, comparison: dict[str, str]) -> tu
     if payload.get("task_id") != task_id:
         return None, "receipt_task_id_mismatch"
     if checked.status is ReceiptStatus.INCOMPLETE:
-        return payload, "incomplete_receipt"
+        accounting = payload.get("accounting")
+        if (
+            payload.get("missing_fields") != ["costs"]
+            or type(accounting) is not dict
+            or accounting.get("token_count_status") != "exact"
+            or accounting.get("cost_status") != "unknown"
+        ):
+            return payload, "incomplete_receipt"
     return payload, None
 
 
@@ -134,6 +142,7 @@ def summarize(document: object) -> dict[str, Any]:
     valid_rows: list[tuple[int, int]] = []
     task_rows: list[dict[str, Any]] = []
     sums = {"baseline": 0, "wrench": 0}
+    cost_unknown_pair_count = 0
     for task in tasks:
         payloads: dict[str, dict[str, Any] | None] = {}
         errors: list[str] = []
@@ -180,6 +189,8 @@ def summarize(document: object) -> dict[str, Any]:
             task_rows.append(_excluded_task_row(task["task_id"], "zero_baseline_frontier_tokens"))
             continue
         valid_rows.append((baseline, wrench))
+        if any(payloads[arm]["accounting"]["cost_status"] == "unknown" for arm in ARMS):
+            cost_unknown_pair_count += 1
         task_rows.append({
             "task_ref_sha256": hashlib.sha256(task["task_id"].encode("utf-8")).hexdigest(),
             "status": "valid",
@@ -199,6 +210,7 @@ def summarize(document: object) -> dict[str, Any]:
         "input_task_count": len(tasks),
         "per_task": task_rows,
         "valid_pair_count": pair_count,
+        "cost_unknown_valid_pair_count": cost_unknown_pair_count,
         "excluded_pair_count": sum(excluded.values()),
         "excluded_by_reason": dict(sorted(excluded.items())),
         "unresolved_or_excluded_pair_count": sum(excluded.values()),

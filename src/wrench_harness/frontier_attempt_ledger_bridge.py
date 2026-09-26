@@ -79,21 +79,27 @@ def _exact_frontier_usage(row: dict[str, object], convention: str) -> dict[str, 
         return None
     input_count, output_count = row["input_tokens"], row["output_tokens"]
     cost = row["cost_microunits"]
+    cost_status = row["cost_status"]
+    valid_cost = (
+        cost_status == "known" and type(cost) is int and cost >= 0
+    ) or (
+        cost_status == "unknown" and cost is None
+    )
     if (
         row["status"] != "exact"
         or row["counter_id"] != convention
         or type(input_count) is not int or input_count < 0
         or type(output_count) is not int or output_count < 0
-        or row["cost_status"] != "known"
-        or type(cost) is not int or cost < 0
+        or not valid_cost
     ):
         return None
     return {
         "status": "exact", "counter_id": convention,
         "local_input_tokens": 0, "local_output_tokens": 0,
         "frontier_input_tokens": input_count, "frontier_output_tokens": output_count,
-        "local_cost_microunits": 0, "frontier_cost_microunits": cost,
-        "cost_status": "known",
+        "local_cost_microunits": 0 if cost_status == "known" else None,
+        "frontier_cost_microunits": cost,
+        "cost_status": cost_status,
     }
 
 
@@ -197,10 +203,10 @@ def _arm_receipt(
         normalized_usage.clear()
         invalid_ids.update(attempt_ids)
 
-    complete = not taints
+    token_complete = not taints
     receipt_attempts = []
     total_input = total_output = total_cost = 0
-    all_costs_known = True
+    all_costs_known = token_complete
     for attempt in normalized_attempts:
         attempt_id = attempt["attempt_id"]
         usage = normalized_usage.get(attempt_id, _unknown_usage())
@@ -215,7 +221,7 @@ def _arm_receipt(
             all_costs_known = False
         receipt_attempts.append({**attempt, "usage": usage})
 
-    accounting_exact = complete
+    complete = token_complete and all_costs_known
     payload: dict[str, object] = {
         "schema": "wrench.e0.outcome-receipt.v1",
         "task_id": task_id,
@@ -233,20 +239,22 @@ def _arm_receipt(
             "retries": sum(row["retry_of"] is not None for row in receipt_attempts),
             "fallback_calls": sum(row["fallback"] is True for row in receipt_attempts),
             "verifier_calls": 0, "tool_calls": 0,
-            "local_tokens": 0 if accounting_exact else None,
-            "frontier_tokens": total_input + total_output if accounting_exact else None,
+            "local_tokens": 0 if token_complete else None,
+            "frontier_tokens": total_input + total_output if token_complete else None,
             "local_token_counter_id": None,
             "frontier_token_counter_id": (
                 comparison["token_convention_id"]
-                if accounting_exact or normalized_usage else None
+                if token_complete else None
             ),
-            "token_count_status": "exact" if accounting_exact else "unknown",
+            "token_count_status": "exact" if token_complete else "unknown",
             "local_cost_microunits": 0 if complete else None,
             "frontier_cost_microunits": total_cost if complete and all_costs_known else None,
             "cost_status": "known" if complete and all_costs_known else "unknown",
         },
         "completeness": "complete" if complete else "incomplete",
-        "missing_fields": [] if complete else ["usage", "costs"],
+        "missing_fields": (
+            [] if complete else (["costs"] if token_complete else ["usage", "costs"])
+        ),
     }
     result = build_outcome_receipt(payload)
     if result.status is ReceiptStatus.INVALID or result.receipt is None:
@@ -258,7 +266,16 @@ def _arm_receipt(
         "comparison": dict(comparison),
         "receipt": {"payload_json": result.receipt.payload_json, "sha256": result.receipt.sha256},
     }
-    return record, {"task_id": task_id, "arm": arm_name, "status": "complete" if complete else "incomplete", "reasons": ",".join(taints)}
+    audit_status = "complete" if complete else (
+        "token_complete_cost_unknown" if token_complete else "incomplete"
+    )
+    audit_reasons = list(taints)
+    if token_complete and not all_costs_known:
+        audit_reasons.append("cost_unknown")
+    return record, {
+        "task_id": task_id, "arm": arm_name,
+        "status": audit_status, "reasons": ",".join(audit_reasons),
+    }
 
 
 def bridge(document: object) -> BridgeResult:
