@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from .opencode_context import (
+    OpenCodePreparationJoin,
     check_opencode_preparation_admission,
 )
 from .opencode_hook_projection import (
@@ -20,6 +21,7 @@ from .opencode_hook_projection import (
     OpenCodeProjectionStatus,
     OpenCodePreparedTransitionReceipt,
     OpenCodePreparedTransitionStatus,
+    SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS,
     _ProjectionFailure,
     _bounded_canonical_json,
     _copy_json_bounded,
@@ -63,7 +65,19 @@ def materialize_opencode_prepared_context(
     ephemeral bridge and is verified against the gate receipt before insertion.
     No value is recovered from or parsed out of ``preparation.prompt``.
     """
-    projected = project_opencode_context_hook(event)
+    if (
+        type(join) is not OpenCodePreparationJoin
+        or type(join.opencode_context_hook_version) is not str
+        or join.opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
+    ):
+        return PreparedContextResult(
+            PreparedContextStatus.ADMISSION_REJECTED, None, "hook_version_invalid"
+        )
+    opencode_context_hook_version = join.opencode_context_hook_version
+    projected = project_opencode_context_hook(
+        event,
+        opencode_context_hook_version=opencode_context_hook_version,
+    )
     if projected.status is not OpenCodeProjectionStatus.READY or projected.projection is None:
         return PreparedContextResult(PreparedContextStatus.INVALID_EVENT, None, "event_invalid")
 
@@ -154,7 +168,10 @@ def materialize_opencode_prepared_context(
     materialized = list(messages)
     materialized.insert(position, message)
     payload["messages"] = materialized
-    output_projection = project_opencode_context_hook(payload)
+    output_projection = project_opencode_context_hook(
+        payload,
+        opencode_context_hook_version=opencode_context_hook_version,
+    )
     if (
         output_projection.status is not OpenCodeProjectionStatus.READY
         or output_projection.projection is None

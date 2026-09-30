@@ -10,8 +10,8 @@ After explicit human approval, build the primary dataset from **opt-in,
 outcome-verified Wrench workflows on participant-authorized local repository
 snapshots**, supplemented by **bounded local-teacher proposals** and
 deterministic fixtures. This is a future protocol choice, not permission to
-capture or use real data. No training or utility corpus is admitted today. The
-only admitted data are the fixed [Wrench-authored synthetic regression
+capture or use real data. No real-work utility corpus is admitted today. The
+only previously admitted data are the fixed [Wrench-authored synthetic regression
 fixture](../../tests/fixtures/e0_synthetic_matched_tasks_v1/manifest.json),
 classified solely for open-development fixture use by the
 [synthetic admission boundary](../../src/wrench_harness/synthetic_fixture_admission.py).
@@ -21,6 +21,50 @@ is a separate regression test input and is not admitted to this corpus.
 Keep public benchmarks as external challenge or evaluation sets unless their
 exact task/repository lineage is deliberately cleared for training. Do not
 start from a large general code dump.
+
+### Owner-authorized synthetic gateway diagnostic, 2026-09-27
+
+The owner has authorized one new Wrench-authored synthetic-only
+train/development/held-out split for the bounded gateway LoRA experiment. The
+split must be newly authored, hash-bound before training, and kept separate by
+template family and scenario composition. It may be used only for this local
+diagnostic; it does not retroactively admit the old ten-case seed, exposed
+local-acceptability fixtures, real/private repository code, public benchmarks,
+teacher-generated labels, or a production/utility corpus. The split was
+generated on 2026-09-27, but it remains diagnostic-only rather than utility
+data. Its controls are in the [screen
+protocol](../evals/wrench-gateway-model-research/lora-screen-01-protocol-20260927.md).
+
+This is an experiment-specific human authority exception to the earlier
+repository-only contract's prohibition on training. It permits one bounded
+local LoRA experiment on the already-present Qwen3.5-0.8B checkpoint, subject
+to storage, exact identity, data split, package, resource, and reservation
+gates. It does not permit new model downloads, provider calls, real-data
+capture/transfer, subroute configuration changes, or production activation.
+The requested subroute is force-routed through OpenRouter at the latest
+read-only check; no provider generation is authorized until an explicit USD
+cap and route identity are recorded.
+
+At the time of this initial scope, the selected model was the existing 0.8B
+checkpoint. The later owner scope update below permits choosing another
+sub-10B candidate after exact inventory and job admission; it does not expand
+the data authorization or permit provider generation.
+
+### Owner scope update (2026-09-27)
+
+The owner later expanded the gateway candidate universe to any pinned model
+below 10B parameters if it runs smoothly on the actual machine. This supersedes
+the 0.8B-only model restriction above. Each new candidate still requires a
+complete pinned file inventory and storage/format duplicate accounting before
+download, plus candidate-specific LoRA/runtime compatibility review and fresh
+hardware and storage admission before each run. This model-scope change does
+not expand the authorized data beyond the synthetic-only split above. It does
+not authorize provider calls, transfer or capture of private/real workflows,
+opening sealed held-out data before its protocol gate, adapter activation, or
+production use. A paid comparison remains gated on a numeric aggregate spend
+cap and a fail-closed caller-side receipt guard.
+See [iteration 010](../evals/wrench-gateway-model-research/iteration-010-model-scope-route-controls-20260927.md)
+for the latest route and candidate-scope record.
 
 This ordering matches the North Star: decide whether context preparation helps
 real developers, and whether a small controller makes better evidence choices

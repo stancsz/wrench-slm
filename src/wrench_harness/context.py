@@ -599,6 +599,7 @@ class ContextLedger:
         on_preserved_overflow: str = "raise",
         search_limit: int = 32,
         receipt_detail: str = "full",
+        include_selected_texts: bool = False,
     ) -> dict[str, object]:
         """Build a bounded context and an auditable assembly receipt.
 
@@ -716,7 +717,7 @@ class ContextLedger:
                 omitted_rows.append(row)
         omitted_digest_builder.update(b"]")
         omitted_digest = omitted_digest_builder.hexdigest()
-        return {
+        result = {
             "schema": "wrench.context-assembly.v2",
             "session_hash": self.session_hash(),
             "query_sha256": _sha256(query.encode("utf-8")),
@@ -736,3 +737,9 @@ class ContextLedger:
             "omitted_segments": omitted_rows if receipt_detail == "full" else [],
             "assembled_text": assembled_text,
         }
+        if include_selected_texts:
+            result["selected_segment_texts"] = [
+                {"segment_id": segment.segment_id, "text": segment.text}
+                for segment in selected
+            ]
+        return result

@@ -41,7 +41,7 @@ def _event(session_id="ses_fixture123", messages=None):
 
 
 def _ready_join(*, context_message_json=None, gate=None, status=PreparationStatus.READY,
-                route="none", retrieval_misses=()):
+                route="none", retrieval_misses=(), opencode_context_hook_version="2.0.15"):
     ledger = ContextLedger(max_logical_tokens=100)
     ledger.add_segment("fixture-evidence", "authored synthetic context", 1, token_count=2)
     assembly = ledger.assemble("synthetic query", active_token_budget=16)
@@ -55,7 +55,7 @@ def _ready_join(*, context_message_json=None, gate=None, status=PreparationStatu
         assembly, base, context_position=1, serializer=serializer,
         tokenizer_counter=len, serializer_id="authored-fixture-serializer-v1",
         tokenizer_id="authored-fixture-character-counter-v1", hard_budget=100_000,
-        message_format="opencode-2.0.15",
+        message_format=f"opencode-{opencode_context_hook_version}",
     )
     assert compiled.receipt.status is PromptGateStatus.READY
     aggregate_hash = "a" * 64
@@ -100,6 +100,7 @@ def _ready_join(*, context_message_json=None, gate=None, status=PreparationStatu
         session_id="ses_fixture123", configured_root=Path("C:/fixture"),
         snapshot_sha256=snapshot_hash, root_location_sha256="c" * 64,
         root_identity="fixture-root", preparation=preparation,
+        opencode_context_hook_version=opencode_context_hook_version,
     ), compiled
 
 
@@ -134,9 +135,22 @@ def test_inserts_exact_compiler_message_once_and_preserves_hook_fields_and_order
     assert "authored synthetic context" not in repr(redacted_prompt_preparation)
 
 
+def test_v2012_preparation_join_materializes_a_version_bound_transition():
+    join, _ = _ready_join(opencode_context_hook_version="2.0.12")
+
+    result = materialize_opencode_prepared_context(join, _event())
+
+    assert result.status is PreparedContextStatus.READY
+    assert result.transition_receipt is not None
+    assert result.transition_receipt.transition.opencode_context_hook_version == "2.0.12"
+    assert verify_opencode_prepared_transition_receipt(result.transition_receipt)
+
+
 def test_fails_closed_on_session_mismatch_and_non_ready_admission():
     join, _ = _ready_join()
     assert materialize_opencode_prepared_context(join, _event("ses_other123")).status is PreparedContextStatus.ADMISSION_REJECTED
+    unsupported_version = replace(join, opencode_context_hook_version="2.0.14")
+    assert materialize_opencode_prepared_context(unsupported_version, _event()).status is PreparedContextStatus.ADMISSION_REJECTED
     not_ready = replace(join, preparation=replace(join.preparation, status=PreparationStatus.PROMPT_REJECTED))
     assert materialize_opencode_prepared_context(not_ready, _event()).status is PreparedContextStatus.ADMISSION_REJECTED
     wrong_route = replace(join, preparation=replace(join.preparation, route="openrouter"))

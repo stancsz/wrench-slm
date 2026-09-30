@@ -811,3 +811,63 @@ def test_projection_rejects_unbounded_or_non_json_input(invalid_case):
 
     assert result.status is expected
     assert result.projection is None
+
+
+def test_v2012_projection_is_explicit_and_does_not_relabel_legacy_projection():
+    event = _hook_event()
+
+    legacy = project_opencode_context_hook(event)
+    v2012 = project_opencode_context_hook(
+        event, opencode_context_hook_version="2.0.12"
+    )
+
+    assert legacy.status is OpenCodeProjectionStatus.READY
+    assert v2012.status is OpenCodeProjectionStatus.READY
+    assert legacy.projection is not None
+    assert v2012.projection is not None
+    assert legacy.projection.opencode_context_hook_version == OPENCODE_CONTEXT_HOOK_VERSION == "2.0.15"
+    assert v2012.projection.opencode_context_hook_version == "2.0.12"
+    assert legacy.projection.projection_sha256 != v2012.projection.projection_sha256
+
+
+def test_projection_rejects_unreviewed_hook_version():
+    result = project_opencode_context_hook(
+        _hook_event(), opencode_context_hook_version="2.0.13"
+    )
+
+    assert result.status is OpenCodeProjectionStatus.INVALID_INPUT
+    assert result.projection is None
+    assert result.reason == "opencode_context_hook_version_unsupported"
+
+
+def test_transition_rejects_cross_version_projection_pair():
+    before_event = _hook_event()
+    after_event = copy.deepcopy(before_event)
+    expected = _text_message("Prepared repository context.")
+    after_event["messages"].insert(0, copy.deepcopy(expected))
+
+    result = validate_opencode_context_hook_transition(
+        project_opencode_context_hook(before_event).projection,
+        project_opencode_context_hook(
+            after_event, opencode_context_hook_version="2.0.12"
+        ).projection,
+        expected_message=expected,
+        insertion_position=0,
+    )
+
+    assert result.status is OpenCodeTransitionStatus.HOOK_VERSION_MISMATCH
+    assert result.receipt is None
+
+
+def test_observer_records_the_explicit_v2012_hook_version():
+    observer = OpenCodeContextHookObserver(
+        lambda value: value,
+        monotonic_ns=_FakeMonotonicClock(10, 15),
+        opencode_context_hook_version="2.0.12",
+    )
+
+    assert asyncio.run(observer({"sessionID": "ses_v2012_fixture"})) == {
+        "sessionID": "ses_v2012_fixture"
+    }
+    assert observer.observation is not None
+    assert observer.observation.opencode_context_hook_version == "2.0.12"

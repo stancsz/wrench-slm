@@ -17,6 +17,7 @@ from typing import Callable, Mapping, Sequence
 
 from .artifact_store import ArtifactRequest, ArtifactStore
 from .e0_context_pipeline import (
+    MAX_CONTEXT_TOKENS,
     PreparationAccountingReceipt,
     PreparationResult,
     PreparationStatus,
@@ -71,6 +72,7 @@ def route_and_prepare_e0_context(
     source_order_start: int,
     context_token_budget: int,
     prompt_token_budget: int,
+    source_ingestion_token_limit: int = MAX_CONTEXT_TOKENS,
     namespace_registry: NamespaceRegistry,
     schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]],
@@ -135,6 +137,7 @@ def route_and_prepare_e0_context(
         source_order_start=source_order_start,
         context_token_budget=context_token_budget,
         prompt_token_budget=prompt_token_budget,
+        source_ingestion_token_limit=source_ingestion_token_limit,
         namespace_registry=namespace_registry,
         schema_lookups=schema_lookups,
         base_messages=base_messages,

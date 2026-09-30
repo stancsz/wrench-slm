@@ -14,8 +14,17 @@ from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 from .artifact_store import ArtifactRequest, ArtifactStore
-from .e0_context_pipeline import PreparationResult, PreparationStatus, prepare_e0_context
+from .e0_context_pipeline import (
+    MAX_CONTEXT_TOKENS,
+    PreparationResult,
+    PreparationStatus,
+    prepare_e0_context,
+)
 from .namespace_registry import NamespaceRegistry
+from .opencode_hook_projection import (
+    OPENCODE_CONTEXT_HOOK_VERSION,
+    SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS,
+)
 from .outcome_receipt import (
     OutcomeReceipt,
     ReceiptResult,
@@ -37,6 +46,7 @@ class OpenCodePreparationJoin:
     root_location_sha256: str | None
     root_identity: str | None
     preparation: PreparationResult
+    opencode_context_hook_version: str = OPENCODE_CONTEXT_HOOK_VERSION
 
 
 class OpenCodeAdmissionStatus(str, Enum):
@@ -80,6 +90,8 @@ def check_opencode_preparation_admission(
         type(event_session_id) is not str
         or not event_session_id
         or type(join) is not OpenCodePreparationJoin
+        or type(join.opencode_context_hook_version) is not str
+        or join.opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
     ):
         return OpenCodePreparationAdmission(
             OpenCodeAdmissionStatus.INVALID_JOIN, None, "invalid_join"
@@ -172,6 +184,7 @@ def prepare_opencode_e0_context(
     source_order_start: int,
     context_token_budget: int,
     prompt_token_budget: int,
+    source_ingestion_token_limit: int = MAX_CONTEXT_TOKENS,
     namespace_registry: NamespaceRegistry,
     schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]],
@@ -187,6 +200,7 @@ def prepare_opencode_e0_context(
     max_candidates: int = 8,
     artifact_request: ArtifactRequest | None = None,
     resolved_session_root: OpenCodeSessionRoot | None = None,
+    opencode_context_hook_version: str = OPENCODE_CONTEXT_HOOK_VERSION,
 ) -> OpenCodePreparationJoin:
     """Prepare against one validated root binding and the supplied snapshot.
 
@@ -199,6 +213,11 @@ def prepare_opencode_e0_context(
     helper returns, and keep its scope open through downstream completion or
     failure cleanup. The default remains preparation-only.
     """
+    if (
+        type(opencode_context_hook_version) is not str
+        or opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
+    ):
+        raise ValueError("opencode_context_hook_version_unsupported")
     if type(snapshot) is not SourceSnapshot:
         raise ValueError("invalid_source_snapshot")
     if resolved_session_root is None:
@@ -222,11 +241,12 @@ def prepare_opencode_e0_context(
         source_order_start=source_order_start,
         context_token_budget=context_token_budget,
         prompt_token_budget=prompt_token_budget,
+        source_ingestion_token_limit=source_ingestion_token_limit,
         namespace_registry=namespace_registry,
         schema_lookups=schema_lookups,
         base_messages=base_messages,
         context_position=context_position,
-        message_format="opencode-2.0.15",
+        message_format=f"opencode-{opencode_context_hook_version}",
         serializer=serializer,
         tokenizer_counter=tokenizer_counter,
         serializer_id=serializer_id,
@@ -245,6 +265,7 @@ def prepare_opencode_e0_context(
         root_location_sha256=snapshot.root_location_sha256,
         root_identity=snapshot.root_identity,
         preparation=result,
+        opencode_context_hook_version=opencode_context_hook_version,
     )
 
 

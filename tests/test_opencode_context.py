@@ -133,7 +133,13 @@ def _preparation_arguments(snapshot):
     }
 
 
-def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
+@pytest.mark.parametrize(
+    ("hook_version", "message_format"),
+    [("2.0.15", "opencode-2.0.15"), ("2.0.12", "opencode-2.0.12")],
+)
+def test_session_root_is_the_only_root_passed_to_preparation(
+    tmp_path, hook_version, message_format
+):
     root = tmp_path / "project"
     root.mkdir()
     snapshot = SourceSnapshot("wrench.source-snapshot.v3", (), "a" * 64, "b" * 64, "posix:1:1")
@@ -144,6 +150,8 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
             "ses_fixture123",
             {"id": "ses_fixture123", "location": {"directory": str(root)}},
             **_preparation_arguments(snapshot),
+            source_ingestion_token_limit=16384,
+            opencode_context_hook_version=hook_version,
         )
 
     assert isinstance(result, OpenCodePreparationJoin)
@@ -152,7 +160,10 @@ def test_session_root_is_the_only_root_passed_to_preparation(tmp_path):
     assert result.snapshot_sha256 == snapshot.snapshot_sha256
     assert result.root_location_sha256 == snapshot.root_location_sha256
     assert result.root_identity == snapshot.root_identity
+    assert result.opencode_context_hook_version == hook_version
     assert result.preparation is prepared
+    assert prepare.call_args.kwargs["message_format"] == message_format
+    assert prepare.call_args.kwargs["source_ingestion_token_limit"] == 16384
     bound_root = prepare.call_args.kwargs["source_root"]
     assert type(bound_root) is SourceRootBinding
     assert bound_root.configured_root == root
@@ -418,6 +429,15 @@ def test_preparation_admission_returns_join_only_when_all_local_gates_are_ready(
     assert admitted == OpenCodePreparationAdmission(
         OpenCodeAdmissionStatus.READY, join, "ready"
     )
+
+
+def test_preparation_admission_rejects_unsupported_hook_version():
+    join = replace(_admission_fixture(), opencode_context_hook_version="2.0.14")
+
+    admitted = check_opencode_preparation_admission(join.session_id, join)
+
+    assert admitted.status is OpenCodeAdmissionStatus.INVALID_JOIN
+    assert admitted.join is None
 
 
 @pytest.mark.parametrize(

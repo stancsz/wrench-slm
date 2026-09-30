@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -15,6 +16,12 @@ from wrench_harness import execute_local_qwen
 
 def main() -> int:
     request = json.loads(sys.stdin.read())
+    try:
+        endpoint_port = urlsplit(request["endpoint"]).port
+    except ValueError:
+        endpoint_port = None
+    if endpoint_port == 4000:
+        raise RuntimeError("SubRoute :4000 is not a local Wrench model endpoint while live calls are disabled")
     result = execute_local_qwen(
         request["endpoint"],
         request["model"],

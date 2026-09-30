@@ -28,8 +28,8 @@ from .opencode_hook_projection import (
     CONTEXT_HOOK_OBSERVATION_SCHEMA,
     MAX_OPENCODE_CONTEXT_HOOK_BYTES,
     MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS,
-    OPENCODE_CONTEXT_HOOK_VERSION,
     PROJECTION_SCHEMA,
+    SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS,
     OpenCodeContextHookCall,
     OpenCodeContextHookObservation,
     OpenCodeContextHookProjection,
@@ -207,6 +207,8 @@ def build_partial_lifecycle_trace(
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "receipt_join_mismatch")
     if projection.session_id != join.session_id:
         return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_session_mismatch")
+    if projection.opencode_context_hook_version != join.opencode_context_hook_version:
+        return _failure(PartialTraceStatus.JOIN_MISMATCH, "projection_hook_version_mismatch")
 
     observation_summary = None
     if context_hook_observation is not None:
@@ -217,6 +219,11 @@ def build_partial_lifecycle_trace(
             return _failure(
                 PartialTraceStatus.INVALID_OBSERVATION,
                 "context_hook_observation_invalid_or_unbound",
+            )
+        if observation_summary.get("opencode_context_hook_version") != projection.opencode_context_hook_version:
+            return _failure(
+                PartialTraceStatus.INVALID_OBSERVATION,
+                "context_hook_observation_version_mismatch",
             )
 
     prepared_transition_summary = None
@@ -376,7 +383,7 @@ def _context_hook_observation_summary(
         or type(observation.schema) is not str
         or observation.schema != CONTEXT_HOOK_OBSERVATION_SCHEMA
         or type(observation.opencode_context_hook_version) is not str
-        or observation.opencode_context_hook_version != OPENCODE_CONTEXT_HOOK_VERSION
+        or observation.opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
         or type(observation.invocation_count) is not int
         or not 1 <= observation.invocation_count <= MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS
         or type(observation.completed_count) is not int
@@ -530,7 +537,8 @@ def _route_summary(result: RuleRouteResult, expected_snapshot_sha256: str) -> di
 def _projection_is_self_consistent(projection: OpenCodeContextHookProjection) -> bool:
     if (
         projection.projection_schema != PROJECTION_SCHEMA
-        or projection.opencode_context_hook_version != OPENCODE_CONTEXT_HOOK_VERSION
+        or type(projection.opencode_context_hook_version) is not str
+        or projection.opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
         or type(projection.payload_json) is not str
         or len(projection.payload_json) > MAX_OPENCODE_CONTEXT_HOOK_BYTES
         or type(projection.serialized_bytes) is not int
@@ -546,7 +554,10 @@ def _projection_is_self_consistent(projection: OpenCodeContextHookProjection) ->
         event = json.loads(projection.payload_json)
     except (TypeError, ValueError, UnicodeError, RecursionError):
         return False
-    result = project_opencode_context_hook(event)
+    result = project_opencode_context_hook(
+        event,
+        opencode_context_hook_version=projection.opencode_context_hook_version,
+    )
     return (
         result.status is OpenCodeProjectionStatus.READY
         and result.projection is not None
@@ -555,6 +566,7 @@ def _projection_is_self_consistent(projection: OpenCodeContextHookProjection) ->
         and result.projection.provider_id == projection.provider_id
         and result.projection.model_id == projection.model_id
         and result.projection.model_variant == projection.model_variant
+        and result.projection.opencode_context_hook_version == projection.opencode_context_hook_version
         and result.projection.projection_sha256 == projection.projection_sha256
         and result.projection.serialized_bytes == projection.serialized_bytes
     )

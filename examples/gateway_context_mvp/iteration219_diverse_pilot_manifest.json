@@ -1,0 +1,381 @@
+{
+  "comparison": {
+    "adapter": null,
+    "arm_order_seed": "c5ec7501-cc7c-42b2-bd21-a0d61d497216",
+    "arms": [
+      "full_context",
+      "wrench_prepared"
+    ],
+    "frontier_calls": false,
+    "max_retries_per_arm": 1,
+    "model": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "temperature": 0
+  },
+  "data_scope": "wrench_authored_synthetic_only",
+  "not_for": [
+    "sealed_final_split",
+    "population_success_rate",
+    "product_acceptance_claim"
+  ],
+  "protocol": "iteration-219-nontrivial-diverse-pilot-freeze-20260930",
+  "purpose": "exploratory_development_feasibility_pilot",
+  "repositories": [
+    {
+      "episodes": [
+        {
+          "family": "source_localization",
+          "id": "api-01",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "def retry_delay(",
+              "return base_ms * (2 ** attempt)"
+            ]
+          },
+          "query_template": "symbol:{symbol}",
+          "request": "Return the exact function name that caps retry delay and cite its defining source line.",
+          "required_path": "src/retry.py",
+          "symbol": "retry_delay"
+        },
+        {
+          "family": "bounded_code_repair",
+          "id": "api-02",
+          "keys": "base_ms cap_ms",
+          "oracle": {
+            "cases": [
+              [
+                -2,
+                100,
+                400,
+                100
+              ],
+              [
+                0,
+                100,
+                400,
+                100
+              ],
+              [
+                2,
+                100,
+                400,
+                400
+              ],
+              [
+                4,
+                250,
+                700,
+                700
+              ]
+            ],
+            "function": "retry_delay",
+            "kind": "python_function_cases",
+            "signature": [
+              "attempt",
+              "base_ms",
+              "cap_ms"
+            ]
+          },
+          "query_template": "symbol:{symbol} retry configuration {keys}",
+          "request": "Fix retry_delay: negative attempts must use exponent zero, and exponential delay must never exceed cap_ms. Return only the complete function.",
+          "required_paths": [
+            "src/retry.py",
+            "config/gateway.toml"
+          ],
+          "symbol": "retry_delay"
+        },
+        {
+          "family": "test_log_diagnosis",
+          "id": "api-03",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "test_retry_delay_caps_at_configured_limit",
+              "return base_ms * (2 ** attempt)",
+              "attempt=3 returned_ms=800",
+              "cap_ms = 400"
+            ],
+            "required_answer_terms": [
+              "matches",
+              "800",
+              "400"
+            ]
+          },
+          "query_template": "retry delay cap test failure attempt",
+          "request": "Compare the incident claim with the supplied test and implementation. State whether the evidence reproduces the reported failure, then cite the exact test and code lines.",
+          "required_paths": [
+            "logs/retry-incident.log",
+            "tests/test_retry.py",
+            "src/retry.py",
+            "config/gateway.toml"
+          ]
+        },
+        {
+          "family": "configuration_documentation",
+          "id": "api-04",
+          "keys": "base_ms cap_ms max_attempts",
+          "oracle": {
+            "kind": "exact_json",
+            "value": {
+              "base_ms": 100,
+              "cap_ms": 400,
+              "max_attempts": 4,
+              "source": "config/gateway.toml"
+            }
+          },
+          "query_template": "retry configuration {keys}",
+          "request": "Return the configured retry base, cap, and maximum attempts as JSON with exact integer values and the source path.",
+          "required_path": "config/gateway.toml"
+        }
+      ],
+      "files": {
+        "config/gateway.toml": "[retry]\nbase_ms = 100\ncap_ms = 400\nmax_attempts = 4\n\n[auth]\nrefresh_seconds = 300\n",
+        "logs/retry-incident.log": "INC-17: report says attempt=3 returned_ms=800 with configured_cap_ms=400.\n",
+        "src/retry.py": "def retry_delay(attempt, base_ms, cap_ms):\n    return base_ms * (2 ** attempt)\n\ndef retryable(status):\n    return status in {408, 429, 502, 503}\n",
+        "tests/test_retry.py": "def test_retry_delay_caps_at_configured_limit():\n    assert retry_delay(0, 100, 400) == 100\n    assert retry_delay(3, 100, 400) == 400\n"
+      },
+      "id": "synthetic-api-gateway"
+    },
+    {
+      "episodes": [
+        {
+          "family": "source_localization",
+          "id": "cache-01",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "def bounded_ttl(",
+              "return max(requested_seconds, minimum_seconds)"
+            ]
+          },
+          "query_template": "symbol:{symbol}",
+          "request": "Name the function that clamps a requested TTL and cite its exact source line.",
+          "required_path": "src/cache.py",
+          "symbol": "bounded_ttl"
+        },
+        {
+          "family": "bounded_code_repair",
+          "id": "cache-02",
+          "keys": "minimum_ttl_seconds maximum_ttl_seconds",
+          "oracle": {
+            "cases": [
+              [
+                1,
+                10,
+                90,
+                10
+              ],
+              [
+                10,
+                10,
+                90,
+                10
+              ],
+              [
+                44,
+                10,
+                90,
+                44
+              ],
+              [
+                120,
+                10,
+                90,
+                90
+              ]
+            ],
+            "function": "bounded_ttl",
+            "kind": "python_function_cases",
+            "signature": [
+              "requested_seconds",
+              "minimum_seconds",
+              "maximum_seconds"
+            ]
+          },
+          "query_template": "symbol:{symbol} cache configuration {keys}",
+          "request": "Fix bounded_ttl so values below minimum_seconds and above maximum_seconds are clamped to the configured interval. Return only the complete function.",
+          "required_paths": [
+            "src/cache.py",
+            "config/cache.toml"
+          ],
+          "symbol": "bounded_ttl"
+        },
+        {
+          "family": "test_log_diagnosis",
+          "id": "cache-03",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "test_ttl_clamps_both_bounds",
+              "assert bounded_ttl(120, 10, 90) == 90",
+              "return max(requested_seconds, minimum_seconds)",
+              "maximum_ttl_seconds = 90",
+              "requested_ttl=120 escaped"
+            ],
+            "required_answer_terms": [
+              "matches",
+              "120",
+              "90"
+            ]
+          },
+          "query_template": "TTL upper bound test failure requested maximum",
+          "request": "Compare the cache incident claim with the supplied test and implementation. State whether the evidence reproduces the reported failure, then cite the exact test and code lines.",
+          "required_paths": [
+            "logs/cache-incident.log",
+            "tests/test_cache.py",
+            "src/cache.py",
+            "config/cache.toml"
+          ]
+        },
+        {
+          "family": "configuration_documentation",
+          "id": "cache-04",
+          "keys": "minimum_ttl_seconds maximum_ttl_seconds stale_grace_seconds",
+          "oracle": {
+            "kind": "exact_json",
+            "value": {
+              "maximum_ttl_seconds": 90,
+              "minimum_ttl_seconds": 10,
+              "source": "config/cache.toml",
+              "stale_grace_seconds": 15
+            }
+          },
+          "query_template": "cache configuration {keys}",
+          "request": "Return the configured minimum TTL, maximum TTL, and stale grace as JSON with exact values and source path.",
+          "required_path": "config/cache.toml"
+        }
+      ],
+      "files": {
+        "config/cache.toml": "[cache]\nminimum_ttl_seconds = 10\nmaximum_ttl_seconds = 90\nstale_grace_seconds = 15\n\n[storage]\nbackend = \"memory\"\n",
+        "logs/cache-incident.log": "CACHE-22: report says requested_ttl=120 escaped configured_maximum_ttl=90.\n",
+        "src/cache.py": "def bounded_ttl(requested_seconds, minimum_seconds, maximum_seconds):\n    return max(requested_seconds, minimum_seconds)\n\ndef cache_key(tenant, resource):\n    return f'{tenant}:{resource}'\n",
+        "tests/test_cache.py": "def test_ttl_clamps_both_bounds():\n    assert bounded_ttl(1, 10, 90) == 10\n    assert bounded_ttl(120, 10, 90) == 90\n"
+      },
+      "id": "synthetic-cache-worker"
+    },
+    {
+      "episodes": [
+        {
+          "family": "source_localization",
+          "id": "batch-01",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "def bounded_batch_size(",
+              "return max(requested, minimum)"
+            ]
+          },
+          "query_template": "symbol:{symbol}",
+          "request": "Return the exact function name that clamps the requested batch size and cite its defining source line.",
+          "required_path": "src/batch.py",
+          "symbol": "bounded_batch_size"
+        },
+        {
+          "family": "bounded_code_repair",
+          "id": "batch-02",
+          "keys": "minimum_size maximum_size",
+          "oracle": {
+            "cases": [
+              [
+                0,
+                5,
+                50,
+                5,
+                5
+              ],
+              [
+                5,
+                5,
+                50,
+                5,
+                5
+              ],
+              [
+                19,
+                5,
+                50,
+                5,
+                15
+              ],
+              [
+                57,
+                5,
+                50,
+                5,
+                50
+              ]
+            ],
+            "function": "bounded_batch_size",
+            "kind": "python_function_cases",
+            "signature": [
+              "requested",
+              "minimum",
+              "maximum",
+              "quantum"
+            ]
+          },
+          "query_template": "symbol:{symbol} ingest configuration {keys} batching quantum rule",
+          "request": "Extend bounded_batch_size(requested, minimum, maximum, quantum) to round requested down to a quantum multiple, then clamp into the inclusive configured range. Return only the complete function.",
+          "required_paths": [
+            "src/batch.py",
+            "config/ingest.toml"
+          ],
+          "symbol": "bounded_batch_size"
+        },
+        {
+          "family": "test_log_diagnosis",
+          "id": "batch-03",
+          "oracle": {
+            "kind": "required_evidence",
+            "quotes": [
+              "test_batch_size_clamps_requested_value",
+              "assert bounded_batch_size(80, 5, 50) == 50",
+              "return max(requested, minimum)",
+              "maximum_size = 50",
+              "requested=80 yielded_size=80"
+            ],
+            "required_answer_terms": [
+              "matches",
+              "80",
+              "50"
+            ]
+          },
+          "query_template": "batch maximum boundary test failure oversized",
+          "request": "Compare the batch incident claim with the supplied test and implementation. State whether the evidence reproduces the reported failure, then cite the exact test and code lines.",
+          "required_paths": [
+            "logs/batch-incident.log",
+            "tests/test_batch.py",
+            "src/batch.py",
+            "config/ingest.toml"
+          ]
+        },
+        {
+          "family": "configuration_documentation",
+          "id": "batch-04",
+          "keys": "minimum_size maximum_size flush_interval_seconds",
+          "oracle": {
+            "kind": "exact_json",
+            "value": {
+              "flush_interval_seconds": 2,
+              "maximum_size": 50,
+              "minimum_size": 5,
+              "source": "config/ingest.toml"
+            }
+          },
+          "query_template": "ingest configuration {keys}",
+          "request": "Return the configured batch minimum, maximum, and flush interval as JSON with exact integer values and source path.",
+          "required_path": "config/ingest.toml"
+        }
+      ],
+      "files": {
+        "config/ingest.toml": "[batch]\nminimum_size = 5\nmaximum_size = 50\nquantum = 5\nflush_interval_seconds = 2\n\n[dead_letter]\nenabled = true\n",
+        "logs/batch-incident.log": "BATCH-09: report says requested=80 yielded_size=80 with configured_maximum=50.\n",
+        "src/batch.py": "def bounded_batch_size(requested, minimum, maximum):\n    return max(requested, minimum)\n\ndef should_retry_row(error_code):\n    return error_code in {\"TEMPORARY\", \"THROTTLED\"}\n",
+        "tests/test_batch.py": "def test_batch_size_clamps_requested_value():\n    assert bounded_batch_size(0, 5, 50) == 5\n    assert bounded_batch_size(80, 5, 50) == 50\n"
+      },
+      "id": "synthetic-batch-ingest"
+    }
+  ],
+  "schema": "wrench.gateway-diverse-pilot.v1"
+}

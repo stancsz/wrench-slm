@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run a local four-arm mechanical-worker workflow diagnostic.
+"""Replay captured traces for a local four-arm mechanical-worker diagnostic.
 
 The runner uses the same historical request, verifier, repository root, and
 decoding limits across all arms. It never grants mutation authority. The
 result is diagnostic until the trace set is replaced by the approved,
-family-disjoint real-workflow set.
+family-disjoint real-workflow set. Live teacher calls are disabled until the
+caller has an enforced aggregate budget and durable, auditable usage receipts.
 """
 
 from __future__ import annotations
@@ -14,15 +15,16 @@ import datetime as dt
 import hashlib
 import http.server
 import json
+import math
 import os
 import statistics
 import subprocess
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -95,25 +97,47 @@ def _abstain(reason: str, detail: str | None = None) -> dict[str, Any]:
     return result
 
 
-def _usage_tokens(usage: Any) -> int:
+def _usage_tokens(usage: Any) -> int | None:
     if not isinstance(usage, dict):
-        return 0
+        return None
     value = usage.get("total_tokens")
-    return int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
+    return value if type(value) is int and value >= 0 else None
 
 
-def _cost_usd(usage: Any) -> float:
+def _complete_usage_record(usage: Any) -> bool:
     if not isinstance(usage, dict):
-        return 0.0
-    value = usage.get("cost")
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return float(value)
-    details = usage.get("cost_details")
-    if isinstance(details, dict):
-        value = details.get("upstream_inference_cost")
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            return float(value)
-    return 0.0
+        return False
+    values = (usage.get("prompt_tokens"), usage.get("completion_tokens"), usage.get("total_tokens"))
+    if any(type(value) is not int or value < 0 for value in values):
+        return False
+    prompt_tokens, completion_tokens, total_tokens = values
+    return total_tokens > 0 and prompt_tokens + completion_tokens == total_tokens
+
+
+def _is_subroute_endpoint(endpoint: Any) -> bool:
+    if not isinstance(endpoint, str):
+        return False
+    try:
+        return urlsplit(endpoint).port == 4000
+    except ValueError:
+        return False
+
+
+def _cost_usd(usage: Any) -> float | None:
+    if not isinstance(usage, dict):
+        return None
+    if "cost" in usage:
+        value = usage["cost"]
+    else:
+        details = usage.get("cost_details")
+        value = details.get("upstream_inference_cost") if isinstance(details, dict) else None
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    try:
+        cost = float(value)
+    except (OverflowError, ValueError):
+        return None
+    return cost if math.isfinite(cost) and cost >= 0 else None
 
 
 def _proposal_from_result(result: dict[str, Any]) -> dict[str, Any] | None:
@@ -194,8 +218,8 @@ def _call_teacher(
             "result": _abstain("teacher_timeout", "hard_deadline_exceeded"),
             "usage": {},
             "latency_ms": (time.perf_counter() - started) * 1000,
-            "frontier_tokens": 0,
-            "cost_usd": 0.0,
+            "frontier_tokens": None,
+            "cost_usd": None,
             "provider_requests": 1,
             "raw_output": None,
         }
@@ -206,8 +230,8 @@ def _call_teacher(
             "result": _abstain("teacher_transport_error", "child_invalid_json"),
             "usage": {},
             "latency_ms": (time.perf_counter() - started) * 1000,
-            "frontier_tokens": 0,
-            "cost_usd": 0.0,
+            "frontier_tokens": None,
+            "cost_usd": None,
             "provider_requests": 1,
             "raw_output": None,
         }
@@ -216,8 +240,8 @@ def _call_teacher(
             "result": _abstain("teacher_transport_error", str(envelope.get("error", "child_failure"))),
             "usage": {},
             "latency_ms": (time.perf_counter() - started) * 1000,
-            "frontier_tokens": 0,
-            "cost_usd": 0.0,
+            "frontier_tokens": None,
+            "cost_usd": None,
             "provider_requests": 1,
             "raw_output": None,
         }
@@ -230,7 +254,7 @@ def _call_teacher(
         result = _abstain("teacher_response_invalid")
     else:
         result = execute_model_output(content, root, request_prompt=row["prompt"])
-        result["model"] = payload.get("model") if isinstance(payload, dict) else model
+        result["model"] = payload.get("model") if isinstance(payload, dict) else None
         result["usage"] = usage
         result["raw_model_output"] = content
         try:
@@ -298,7 +322,27 @@ def _load_teacher_capture(path: Path, cases: list[dict[str, Any]], root: str) ->
     missing = [row["id"] for row in cases if row["id"] not in captured]
     if missing:
         raise ValueError(f"teacher capture is missing {len(missing)} requested cases")
+    for row in cases:
+        item = captured[row["id"]]
+        if not _complete_usage_record(item.get("usage")):
+            raise ValueError(f"teacher capture has incomplete token usage for {row['id']}")
+        if not isinstance(item.get("response_model"), str) or not item["response_model"].strip():
+            raise ValueError(f"teacher capture is missing the response model for {row['id']}")
     return {row["id"]: _teacher_from_capture(captured[row["id"]], row, root) for row in cases}
+
+
+def _captured_response_model(teacher_by_id: dict[str, dict[str, Any]]) -> str:
+    models = {
+        item.get("result", {}).get("model")
+        for item in teacher_by_id.values()
+        if isinstance(item, dict) and isinstance(item.get("result"), dict)
+    }
+    if len(models) != 1:
+        raise ValueError("teacher capture has mixed or missing response model identities")
+    model = next(iter(models))
+    if not isinstance(model, str) or not model.strip():
+        raise ValueError("teacher capture has an invalid response model identity")
+    return model
 
 
 def _rule_result(row: dict[str, Any], root: str) -> dict[str, Any] | None:
@@ -418,9 +462,9 @@ def _arm_record(
     row: dict[str, Any],
     *,
     latency_ms: float,
-    frontier_tokens: int,
-    local_tokens: int = 0,
-    cost_usd: float = 0.0,
+    frontier_tokens: int | None,
+    local_tokens: int | None = 0,
+    cost_usd: float | None,
     provider_requests: int = 0,
     fallback_used: bool = False,
     source: str,
@@ -434,8 +478,8 @@ def _arm_record(
         "frontier_tokens": frontier_tokens,
         "local_tokens": local_tokens,
         "latency_ms": round(latency_ms, 3),
-        "total_tokens": frontier_tokens + local_tokens,
-        "cost_usd": round(cost_usd, 8),
+        "total_tokens": frontier_tokens + local_tokens if frontier_tokens is not None and local_tokens is not None else None,
+        "cost_usd": round(cost_usd, 8) if cost_usd is not None else None,
         "provider_requests": provider_requests,
         "observed_status": result.get("status"),
         "observed_fallback_reason": result.get("fallback_reason"),
@@ -445,6 +489,14 @@ def _arm_record(
 
 
 def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
+    if getattr(args, "teacher_traces", None) is None:
+        raise RuntimeError(
+            "live_teacher_calls_disabled_until_aggregate_budget_and_durable_usage_receipts_are_enforced"
+        )
+    if _is_subroute_endpoint(getattr(args, "wrench_endpoint", None)):
+        raise RuntimeError(
+            "diagnostic_wrench_calls_to_subroute_4000_disabled_until_aggregate_budget_and_durable_usage_receipts_are_enforced"
+        )
     rows = [json.loads(line) for line in args.cases.read_text(encoding="utf-8").splitlines() if line.strip()]
     if args.limit is not None:
         rows = rows[: args.limit]
@@ -452,25 +504,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         raise ValueError("no cases")
     root = str(args.root.resolve())
     traces: list[dict[str, Any]] = []
-    if args.teacher_traces:
-        teacher_by_id = _load_teacher_capture(args.teacher_traces, rows, root)
-    else:
-        teacher_by_id = {}
-        with ThreadPoolExecutor(max_workers=args.teacher_workers) as pool:
-            futures = {
-                pool.submit(
-                    _call_teacher,
-                    args.teacher_endpoint,
-                    args.teacher_model,
-                    row,
-                    root,
-                    timeout=args.timeout,
-                    max_tokens=args.teacher_max_tokens,
-                ): row["id"]
-                for row in rows
-            }
-            for future in as_completed(futures):
-                teacher_by_id[futures[future]] = future.result()
+    teacher_by_id = _load_teacher_capture(args.teacher_traces, rows, root)
+    teacher_response_model = _captured_response_model(teacher_by_id)
     for row in rows:
         teacher = teacher_by_id[row["id"]]
         teacher_result = teacher["result"]
@@ -480,8 +515,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         if rule is None:
             rule = teacher
             rule_source = "teacher_fallback"
-            rule_frontier = int(rule["frontier_tokens"])
-            rule_cost = float(rule["cost_usd"])
+            rule_frontier = rule["frontier_tokens"]
+            rule_cost = rule["cost_usd"]
             rule_requests = int(rule["provider_requests"])
             rule_result = rule["result"]
         else:
@@ -517,8 +552,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         else:
             fallback = teacher
             wrench_final = fallback["result"]
-            wrench_frontier = int(fallback["frontier_tokens"])
-            wrench_cost = float(fallback["cost_usd"])
+            wrench_frontier = fallback["frontier_tokens"]
+            wrench_cost = fallback["cost_usd"]
             wrench_requests = int(fallback["provider_requests"])
             wrench_latency = float(wrench_local["latency_ms"]) + float(fallback["latency_ms"])
             wrench_fallback = True
@@ -533,15 +568,15 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
                 "family": row["family"],
                 "category": row.get("category", "unknown"),
                 "split": row.get("split", "unknown"),
-                "model_input_tokens": int((teacher.get("usage") or {}).get("prompt_tokens", max(1, len(row["prompt"]) // 4))),
+                "model_input_tokens": int(teacher["usage"]["prompt_tokens"]),
                 "workload_weight": max(1.0, float(teacher["frontier_tokens"] or 1)),
                 "arms": {
                     "minimax_teacher_only": _arm_record(
                         teacher_result,
                         row,
                         latency_ms=float(teacher["latency_ms"]),
-                        frontier_tokens=int(teacher["frontier_tokens"]),
-                        cost_usd=float(teacher["cost_usd"]),
+                        frontier_tokens=teacher["frontier_tokens"],
+                        cost_usd=teacher["cost_usd"],
                         provider_requests=int(teacher["provider_requests"]),
                         source="teacher_only",
                     ),
@@ -560,7 +595,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
                         row,
                         latency_ms=wrench_latency,
                         frontier_tokens=wrench_frontier,
-                        local_tokens=int(wrench_local.get("local_tokens", 0)),
+                        local_tokens=wrench_local.get("local_tokens", 0),
                         cost_usd=wrench_cost,
                         provider_requests=wrench_requests,
                         fallback_used=wrench_fallback,
@@ -571,7 +606,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
                         row,
                         latency_ms=float(diagnostic["latency_ms"]),
                         frontier_tokens=0,
-                        local_tokens=int(diagnostic.get("local_tokens", 0)),
+                        local_tokens=diagnostic.get("local_tokens", 0),
+                        cost_usd=0.0,
                         source="wrench_only",
                     ),
                 },
@@ -583,7 +619,22 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
         "schema": "wrench.mechanical-worker-traces.v1",
         "status": "DIAGNOSTIC_HISTORICAL_WORKFLOW_ARMS",
         "authorization": "pending_human_approval",
-        "teacher": {"endpoint": args.teacher_endpoint, "model": args.teacher_model, "identity_status": "endpoint_id_recorded"},
+        "teacher": {
+            "endpoint": args.teacher_endpoint,
+            "requested_model_alias": args.teacher_model,
+            "response_model": teacher_response_model,
+            "identity_status": "response_model_recorded_provider_receipt_required",
+        },
+        "response_usage_cost_field_completeness": (
+            "complete"
+            if all(
+                arm["provider_requests"] == 0 or arm["cost_usd"] is not None
+                for trace in traces
+                for arm in trace["arms"].values()
+            )
+            else "incomplete_missing_response_cost_field"
+        ),
+        "all_in_cost_status": "not_measured_provider_billing_and_local_compute_accounting_not_bound",
         "wrench": {"endpoint": args.wrench_endpoint, "model": args.wrench_model},
         "client_mechanical_fast_path": not args.disable_client_mechanical_fast_path,
         "input_path": str(args.cases.resolve()),
@@ -631,6 +682,14 @@ def main() -> int:
         help="send every Wrench-arm request to the configured HTTP endpoint",
     )
     args = parser.parse_args()
+    if args.teacher_traces is None:
+        parser.error(
+            "live teacher requests are disabled until aggregate spend enforcement and durable usage receipts are implemented"
+        )
+    if _is_subroute_endpoint(args.wrench_endpoint):
+        parser.error(
+            "Wrench-arm requests may not use SubRoute :4000 until aggregate spend enforcement and durable usage receipts are implemented"
+        )
     if not 1 <= args.teacher_workers <= 16:
         raise ValueError("teacher-workers must be between 1 and 16")
     fixture = _HealthFixture(args.health_fixture, args.health_fixture_port)

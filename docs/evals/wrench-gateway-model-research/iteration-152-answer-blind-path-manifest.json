@@ -1,0 +1,21 @@
+{
+  "schema": "wrench.answer-blind-source-path-manifest.v1",
+  "fixture_sha256": "92debc627977cf5370e51a52943442f816c293984cc991a9cf3fae661f055be1",
+  "cases": {
+    "retry-policy": {
+      "request_sha256": "3743f6c8c8a901def0f226ff0f7d7eb6a826afe371fc3490a7a08f703ed37769",
+      "source_paths": ["config/service.toml"],
+      "annotation_basis": "request_and_repository_path_review_before_this_run"
+    },
+    "session-lifetime": {
+      "request_sha256": "12be79d732a7b6860b404e7cbd3072f470e33b45606794d8aa4fb51c44a745df",
+      "source_paths": ["config/service.toml"],
+      "annotation_basis": "request_and_repository_path_review_before_this_run"
+    },
+    "retry-function": {
+      "request_sha256": "1e0255c7493bc5e6564e8a3541e51b0d15fa9edbf735520055872b854b93340c",
+      "source_paths": ["src/retry.py"],
+      "annotation_basis": "request_and_repository_path_review_before_this_run"
+    }
+  }
+}

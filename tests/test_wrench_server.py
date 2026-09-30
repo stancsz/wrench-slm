@@ -651,6 +651,64 @@ def test_model_local_server_verifies_native_upstream_before_returning(tmp_path: 
         upstream_thread.join(timeout=5)
 
 
+def test_frontier_usage_receipt_fails_closed_on_empty_or_partial_retry_usage():
+    attempts = [
+        {
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 5,
+                "total_tokens": 105,
+                "cost": 0.0001,
+            }
+        },
+        {"usage": {"cost": 0.001}},
+    ]
+
+    usage = server_module._frontier_usage_receipt(attempts)
+    accounting = server_module._cost_accounting_receipt(
+        {
+            "model_calls": 2,
+            "frontier_model_calls": 2,
+            "frontier_usage": usage,
+        },
+        raw_tokens=200,
+        completion_tokens=0,
+        elapsed_ms=10,
+    )
+
+    assert usage["attempt_count"] == 2
+    assert usage["usage_attempt_count"] == 1
+    assert usage["missing_usage_attempt_count"] == 1
+    assert usage["usage_complete"] is False
+    assert usage["prompt_tokens"] is None
+    assert usage["completion_tokens"] is None
+    assert usage["total_tokens"] is None
+    assert usage["cost_complete"] is True
+    assert usage["cost"] == 0.0011
+    assert accounting["frontier_usage_missing_calls"] == 1
+    assert accounting["frontier_tokens"] is None
+    assert accounting["total_workflow_tokens"] is None
+    assert accounting["frontier_cost_usd"] == 0.0011
+
+    from wrench_harness.client import _client_retry_accounting_receipt
+
+    client = _client_retry_accounting_receipt(
+        [{"response_status": "received", "cost_accounting": accounting}]
+    )
+    assert client["accounting_complete"] is False
+    assert client["frontier_tokens"] is None
+
+    absent = server_module._cost_accounting_receipt(
+        {"model_calls": 1, "frontier_model_calls": 1},
+        raw_tokens=200,
+        completion_tokens=0,
+        elapsed_ms=10,
+    )
+    assert absent["frontier_usage_missing_calls"] == 1
+    assert absent["frontier_tokens"] is None
+    assert absent["total_workflow_tokens"] is None
+
+
 def test_native_upstream_receives_staged_prefill_for_monster_payload(
     tmp_path: Path, monkeypatch
 ):
@@ -750,6 +808,10 @@ def test_native_upstream_receives_staged_prefill_for_monster_payload(
         assert body["wrench"]["dynamic_prefill"]["raw_token_count"] > staged_tokens
         assert body["wrench"]["dynamic_prefill"]["native_input_claim"] is False
         assert body["wrench"]["dynamic_prefill"]["server_staging_elapsed_ms"] >= 0
+        assert body["wrench"]["dynamic_prefill"]["native_backend_usage_available"] is False
+        assert body["wrench"]["cost_accounting"]["frontier_usage_missing_calls"] == 1
+        assert body["wrench"]["cost_accounting"]["frontier_tokens"] is None
+        assert body["wrench"]["cost_accounting"]["total_workflow_tokens"] is None
         assert verified_prompt_lengths
         assert verified_prompt_lengths[0] <= 16_000
         assert verified_prompt_lengths[0] < len(legacy)

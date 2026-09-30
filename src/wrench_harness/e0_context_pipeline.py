@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence
 
 from .artifact_store import ArtifactHandle, ArtifactReadStatus, ArtifactRequest, ArtifactStore, ArtifactStoreError
 from .context import ContextAdmissionError, ContextLedger, ContextSelectionError
+from .execution_state import EvidenceSource, ExecutionState, stable_source_evidence_id
+from .execution_state_store import StateStoreLoadReceipt
 from .namespace_registry import NamespaceRegistry, SchemaLookupStatus
 from .outcome_receipt import ReceiptResult, ReceiptStatus, build_outcome_receipt
 from .prompt_compiler import (
@@ -27,10 +29,14 @@ from .prompt_compiler import (
     PromptGateStatus, _bounded_canonical_json, _is_opencode_message_shape,
     compile_prompt,
 )
-from .snapshot import RetrievalStatus, SourceRootBinding, SourceSnapshot, retrieve_exact
+from .snapshot import (
+    RetrievalStatus, SnapshotAdmissionError, SourceRootBinding, SourceSnapshot,
+    create_snapshot, retrieve_exact,
+)
 from .snapshot_structure import (
     StructuralStatus, build_snapshot_symbol_index, query_snapshot_symbols,
 )
+from .toml_context_spans import extract_toml_key_spans, extract_toml_table_spans
 
 if TYPE_CHECKING:
     from .selected_segment_sources import SelectedSourceReferenceReceipt
@@ -44,8 +50,11 @@ MAX_SOURCE_BYTES = 64 * 1024
 MAX_AGGREGATE_SOURCE_BYTES = 512 * 1024
 MAX_REFERENCES = 256
 MAX_RECEIPT_REFERENCE_BYTES = 64 * 1024
+MAX_EXECUTION_STATE_FACTS = 128
+MAX_EXECUTION_STATE_EVIDENCE_REFS = 16
 MAX_QUERY_CHARS = 256
 MAX_CONTEXT_TOKENS = 8192
+MAX_SOURCE_INGESTION_TOKENS = 65_536
 MAX_PROMPT_TOKENS = 8192
 PREPARATION_ACCOUNTING_SCHEMA = "wrench.e0.preparation-accounting.v2"
 PREPARATION_ACCOUNTING_COUNTER_FIELDS = (
@@ -157,6 +166,12 @@ class PreparationResult:
     # Ephemeral immutable bridge for a local client adapter. Never included in
     # outcome/accounting receipts or repr output.
     context_message_json: str | None = field(default=None, repr=False, compare=False)
+    execution_state_revision: int | None = None
+    execution_state_sha256: str | None = None
+    execution_state_event_sha256: str | None = None
+    execution_state_selected_fields: tuple[str, ...] = ()
+    execution_state_omitted_fields: tuple[tuple[str, str], ...] = ()
+    execution_state_evidence_verified_for_prompt: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -525,6 +540,107 @@ def _receipt_payload(
     }
 
 
+def _valid_execution_state_receipt(value: object) -> bool:
+    if type(value) is not StateStoreLoadReceipt:
+        return False
+    state = value.state
+    if (
+        type(state) is not ExecutionState
+        or type(value.event_count) is not int
+        or value.event_count != state.revision
+        or type(value.last_event_sha256) is not str
+        or len(value.last_event_sha256) != 64
+        or any(char not in "0123456789abcdef" for char in value.last_event_sha256)
+        or type(value.recovered_staged_event) is not bool
+        or type(value.current_evidence_verified) is not bool
+        or type(value.ignored_staging_files) is not tuple
+        or len(value.ignored_staging_files) > 16
+        or any(type(name) is not str or not name or len(name) > 128 for name in value.ignored_staging_files)
+        or len(state.facts or {}) > MAX_EXECUTION_STATE_FACTS
+    ):
+        return False
+    evidence_ids = {
+        ref.evidence_id
+        for fact in (state.facts or {}).values()
+        for ref in fact.evidence
+    }
+    if len(evidence_ids) > MAX_EXECUTION_STATE_EVIDENCE_REFS:
+        return False
+    return True
+
+
+def _execution_state_source_namespace(snapshot: SourceSnapshot) -> str | None:
+    if (
+        type(snapshot.root_location_sha256) is not str
+        or len(snapshot.root_location_sha256) != 64
+        or type(snapshot.root_identity) is not str
+    ):
+        return None
+    return _canonical_digest([
+        "wrench.e0-source-namespace.v1",
+        snapshot.root_location_sha256,
+        snapshot.root_identity,
+    ])
+
+
+def execution_state_evidence_manifest(
+    snapshot: SourceSnapshot,
+) -> tuple[dict[str, str], dict[str, EvidenceSource]]:
+    """Return path-and-content identities for validated caller-owned sources.
+
+    The source namespace is stable across snapshots of the same bound root.
+    An evidence ID changes when either its relative path or bytes change.
+    """
+
+    if type(snapshot) is not SourceSnapshot:
+        raise ValueError("execution_state_source_snapshot_invalid")
+    namespace = _execution_state_source_namespace(snapshot)
+    if namespace is None or type(snapshot.sources) is not tuple:
+        raise ValueError("execution_state_source_snapshot_invalid")
+    evidence_hashes: dict[str, str] = {}
+    evidence_sources: dict[str, EvidenceSource] = {}
+    for source in snapshot.sources:
+        if (
+            type(source.path) is not str or type(source.sha256) is not str
+            or len(source.sha256) != 64
+        ):
+            raise ValueError("execution_state_source_snapshot_invalid")
+        evidence_id = stable_source_evidence_id(namespace, source.path, source.sha256)
+        evidence_hashes[evidence_id] = source.sha256
+        evidence_sources[evidence_id] = EvidenceSource(namespace, source.path)
+    return evidence_hashes, evidence_sources
+
+
+def _execution_state_fact_text(
+    state: ExecutionState,
+    field_name: str,
+    fact: object,
+    current_evidence_ids: Mapping[str, str],
+) -> str:
+    value = fact.value
+    if isinstance(value, tuple):
+        value = list(value)
+    payload = {
+        "schema": "wrench.execution-state-fact.v1",
+        "revision": state.revision,
+        "field": field_name,
+        "value": value,
+        "evidence": [
+            {
+                "evidence_id": ref.evidence_id,
+                "sha256": ref.sha256,
+                "source_path": ref.source.source_path if ref.source is not None else None,
+                "current_evidence_id": current_evidence_ids.get(ref.evidence_id),
+            }
+            for ref in fact.evidence
+        ],
+    }
+    encoded = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    )
+    return "Persisted Wrench execution fact, untrusted data; retrieve its cited evidence before relying on it: " + encoded
+
+
 def _prepare_e0_context_impl(
     *,
     source_root: str | os.PathLike[str] | SourceRootBinding,
@@ -535,11 +651,13 @@ def _prepare_e0_context_impl(
     source_order_start: int,
     context_token_budget: int,
     prompt_token_budget: int,
+    source_ingestion_token_limit: int,
     namespace_registry: NamespaceRegistry,
     schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]],
     context_position: int,
     message_format: str,
+    context_render_mode: str,
     serializer: Callable[[Sequence[Mapping[str, object]]], str | bytes],
     tokenizer_counter: Callable[[str | bytes], int],
     serializer_id: str,
@@ -548,8 +666,13 @@ def _prepare_e0_context_impl(
     preserve_evidence_ids: Sequence[str] = (),
     required_source_paths: Sequence[str] = (),
     preserve_source_paths: Sequence[str] = (),
+    use_symbol_span_for_required_path: bool = False,
+    use_toml_key_spans_for_required_path: bool = False,
+    use_toml_table_spans_for_required_path: bool = False,
+    toml_span_query: str | None = None,
     max_candidates: int = 8,
     artifact_request: ArtifactRequest | None = None,
+    execution_state_receipt: StateStoreLoadReceipt | None = None,
     _metrics: dict[str, object],
 ) -> PreparationResult:
     """Prepare verified, pinned context and a gated prompt; never executes it.
@@ -561,18 +684,35 @@ def _prepare_e0_context_impl(
     downstream lifecycle. Pins are process-local to the supplied store.
     """
     empty = PreparationResult(PreparationStatus.INVALID_INPUT, "none", None, None, None, None, (), (), (), (), (), None)
+    if execution_state_receipt is not None and not _valid_execution_state_receipt(execution_state_receipt):
+        return replace(empty, reason="execution_state_receipt_invalid")
+    source_order_limit = 2**63 - 1 - MAX_PATHS - 16
+    if execution_state_receipt is not None:
+        source_order_limit -= MAX_EXECUTION_STATE_FACTS + MAX_EXECUTION_STATE_EVIDENCE_REFS
     if (
         type(snapshot) is not SourceSnapshot or type(store) is not ArtifactStore
         or type(namespace_registry) is not NamespaceRegistry
         or type(paths) not in (tuple, list) or not 1 <= len(paths) <= MAX_PATHS
         or type(schema_lookups) not in (tuple, list) or len(schema_lookups) > MAX_SCHEMA_LOOKUPS
         or type(query) is not str or not query or len(query) > MAX_QUERY_CHARS
-        or type(source_order_start) is not int or not 0 <= source_order_start <= (2**63 - 1 - MAX_PATHS - 16)
+        or type(source_order_start) is not int or not 0 <= source_order_start <= source_order_limit
         or type(context_token_budget) is not int or not 1 <= context_token_budget <= MAX_CONTEXT_TOKENS
+        or type(source_ingestion_token_limit) is not int
+        or not context_token_budget <= source_ingestion_token_limit <= MAX_SOURCE_INGESTION_TOKENS
         or type(prompt_token_budget) is not int or not 1 <= prompt_token_budget <= MAX_PROMPT_TOKENS
         or type(max_candidates) is not int or not 1 <= max_candidates <= 16
         or type(context_position) is not int or not 0 <= context_position <= MAX_BASE_MESSAGES
-        or type(message_format) is not str or message_format not in ("generic", "opencode-2.0.15")
+        or type(message_format) is not str or message_format not in (
+            "generic", "opencode-2.0.12", "opencode-2.0.15"
+        )
+        or type(use_symbol_span_for_required_path) is not bool
+        or type(use_toml_key_spans_for_required_path) is not bool
+        or type(use_toml_table_spans_for_required_path) is not bool
+        or (use_toml_key_spans_for_required_path and use_toml_table_spans_for_required_path)
+        or (
+            toml_span_query is not None
+            and (type(toml_span_query) is not str or not toml_span_query or len(toml_span_query) > MAX_QUERY_CHARS)
+        )
     ):
         return empty
     if artifact_request is not None and (
@@ -593,6 +733,13 @@ def _prepare_e0_context_impl(
     preserve_evidence_ids = owned_preserve_ids
     required_source_paths = owned_required_paths
     preserve_source_paths = owned_preserve_paths
+    symbol_targeted_query = query.startswith("symbol:")
+    query_for_context = query
+    if symbol_targeted_query:
+        query_for_context = query[len("symbol:"):].strip()
+        if not query_for_context or not query_for_context.isidentifier():
+            return empty
+    query_for_toml_spans = toml_span_query if toml_span_query is not None else query_for_context
     if any(type(path) is not str or not path or len(path) > 1024 for path in paths):
         return empty
     if len(set(paths)) != len(paths):
@@ -621,11 +768,113 @@ def _prepare_e0_context_impl(
         return empty
     if not set(required_source_paths).issubset(paths) or not set(preserve_source_paths).issubset(paths):
         return empty
+
+    execution_state_source_paths: dict[str, str] = {}
+    original_snapshot = snapshot
+    if execution_state_receipt is not None:
+        namespace = _execution_state_source_namespace(snapshot)
+        if namespace is None:
+            return replace(
+                empty, status=PreparationStatus.CONTEXT_FAILED,
+                reason="execution_state_source_namespace_unavailable",
+            )
+        snapshot_sources_by_path = {source.path: source for source in snapshot.sources}
+        state_source_paths: list[str] = []
+        for fact in (execution_state_receipt.state.facts or {}).values():
+            for ref in fact.evidence:
+                if ref.source is not None:
+                    if (
+                        ref.source.source_namespace_sha256 != namespace
+                        or stable_source_evidence_id(namespace, ref.source.source_path, ref.sha256)
+                        != ref.evidence_id
+                    ):
+                        return replace(
+                            empty, status=PreparationStatus.CONTEXT_FAILED,
+                            reason="execution_state_source_namespace_mismatch",
+                            execution_state_revision=execution_state_receipt.state.revision,
+                            execution_state_sha256=execution_state_receipt.state.sha256,
+                            execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                        )
+                    path = ref.source.source_path
+                else:
+                    # Legacy state IDs can be resolved only against the exact
+                    # snapshot that created them. New state uses stable refs.
+                    legacy = next((
+                        source for source in snapshot.sources
+                        if source.sha256 == ref.sha256
+                        and _evidence_id(snapshot.snapshot_sha256, source.path, source.sha256)
+                        == ref.evidence_id
+                    ), None)
+                    if legacy is None:
+                        return replace(
+                            empty, status=PreparationStatus.CONTEXT_FAILED,
+                            reason="execution_state_evidence_unavailable",
+                            execution_state_revision=execution_state_receipt.state.revision,
+                            execution_state_sha256=execution_state_receipt.state.sha256,
+                            execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                        )
+                    path = legacy.path
+                execution_state_source_paths[ref.evidence_id] = path
+                if path not in state_source_paths:
+                    state_source_paths.append(path)
+
+        effective_paths = tuple(dict.fromkeys((*paths, *state_source_paths)))
+        if len(effective_paths) > MAX_PATHS + MAX_EXECUTION_STATE_EVIDENCE_REFS:
+            return replace(
+                empty, status=PreparationStatus.CONTEXT_FAILED,
+                reason="execution_state_source_path_limit_exceeded",
+                execution_state_revision=execution_state_receipt.state.revision,
+                execution_state_sha256=execution_state_receipt.state.sha256,
+                execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+            )
+        missing_snapshot_paths = tuple(
+            path for path in state_source_paths if path not in snapshot_sources_by_path
+        )
+        if missing_snapshot_paths:
+            try:
+                expanded_snapshot = create_snapshot(source_root, effective_paths)
+            except (SnapshotAdmissionError, OSError, TypeError, ValueError):
+                return replace(
+                    empty, status=PreparationStatus.CONTEXT_FAILED,
+                    reason="execution_state_evidence_unavailable",
+                    execution_state_revision=execution_state_receipt.state.revision,
+                    execution_state_sha256=execution_state_receipt.state.sha256,
+                    execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                )
+            if (
+                expanded_snapshot.root_location_sha256 != original_snapshot.root_location_sha256
+                or expanded_snapshot.root_identity != original_snapshot.root_identity
+            ):
+                return replace(
+                    empty, status=PreparationStatus.CONTEXT_FAILED,
+                    reason="execution_state_source_root_changed",
+                    execution_state_revision=execution_state_receipt.state.revision,
+                    execution_state_sha256=execution_state_receipt.state.sha256,
+                    execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                )
+            expanded_by_path = {source.path: source for source in expanded_snapshot.sources}
+            if any(
+                path not in snapshot_sources_by_path
+                or path not in expanded_by_path
+                or snapshot_sources_by_path[path].sha256 != expanded_by_path[path].sha256
+                or snapshot_sources_by_path[path].size_bytes != expanded_by_path[path].size_bytes
+                for path in paths
+            ):
+                return replace(
+                    empty, status=PreparationStatus.CONTEXT_FAILED,
+                    reason="source_snapshot_changed_during_state_reacquisition",
+                    execution_state_revision=execution_state_receipt.state.revision,
+                    execution_state_sha256=execution_state_receipt.state.sha256,
+                    execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                )
+            snapshot = expanded_snapshot
+        paths = effective_paths
+
     if type(base_messages) not in (tuple, list) or not 1 <= len(base_messages) <= MAX_BASE_MESSAGES:
         return empty
     if context_position > len(base_messages) or any(
         type(message) is not dict
-        or (message_format == "opencode-2.0.15" and not _is_opencode_message_shape(message))
+        or (message_format in ("opencode-2.0.12", "opencode-2.0.15") and not _is_opencode_message_shape(message))
         for message in base_messages
     ):
         return empty
@@ -637,13 +886,21 @@ def _prepare_e0_context_impl(
     source_rows: list[SourceIdentity] = []
     misses: list[tuple[str, str]] = []
     valid_paths: list[str] = []
+    source_text_by_path: dict[str, str] = {}
     # The ledger stores caller-selected bounded sources; the smaller active
     # assembly budget is applied later by assemble().
-    ledger = ContextLedger(max_logical_tokens=MAX_CONTEXT_TOKENS)
+    ledger = ContextLedger(max_logical_tokens=source_ingestion_token_limit)
     schema_rows: list[tuple[str, str, str]] = []
     path_evidence: dict[str, str] = {}
+    symbol_span_ids_by_path: dict[str, str] = {}
+    toml_span_candidates_by_path: dict[str, tuple[object, ...]] = {}
+    toml_span_ids_by_path: dict[str, tuple[str, ...]] = {}
+    toml_span_candidates: list[object] = []
     selected: tuple[str, ...] = ()
     omitted: tuple[tuple[str, str], ...] = ()
+    execution_state_segment_fields: dict[str, str] = {}
+    execution_state_selected_fields: tuple[str, ...] = ()
+    execution_state_omitted_fields: tuple[tuple[str, str], ...] = ()
     structural_status: str | None = None
     prompt_result = None
     aggregate_hash: str | None = None
@@ -719,13 +976,66 @@ def _prepare_e0_context_impl(
                     or pinned.data != raw or roundtrip.data != raw or _sha(roundtrip.data or b"") != digest
                 ):
                     raise ArtifactStoreError("artifact_roundtrip_mismatch")
-                ledger.add_segment(evidence_id, text, source_order_start + len(valid_paths), kind="source", retention="hot" if raw_path in preserve_source_paths else "warm", metadata={"snapshot_sha256": snapshot.snapshot_sha256, "source_path": path, "content_sha256": digest, "artifact_handle_id": handle.handle_id})
             except (ArtifactStoreError, OSError, ValueError, ContextAdmissionError) as exc:
                 failure_status = PreparationStatus.CONTEXT_FAILED if isinstance(exc, ContextAdmissionError) else PreparationStatus.STORE_FAILED
                 return PreparationResult(failure_status, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), (), None, type(exc).__name__)
             source_rows.append(SourceIdentity(evidence_id, path, digest, handle.handle_id, "ok"))
             valid_paths.append(path)
+            source_text_by_path[path] = text
             admitted_source_bytes += len(raw)
+
+        execution_state_evidence_ids: set[str] = set()
+        execution_state_current_evidence_ids: dict[str, str] = {}
+        if execution_state_receipt is not None:
+            current_source_by_path = {
+                row.path: row for row in source_rows if row.status == "ok"
+            }
+            namespace = _execution_state_source_namespace(snapshot)
+            for fact in (execution_state_receipt.state.facts or {}).values():
+                for ref in fact.evidence:
+                    source_path = execution_state_source_paths.get(ref.evidence_id)
+                    source = current_source_by_path.get(source_path or "")
+                    valid_source = (
+                        source is not None
+                        and source.content_sha256 == ref.sha256
+                        and (
+                            (
+                                ref.source is None
+                                and _evidence_id(
+                                    original_snapshot.snapshot_sha256,
+                                    source_path or "",
+                                    ref.sha256,
+                                ) == ref.evidence_id
+                            )
+                            or (
+                                ref.source is not None
+                                and namespace is not None
+                                and ref.source.source_namespace_sha256 == namespace
+                                and stable_source_evidence_id(namespace, source_path or "", ref.sha256)
+                                == ref.evidence_id
+                            )
+                        )
+                    )
+                    if not valid_source or source is None:
+                        return PreparationResult(
+                            PreparationStatus.CONTEXT_FAILED, "none", None, None, None, None,
+                            tuple(source_rows), (), (), tuple(misses), (), None,
+                            "execution_state_evidence_unavailable",
+                            execution_state_revision=execution_state_receipt.state.revision,
+                            execution_state_sha256=execution_state_receipt.state.sha256,
+                            execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                        )
+                    execution_state_evidence_ids.add(source.evidence_id)
+                    execution_state_current_evidence_ids[ref.evidence_id] = source.evidence_id
+            if len(execution_state_current_evidence_ids) > MAX_EXECUTION_STATE_EVIDENCE_REFS:
+                return PreparationResult(
+                    PreparationStatus.CONTEXT_FAILED, "none", None, None, None, None,
+                    tuple(source_rows), (), (), tuple(misses), (), None,
+                    "execution_state_evidence_reference_limit_exceeded",
+                    execution_state_revision=execution_state_receipt.state.revision,
+                    execution_state_sha256=execution_state_receipt.state.sha256,
+                    execution_state_event_sha256=execution_state_receipt.last_event_sha256,
+                )
 
         if not valid_paths:
             final_status = PreparationStatus.SOURCE_MISSES
@@ -747,7 +1057,7 @@ def _prepare_e0_context_impl(
                 _metrics["structural_index_symbol_count"] = indexed.index.symbol_count
                 _metrics["structural_index_serialized_bytes"] = indexed.index.serialized_bytes
                 _metrics["structural_index_query_attempts"] = int(_metrics["structural_index_query_attempts"]) + 1
-                candidate_result = query_snapshot_symbols(indexed.index, query, limit=max_candidates)
+                candidate_result = query_snapshot_symbols(indexed.index, query_for_context, limit=max_candidates)
                 _metrics["structural_index_query_status"] = candidate_result.status.value
                 _metrics["structural_index_candidate_count"] = len(candidate_result.candidates)
                 if candidate_result.status not in (StructuralStatus.OK, StructuralStatus.NO_MATCHES):
@@ -756,7 +1066,307 @@ def _prepare_e0_context_impl(
                 else:
                     # Candidate signatures are admitted only when every source identity matches.
                     source_by_path = {row.path: row for row in source_rows if row.status == "ok"}
+                    if (
+                        use_toml_key_spans_for_required_path
+                        or use_toml_table_spans_for_required_path
+                    ) and (not symbol_targeted_query or toml_span_query is not None):
+                        from .snapshot_structure import StructuralCandidate
+
+                        config_path_candidates: dict[str, tuple[object, ...]] = {}
+                        for config_path in required_source_paths:
+                            if config_path in preserve_source_paths or not config_path.lower().endswith(".toml"):
+                                continue
+                            source = source_by_path.get(config_path)
+                            source_text = source_text_by_path.get(config_path)
+                            if source is None or source_text is None:
+                                continue
+                            if use_toml_table_spans_for_required_path:
+                                spans = extract_toml_table_spans(source_text, query_for_toml_spans)[:16]
+                                parser_id = "tomllib-table-v1"
+                                candidate_kind = "configuration_table"
+                            else:
+                                spans = extract_toml_key_spans(source_text, query_for_toml_spans)[:16]
+                                parser_id = "tomllib-key-v1"
+                                candidate_kind = "configuration_key"
+                            if not spans:
+                                continue
+                            path_candidates = []
+                            path_candidate_ids = []
+                            for span in spans:
+                                candidate = StructuralCandidate(
+                                    name=span.name,
+                                    kind=candidate_kind,
+                                    path=config_path,
+                                    start_line=span.start_line,
+                                    end_line=span.end_line,
+                                    signature=span.text,
+                                    match_score=span.match_score,
+                                    snapshot_sha256=snapshot.snapshot_sha256,
+                                    source_sha256=source.content_sha256,
+                                    parser=parser_id,
+                                    language="toml",
+                                )
+                                candidate_id = "symbol-" + _canonical_digest([
+                                    snapshot.snapshot_sha256,
+                                    candidate.path,
+                                    source.content_sha256,
+                                    candidate.name,
+                                    candidate.start_line,
+                                    candidate.end_line,
+                                ])
+                                path_candidates.append(candidate)
+                                path_candidate_ids.append(candidate_id)
+                                toml_span_candidates.append(candidate)
+                            config_path_candidates[config_path] = tuple(path_candidates)
+                            toml_span_ids_by_path[config_path] = tuple(path_candidate_ids)
+                        toml_span_candidates_by_path = config_path_candidates
+                    requested_symbol_name = query_for_context
+                    localized_candidate = None
+                    if symbol_targeted_query:
+                        exact_name_matches = tuple(
+                            candidate for candidate in candidate_result.candidates
+                            if candidate.name == requested_symbol_name
+                        )
+                        if len(exact_name_matches) == 1 and len(candidate_result.candidates) >= max_candidates:
+                            final_status = PreparationStatus.STRUCTURE_FAILED
+                            reason = "symbol_candidates_truncated"
+                        elif len(exact_name_matches) != 1:
+                            final_status = PreparationStatus.STRUCTURE_FAILED
+                            reason = "symbol_name_ambiguous" if exact_name_matches else "symbol_name_missing"
+                        else:
+                            localized_candidate = exact_name_matches[0]
+                            source = source_by_path.get(localized_candidate.path)
+                            source_text = source_text_by_path.get(localized_candidate.path)
+                            if (
+                                source is None or source_text is None
+                                or localized_candidate.snapshot_sha256 != snapshot.snapshot_sha256
+                                or localized_candidate.source_sha256 != source.content_sha256
+                            ):
+                                final_status = PreparationStatus.STRUCTURE_FAILED
+                                reason = "candidate_identity_mismatch"
+                            else:
+                                source_lines = source_text.splitlines(keepends=True)
+                                if not (
+                                    type(localized_candidate.start_line) is int
+                                    and type(localized_candidate.end_line) is int
+                                    and 1 <= localized_candidate.start_line
+                                    <= localized_candidate.end_line <= len(source_lines)
+                                ):
+                                    final_status = PreparationStatus.STRUCTURE_FAILED
+                                    reason = "symbol_span_unavailable"
+                                else:
+                                    localized_text = "".join(
+                                        source_lines[localized_candidate.start_line - 1:localized_candidate.end_line]
+                                    )
+                                    if not localized_text or len(localized_text.encode("utf-8")) > MAX_SOURCE_BYTES:
+                                        final_status = PreparationStatus.STRUCTURE_FAILED
+                                        reason = "symbol_span_limit_exceeded"
+                                    else:
+                                        candidate_id = "symbol-" + _canonical_digest([
+                                            snapshot.snapshot_sha256, localized_candidate.path,
+                                            source.content_sha256, localized_candidate.name,
+                                            localized_candidate.start_line, localized_candidate.end_line,
+                                        ])
+                                        symbol_span_ids_by_path[localized_candidate.path] = candidate_id
+                                        try:
+                                            ledger.add_segment(
+                                                candidate_id, localized_text,
+                                                source_order_start + len(paths),
+                                                kind="symbol_source", retention="warm",
+                                                metadata={
+                                                    "snapshot_sha256": snapshot.snapshot_sha256,
+                                                    "source_path": localized_candidate.path,
+                                                    "content_sha256": source.content_sha256,
+                                                    "artifact_handle_id": source.artifact_handle_id or "",
+                                                    "symbol_name": localized_candidate.name,
+                                                    "start_line": str(localized_candidate.start_line),
+                                                    "end_line": str(localized_candidate.end_line),
+                                                    "parser": localized_candidate.parser,
+                                                    "language": localized_candidate.language,
+                                                },
+                                            )
+                                        except ContextAdmissionError as exc:
+                                            final_status = PreparationStatus.CONTEXT_FAILED
+                                            reason = type(exc).__name__
+                    else:
+                        for source_index, source in enumerate(source_by_path.values()):
+                            source_text = source_text_by_path.get(source.path)
+                            if source_text is None:
+                                final_status = PreparationStatus.STRUCTURE_FAILED
+                                reason = "source_text_unavailable"
+                                break
+                            span_satisfies_required_path = (
+                                source.path in toml_span_ids_by_path
+                                and source.path in required_source_paths
+                                and source.path not in preserve_source_paths
+                                and source.evidence_id not in required_evidence_ids
+                                and source.evidence_id not in preserve_evidence_ids
+                                and source.evidence_id not in execution_state_evidence_ids
+                            )
+                            if span_satisfies_required_path:
+                                continue
+                            try:
+                                ledger.add_segment(
+                                    source.evidence_id, source_text,
+                                    source_order_start + source_index,
+                                    kind="source",
+                                    retention="hot" if source.path in preserve_source_paths else "warm",
+                                    metadata={
+                                        "snapshot_sha256": snapshot.snapshot_sha256,
+                                        "source_path": source.path,
+                                        "content_sha256": source.content_sha256,
+                                        "artifact_handle_id": source.artifact_handle_id or "",
+                                    },
+                                )
+                            except ContextAdmissionError as exc:
+                                final_status = PreparationStatus.CONTEXT_FAILED
+                                reason = type(exc).__name__
+                                break
+                        if final_status is PreparationStatus.READY:
+                            configuration_segment_order = 0
+                            for config_path, candidate_rows in toml_span_candidates_by_path.items():
+                                source = source_by_path[config_path]
+                                source_is_preserved = (
+                                    config_path in preserve_source_paths
+                                    or source.evidence_id in required_evidence_ids
+                                    or source.evidence_id in preserve_evidence_ids
+                                    or source.evidence_id in execution_state_evidence_ids
+                                )
+                                if source_is_preserved:
+                                    continue
+                                for candidate in candidate_rows:
+                                    candidate_id = "symbol-" + _canonical_digest([
+                                        snapshot.snapshot_sha256,
+                                        candidate.path,
+                                        candidate.source_sha256,
+                                        candidate.name,
+                                        candidate.start_line,
+                                        candidate.end_line,
+                                    ])
+                                    try:
+                                        ledger.add_segment(
+                                            candidate_id,
+                                            candidate.signature,
+                                            source_order_start + len(paths) + max_candidates + configuration_segment_order,
+                                            kind=candidate.kind,
+                                            retention="warm",
+                                            metadata={
+                                                "snapshot_sha256": snapshot.snapshot_sha256,
+                                                "source_path": candidate.path,
+                                                "content_sha256": candidate.source_sha256,
+                                                "artifact_handle_id": source.artifact_handle_id or "",
+                                                "table_name": candidate.name,
+                                                "start_line": str(candidate.start_line),
+                                                "end_line": str(candidate.end_line),
+                                                "parser": candidate.parser,
+                                                "language": candidate.language,
+                                            },
+                                        )
+                                        configuration_segment_order += 1
+                                    except ContextAdmissionError as exc:
+                                        final_status = PreparationStatus.CONTEXT_FAILED
+                                        reason = type(exc).__name__
+                                        break
+                                if final_status is not PreparationStatus.READY:
+                                    break
+                    if localized_candidate is not None and final_status is PreparationStatus.READY:
+                        whole_file_ids = (
+                            set(required_evidence_ids)
+                            | set(preserve_evidence_ids)
+                            | execution_state_evidence_ids
+                        )
+                        whole_file_paths = set(required_source_paths) | set(preserve_source_paths)
+                        if use_symbol_span_for_required_path:
+                            whole_file_paths.difference_update(
+                                set(required_source_paths)
+                                & set(symbol_span_ids_by_path)
+                                - set(preserve_source_paths)
+                            )
+                        if use_toml_key_spans_for_required_path or use_toml_table_spans_for_required_path:
+                            whole_file_paths.difference_update(
+                                set(required_source_paths)
+                                & set(toml_span_ids_by_path)
+                                - set(preserve_source_paths)
+                            )
+                        required_sources = tuple(
+                            source for source in source_by_path.values()
+                            if source.path in whole_file_paths or source.evidence_id in whole_file_ids
+                        )
+                        for source_index, source in enumerate(required_sources):
+                            source_text = source_text_by_path.get(source.path)
+                            if source_text is None:
+                                final_status = PreparationStatus.STRUCTURE_FAILED
+                                reason = "source_text_unavailable"
+                                break
+                            try:
+                                ledger.add_segment(
+                                    source.evidence_id, source_text,
+                                    source_order_start + len(paths) + max_candidates + source_index,
+                                    kind="source",
+                                    retention="hot" if source.path in preserve_source_paths else "warm",
+                                    metadata={
+                                        "snapshot_sha256": snapshot.snapshot_sha256,
+                                        "source_path": source.path,
+                                        "content_sha256": source.content_sha256,
+                                        "artifact_handle_id": source.artifact_handle_id or "",
+                                    },
+                                )
+                            except ContextAdmissionError as exc:
+                                final_status = PreparationStatus.CONTEXT_FAILED
+                                reason = type(exc).__name__
+                                break
+                        if final_status is PreparationStatus.READY:
+                            configuration_segment_order = 0
+                            for config_path, candidate_rows in toml_span_candidates_by_path.items():
+                                source = source_by_path[config_path]
+                                source_is_preserved = (
+                                    config_path in preserve_source_paths
+                                    or source.evidence_id in required_evidence_ids
+                                    or source.evidence_id in preserve_evidence_ids
+                                    or source.evidence_id in execution_state_evidence_ids
+                                )
+                                if source_is_preserved:
+                                    continue
+                                for candidate in candidate_rows:
+                                    candidate_id = "symbol-" + _canonical_digest([
+                                        snapshot.snapshot_sha256,
+                                        candidate.path,
+                                        candidate.source_sha256,
+                                        candidate.name,
+                                        candidate.start_line,
+                                        candidate.end_line,
+                                    ])
+                                    try:
+                                        ledger.add_segment(
+                                            candidate_id,
+                                            candidate.signature,
+                                            source_order_start + len(paths) + max_candidates + configuration_segment_order,
+                                            kind=candidate.kind,
+                                            retention="warm",
+                                            metadata={
+                                                "snapshot_sha256": snapshot.snapshot_sha256,
+                                                "source_path": candidate.path,
+                                                "content_sha256": candidate.source_sha256,
+                                                "artifact_handle_id": source.artifact_handle_id or "",
+                                                "table_name": candidate.name,
+                                                "start_line": str(candidate.start_line),
+                                                "end_line": str(candidate.end_line),
+                                                "parser": candidate.parser,
+                                                "language": candidate.language,
+                                            },
+                                        )
+                                        configuration_segment_order += 1
+                                    except ContextAdmissionError as exc:
+                                        final_status = PreparationStatus.CONTEXT_FAILED
+                                        reason = type(exc).__name__
+                                        break
+                                if final_status is not PreparationStatus.READY:
+                                    break
                     for index, candidate in enumerate(candidate_result.candidates):
+                        if localized_candidate is candidate:
+                            continue
+                        if final_status is not PreparationStatus.READY:
+                            break
                         source = source_by_path.get(candidate.path)
                         if (
                             source is None or candidate.snapshot_sha256 != snapshot.snapshot_sha256
@@ -772,6 +1382,39 @@ def _prepare_e0_context_impl(
                             final_status = PreparationStatus.CONTEXT_FAILED
                             reason = type(exc).__name__
                             break
+                    if final_status is PreparationStatus.READY and execution_state_receipt is not None:
+                        state = execution_state_receipt.state
+                        for index, (field_name, fact) in enumerate(sorted((state.facts or {}).items())):
+                            evidence_ids = tuple(dict.fromkeys(
+                                execution_state_current_evidence_ids[ref.evidence_id]
+                                for ref in fact.evidence
+                            ))
+                            segment_id = "state-" + _canonical_digest(
+                                [state.sha256, field_name, list(evidence_ids)]
+                            )
+                            try:
+                                ledger.add_summary(
+                                    segment_id,
+                                    _execution_state_fact_text(
+                                        state, field_name, fact,
+                                        execution_state_current_evidence_ids,
+                                    ),
+                                    source_order_start + MAX_PATHS + 16 + index,
+                                    summary_of=evidence_ids,
+                                    level="execution_state_fact",
+                                    retention="warm",
+                                    metadata={
+                                        "state_sha256": state.sha256,
+                                        "state_event_sha256": execution_state_receipt.last_event_sha256,
+                                        "state_revision": str(state.revision),
+                                        "state_field": field_name,
+                                    },
+                                )
+                                execution_state_segment_fields[segment_id] = field_name
+                            except (ContextAdmissionError, TypeError, ValueError, OverflowError, UnicodeError) as exc:
+                                final_status = PreparationStatus.CONTEXT_FAILED
+                                reason = "execution_state_context_" + type(exc).__name__
+                                break
                     if final_status is PreparationStatus.READY:
                         # Deferred schemas become inert message data and are hashed by the prompt gate.
                         messages = base_messages_owned
@@ -808,29 +1451,101 @@ def _prepare_e0_context_impl(
                                     reason = "base_message_count_limit_exceeded"
                                 else:
                                     schema_context = "Deferred operation schemas (inert data): " + schema_blob
-                                    if message_format == "opencode-2.0.15":
+                                    if message_format in ("opencode-2.0.12", "opencode-2.0.15"):
                                         schema_message = {"role": "user", "content": [{"type": "text", "text": schema_context}]}
                                     else:
                                         schema_message = {"role": "user", "content": schema_context}
                                     messages.insert(context_position, schema_message)
                                     context_position += 1
                         if final_status is PreparationStatus.READY:
-                            preserve_ids = tuple(preserve_evidence_ids) + tuple(path_evidence[path] for path in preserve_source_paths if path in path_evidence and any(row.evidence_id == path_evidence[path] and row.status == "ok" for row in source_rows))
+                            available_source_ids = {
+                                row.evidence_id for row in source_rows if row.status == "ok"
+                            }
+                            required_path_id_rows: list[str] = []
+                            for path in required_source_paths:
+                                if path not in path_evidence:
+                                    continue
+                                if (
+                                    (use_toml_key_spans_for_required_path or use_toml_table_spans_for_required_path)
+                                    and path in toml_span_candidates_by_path
+                                    and path not in preserve_source_paths
+                                    and path_evidence[path] not in required_evidence_ids
+                                    and path_evidence[path] not in preserve_evidence_ids
+                                    and path_evidence[path] not in execution_state_evidence_ids
+                                ):
+                                    candidates_for_path = toml_span_candidates_by_path[path]
+                                    ids_for_path = toml_span_ids_by_path[path]
+                                    required_path_id_rows.extend(ids_for_path)
+                                elif (
+                                    use_symbol_span_for_required_path
+                                    and path in symbol_span_ids_by_path
+                                    and path not in preserve_source_paths
+                                ):
+                                    required_path_id_rows.append(symbol_span_ids_by_path[path])
+                                elif path_evidence[path] in available_source_ids:
+                                    required_path_id_rows.append(path_evidence[path])
+                            required_path_ids = tuple(dict.fromkeys(required_path_id_rows))
+                            preserved_path_ids = tuple(
+                                path_evidence[path] for path in preserve_source_paths
+                                if path in path_evidence and path_evidence[path] in available_source_ids
+                            )
+                            # Required evidence must compete before optional retrieval
+                            # candidates consume the active context budget. The final
+                            # prompt gate remains authoritative and rejects overflow.
+                            preserve_ids = tuple(dict.fromkeys((
+                                *required_evidence_ids,
+                                *required_path_ids,
+                                *preserve_evidence_ids,
+                                *preserved_path_ids,
+                            )))
                             required_ids = tuple(dict.fromkeys((
                                 *required_evidence_ids,
-                                *(path_evidence[path] for path in required_source_paths if path in path_evidence),
+                                *required_path_ids,
                                 *preserve_ids,
                             )))
                             if len(required_ids) > MAX_REFERENCES:
                                 final_status = PreparationStatus.INVALID_INPUT
                                 reason = "required_evidence_limit_exceeded"
-                            if any(item not in {row.evidence_id for row in source_rows if row.status == "ok"} and item not in {"symbol-" + _canonical_digest([snapshot.snapshot_sha256, c.path, c.source_sha256, c.name, c.start_line, c.end_line]) for c in (candidate_result.candidates if candidate_result.status is StructuralStatus.OK else ())} for item in preserve_ids):
+                            elif any(
+                                item not in {row.evidence_id for row in source_rows if row.status == "ok"}
+                                and item not in {
+                                    "symbol-" + _canonical_digest([
+                                        snapshot.snapshot_sha256, candidate.path, candidate.source_sha256,
+                                        candidate.name, candidate.start_line, candidate.end_line,
+                                    ])
+                                    for candidate in (
+                                        *((candidate_result.candidates) if candidate_result.status is StructuralStatus.OK else ()),
+                                        *toml_span_candidates,
+                                    )
+                                }
+                                for item in preserve_ids
+                            ):
                                 final_status = PreparationStatus.CONTEXT_FAILED
                                 reason = "preserved_evidence_unknown"
                         if final_status is PreparationStatus.READY:
                             try:
                                 _metrics["ledger_assembly_attempts"] = int(_metrics["ledger_assembly_attempts"]) + 1
-                                assembly = ledger.assemble(query, active_token_budget=context_token_budget, preserve_ids=preserve_ids, on_preserved_overflow="omit", search_limit=32, receipt_detail="full")
+                                assembly = ledger.assemble(query_for_context, active_token_budget=context_token_budget, preserve_ids=preserve_ids, on_preserved_overflow="omit", search_limit=32, receipt_detail="full", include_selected_texts=context_render_mode == "compact_json_segments")
+                                selected_segment_ids = {
+                                    row["segment_id"] for row in assembly.get("selected_segments", ())
+                                    if type(row) is dict and type(row.get("segment_id")) is str
+                                }
+                                omitted_segment_reasons = {
+                                    row["segment_id"]: row["reason"]
+                                    for row in assembly.get("omitted_segments", ())
+                                    if type(row) is dict
+                                    and type(row.get("segment_id")) is str
+                                    and type(row.get("reason")) is str
+                                }
+                                execution_state_selected_fields = tuple(sorted(
+                                    field_name for segment_id, field_name in execution_state_segment_fields.items()
+                                    if segment_id in selected_segment_ids
+                                ))
+                                execution_state_omitted_fields = tuple(sorted(
+                                    (field_name, omitted_segment_reasons[segment_id])
+                                    for segment_id, field_name in execution_state_segment_fields.items()
+                                    if segment_id in omitted_segment_reasons
+                                ))
                                 _metrics["ledger_selected_count"] = len(assembly.get("selected_segments", ()))
                                 _metrics["ledger_omitted_count"] = int(assembly.get("omitted_segment_count", 0))
                                 _metrics["ledger_logical_token_count"] = assembly.get("logical_token_count")
@@ -849,7 +1564,7 @@ def _prepare_e0_context_impl(
                                     _metrics["tokenizer_callback_attempts"] = int(_metrics["tokenizer_callback_attempts"]) + 1
                                     return tokenizer_counter(value)
 
-                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, message_format=message_format, serializer=measured_serializer, tokenizer_counter=measured_tokenizer, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
+                                prompt_result = compile_prompt(assembly, messages, context_position=context_position, message_format=message_format, context_render_mode=context_render_mode, serializer=measured_serializer, tokenizer_counter=measured_tokenizer, serializer_id=serializer_id, tokenizer_id=tokenizer_id, hard_budget=prompt_token_budget, required_evidence_ids=required_ids)
                             except (ContextSelectionError, ContextAdmissionError, TypeError, ValueError, OverflowError, UnicodeError) as exc:
                                 return PreparationResult(PreparationStatus.CONTEXT_FAILED, "none", None, None, None, None, tuple(source_rows), (), (), tuple(misses), tuple(schema_rows), structural_status, type(exc).__name__)
                             if prompt_result.receipt.serialized_bytes is not None:
@@ -887,10 +1602,10 @@ def _prepare_e0_context_impl(
                                     selected_segment_ids=selected,
                                     sources=tuple(source_rows),
                                     candidates=(
-                                        candidate_result.candidates
-                                        if candidate_result.status is StructuralStatus.OK
-                                        else ()
+                                        tuple(candidate_result.candidates if candidate_result.status is StructuralStatus.OK else ())
+                                        + tuple(toml_span_candidates)
                                     ),
+                                    selected_segments=assembly["selected_segments"],
                                 )
                             except (SelectedSourceReferenceError, TypeError, ValueError, OverflowError) as exc:
                                 return PreparationResult(
@@ -914,8 +1629,9 @@ def _prepare_e0_context_impl(
                                     else ()
                                 )
                             )
-                            aggregate_hash = _canonical_digest({
+                            aggregate_payload = {
                                 "schema": "wrench.e0-preparation-refs.v2", "snapshot_sha256": snapshot.snapshot_sha256,
+                                "source_ingestion_token_limit": source_ingestion_token_limit,
                                 "sources": [[r.evidence_id, r.path, r.content_sha256, r.artifact_handle_id, r.status] for r in source_rows],
                                 "selected": list(selected), "omitted": [list(row) for row in receipt_omitted], "misses": [list(row) for row in miss_rows],
                                 "selected_source_references_sha256": selected_source_references.receipt_sha256,
@@ -928,7 +1644,17 @@ def _prepare_e0_context_impl(
                                 "prompt_gate": {"status": prompt_result.receipt.status.value, "prompt_sha256": prompt_result.receipt.prompt_sha256,
                                     "exact_token_count": prompt_result.receipt.exact_token_count, "budget": prompt_result.receipt.hard_budget,
                                     "serializer_id": prompt_result.receipt.serializer_id, "tokenizer_id": prompt_result.receipt.tokenizer_id},
-                            })
+                            }
+                            if execution_state_receipt is not None:
+                                aggregate_payload["execution_state"] = {
+                                    "revision": execution_state_receipt.state.revision,
+                                    "state_sha256": execution_state_receipt.state.sha256,
+                                    "last_event_sha256": execution_state_receipt.last_event_sha256,
+                                    "selected_fields": list(execution_state_selected_fields),
+                                    "omitted_fields": [list(row) for row in execution_state_omitted_fields],
+                                    "source_refs_revalidated": True,
+                                }
+                            aggregate_hash = _canonical_digest(aggregate_payload)
                             _metrics["outcome_receipt_build_attempts"] = int(_metrics["outcome_receipt_build_attempts"]) + 1
                             receipt_result = build_outcome_receipt(_receipt_payload(snapshot_hash=snapshot.snapshot_sha256, aggregate_hash=aggregate_hash, selected=selected, omitted=receipt_omitted, misses=receipt_misses))
                             _metrics["outcome_receipt_status"] = receipt_result.status.value
@@ -953,6 +1679,24 @@ def _prepare_e0_context_impl(
                                     prompt_result.context_message_json
                                     if final_status is PreparationStatus.READY
                                     else None
+                                ),
+                                execution_state_revision=(
+                                    execution_state_receipt.state.revision
+                                    if execution_state_receipt is not None else None
+                                ),
+                                execution_state_sha256=(
+                                    execution_state_receipt.state.sha256
+                                    if execution_state_receipt is not None else None
+                                ),
+                                execution_state_event_sha256=(
+                                    execution_state_receipt.last_event_sha256
+                                    if execution_state_receipt is not None else None
+                                ),
+                                execution_state_selected_fields=execution_state_selected_fields,
+                                execution_state_omitted_fields=execution_state_omitted_fields,
+                                execution_state_evidence_verified_for_prompt=(
+                                    final_status is PreparationStatus.READY
+                                    if execution_state_receipt is not None else None
                                 ),
                             )
 
@@ -982,15 +1726,22 @@ def prepare_e0_context(
     *, source_root: str | os.PathLike[str] | SourceRootBinding, snapshot: SourceSnapshot,
     paths: Sequence[str | os.PathLike[str]], store: ArtifactStore, query: str,
     source_order_start: int, context_token_budget: int, prompt_token_budget: int,
+    source_ingestion_token_limit: int = MAX_CONTEXT_TOKENS,
     namespace_registry: NamespaceRegistry, schema_lookups: Sequence[tuple[str, str]],
     base_messages: Sequence[Mapping[str, object]], context_position: int,
     message_format: str = "generic",
+    context_render_mode: str = "legacy_json_string",
     serializer: Callable[[Sequence[Mapping[str, object]]], str | bytes],
     tokenizer_counter: Callable[[str | bytes], int], serializer_id: str,
     tokenizer_id: str, required_evidence_ids: Sequence[str] = (),
     preserve_evidence_ids: Sequence[str] = (), required_source_paths: Sequence[str] = (),
-    preserve_source_paths: Sequence[str] = (), max_candidates: int = 8,
+    preserve_source_paths: Sequence[str] = (), use_symbol_span_for_required_path: bool = False,
+    use_toml_key_spans_for_required_path: bool = False,
+    use_toml_table_spans_for_required_path: bool = False,
+    toml_span_query: str | None = None,
+    max_candidates: int = 8,
     artifact_request: ArtifactRequest | None = None,
+    execution_state_receipt: StateStoreLoadReceipt | None = None,
 ) -> PreparationResult:
     """Prepare local context and attach non-identifying preparation metrics.
 
@@ -998,7 +1749,12 @@ def prepare_e0_context(
     source pins during a downstream request, pass an already active
     ``ArtifactRequest`` and keep its surrounding ``with store.request()`` open
     until that request succeeds, fails, times out, or is cancelled. This
-    facade never dispatches or observes downstream activity.
+    facade never dispatches or observes downstream activity. A host-loaded
+    execution-state receipt may add evidence-linked state summaries to the
+    same bounded ledger; every cited state source must also be among the exact
+    sources prepared for this request. Source ingestion has its own hard-capped
+    logical-token limit; by default it remains equal to the historical 8,192
+    token limit. Raising it does not raise the selected-context or prompt cap.
     """
     started_ns = time.perf_counter_ns()
     counters: dict[str, object] = {
@@ -1030,14 +1786,23 @@ def prepare_e0_context(
     result = _prepare_e0_context_impl(
         source_root=source_root, snapshot=snapshot, paths=paths, store=store, query=query,
         source_order_start=source_order_start, context_token_budget=context_token_budget,
-        prompt_token_budget=prompt_token_budget, namespace_registry=namespace_registry,
+        prompt_token_budget=prompt_token_budget,
+        source_ingestion_token_limit=source_ingestion_token_limit,
+        namespace_registry=namespace_registry,
         schema_lookups=schema_lookups, base_messages=base_messages, context_position=context_position,
         message_format=message_format,
+        context_render_mode=context_render_mode,
         serializer=serializer, tokenizer_counter=tokenizer_counter, serializer_id=serializer_id,
         tokenizer_id=tokenizer_id, required_evidence_ids=required_evidence_ids,
         preserve_evidence_ids=preserve_evidence_ids, required_source_paths=required_source_paths,
-        preserve_source_paths=preserve_source_paths, max_candidates=max_candidates,
-        artifact_request=artifact_request, _metrics=counters,
+        preserve_source_paths=preserve_source_paths,
+        use_symbol_span_for_required_path=use_symbol_span_for_required_path,
+        use_toml_key_spans_for_required_path=use_toml_key_spans_for_required_path,
+        use_toml_table_spans_for_required_path=use_toml_table_spans_for_required_path,
+        toml_span_query=toml_span_query,
+        max_candidates=max_candidates,
+        artifact_request=artifact_request, execution_state_receipt=execution_state_receipt,
+        _metrics=counters,
     )
     elapsed = max(0, time.perf_counter_ns() - started_ns)
     metrics = PreparationMetrics(
@@ -1101,6 +1866,7 @@ def prepare_e0_context(
 
 
 __all__ = [
+    "MAX_SOURCE_INGESTION_TOKENS",
     "MAX_PATHS",
     "MAX_SCHEMA_LOOKUPS",
     "PreparationAccountingReceipt",

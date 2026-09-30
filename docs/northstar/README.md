@@ -74,12 +74,13 @@ Wrench evidence. [Reference review](REFERENCES.md) records what was checked.
 
 The [training and evaluation source plan](DATA_SOURCES.md) proposes consented
 real workflows, reviewed local-teacher candidates and exact fixtures for
-separate purposes. Real workflow capture is not authorized; authored synthetic
-fixtures remain the only admitted development corpus. The fixed matched-task
-seed is the only fixture admitted to that corpus; later edge-case bundles are
-standalone regression tests, not corpus, training, or utility data. No training
-or utility corpus is admitted today. Public benchmarks are limited challenge
-sets, and raw web/code dumps do not stand in for verified Wrench outcomes.
+separate purposes. Real workflow capture remains unauthorized. The owner has
+authorized one fresh synthetic-only train/dev/held-out split for the bounded
+gateway LoRA diagnostic; the fixed matched-task seed and exposed local screens
+remain ineligible for that training. No real-work utility corpus is admitted.
+Public benchmarks are limited challenge sets, and raw web/code dumps do not
+stand in for verified Wrench outcomes. See the experiment-specific boundary in
+the [data source plan](DATA_SOURCES.md).
 See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture.md).
 
 ## Durable standards
@@ -100,6 +101,58 @@ See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture
 - Unknown results stay unknown. Preserve negative results and exact identities.
 
 ## Current work
+
+On 2026-09-28 the owner removed a fixed model-size preference for the
+gateway demo. The current host has a 16 GB RTX 5060 Ti, 32 GiB system memory,
+and an AMD Ryzen 5 2600. Select any pinned and licensed model below 10B that
+passes measured inference and LoRA-training fit, while preserving the 10%
+RAM/VRAM reserve. Existing local Ollama tags include Qwen3.5-0.8B Q8_0 and
+4B Q4_K_M. The 4B tag's current Ollama container has no GPU device and its
+CPU-only smoke did not complete; an isolated `--gpus all` container also
+lacked `/dev/nvidia0`. Neither result proves the host CUDA path cannot run the
+model. Push a
+provider-free demo MVP that combines Wrench context preparation, a local model,
+deterministic code-task verification and exact input/output/latency/resource
+receipts. A fixed mock may illustrate the frontier branch, never count as
+frontier use or cost. Preserve the 95% local completion, <=5% routing, >=95%
+success-retention, >=95% frontier-token and all-in-cost gates and the all-day
+engineering study; the MVP cannot satisfy them by itself. The [active gateway
+goal](../goal/wrench-gateway-model-research/GOAL.md) tracks the demo and
+candidate gates.
+
+On 2026-09-27 the owner directed a bounded experiment for a small local LoRA
+gateway plus a stronger coding model, with targets of at least 95% of baseline
+completed-task value and no more than 5% of baseline all-in cost. The owner
+authorized new Wrench-authored synthetic train/dev/held-out data and a LoRA
+candidate below 10B parameters when its exact inventory, compatibility,
+storage, and hardware admission pass. The already-present 0.8B checkpoint is
+the first comparison point, not the only permitted model. This narrows the
+gateway LoRA's role to finite context and route proposals; it does not reopen
+0.8B as a general coding agent or accept the 95/95 claim. The owner specified
+the existing SubRoute at `127.0.0.1:4000`; fresh read-only GETs returned HTTP
+200 and confirmed the `openrouter` force route resolves to
+`openrouter/minimax/minimax-m3`. The latest `/model/info` response reports
+`$0.30/M` input, `$1.20/M` output, and `supports_function_calling` plus
+`supports_tool_choice` as true. Those metadata fields conflict with earlier
+route snapshots and do not establish the selected upstream, successful tool
+round trip, or billed cost. Keep the route unchanged until an explicitly
+capped request produces a verifiable receipt. The version-matched OpenCode
+provider setup is recorded in the [experiment goal](../goal/wrench-gateway-model-research/GOAL.md)
+and [iteration 039](../evals/wrench-gateway-model-research/iteration-039-subroute-opencode-setup-20260927.md).
+No generation will run until the user supplies a numeric aggregate spend cap
+and the caller enforces hard cost and receipt checks. See the [active experiment goal](../goal/wrench-gateway-model-research/GOAL.md),
+[research addendum](../reports/wrench-gateway-model-research/research-20260927.md),
+[latest route iteration](../evals/wrench-gateway-model-research/iteration-015-subroute-mock-boundary-20260927.md),
+[iteration 000](../evals/wrench-gateway-model-research/iteration-000-readiness-20260927.md),
+and [LoRA protocol](../evals/wrench-gateway-model-research/lora-screen-01-protocol-20260927.md).
+
+On 2026-09-26 the owner requested a fresh study of small LoRA models as local
+gateway controllers after the tested 0.8B primary/semantic-controller
+direction failed. The [research report](../reports/wrench-gateway-model-research/research-20260926.md)
+recommended a narrower controller plus deterministic mechanics and a stronger
+coding fallback. The 2026-09-27 decision above defines the new, limited
+experiment authority; it does not change the prior 0.8B general-agent closure,
+E0-E4 acceptance, real-work consent requirements, or production gates.
 
 The owner closed the small local SLM semantic-controller experiment on
 2026-09-26: using the tested 0.8B route as an OpenCode primary or semantic

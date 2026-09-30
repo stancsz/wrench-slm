@@ -25,7 +25,9 @@ MAX_OPENCODE_CONTEXT_HOOK_BYTES = 1024 * 1024
 MAX_HOOK_MESSAGES = 128
 MAX_HOOK_SYSTEM_PARTS = 128
 MAX_HOOK_TOOLS = 256
+# Keep the historical v2.0.15 default stable; the installed v2.0.12 path is explicit.
 OPENCODE_CONTEXT_HOOK_VERSION = "2.0.15"
+SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS = frozenset({"2.0.12", OPENCODE_CONTEXT_HOOK_VERSION})
 PROJECTION_SCHEMA = "wrench.opencode.context-hook-projection.v1"
 CONTEXT_HOOK_OBSERVATION_SCHEMA = "wrench.opencode.context-hook-observation.v2"
 PREPARED_TRANSITION_RECEIPT_SCHEMA = "wrench.opencode.prepared-context-transition-receipt.v1"
@@ -48,6 +50,7 @@ class OpenCodeTransitionStatus(str, Enum):
     INVALID_INPUT = "invalid_input"
     INVALID_PROJECTION = "invalid_projection"
     SESSION_MISMATCH = "session_mismatch"
+    HOOK_VERSION_MISMATCH = "hook_version_mismatch"
     PROTECTED_CONTEXT_CHANGED = "protected_context_changed"
     MESSAGE_SEQUENCE_MISMATCH = "message_sequence_mismatch"
     INSERTION_POSITION_INVALID = "insertion_position_invalid"
@@ -179,6 +182,7 @@ class OpenCodeContextHookObserver:
         *,
         monotonic_ns: Callable[[], Any] = time.monotonic_ns,
         session_id_getter: Callable[..., Any] | None = None,
+        opencode_context_hook_version: str = OPENCODE_CONTEXT_HOOK_VERSION,
     ) -> None:
         if (
             not callable(callback)
@@ -186,9 +190,15 @@ class OpenCodeContextHookObserver:
             or (session_id_getter is not None and not callable(session_id_getter))
         ):
             raise TypeError("callback_and_clock_must_be_callable")
+        if (
+            type(opencode_context_hook_version) is not str
+            or opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
+        ):
+            raise ValueError("opencode_context_hook_version_unsupported")
         self._callback = callback
         self._monotonic_ns = monotonic_ns
         self._session_id_getter = session_id_getter
+        self._opencode_context_hook_version = opencode_context_hook_version
         self._lock = threading.Lock()
         self._invocation_count = 0
         self._completed_count = 0
@@ -208,7 +218,7 @@ class OpenCodeContextHookObserver:
                 return None
             return OpenCodeContextHookObservation(
                 schema=CONTEXT_HOOK_OBSERVATION_SCHEMA,
-                opencode_context_hook_version=OPENCODE_CONTEXT_HOOK_VERSION,
+                opencode_context_hook_version=self._opencode_context_hook_version,
                 invocation_count=self._invocation_count,
                 completed_count=self._completed_count,
                 returned_count=self._returned_count,
@@ -500,7 +510,11 @@ def _is_opencode_text_message(value: object) -> bool:
     )
 
 
-def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
+def project_opencode_context_hook(
+    event: object,
+    *,
+    opencode_context_hook_version: str = OPENCODE_CONTEXT_HOOK_VERSION,
+) -> OpenCodeProjectionResult:
     """Copy and hash the pinned context-hook fields under a 1 MiB bound.
 
     The projection is ephemeral data. This function does not persist, log,
@@ -509,12 +523,21 @@ def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
     Length changes observed during container copying are rejected, but same-
     length or nested concurrent mutations cannot be detected atomically.
     """
+    if (
+        type(opencode_context_hook_version) is not str
+        or opencode_context_hook_version not in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
+    ):
+        return OpenCodeProjectionResult(
+            OpenCodeProjectionStatus.INVALID_INPUT,
+            None,
+            "opencode_context_hook_version_unsupported",
+        )
     try:
         payload = _copy_json_bounded(event)
         session_id, agent_id, provider_id, model_id, variant = _validate_context_shape(payload)
         canonical = _bounded_canonical_json({
             "schema": PROJECTION_SCHEMA,
-            "opencode_context_hook_version": OPENCODE_CONTEXT_HOOK_VERSION,
+            "opencode_context_hook_version": opencode_context_hook_version,
             "payload": payload,
         }, MAX_OPENCODE_CONTEXT_HOOK_BYTES)
         encoded = json.dumps(
@@ -553,7 +576,7 @@ def project_opencode_context_hook(event: object) -> OpenCodeProjectionResult:
         model_id=model_id,
         model_variant=variant,
         projection_schema=PROJECTION_SCHEMA,
-        opencode_context_hook_version=OPENCODE_CONTEXT_HOOK_VERSION,
+        opencode_context_hook_version=opencode_context_hook_version,
         payload_json=encoded.decode("utf-8"),
         projection_sha256=hashlib.sha256(canonical).hexdigest(),
         serialized_bytes=len(encoded),
@@ -577,6 +600,9 @@ def _validated_projection_payload(
         or type(projection.payload_json) is not str
         or type(projection.projection_sha256) is not str
         or type(projection.serialized_bytes) is not int
+        or not _is_supported_opencode_context_hook_version(
+            projection.opencode_context_hook_version
+        )
     ):
         return None
     payload_json = projection.payload_json
@@ -588,7 +614,10 @@ def _validated_projection_payload(
         payload = json.loads(payload_json)
     except (TypeError, ValueError, UnicodeError, RecursionError):
         return None
-    recomputed = project_opencode_context_hook(payload)
+    recomputed = project_opencode_context_hook(
+        payload,
+        opencode_context_hook_version=projection.opencode_context_hook_version,
+    )
     if (
         recomputed.status is not OpenCodeProjectionStatus.READY
         or recomputed.projection is None
@@ -625,6 +654,10 @@ def validate_opencode_context_hook_transition(
     if before_projection.session_id != after_projection.session_id:
         return OpenCodeTransitionResult(
             OpenCodeTransitionStatus.SESSION_MISMATCH, None, "session_mismatch"
+        )
+    if before_projection.opencode_context_hook_version != after_projection.opencode_context_hook_version:
+        return OpenCodeTransitionResult(
+            OpenCodeTransitionStatus.HOOK_VERSION_MISMATCH, None, "hook_version_mismatch"
         )
 
     protected_fields = ("agent", "model", "system", "tools", "options")
@@ -717,6 +750,13 @@ def _is_sha256(value: object) -> bool:
     )
 
 
+def _is_supported_opencode_context_hook_version(value: object) -> bool:
+    return (
+        type(value) is str
+        and value in SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS
+    )
+
+
 def _prepared_transition_receipt_payload(
     preparation_sha256: str,
     transition: OpenCodeContextTransitionReceipt,
@@ -750,8 +790,9 @@ def verify_opencode_prepared_transition_receipt(receipt: object) -> bool:
         or not _is_sha256(receipt.receipt_sha256)
         or type(transition.session_id) is not str
         or not _valid_text(transition.session_id)
-        or type(transition.opencode_context_hook_version) is not str
-        or transition.opencode_context_hook_version != OPENCODE_CONTEXT_HOOK_VERSION
+        or not _is_supported_opencode_context_hook_version(
+            transition.opencode_context_hook_version
+        )
         or type(transition.projection_schema) is not str
         or transition.projection_schema != PROJECTION_SCHEMA
         or not _is_sha256(transition.before_projection_sha256)
@@ -887,6 +928,7 @@ __all__ = [
     "MAX_OPENCODE_CONTEXT_HOOK_OBSERVATION_CALLS",
     "MAX_PREPARED_TRANSITION_RECEIPT_BYTES",
     "OPENCODE_CONTEXT_HOOK_VERSION",
+    "SUPPORTED_OPENCODE_CONTEXT_HOOK_VERSIONS",
     "PREPARED_TRANSITION_RECEIPT_SCHEMA",
     "PROJECTION_SCHEMA",
     "OpenCodeContextTransitionReceipt",

@@ -277,7 +277,9 @@ def _cost_accounting_receipt(
             else (model_calls if has_frontier_usage else 0)
         )
     )
-    frontier_usage_attempts = frontier_usage.get("attempt_count", 0) if has_frontier_usage else 0
+    frontier_usage_attempts = (
+        frontier_usage.get("usage_attempt_count", 0) if has_frontier_usage else 0
+    )
     if (
         not isinstance(frontier_usage_attempts, int)
         or isinstance(frontier_usage_attempts, bool)
@@ -384,19 +386,42 @@ def _cost_accounting_receipt(
     frontier_prompt_tokens = 0
     frontier_completion_tokens = 0
     frontier_cost = None
-    if isinstance(frontier_usage, dict):
-        prompt = frontier_usage.get("prompt_tokens")
-        if isinstance(prompt, int) and prompt >= 0:
-            frontier_prompt_tokens = prompt
-        completion = frontier_usage.get("completion_tokens")
-        if isinstance(completion, int) and completion >= 0:
-            frontier_completion_tokens = completion
-        total = frontier_usage.get("total_tokens")
-        if isinstance(total, int) and total >= 0:
-            frontier_tokens = total
+    if has_frontier_usage:
         cost = frontier_usage.get("cost")
-        if isinstance(cost, (int, float)) and not isinstance(cost, bool):
-            frontier_cost = float(cost)
+        try:
+            numeric_cost = float(cost) if isinstance(cost, (int, float)) else math.inf
+        except (OverflowError, TypeError, ValueError):
+            numeric_cost = math.inf
+        if (
+            frontier_usage.get("cost_complete") is True
+            and isinstance(cost, (int, float))
+            and not isinstance(cost, bool)
+            and math.isfinite(numeric_cost)
+            and numeric_cost >= 0
+        ):
+            frontier_cost = numeric_cost
+        if frontier_usage_missing_calls == 0:
+            prompt = frontier_usage.get("prompt_tokens")
+            if isinstance(prompt, int) and not isinstance(prompt, bool) and prompt >= 0:
+                frontier_prompt_tokens = prompt
+            completion = frontier_usage.get("completion_tokens")
+            if (
+                isinstance(completion, int)
+                and not isinstance(completion, bool)
+                and completion >= 0
+            ):
+                frontier_completion_tokens = completion
+            total = frontier_usage.get("total_tokens")
+            if isinstance(total, int) and not isinstance(total, bool) and total >= 0:
+                frontier_tokens = total
+        else:
+            frontier_tokens = None
+            frontier_prompt_tokens = None
+            frontier_completion_tokens = None
+    elif frontier_model_calls > 0:
+        frontier_tokens = None
+        frontier_prompt_tokens = None
+        frontier_completion_tokens = None
     receipt = {
         "schema": "wrench.cost-accounting-receipt.v1",
         "raw_input_tokens": raw_tokens,
@@ -426,6 +451,8 @@ def _cost_accounting_receipt(
         "frontier_cost_usd": frontier_cost,
         "total_workflow_tokens": (
             model_prompt_tokens + model_completion_tokens + frontier_tokens
+            if isinstance(frontier_tokens, int)
+            else None
         ),
         "mechanical_fast_path": bool(result.get("mechanical_fast_path", False)),
         "total_local_elapsed_ms": round(elapsed_ms, 3),
@@ -952,41 +979,85 @@ _UPSTREAM_RETRYABLE_REASONS = {
 }
 
 
-def _frontier_usage_receipt(usages: list[dict[str, Any]]) -> dict[str, Any]:
-    """Aggregate only bounded numeric usage fields from upstream attempts."""
+def _frontier_usage_receipt(attempts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Aggregate complete upstream usage; missing fields never become zero."""
 
-    prompt_tokens = 0
-    completion_tokens = 0
-    total_tokens = 0
-    cost = 0.0
-    cost_seen = False
-    for usage in usages:
+    valid_usages: list[dict[str, Any]] = []
+    valid_costs: list[float] = []
+    cost_complete = True
+    for attempt in attempts:
+        usage = attempt.get("usage") if isinstance(attempt, dict) else None
         if not isinstance(usage, dict):
+            cost_complete = False
             continue
         prompt = usage.get("prompt_tokens")
         completion = usage.get("completion_tokens")
         total = usage.get("total_tokens")
-        if isinstance(prompt, int) and not isinstance(prompt, bool):
-            prompt_tokens += prompt
-        if isinstance(completion, int) and not isinstance(completion, bool):
-            completion_tokens += completion
-        if isinstance(total, int) and not isinstance(total, bool):
-            total_tokens += total
-        elif isinstance(prompt, int) and isinstance(completion, int):
-            total_tokens += prompt + completion
+        token_fields_valid = (
+            isinstance(prompt, int)
+            and not isinstance(prompt, bool)
+            and prompt >= 0
+            and isinstance(completion, int)
+            and not isinstance(completion, bool)
+            and completion >= 0
+            and (
+                total is None
+                or (
+                    isinstance(total, int)
+                    and not isinstance(total, bool)
+                    and total == prompt + completion
+                )
+            )
+        )
+        if token_fields_valid:
+            valid_usages.append(usage)
         value = usage.get("cost")
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            cost += float(value)
-            cost_seen = True
+        try:
+            numeric_cost = float(value) if isinstance(value, (int, float)) else math.inf
+        except (OverflowError, TypeError, ValueError):
+            numeric_cost = math.inf
+        if (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(numeric_cost)
+            and value >= 0
+        ):
+            valid_costs.append(numeric_cost)
+        else:
+            cost_complete = False
+
+    usage_complete = len(valid_usages) == len(attempts)
     receipt: dict[str, Any] = {
         "schema": "wrench.frontier-usage-receipt.v1",
-        "attempt_count": len(usages),
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens,
-        "total_tokens": total_tokens,
+        "attempt_count": len(attempts),
+        "usage_attempt_count": len(valid_usages),
+        "missing_usage_attempt_count": len(attempts) - len(valid_usages),
+        "usage_complete": usage_complete,
+        "prompt_tokens": (
+            sum(usage["prompt_tokens"] for usage in valid_usages)
+            if usage_complete else None
+        ),
+        "completion_tokens": (
+            sum(usage["completion_tokens"] for usage in valid_usages)
+            if usage_complete else None
+        ),
+        "total_tokens": (
+            sum(
+                (
+                    usage["total_tokens"]
+                    if usage.get("total_tokens") is not None
+                    else usage["prompt_tokens"] + usage["completion_tokens"]
+                )
+                for usage in valid_usages
+            )
+            if usage_complete else None
+        ),
+        "cost_complete": cost_complete and len(valid_costs) == len(attempts),
     }
-    if cost_seen:
-        receipt["cost"] = round(cost, 10)
+    if receipt["cost_complete"]:
+        receipt["cost"] = round(sum(valid_costs), 10)
+    else:
+        receipt["cost"] = None
     return receipt
 
 
@@ -1539,7 +1610,6 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                 tool_result_sha256=verified_tool_result["sha256"],
                             )
                         upstream_attempts: list[dict[str, Any]] = []
-                        upstream_usages: list[dict[str, Any]] = []
                         verified: dict[str, Any] = {}
                         upstream_output = ""
                         max_attempts = 1 if final_answer_round else 2
@@ -1554,8 +1624,6 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                 response_metadata=upstream_metadata,
                             )
                             usage = upstream_metadata.get("usage")
-                            if isinstance(usage, dict):
-                                upstream_usages.append(usage)
                             if final_answer_round:
                                 verified = _parse_final_answer_output(
                                     upstream_output,
@@ -1644,7 +1712,7 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                                 "frontier_repair_pass_count": frontier_repairs,
                                 "repair_pass_count": local_repairs + frontier_repairs,
                                 "upstream_attempts": upstream_attempts,
-                                "frontier_usage": _frontier_usage_receipt(upstream_usages),
+                                "frontier_usage": _frontier_usage_receipt(upstream_attempts),
                                 "frontier_round": 2 if final_answer_round else 1,
                                 "final_answer": accepted_final_answer,
                             }
@@ -1652,11 +1720,16 @@ class WrenchRequestHandler(BaseHTTPRequestHandler):
                         if final_answer_round and verified_tool_result is not None:
                             verified["tool_result_sha256"] = verified_tool_result["sha256"]
                         if prefill_receipt is not None:
-                            prompt_tokens = [
-                                int(usage["prompt_tokens"])
-                                for usage in upstream_usages
-                                if isinstance(usage.get("prompt_tokens"), int)
-                            ]
+                            frontier_usage = verified.get("frontier_usage")
+                            prompt_tokens = (
+                                [
+                                    int(attempt["usage"]["prompt_tokens"])
+                                    for attempt in upstream_attempts
+                                ]
+                                if isinstance(frontier_usage, dict)
+                                and frontier_usage.get("usage_complete") is True
+                                else []
+                            )
                             if prompt_tokens:
                                 prefill_receipt["native_backend_prompt_tokens"] = prompt_tokens[-1]
                                 prefill_receipt["native_backend_prompt_tokens_total"] = sum(prompt_tokens)

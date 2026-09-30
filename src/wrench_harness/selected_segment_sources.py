@@ -115,13 +115,15 @@ def build_selected_segment_source_references(
     selected_segment_ids: Sequence[str],
     sources: Sequence[SourceIdentity],
     candidates: Sequence[StructuralCandidate] = (),
+    selected_segments: Sequence[Mapping[str, object]] = (),
 ) -> SelectedSourceReferenceReceipt:
     """Join selected IDs to source identities and optional exact symbol spans.
 
-    ``selected_segment_ids``, ``sources`` and ``candidates`` are caller-owned
-    public records. Candidate rows must be the exact rows used to create
-    symbol segments if exact spans are desired. Missing rows stay explicitly
-    unavailable; no span or summary lineage is inferred from an ID alone.
+    ``selected_segment_ids``, ``sources``, ``candidates`` and
+    ``selected_segments`` are caller-owned public records. Candidate rows must
+    be the exact rows used to create symbol segments if exact spans are
+    desired. Summary lineage is accepted only when the selected segment receipt
+    names source or candidate IDs that this call can resolve.
     """
     snapshot_hash = _require_hash(snapshot_sha256, "snapshot_sha256")
     if type(selected_segment_ids) not in (tuple, list) or len(selected_segment_ids) > MAX_SELECTED_REFERENCES:
@@ -130,6 +132,8 @@ def build_selected_segment_source_references(
         raise SelectedSourceReferenceError("sources_invalid")
     if type(candidates) not in (tuple, list) or len(candidates) > MAX_CANDIDATES:
         raise SelectedSourceReferenceError("candidates_invalid")
+    if type(selected_segments) not in (tuple, list) or len(selected_segments) > MAX_SELECTED_REFERENCES:
+        raise SelectedSourceReferenceError("selected_segments_invalid")
 
     selected = tuple(selected_segment_ids)
     if any(type(item) is not str or not item or len(item) > 256 for item in selected):
@@ -199,6 +203,30 @@ def build_selected_segment_source_references(
             raise SelectedSourceReferenceError("duplicate_candidate_identity")
         candidate_by_id[candidate_id] = candidate
 
+    summary_by_id: dict[str, tuple[str, ...]] = {}
+    seen_segment_ids: set[str] = set()
+    for segment in selected_segments:
+        if not isinstance(segment, Mapping):
+            raise SelectedSourceReferenceError("selected_segment_receipt_invalid")
+        segment_id = segment.get("segment_id")
+        if (
+            type(segment_id) is not str or not segment_id or len(segment_id) > 256
+            or segment_id in seen_segment_ids
+        ):
+            raise SelectedSourceReferenceError("selected_segment_receipt_invalid")
+        seen_segment_ids.add(segment_id)
+        if segment.get("kind") != "summary":
+            continue
+        summary_of = segment.get("summary_of")
+        if (
+            type(summary_of) is not list
+            or not 1 <= len(summary_of) <= 32
+            or any(type(item) is not str or not item or len(item) > 256 for item in summary_of)
+            or len(set(summary_of)) != len(summary_of)
+        ):
+            raise SelectedSourceReferenceError("summary_lineage_invalid")
+        summary_by_id[segment_id] = tuple(summary_of)
+
     references: list[dict[str, object]] = []
     for segment_id in selected:
         source = source_by_id.get(segment_id)
@@ -221,25 +249,54 @@ def build_selected_segment_source_references(
             continue
 
         candidate = candidate_by_id.get(segment_id)
-        if candidate is None:
-            references.append(_unavailable_reference(segment_id))
+        if candidate is not None:
+            source = source_by_path[candidate.path]
+            is_config_key = candidate.parser == "tomllib-key-v1" and candidate.language == "toml"
+            is_config_table = candidate.parser == "tomllib-table-v1" and candidate.language == "toml"
+            references.append({
+                "segment_id": segment_id,
+                "segment_kind": (
+                    "configuration_key" if is_config_key else
+                    "configuration_table" if is_config_table else "symbol"
+                ),
+                "source_path": source.path,
+                "snapshot_sha256": snapshot_hash,
+                "content_sha256": source.content_sha256,
+                "artifact_handle_id": source.artifact_handle_id,
+                "span_status": (
+                    "parser_reported_exact_key" if is_config_key else
+                    "parser_reported_exact_table" if is_config_table else "parser_reported_exact"
+                ),
+                "start_line": candidate.start_line,
+                "end_line": candidate.end_line,
+                "parser": candidate.parser,
+                "language": candidate.language,
+                "summary_lineage_status": "unavailable",
+                "summary_of": None,
+            })
             continue
-        source = source_by_path[candidate.path]
-        references.append({
-            "segment_id": segment_id,
-            "segment_kind": "symbol",
-            "source_path": source.path,
-            "snapshot_sha256": snapshot_hash,
-            "content_sha256": source.content_sha256,
-            "artifact_handle_id": source.artifact_handle_id,
-            "span_status": "parser_reported_exact",
-            "start_line": candidate.start_line,
-            "end_line": candidate.end_line,
-            "parser": candidate.parser,
-            "language": candidate.language,
-            "summary_lineage_status": "unavailable",
-            "summary_of": None,
-        })
+
+        summary_of = summary_by_id.get(segment_id)
+        if summary_of is not None:
+            if any(item not in source_by_id and item not in candidate_by_id for item in summary_of):
+                raise SelectedSourceReferenceError("summary_lineage_source_unavailable")
+            references.append({
+                "segment_id": segment_id,
+                "segment_kind": "summary",
+                "source_path": None,
+                "snapshot_sha256": snapshot_hash,
+                "content_sha256": None,
+                "artifact_handle_id": None,
+                "span_status": "derived_summary",
+                "start_line": None,
+                "end_line": None,
+                "parser": None,
+                "language": None,
+                "summary_lineage_status": "available",
+                "summary_of": list(summary_of),
+            })
+        else:
+            references.append(_unavailable_reference(segment_id))
 
     receipt_payload = {
         "schema": "wrench.selected-segment-source-references.v1",

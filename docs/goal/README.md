@@ -1,5 +1,19 @@
 # Goals
 
+- [Gateway LoRA and cost-reduction experiment](wrench-gateway-model-research/GOAL.md)
+  (active, owner-directed 2026-09-27): a Wrench-trained model below 10B plus a
+  stronger route, targeting at least 95% local verified completion, at most
+  5% frontier escalation, at least 95% paired success retention, 95% fewer
+  frontier tokens, and 95% lower all-in cost. Fit-02 is blocked by RAM and a
+  new Qwen3.5-0.8B attention-only versus all-module LoRA design review;
+  SubRoute spend admission remains open. See the
+  [research addendum](../reports/wrench-gateway-model-research/research-20260927.md),
+  [readiness record](../evals/wrench-gateway-model-research/iteration-000-readiness-20260927.md),
+  and [screen protocol](../evals/wrench-gateway-model-research/lora-screen-01-protocol-20260927.md).
+  Historical strategy and same-agent critique remain in the
+  [2026-09-26 research](../reports/wrench-gateway-model-research/research-20260926.md)
+  and [review](../evals/wrench-gateway-model-research/review-20260926.md).
+
 - [Measure acceptable local work](wrench-local-acceptability/GOAL.md) (closed
   2026-09-26 by owner decision): the 0.8B local SLM did not pass semantic
   acceptance screens, and the small-model OpenCode primary/controller direction

@@ -6,6 +6,92 @@ frontier-token savings remain unmeasured.
 Owner: human product owner
 Planning date: 2026-09-23 (America/Edmonton)
 
+## Owner decision, 2026-09-27: bounded gateway experiment reopened
+
+The owner requested a fresh experiment for a small Wrench LoRA gateway plus a
+stronger coding model, targeting at least 95% of strong-model-only completed
+task value at no more than 5% of its all-in cost, while supporting sustained
+engineering. This supersedes the 2026-09-26 pause only for the narrow,
+staged gateway experiment described in the
+[gateway goal](../goal/wrench-gateway-model-research/GOAL.md). It does not
+reopen the 0.8B model as a general OpenCode agent, change E0-E4 acceptance, or
+make a production claim.
+
+For an initial local diagnostic, the owner authorizes new Wrench-authored
+synthetic train/dev/held-out data and one bounded LoRA candidate experiment on
+the already-present Qwen3.5-0.8B snapshot, conditional on the storage, hash,
+compatibility, 10% RAM/VRAM and exact reservation gates. The LoRA may propose
+finite source-linked context and routing decisions only. Deterministic code
+retains all authority and execution.
+
+The owner specified `http://127.0.0.1:4000` for the stronger route. On
+2026-09-27 the read-only live route snapshot was `active_model=openrouter`,
+`mode=force`, `policy_version=4`; the previously audited mapping points to
+OpenRouter/MiniMax M3. The dollar cap is still unspecified. Do not send
+generation requests or alter route configuration until a cap, actual provider
+identity, and usage accounting are frozen. At this initial decision, no new
+model download, private or real task capture/transfer, adapter activation,
+publication or production routing was authorized. The later candidate-scope
+decision below expands model selection under the ordinary inventory and job
+gates; it does not change the other exclusions.
+
+See the [2026-09-27 readiness record](../evals/wrench-gateway-model-research/iteration-000-readiness-20260927.md)
+and [LoRA screen protocol](../evals/wrench-gateway-model-research/lora-screen-01-protocol-20260927.md).
+
+## Owner decision, 2026-09-27: candidate scope below 10B
+
+The owner broadened model selection from the already-present Qwen3.5-0.8B to
+any pinned model below 10B parameters that runs smoothly on this machine. This
+supersedes the 0.8B-only candidate restriction above; it does not waive the
+model-tree inventory, revision pin, storage reservation, exact runtime and
+LoRA compatibility review, current hardware admission, or 10% RAM/VRAM floor.
+The first model remains a comparison point, not a required winner. Model
+selection and any candidate-specific download or run must follow the
+[storage/recovery policy](STORAGE_AND_RECOVERY.md) and a separately bounded
+job; this scope does not authorize paid calls, real-data capture, held-out
+access outside the protocol, adapter activation, or production routing.
+
+The owner also reconfirmed SubRoute at `http://127.0.0.1:4000`. A new
+read-only check returned HTTP 200 from `/health/liveliness` and listed 19
+aliases at `/models`; the `openrouter` alias metadata identifies the
+configured MiniMax M3 target and $0.30/M input, $1.20/M output rates. The
+individual upstream provider remains unverified without a generation receipt.
+No generation request was made. The numeric aggregate spend cap is still
+unspecified, and the local caller still needs a hard cap plus fail-closed
+usage and billing receipts before a paid comparison.
+See [iteration 010](../evals/wrench-gateway-model-research/iteration-010-model-scope-route-controls-20260927.md)
+for the live read-only route fields, current resource sample, and candidate
+research.
+
+## Owner decision, 2026-09-28: select by smooth host fit and push a demo MVP
+
+The owner removed the prior 2B preference. Any pinned, licensed model below
+10B may be selected when the exact inference and LoRA-training packages fit
+this host and run without OOM, lost work, or crossing the 10% RAM/VRAM reserve.
+Record cold/warm latency, throughput, context, errors and peak resources. A
+short smoke run proves only feasibility; representative coding tasks choose
+the candidate, and an all-day workload is still required for sustained-use
+claims. The already installed Qwen3.5-0.8B Q8_0 and Qwen3.5-4B Q4_K_M tags are
+candidate packages, not smooth-run evidence. A first 4B Docker Ollama smoke
+ran CPU-only, returned no answer after approximately four minutes, and brought
+free RAM to 11.24%; it was stopped before the 10% reserve was crossed. A
+separate container requested `--gpus all` but had no NVIDIA device node, so no
+GPU inference ran. This rejects the current Docker paths, not the model under
+a host CUDA runtime. See [Iteration
+105](../evals/wrench-gateway-model-research/iteration-105-qwen35-4b-local-hardware-smoke-20260928.md).
+The current 0.8B Fit-03 package
+must be reviewed against the updated gateway-goal hash before a fit; 4B needs
+its own exact training compatibility and peak-memory admission.
+
+Push a provider-free demo MVP with Wrench context preparation, a real local
+model, a deterministic code-task verifier, and paired baseline/prepared prompt
+and all-token, latency, resource, retry and recovery receipts. The MVP may use
+a fixed mock response to illustrate the frontier branch, explicitly marked
+as mock. This does not alter the 95/5/95 and 95%-cheaper acceptance criteria,
+authorize paid calls to forced SubRoute, or count a synthetic task as product
+utility. See the [active gateway goal](../goal/wrench-gateway-model-research/GOAL.md)
+for MVP definition and progress.
+
 ## Owner decision, 2026-09-26
 
 The owner concluded that a small local SLM as the primary OpenCode agent or
@@ -168,10 +254,13 @@ is deliberately cleared.
 
 ## Host, storage and authority
 
-Current inspection reports RTX 5060 Ti, 16,311 MiB total and 15,219 MiB free
-VRAM, with about 17.85 GB RAM free of 34.29 GB. This is an instantaneous
-inventory, not a benchmark or proof of target-device support. Recheck before
-jobs. Preserve 10% free RAM/VRAM throughout.
+The 2026-09-23 inspection reported RTX 5060 Ti, 16,311 MiB total and
+15,219 MiB free VRAM, with about 17.85 GB RAM free of 34.29 GB. A fresh
+2026-09-27 observation for the gateway study found 5,083 MiB free VRAM and
+13.97 GiB free of 31.94 GiB RAM. These are timestamped snapshots, not proof
+that a training or serving target fits. Recheck before jobs and preserve 10%
+free RAM/VRAM throughout; use the current [readiness record](../evals/wrench-gateway-model-research/iteration-000-readiness-20260927.md)
+for gateway-specific admission.
 
 The [candidate manifest](model-candidate.json) pins a complete approximately
 1.77 GB foundation snapshot. Adapters, optimizer state, tokenizers, runtimes,

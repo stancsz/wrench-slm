@@ -5,6 +5,8 @@ import hashlib
 import json
 from dataclasses import replace
 
+import pytest
+
 from wrench_harness.artifact_store import ArtifactStore
 from wrench_harness.e0_lifecycle_accounting import (
     ENVELOPE_SCHEMA,
@@ -44,6 +46,8 @@ def _prepare(
     *,
     extra_files=(),
     sample_source="def target():\n    return 1\n",
+    opencode_context_hook_version="2.0.15",
+    schema_lookups=(),
 ):
     root = tmp_path / "repo"
     root.mkdir(parents=True)
@@ -72,13 +76,14 @@ def _prepare(
         context_token_budget=64,
         prompt_token_budget=4096,
         namespace_registry=registry,
-        schema_lookups=(),
+        schema_lookups=schema_lookups,
         base_messages=({"role": "system", "content": [{"type": "text", "text": "Use evidence."}]},),
         context_position=1,
         serializer=lambda messages: json.dumps(materialize_prompt_messages(messages), sort_keys=True, separators=(",", ":")),
         tokenizer_counter=lambda value: len(value),
         serializer_id="fixture-json-v1",
         tokenizer_id="fixture-char-count-v1",
+        opencode_context_hook_version=opencode_context_hook_version,
     )
     preparation = join.preparation
     return preparation, join
@@ -294,6 +299,46 @@ def test_partial_trace_joins_complete_scoped_hook_observation(tmp_path):
     }]
     assert "ses_partial_trace_fixture" not in json.dumps(summary)
     assert "secret" not in result.envelope.payload_json
+
+
+@pytest.mark.parametrize("schema_lookups", [(), (("files", "inspect"),)])
+def test_partial_trace_accepts_matching_v2012_projection_and_observation(tmp_path, schema_lookups):
+    preparation, join = _prepare(
+        tmp_path, opencode_context_hook_version="2.0.12", schema_lookups=schema_lookups
+    )
+    event = _prepared_context_base_event(join.session_id)
+    projection = project_opencode_context_hook(
+        event, opencode_context_hook_version=join.opencode_context_hook_version
+    )
+    observer = OpenCodeContextHookObserver(
+        lambda _event: None,
+        session_id_getter=lambda supplied: supplied["sessionID"],
+        opencode_context_hook_version=join.opencode_context_hook_version,
+    )
+    asyncio.run(observer(event))
+
+    result = build_partial_lifecycle_trace(
+        join,
+        projection,
+        _finalized(join, preparation),
+        context_hook_observation=observer.observation,
+    )
+
+    assert result.status is PartialTraceStatus.READY
+    assert result.envelope is not None
+    payload = json.loads(result.envelope.payload_json)
+    assert payload["opencode_context_hook_version"] == "2.0.12"
+    assert payload["context_hook_observation"]["opencode_context_hook_version"] == "2.0.12"
+
+    legacy_observation = _scoped_observation(join.session_id)
+    mismatched = build_partial_lifecycle_trace(
+        join,
+        projection,
+        _finalized(join, preparation),
+        context_hook_observation=legacy_observation,
+    )
+    assert mismatched.status is PartialTraceStatus.INVALID_OBSERVATION
+    assert mismatched.envelope is None
 
 
 def test_partial_trace_rejects_unscoped_or_mixed_session_observation(tmp_path):

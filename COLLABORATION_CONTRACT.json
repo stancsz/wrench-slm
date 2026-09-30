@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "contract_id": "wrench-v2-realignment-2026-09-23",
-  "version": "3.0",
+  "version": "3.1",
   "project": "wrench-slm",
   "collaboration": {
     "mode": "AUTO",
@@ -28,7 +28,12 @@
       {
         "task_class": "repository cleanup, v1 lessons, v2 architecture and experiment definition, plus user-directed repository-only staged implementation and bounded offline verification",
         "mode": "AUTO",
-        "boundary": "Reversible repository-only work under current user direction; no client install or run, provider/model job, real-data capture or transfer, spend, publication or production activation"
+        "boundary": "Reversible repository-only work and bounded offline verification under current user direction; no client install or run, provider call, real-data capture or transfer, spend, publication or production activation"
+      },
+      {
+        "task_class": "the owner's 2026-09-27 Wrench gateway model experiment on models below 10B parameters",
+        "mode": "AUTO",
+        "boundary": "Local pinned-model inventory, download, LoRA training, inference and bounded evaluation are authorized only under the active goal, staged experiment, complete storage admission, measured 10% RAM/VRAM reserves and preserved data provenance. No provider generation, spending, production routing, publication or adapter activation is authorized."
       },
       {
         "task_class": "scope or permission expansion, production promotion, publication, destructive data action or provider spending",
@@ -37,12 +42,13 @@
       }
     ],
     "bounds": {
-      "scope": "Realign Wrench to a Layer 1 hybrid context runtime and frozen Qwen + Wrench-Core LoRA + Continuous LoRA. Preserve v1 evidence, document owner-reported filesystem corruption/data loss without inventing its cause, clean current guidance, define the full v2 experiment, and verify repository consistency. The original direction/cleanup task is complete. The current user-directed continuation permits reversible repository-only implementation and bounded offline verification for staged v2 goals. It does not authorize client installation or execution, provider/model calls or jobs, real-task capture or transfer, training, spending, publication, or production activation.",
+      "scope": "Realign Wrench to a Layer 1 hybrid context runtime and frozen Qwen + Wrench-Core LoRA + Continuous LoRA. Preserve v1 evidence, document owner-reported filesystem corruption/data loss without inventing its cause, clean current guidance, define the full v2 experiment, and verify repository consistency. The original direction/cleanup task is complete. The current user-directed continuation permits reversible repository-only implementation and bounded offline verification for staged v2 goals. The owner's 2026-09-27 explicit update additionally authorizes local experimentation with pinned models below 10B parameters, including model inventory/download, LoRA training, inference and evaluation only after the active goal's storage, hardware, data and lifecycle gates pass. It does not authorize provider calls, spending, real/private data capture or transfer, publication or production activation.",
       "permissions": [
         "read repository source/docs and supplied design notes",
         "research public primary-source documentation and model metadata",
         "make reversible source/documentation/navigation changes and bounded repository-only implementation changes under current user direction",
-        "run bounded offline verification and local documentation builds after storage admission"
+        "run bounded offline verification and local documentation builds after storage admission",
+        "inventory, download, train and evaluate local models below 10B parameters for the owner-authorized Wrench gateway experiment after every documented per-job gate passes"
       ],
       "prohibited_actions": [
         "enable production or learned routing",
@@ -51,19 +57,20 @@
         "access or expose credentials",
         "upload private user data or train on sealed evaluation material",
         "delete user data, another task artifact or sole known-good checkpoint",
-        "install or run a client integration, call a provider, collect or transfer real task data, train, download model weights or run model inference without separate explicit authority",
+        "install or run a client integration, call a provider or spend money, collect or transfer real task data, train, download model weights or run model inference outside the owner's 2026-09-27 bounded local-model experiment authorization and its per-job gates",
         "weaken authority or evidence gates",
         "claim v2 implemented or useful based on design, synthetic passes or metadata"
       ],
       "data_access": [
         "repository source, documentation and supplied design notes",
         "public hash-bound model and package metadata",
-        "Wrench-authored synthetic fixtures admitted for open-development use only"
+        "Wrench-authored synthetic fixtures admitted for the active open-development experiment",
+        "pinned public model files below 10B parameters only after complete storage and hardware admission; training and tuning data remain synthetic unless separately authorized"
       ],
       "token_budget": 0,
       "monetary_budget": 0,
       "max_retries": 1,
-      "historical_authorization_record": "docs/archive/2026-09-23-v1/COLLABORATION_CONTRACT.v1.json; old scoped approvals do not authorize v2 spending",
+      "historical_authorization_record": "docs/archive/2026-09-23-v1/COLLABORATION_CONTRACT.v1.json; old scoped approvals do not authorize v2 spending. The 2026-09-27 owner override is recorded in docs/goal/wrench-gateway-model-research/GOAL.md and its iteration reports; it authorizes only gated local experiments below 10B and still sets provider spending to zero.",
       "artifact_limit_bytes_exclusive": 50000000000
     },
     "evidence_required": [

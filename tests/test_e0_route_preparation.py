@@ -43,7 +43,13 @@ def _tripwires(monkeypatch):
     monkeypatch.setattr(os, "system", fail("os.system"))
 
 
-def _run(tmp_path, *, context_budget=512, prompt=_ROUTE_PROMPT):
+def _run(
+    tmp_path,
+    *,
+    context_budget=512,
+    prompt=_ROUTE_PROMPT,
+    source_ingestion_token_limit=8192,
+):
     root = tmp_path / "repo"
     root.mkdir()
     for relative_path, content in _FILES.items():
@@ -61,6 +67,7 @@ def _run(tmp_path, *, context_budget=512, prompt=_ROUTE_PROMPT):
         source_order_start=1,
         context_token_budget=context_budget,
         prompt_token_budget=8192,
+        source_ingestion_token_limit=source_ingestion_token_limit,
         namespace_registry=NamespaceRegistry([]),
         schema_lookups=(),
         base_messages=({"role": "system", "content": "Authored synthetic fixture."},),
@@ -109,6 +116,21 @@ def test_orchestrator_routes_then_joins_exact_required_source_hashes(tmp_path, m
     assert payload["preparation_accounting_sha256"] == result.preparation.accounting_receipt.accounting_sha256
     assert len(payload["evidence_join"]) == 3
     assert all(row["route_content_sha256"] == row["preparation_content_sha256"] for row in payload["evidence_join"])
+
+
+def test_orchestrator_forwards_bounded_source_ingestion_limit(tmp_path, monkeypatch):
+    original_prepare = e0_route_preparation.prepare_e0_context
+    observed = []
+
+    def observe_limit(**kwargs):
+        observed.append(kwargs["source_ingestion_token_limit"])
+        return original_prepare(**kwargs)
+
+    monkeypatch.setattr(e0_route_preparation, "prepare_e0_context", observe_limit)
+    result, _, _, _ = _run(tmp_path, source_ingestion_token_limit=16384)
+
+    assert result.status is RoutePreparationStatus.JOINED
+    assert observed == [16384]
 
 
 def test_route_abstention_does_not_prepare_caller_selected_paths(tmp_path):
