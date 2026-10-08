@@ -22,11 +22,11 @@
     <p class="small">“更能扛事情”，是我们想通过这种分工实现的目标：本地多分担可验证的工作，整个流程少绕路、少返工。Coder 也能调用工具、接入验证；我们还没有证明 Wrench 比它们普遍更强、更快或更便宜。当前主线是规则、检索与验证，学习式自由路由关闭。<a href="how-it-works.html#coder-difference">分工、abstain 和怎么验收，展开讲 →</a></p>
   </section>
   <section class="section ambition-section" id="ambition">
-    <div class="section-intro"><div><div class="eyebrow">目标可以猛，标签得贴清楚</div><h2>大模型动脑，<br>小家伙出力。</h2></div><p>我们的远期愿景：同样的活儿干完，把云端模型花费压到原来的 0.5% 以下，让留下的每一分预算都花在好 token 上。眼下先靠本地规则工具把小事做稳；整笔账到底能省多少，还得实测。</p></div>
+    <div class="section-intro"><div><div class="eyebrow">当前实验</div><h2>让 Qwen 做有用的事。<br>测清强模型 token。</h2></div><p>Wrench 正在测试：本地 Qwen 能否在相近的复杂任务中，把强模型输入与输出 token 至少减少 30%，同时保持完成质量。本地模型 token 在这个指标中的权重为零。目标尚未得到证明。</p></div>
     <div class="ambition-grid">
       <article><span class="ambition-state">大输入处理方向</span><strong>4M</strong><h3>上下文再多，也别整包刷卡。</h3><p>面向 4M token 级输入，先在本地检索相关材料，再交给有限的模型工作上下文。走混合检索路线，不是原生 4M 注意力，也不保证条条都记得。</p></article>
-      <article><span class="ambition-state">当前 token 目标</span><strong>20×</strong><h3>少花 token，别少交作业。</h3><p>净强模型 token 减少 95%，也就是在评估任务里用到基准的 1/20 或更少。这是目标，校验、重试和备用调用都要记账。</p></article>
-      <article><span class="ambition-state">远期成本愿景</span><strong>&lt; 0.5%</strong><h3>把剩下的预算，花在刀刃上。</h3><p>把付费云端调用留给真难题。这是同等任务的云端费用愿景，尚未实现，也不是承诺把你的包月费砍到这个数。</p></article>
+      <article><span class="ambition-state">强模型 token 目标</span><strong>30%</strong><h3>质量不降，少用强模型。</h3><p>对比强模型单独完成，与确实使用了本地 Qwen 有用输出的流程。所有强模型调用、重试、校验、恢复和升级都计入。</p></article>
+      <article><span class="ambition-state">每项任务的强模型上限</span><strong>$1</strong><h3>实验开销有边界。</h3><p>同一稳定任务的所有组别和尝试合计最多花费 1 美元。本地 token 不计入目标，但时间和资源仍有限制。</p></article>
       <article><span class="ambition-state">当前权限边界</span><strong>0</strong><h3>省钱可以，别动我文件。</h3><p>这个有限 worker 的自主文件写入权限为零。读取、校验、出草稿给你审阅。不能为了省点 token，顺手把仓库改成惊喜盲盒。</p></article>
     </div><p class="small ambition-footnote">token 少了多少、钱省了多少，是两笔不同的账。本地开销也得算。<a href="evidence.html">怎么算，我们摊开说 ↗</a></p>
   </section>

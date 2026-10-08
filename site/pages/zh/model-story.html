@@ -1,12 +1,12 @@
 <div class="eyebrow">技术手记 / 从 Qwen 到 Wrench</div>
 <h1>这把小扳手，<br>到底怎么造的？</h1>
-<p class="intro">从现成的 Qwen3.6 出发，挑专家、做裁剪、用 LoRA 补课，再给它配上工具和检查员。下面把这条路摊开讲，不用先读完一本深度学习教材。</p>
+<p class="intro">此页记录早期模型实验。当前实验使用身份固定的 Qwen3.5-4B，测试本地有用工作能否在保持质量的同时减少 30% 强模型 token。</p>
 <div class="note"><strong>先说清进度：</strong>裁剪和微调都有真实实验记录，但还没有得到一个通过全部生产门槛的独立小模型。目前主线是确定性工具、检索和验证组成的混合流程；自由生成工具参数的学习式路由保持关闭。本文回顾模型实验，不代表重新启动训练。</div>
 <ol class="build-path" aria-label="模型研发路线"><li><span>01 / 起点</span><strong>Qwen3.6</strong><small>借已有的底子</small></li><li><span>02 / 减重</span><strong>专家裁剪</strong><small>缩小专家库</small></li><li><span>03 / 补课</span><strong>LoRA 微调</strong><small>练具体任务</small></li><li><span>04 / 打包</span><strong>合并与量化</strong><small>测体积和运行</small></li><li><span>05 / 干活</span><strong>工具 + 验证</strong><small>做完还要检查</small></li></ol>
 <p class="small">这是几条实验路线的总览，不是某一个模型版本已经全部通关的流水线。</p>
 
 <h2 id="source">01. 先站在 Qwen 的肩膀上</h2>
-<p>我从 <a href="https://huggingface.co/Qwen/Qwen3.6-35B-A3B">Qwen3.6-35B-A3B</a> 的官方未量化权重开始。预训练的底子来自 Qwen；Wrench 做的是在这个底子上，尝试把范围收窄、体积压小，专门处理开发中的小任务。</p>
+<p>早期实验使用了官方未量化的 <a href="https://huggingface.co/Qwen/Qwen3.6-35B-A3B">Qwen3.6-35B-A3B</a> 权重。Qwen 是当时裁剪与适配器研究的预训练基础。</p>
 <p>它用的是 <strong>MoE，混合专家</strong>。可以把它想成一个有许多小组的车间：每层有 256 个可选择的专家，每个 token 会选中其中 8 个，另有一个共享专家参与。这里的“专家”是神经网络里的计算模块，不是一个负责写代码、另一个负责讲笑话的真人部门。</p>
 <p><strong>少量专家上班，不等于只要存少量专家。</strong>原模型仍要保存庞大的专家库。于是问题来了：如果只接一小类活儿，能不能少带一些专家出门？</p>
 
@@ -36,7 +36,7 @@
 <p>现在的重点，是把整个工作流程做好。比如你让助手查一个超时问题，其中“读出配置里的 timeout”这一步，可以走下面这条路：</p>
 <ol class="runtime-path"><li><strong>拿到任务和边界。</strong>确认允许访问的目录、操作类型和输入。</li><li><strong>找到相关证据。</strong>从文件或长历史中定位路径、符号、报错和附近内容，留下出处。</li><li><strong>构造一份明确的工作单。</strong>例如读取指定文件的指定行，参数能确定就用程序构造。</li><li><strong>由独立验证器检查。</strong>操作是否允许、路径是否越界、大小和行数是否超限。</li><li><strong>受限执行，绑定结果。</strong>读文件等动作由受限执行器完成；补丁只给草稿。客户端后续答案须绑定已验证的工具结果。</li><li><strong>搞不定就交接。</strong>由调用方按配置把必要证据交给更强的模型，继续推理。小工具不会因此获得随意执行命令或写文件的权限。</li></ol>
 <p><strong>4M 大输入也走这个思路：</strong>先接收、保留和检索大批资料，再提取有用片段送进有限的工作窗口。像先查目录，再翻相关页。它不表示小模型一次原生注意力计算就读懂了 400 万 token，也不保证每条线索都能找全。</p>
-<p>最后要算的是同一件事成功做完的总账：强模型用了多少 token，本地花了多久，有没有重试和返工。裁了多少专家、训练损失多低，都不能单独当作省钱证明。</p>
+<p>当前指标是同一任务成功完成所用的强模型输入与输出 token。本地模型 token 权重为零；重试、校验、恢复和升级都要计入。专家数量与训练损失都不能单独证明节省。</p>
 
 <h2 id="sources">想继续往下看？</h2>
 <p>上游架构见 <a href="https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/README.md">Qwen 官方模型说明</a>。本文的 Wrench 历史数据整理自仓库 Phase 22、24、25、130、222、353、378 的实验记录，以及裁剪、校准和合并脚本，核对日期为 2026-09-22。我们会开源源码、开放模型权重和数据集；开放发布还在准备中。<a href="roadmap.html#openness">看看我们的开放承诺</a>。</p>
