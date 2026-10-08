@@ -1,4 +1,8 @@
 # Wrench 25k quality data
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: superseded by v2; prior v1 status: 0 accepted rows; bounded provider guard implemented and offline-tested; dispatch remains blocked pending prior-charge reconciliation and route-rights review  
 Updated: 2026-09-23  
@@ -6,7 +10,9 @@ Owner: repository agent under human product authority
 
 ## Supersession
 
-The owner has realigned Wrench to [Layer 1 and continuous LoRA](../../northstar/README.md).
+This objective was superseded. The current commitment is the
+[frontier-token reduction goal](../wrench-token30/GOAL.md). It does not revive
+the binary-only corpus plan.
 This binary-only corpus goal is retained as historical provenance. Its 25k
 allocation, next-action instructions and scoped provider approval are not v2
 data requirements or spend authority. Existing unresolved data/charge findings
@@ -128,16 +134,9 @@ teacher, if later authorized, is a separately versioned comparison.
   output rights subject to model terms and disclaim guarantees about provider
   data handling; route-specific terms remain an unresolved prerequisite.
 
-## Next action
+## Historical disposition
 
-Resolve the prior pilot's charge status and route-specific output rights before
-any paid request. The corpus validator's undefined `group_splits` crash has
-been fixed; its post-fix invocation against `dataset/manifest.json` returns a
-structured `FAIL` because that file is an exclusion manifest rather than a
-corpus manifest. No accepted corpus rows exist, and no production-ready
-manifest has been validated. Continue by producing small deterministic
-fixture/oracle batches, binding them to reviewed task specifications, and
-proving split isolation before scaling. Do not use the unresolved current
-sealed-final set as untouched evaluation evidence. Prepare a publication
-candidate only after all gates pass, then stop for concrete rights and artifact
-review before external release.
+This superseded corpus goal has no current next action or data-generation
+authority. Its unresolved charge, rights, validation and split findings remain
+historical evidence. Follow the [active objective](../wrench-token30/GOAL.md)
+for the current task and data scope.

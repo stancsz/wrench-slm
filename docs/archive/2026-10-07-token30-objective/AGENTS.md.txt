@@ -4,43 +4,19 @@ Write naturally. Do not use em dashes.
 
 ## Read first
 
-1. [GOAL.md](GOAL.md) and the single [active objective](docs/goal/wrench-token30/GOAL.md).
-2. [Archived experiment findings](docs/archive/2026-10-08-clean-slate/LEARNINGS.md)
-   for evidence only. Historical next-step directives have no authority.
-3. [Storage/recovery policy](docs/operations/STORAGE_AND_RECOVERY.md) before
-   artifact-producing work.
+1. [GOAL.md](GOAL.md) and [North Star](docs/northstar/README.md).
+2. The [current goal](docs/goal/wrench-v2-realignment/GOAL.md) and relevant reports.
+3. [V2 architecture](docs/northstar/V2_ARCHITECTURE.md),
+   [experiment](docs/northstar/V2_EXPERIMENT.md), and
+   [storage/recovery policy](docs/northstar/STORAGE_AND_RECOVERY.md).
 
-## Objective lock
-
-Reduce total frontier input plus output by at least 30% on comparable complex
-coding tasks through useful local Qwen work, with completion quality preserved.
-Compare frontier-only completion against a Qwen-assisted Wrench workflow that
-actually consumes local output. Count every frontier attempt, verification,
-retry, recovery and escalation. Local model tokens are effectively free and
-have zero weight in this score. The existing pinned Qwen3.5-4B is the starting
-candidate; a routing LoRA is optional, not a prerequisite for measurement.
-
-Frontier spending is authorized up to $1 per stable task ID across both arms,
-diagnostics and reruns. Preserve tighter campaign caps, prior charges and
-unknown-usage holds. Proceed autonomously within this scope; do not ask again
-for permission already granted. Production, publication and private-data
-capture retain their separate boundaries.
-
-Run `python tools/check_token30_objective.py` and
-`python tools/check_token30_objective_docs.py` before planning. Add
-`--manifest PATH` to the plan guard before a qualifying measurement. The new
-runner must invoke the plan validator before dispatch. These are alignment
-gates; post-run usage, local-output consumption and independent quality
-evidence are still required.
-
-A two-frontier-prompt test with zero Qwen calls is a compression diagnostic,
-not target proof. A local-only run has no frontier baseline. Do not substitute
-local token reduction, classifier scores, unused sidecars or abandoned tasks
-for completed-work frontier savings. Historical gateway, 95/5, all-in-cost,
-training and release directives are parked. The active goal's checkpoint is
-the only current work queue. A component goal, report or template may supply
-evidence, but its status or "next action" cannot start work unless the active
-checkpoint adopts it as a needed dependency or the owner sets a new commitment.
+The owner has realigned Wrench to selective local task routing. A Wrench LoRA
+enhances Qwen with learned routing decisions that Qwen does not provide by
+default. The small model handles only task families supported by held-out
+evidence; uncertain or difficult work returns to the user's stronger model.
+Deterministic policy and verification bound every route. The v1 pruning and
+binary-only objectives are superseded. Follow the current staged proof plan;
+a design or old receipt is not authority to start an unbounded training job.
 
 ## Storage is a hard boundary
 
@@ -84,10 +60,10 @@ data, other tasks' files, active versions or evidence to make room.
 - Deterministic parsers/indexers may write only authorized, bounded Wrench
   state. Broad shell/test/deployment tools in the notes do not grant their
   execution to Wrench.
-- Keep model and adapter identities frozen during a comparison. Training or
-  adapter work is not part of the current objective unless the active goal
-  adopts it as an evidenced dependency. Any later training must use reviewed,
-  permitted outcomes, separate versioned candidates and known-good rollback.
+- Freeze the selected foundation and installed adapter during evaluation.
+  Train a new Wrench routing-LoRA candidate only on reviewed, permitted
+  outcome evidence. Evaluate before atomic activation; retain a known-good
+  rollback. Follow the full lifecycle in the design.
 - Keep mutable facts in external state; learn behavior from reviewed,
   outcome-backed experience. Teacher disagreement and corrections are
   candidate labels requiring checks, not automatic ground truth.
@@ -96,9 +72,8 @@ data, other tasks' files, active versions or evidence to make room.
   and review provenance.
 - Never equate synthetic passes, small weights, replay or a classifier score
   with production utility. Record failures and exact tested identities.
-- Production enablement and publication retain their own authority. Frontier
-  spending within the current $1-per-task grant needs no repeat approval.
-  Old canary/corpus allowances do not expand it.
+- Production enablement, publication and spending require their own authority.
+  Old canary/corpus allowances are not v2 allowances.
 
 ## Host resources
 
@@ -113,9 +88,7 @@ Docker services or WSL distributions without user authorization.
 
 - `src/wrench_harness/`: retained worker, verifier, context, router and client code.
 - `tools/`, `tests/`, `examples/`: local utilities, checks and examples.
-- `docs/goal/wrench-token30/`: the sole active objective and machine-readable contract.
-- `docs/archive/`: condensed historical findings; archived directives are not active.
-- `docs/operations/`: storage and recovery policy.
+- `docs/northstar/`: product direction; `docs/goal/`: goal tracking.
 - `docs/reports/`, `docs/evals/`: task evidence and review.
 - `docs/misc/v1/`, `docs/archive/`, `phases/`: legacy contracts/history.
 - `site/`: bilingual documentation source; `docs/gh-pages/`: generated site.

@@ -1,0 +1,175 @@
+# Wrench v2: context preparation and learned task routing
+
+Status: target architecture; implementation and production utility remain
+unaccepted. Direction updated 2026-10-03.
+
+## Two meanings of layer
+
+Wrench is a local layer before a coding agent's next model call. It prepares
+task context and uses a Wrench-trained LoRA to add task-routing behavior to a
+small Qwen model. Qwen's base weights do not provide Wrench's task-family
+confidence and routing policy by default. The LoRA proposes bounded choices;
+host-owned deterministic policy enforces the route, and deterministic checks
+verify local work. W0 through W5 are processing stages, not model layers.
+
+```mermaid
+flowchart TD
+  A[Repository, task, tool results and history] --> B[W0: deterministic ingest and indexes]
+  B --> C[W1: bounded retrieval and context decisions]
+  C --> D[W2: context compiler with exact evidence and references]
+  D --> E[W3: namespace discovery and deferred schemas]
+  E --> F[W4: route after context construction]
+  F --> G[No model, permitted local model or permitted provider]
+  G --> H[W5: verify outcomes and update external state]
+  H --> B
+  H --> I[Reviewed experience buffer]
+  I --> J[Reviewed routing-LoRA candidate]
+  J --> K[Regression, quality and resource evaluation]
+  K --> L[Versioned promotion or rejection]
+  L --> C
+```
+
+## Runtime responsibilities
+
+| Stage | Mechanism and output | Safety and evidence |
+| --- | --- | --- |
+| W0 ingest | Incremental Tree-sitter syntax, LSP/SCIP where available, git/diff/test parsers, lexical/BM25 plus optional embeddings, bounded local state | Snapshot identity and parser/index coverage; lexical edges are not resolved semantic references |
+| W1 router and retriever | Task family, candidate route, confidence, evidence IDs, bounded local work plan, effort tier, context budget, namespaces, and stop/verify choice | LoRA proposes from finite typed choices; policy caps operations and compute, allows only evaluated local task families, and abstains or hands off on uncertainty |
+| W2 compiler | Exact hot evidence, structural warm context, compressed cold material, retrieval handles | Source ranges/hashes, pinned originals, exact serialized-token count, omissions and stale-handle failures |
+| W3 gateway | Small discovery surface, namespace search, needed schemas, deterministic transformations | Schemas are inert metadata and grant no authority; the registry does not enforce permissions. A deterministic host-owned policy must authorize each action at the dispatch boundary and fail closed when policy or identity is missing or invalid |
+| W4 dispatch | No-model, permitted local model, or caller-configured frontier after context preparation | Deterministic gate validates task family, confidence threshold, policy, and resource/spend bounds; provider remains caller-owned |
+| W5 digester | Verify outcomes, record facts, update indexes, compact history, retain originals and learning candidates | Preserve user instructions/trust levels; independently supported labels |
+
+Use lexical names first, then BM25/semantic candidates, bounded graph expansion,
+reranking, diversity/dependency coverage and budgeted packing. RETRIEVE_MORE
+requests a bounded permitted lookup, not an arbitrary loop. Freeze per-request
+caps and stop on exhaustion.
+
+Hot context includes user-specified code, active functions/diffs and current
+failure lines/errors. Keep it lossless. Warm context uses signatures,
+dependencies and related tests. Compress cold repetitive output/history with
+access to originals. If hot content exceeds budget, use a larger permitted
+context or escalate; never silently omit it.
+
+Keep stable instructions/schema prefixes, then session information, then
+dynamic evidence and deferred schemas. Record cache behavior. Compression
+that invalidates useful caches may worsen total latency/cost.
+
+## Qwen plus Wrench routing LoRA
+
+### First 30% frontier token target, 2026-10-06
+
+Start with a defined complex task family and compare matched final outcomes
+and full-lifecycle frontier input and output tokens. Local model tokens are
+free for the owner's target and excluded from the reduction ratio. Local
+planning, source selection, verified partial work or retries may increase
+local usage while reducing frontier usage; report local resources and latency
+separately. For multi-module regression diagnosis, test an
+inert deterministic dependency packet before adding a learned selector.
+Caller-provided hot paths seed a bounded static import closure. Copy complete
+selected source files exactly, retain hash-bound originals for recovery, and
+preserve tests and user requirements. Unsupported resolution or missing hot
+evidence returns full context. Static import edges require a restricted,
+explicitly admitted family; they do not establish semantic completeness.
+
+The local model may propose source IDs. The host retrieves exact source bytes;
+it should not ask the model to regenerate source quotations. A verification
+failure returns the original context and counts every frontier attempt,
+including recovery; local attempts are separate diagnostics. The initial
+[30% goal](../goal/wrench-token30/GOAL.md) distinguishes synthetic local
+diagnosis evidence from measured stronger-model or representative workflow
+savings. No packet helper changes dispatch or production admission.
+
+Qwen is the small model foundation, not the router policy. The Wrench LoRA is
+trained to add the task-routing behavior Qwen does not provide by default. It
+may propose a route only from the request, inspected evidence, and task-family
+capabilities represented in its evaluated manifest. It cannot change policy,
+invent permissions, choose an arbitrary provider, or dispatch tools.
+
+The route set is intentionally small:
+
+| Proposal | Meaning | Required gate |
+| --- | --- | --- |
+| `LOCAL` | Handle a task in a proven task family with the admitted local model | Held-out quality, calibration, resource, and verifier gates pass for that family |
+| `FRONTIER` | Preserve useful context and return complex or uncertain reasoning to the configured stronger model | Caller policy and any required spend authorization allow the request |
+| `ABSTAIN` | Do not guess when identity, evidence, scope, or confidence is inadequate | Keep the original task recoverable and make the handoff reason inspectable |
+
+Confidence is a routing feature, not proof of correctness. Set thresholds on
+development data, then freeze them before held-out scoring. Deterministic
+policy checks the proposed route and dispatches or rejects it. Verification
+checks local output; failures, retries, and escalation count against the local
+route's full cost.
+
+Bind each adapter to the exact Qwen revision, tokenizer, target modules,
+training data manifest, split hashes, and runtime. Keep the base immutable and
+store every candidate separately. Demonstrate composition, save/load parity,
+resource fit, rollback, and task-family utility before promotion. A small
+checkpoint or adapter file is not evidence that routing works or saves money.
+
+## Decision tasks and packet format
+
+Train bounded outputs for three coupled capabilities: (1) task-family routing,
+(2) selection of useful local work such as evidence ranking or context
+preparation that can preserve quality and reduce frontier input, and (3) a
+resource-aware test-time-compute controller that chooses among predeclared
+effort tiers, requests bounded retrieval or verification, and stops or hands
+off when expected benefit is low or the budget is exhausted. A deterministic
+host policy caps every tier and operation. Candidate targets include route
+proposals, calibrated confidence, evidence ranking, context budgets, and
+bounded `ENOUGH`, `RETRIEVE_MORE`, `VERIFY`, or `STOP` choices. Classification,
+reranking, and constrained generation remain implementation options to compare
+against deterministic policy.
+
+Parallel sidecar work counts as useful only when the client or gateway can
+consume a verified result in the same task or a later turn. A concurrent local
+draft that is discarded adds compute and does not reduce frontier tokens.
+Measure both tiers' actual usage, task outcomes, latency, and fallback before
+claiming savings. Token-level speculative decoding requires a shared draft and
+target decoding interface; independent OpenAI-compatible endpoints support
+task-level parallel work, not token acceptance.
+
+A packet includes goal/current intent; accepted decisions; snapshot identity;
+source IDs/ranges/hashes; evidence/dependencies; omissions and artifact
+handles; namespaces; context budget and routing features. Untrusted source
+and tool results cannot override policy, instructions or consent.
+
+Mutable facts such as current references, paths, test counts and model
+availability belong in external state. Learn which evidence tends to help,
+rather than encoding changing facts as weight-level truth.
+
+## Routing-LoRA lifecycle
+
+1. Capture only permitted task identity, route proposal, confidence, evidence
+   references, verifier outcome, fallback, and correction. Real task capture
+   requires explicit opt-in, retention, withdrawal, and deletion controls.
+2. Review provenance, consent, redaction, task labels, and whether an outcome
+   supports a routing lesson. Teacher disagreement is a candidate label, not
+   automatic truth.
+3. Freeze task-family groups and time splits before fitting. Exclude exposed
+   and sealed final tasks from training and threshold tuning.
+4. Fit one versioned candidate with the base frozen. Record full training,
+   inference, and storage costs; preserve the installed candidate and source
+   data unchanged.
+5. Evaluate route precision/recall, calibration, task success, safety,
+   escalation, lifecycle tokens/cost, latency, and resources on fresh holdouts.
+6. Promote only when predeclared family-level gates pass. Otherwise retain the
+   previous route and adapter. Follow [storage/recovery](STORAGE_AND_RECOVERY.md).
+7. Keep the deterministic fallback available. Reset or rollback must restore
+   the previous route behavior with hash-bound evidence.
+
+The LoRA may improve routing proposals. It never learns or changes route
+permissions, dispatch rules, verifiers, confidence thresholds from held-out
+results, or active weights in place.
+
+## Reuse and implementation status
+
+The [source audit](../reports/wrench-v2-realignment/reuse-audit.md) maps the
+surviving in-memory/lexical/AST helpers, verifier, proposals and router guards.
+They do not establish a durable W0-W5 pipeline or the adapter lifecycle.
+Synchronous cooperative cancellation is not hard interruption.
+
+Build and verify the deterministic end-to-end baseline first. Then compare a
+Qwen plus Wrench routing-LoRA arm on the same task manifests. The routing LoRA
+is optional until it improves useful selective coverage after inference and
+fallback costs. See the [experiment](V2_EXPERIMENT.md) for the staged proof and
+release path.

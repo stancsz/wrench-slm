@@ -1,0 +1,85 @@
+{
+  "schema": "wrench.direction-snapshot.v1",
+  "purpose": "Exact live direction before 2026-10-07 objective hardening; historical only, not execution authority",
+  "repo_head": "850b0ca53fca892abde6c50bac8fa9c52175fec5",
+  "files": [
+    {
+      "source": "AGENTS.md",
+      "snapshot": "AGENTS.md.txt",
+      "bytes": 6423,
+      "sha256": "f1f3d9406ed572d5a5858dc72885d0e439fa9a8078382356afd71ccaefe19613"
+    },
+    {
+      "source": "GOAL.md",
+      "snapshot": "GOAL.md.txt",
+      "bytes": 3681,
+      "sha256": "6e8144911bfa70afe984060d75619704bbefc8aa87db06b4e6e430f1c94044d3"
+    },
+    {
+      "source": "README.md",
+      "snapshot": "README.md.txt",
+      "bytes": 4022,
+      "sha256": "50ca82baafe17775202aed97e52e4da497f32d4064301850e8b00fa054f82292"
+    },
+    {
+      "source": "COLLABORATION_CONTRACT.json",
+      "snapshot": "COLLABORATION_CONTRACT.json.txt",
+      "bytes": 7482,
+      "sha256": "5095460be3a2f9ca7c5f2ee3cab208ce55281db2bcb2fce3e709779ded6ecb44"
+    },
+    {
+      "source": "docs/northstar/README.md",
+      "snapshot": "docs/northstar/README.md.txt",
+      "bytes": 12955,
+      "sha256": "35cf09f2f6c3f103acec8fe5c545a91f47d478886c1ca19201c42375bf5e4286"
+    },
+    {
+      "source": "docs/northstar/V2_ARCHITECTURE.md",
+      "snapshot": "docs/northstar/V2_ARCHITECTURE.md.txt",
+      "bytes": 10974,
+      "sha256": "f0d0ecd662421ceccbfefacca317a17628b0ce37b696e221c9a7700fcf7f942d"
+    },
+    {
+      "source": "docs/northstar/V2_EXPERIMENT.md",
+      "snapshot": "docs/northstar/V2_EXPERIMENT.md.txt",
+      "bytes": 23591,
+      "sha256": "7a25e9f0a49b9eda952db98a466f114fb84fcdce6a4a0b95b817186ac4ff8079"
+    },
+    {
+      "source": "docs/goal/README.md",
+      "snapshot": "docs/goal/README.md.txt",
+      "bytes": 8623,
+      "sha256": "8a62ae0a4933e857c6ba6e0a70a7891e3186e00fffbd4b44bdf91126bf6be5f1"
+    },
+    {
+      "source": "docs/goal/wrench-gateway-model-research/GOAL.md",
+      "snapshot": "docs/goal/wrench-gateway-model-research/GOAL.md.txt",
+      "bytes": 187031,
+      "sha256": "676934fb3bef0ef9a5e094fccb2c38463f7840aaf540304b32b79399e0c404b2"
+    },
+    {
+      "source": "docs/goal/wrench-token30/GOAL.md",
+      "snapshot": "docs/goal/wrench-token30/GOAL.md.txt",
+      "bytes": 6312,
+      "sha256": "95325cb56ecc10ed4f457596a12b1a0facc76d6020eef44d2ee85b078f634863"
+    },
+    {
+      "source": "site/README.md",
+      "snapshot": "site/README.md.txt",
+      "bytes": 6338,
+      "sha256": "74244a986fd986f68cb12e6fc6416fb83408fe07d95ac179218414a148dcf33a"
+    },
+    {
+      "source": "docs/northstar/DATA_SOURCES.md",
+      "snapshot": "docs/northstar/DATA_SOURCES.md.txt",
+      "bytes": 23962,
+      "sha256": "1130e2f545009dea97262dbf76aa951fdb8d811bd08f9f1d1a9866ce86962238"
+    },
+    {
+      "source": "docs/northstar/E4_PREREGISTRATION_TEMPLATE.md",
+      "snapshot": "docs/northstar/E4_PREREGISTRATION_TEMPLATE.md.txt",
+      "bytes": 12127,
+      "sha256": "11c342c48c201d6b1a97999a2d3dfbc938ad12059d672ea36d6df62180607487"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+# First 30% frontier token reduction target
+
+Status: in progress; frontier target remains unachieved after two negative pilots
+Owner direction: 2026-10-06 (America/Edmonton)
+
+The owner requests experiments and design changes to first reduce frontier
+tokens by 30% for the same type of complex tasks. On 2026-10-06 the owner
+clarified that local model tokens are free for this objective. Begin with one
+defined task family, preserve outcomes, and count every frontier call in the
+entire workflow. Do not substitute prompt compression, simulated usage, or
+routing scores for observed frontier token savings.
+
+## Primary metric
+
+`frontier_reduction = 1 - candidate_workflow_frontier_tokens / baseline_frontier_tokens`
+
+Both totals include all frontier input and output tokens, including failed
+attempts, retries, verification calls, retrieval and recovery calls, and
+escalation. Use matched provider usage conventions and a nonzero frontier-only
+baseline denominator. Keep task completion and quality gates alongside the
+30% target; abandoning work cannot earn savings.
+
+Local input/output tokens never enter either total or a token-to-cost conversion
+for this target. Local planning, selection, verified partial work and local
+retries may be useful even when they increase local tokens. Report their
+tokens, latency and resource use separately. Storage and RAM/VRAM bounds still
+apply. A verified local completion with no frontier calls can contribute zero
+candidate frontier tokens against a measured successful frontier baseline.
+
+## First bounded diagnostic
+
+Family: flat Python multi-module regression diagnosis with caller-provided
+entry and failing-test paths. A deterministic import closure preserves complete
+selected files, exact user instructions and tests. Original files remain
+recoverable through snapshot hashes. Unsupported imports, dynamic resolution,
+missing hot evidence, and nonreducing packets retain complete context.
+
+The first paired pilot uses six newly authored synthetic cases, three bug
+types with two variants each. These are open development fixtures, not sealed
+evaluation or representative customer work. They validate the measurement
+mechanism and a narrow local model response only. Repeated bug types do not
+constitute six independent observations of general coding quality.
+
+Compare the same pinned base Qwen, chat template, deterministic generation,
+context cap and output cap. Alternate arm order. Score diagnosis against a
+finite authored repair and its behavioral regression tests. Model-generated
+code never executes. Charge one full-context recovery after every failed
+candidate attempt. Retain every failure in token and success totals.
+
+The original frozen local pilot gate required all baseline and candidate
+workflows to pass, and at least 30% local input-plus-output token reduction on
+every pair including recovery. Preserve that historical diagnostic gate and
+its result. It does not test the owner's clarified frontier target. The
+prepared stronger-model pilot instead counts frontier input and output only,
+including recovery, with the same quality and per-pair 30% gates.
+
+## Authority and operating limits
+
+The owner approved **$1 in frontier spending per task** on 2026-10-06. Count
+baseline, candidate, recovery, retries and retained unknown-usage holds against
+the same task cap; a new run directory does not reset it. The prepared six-task
+campaign retains the tighter $0.20 aggregate limit, so each task is also below
+$1. This is scoped provider spending authority, not production, training,
+publication, real-data capture or unrestricted credential access.
+
+The first authorized frontier request returned HTTP 401 and retained a
+$0.0037767 worst-case hold. The owner later authorized a $1 per-task cap and
+credential use. The authenticated runner read only `WRENCH_FRONTIER_API_KEY`
+with the authority flag; the key was not logged or persisted. Six authenticated
+MiniMax-M3 calls have now settled in the latest comparison. See the
+[frontier attempt report](../../reports/wrench-token30/frontier-01.md) and
+[frontier-16 comparison report](../../reports/wrench-token30/frontier-03.md).
+
+The 50 GB aggregate storage ceiling, admitted reservations, physical disk
+headroom, bounded scratch/logs and at least 10% RAM/VRAM free remain mandatory.
+Inventory and verify the already-present pinned model before loading it.
+
+## Completion evidence still needed
+
+The [first pilot report](../../reports/wrench-token30/pilot-01.md) records
+18 actual local model attempts: 10,301 baseline tokens versus 15,944 candidate
+workflow local tokens including recovery, a 54.78% increase. That local token
+growth is not a failure of the frontier-token target. Both arms failed all
+six exact contract checks, so this diagnostic does not admit local completion.
+Initial local input reduction was 48.48%. That pilot had no provider calls, so
+frontier reduction there was undefined. The first authenticated frontier-10
+comparison then failed all six baseline/candidate quality checks and measured
+-56.5% effective reduction. A follow-up frontier-16 comparison narrowed the
+scope to two related normalization variants and supplied the same test-grounded
+repair guidance to both arms. Both arms still failed both cases. Candidate
+workflows, including required full-context recovery, used 59.8% and 60.2% more
+frontier tokens than their baselines. The packet alone used about 41% fewer
+tokens, but this did not translate into successful work or end-to-end savings.
+Frontier reduction remains unachieved. Independent review verified the bounded
+source and experiment accounting; these synthetic results do not establish
+representative complex-task quality.
+
+1. A diverse fresh challenge set for the same family, including recovery,
+   relevant near-matches, changed evidence and cases that cannot shrink.
+2. Matched stronger-model outcomes and complete frontier usage, with a numeric
+   provider cap and approved representative task provenance before that run.
+3. Quality and safety gates alongside the 30% target, with uncertainty and
+   local processing cost reported separately.
+
+The parent [experiment](../../northstar/V2_EXPERIMENT.md) and
+[gateway goal](../wrench-gateway-model-research/GOAL.md) remain authoritative
+for later routing-LoRA capability, activation and release gates.

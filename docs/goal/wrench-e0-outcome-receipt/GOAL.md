@@ -1,4 +1,8 @@
 # E0 bounded outcome receipt
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: accepted bounded contract slice; not an E0 completion claim  
 Job: `W2-E0-OUTCOME-RECEIPT-20260924`  

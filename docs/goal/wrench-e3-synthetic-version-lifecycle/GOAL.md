@@ -1,4 +1,8 @@
 # E3 synthetic model-version lifecycle
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: accepted bounded synthetic development primitive; production E3 gates remain open
 Supervisor: learning lifecycle supervisor, under root integration authority

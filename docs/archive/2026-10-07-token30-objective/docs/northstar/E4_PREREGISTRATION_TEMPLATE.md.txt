@@ -6,11 +6,11 @@ run. Leave unresolved fields marked `TBD`; do not treat a completed form as
 approval. Obtain the human approvals listed below before collecting or running
 any real task.
 
-Use this template to freeze one proposed E4 study before accessing its sealed
-evaluation tasks. E4 is intended to assess matched real workflows across
-OpenCode, DeepSeek Harness, and Claude Code after the required upstream stages
-and integrations are accepted. A first-client replay is a scoped integration
-milestone, not full E4 evidence or full client support.
+Use this template to freeze one proposed release-utility study before accessing
+its sealed evaluation tasks. Start with the first supported client and expand
+to another client only after the first complete workflow is stable. This
+template does not imply that three-client support is required for the initial
+release.
 
 ## 1. Study identity and readiness
 
@@ -73,12 +73,12 @@ protocol document.
 
 | Identity | Frozen value or manifest reference |
 | --- | --- |
-| Client name and version for each of the three integrations | `TBD` |
+| Client name and version for this study | `TBD` |
 | Wrench build/source commit and configuration | `TBD` |
 | Hook/API lifecycle point and request boundary | `TBD` |
 | Final request serializer and tokenizer name, revision, and settings | `TBD` |
 | Downstream model/provider identity, revision, and endpoint class | `TBD` |
-| Foundation, Wrench-Core, and personal adapter hashes/versions | `TBD` |
+| Qwen foundation and Wrench routing-LoRA hashes/versions | `TBD` |
 | Prompt, system instructions, schemas, and decoding settings | `TBD` |
 | Context/token budgets and truncation rules | `TBD` |
 | Local model/runtime, hardware, and precision settings | `TBD` |
@@ -93,10 +93,9 @@ Specify how each arm receives equivalent task information and downstream
 budgets. Pin configurations and order randomization before opening the final
 set.
 
-1. Downstream model alone with its normal context: `TBD`
-2. Deterministic Wrench plus the same downstream/fallback model: `TBD`
-3. Wrench plus foundation and frozen Wrench-Core controller and the same fallback: `TBD`
-4. Arm 3 plus a personal adapter trained only on prior permitted data: `TBD`
+1. User's stronger model alone with its normal workflow: `TBD`
+2. Deterministic Wrench context/routing with the same frontier fallback: `TBD`
+3. Qwen plus Wrench routing LoRA with deterministic policy, verification, and the same fallback: `TBD`
 
 - Task/arm order randomization and counterbalancing: `TBD`
 - Provider/local route rules and fallback behavior: `TBD`

@@ -1,4 +1,8 @@
 # Measure acceptable local work
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: closed 2026-09-26 by owner decision. The small local SLM as an
 OpenCode primary or semantic controller is not feasible for the intended

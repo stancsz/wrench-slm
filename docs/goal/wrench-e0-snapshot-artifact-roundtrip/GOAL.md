@@ -1,4 +1,8 @@
 # E0 snapshot to artifact store to context roundtrip
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: bounded implementation slice accepted; E0 remains incomplete
 Job: `W2-E0-SNAPSHOT-ARTIFACT-ROUNDTRIP-20260924`

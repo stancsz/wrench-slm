@@ -32,7 +32,7 @@ from typing import Any
 DATA_ROOT = Path(r"C:\wrench-slm-data\datasets\wrench-gateway-model-research\lora-screen-01")
 MODEL_DIR = Path(r"C:\wrench-slm-data\weights\Qwen3.5-0.8B")
 INVENTORY = Path(r"C:\wrench-slm-data\artifacts\wrench-gateway-model-research\lora-screen-01-model-inventory.json")
-MODEL_CANDIDATE = Path(__file__).resolve().parents[1] / "docs/northstar/model-candidate.json"
+MODEL_CANDIDATE = Path(__file__).resolve().parents[1] / "docs/archive/2026-10-08-clean-slate/model-candidate.json"
 APPROVED_ROOT = Path(r"C:\wrench-slm-data")
 FIT_ATTEMPT_DIR = Path(r"C:\wrench-slm-data\artifacts\wrench-gateway-model-research\lora-screen-02\fit-03-attention-only")
 OUTPUT = FIT_ATTEMPT_DIR / "adapter"

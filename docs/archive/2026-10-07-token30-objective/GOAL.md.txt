@@ -1,0 +1,60 @@
+# Wrench direction: selective local routing with frontier fallback
+
+Updated: 2026-10-03 (America/Edmonton)
+Owner: human product owner; repository agent maintains the evidence
+
+Wrench is a local context and routing layer for coding agents. Its goal is to
+intercept work a small local model can handle reliably, and route uncertain or
+hard work to the user's stronger frontier model. Wrench does not aim to replace
+frontier models for every task.
+
+Qwen is the foundation, not the finished Wrench router. A Wrench LoRA adds
+task-specific routing behavior that Qwen does not have by default. The LoRA
+proposes bounded route choices from evaluated task families. Deterministic
+policy enforces allowed routes, and independent verification checks local
+results. When evidence or confidence is insufficient, Wrench hands off with
+the needed context. The system must demonstrate that its savings survive
+fallback, verification, retries, and local operating cost.
+
+The release path prioritizes reproducible proof over model expansion:
+1. Ship a useful, deterministic context and routing baseline with complete
+   lifecycle receipts.
+2. Evaluate one small-model-plus-Wrench-LoRA route on frozen, diverse tasks;
+   expand only task families that retain quality while reducing total cost.
+3. Validate integration, recovery, installation, licensing, data provenance,
+   and a reproducible public artifact before calling Wrench release-ready or
+   publishing weights/data to Hugging Face.
+
+The v1 pruning and binary-only objectives are superseded. Earlier 95/5 and
+95%-savings targets are historical hypotheses, not product-wide routing quotas
+or release gates. Current acceptance is quality-gated selective coverage and
+measured full-workflow benefit, as defined in the North Star and experiment.
+
+## Authoritative records
+
+- [First 30% frontier token target](docs/goal/wrench-token30/GOAL.md): current
+  owner-directed bounded experiments for the same complex task family, with
+  quality and all frontier input, output, retry and recovery usage counted.
+  Local model tokens are excluded from this target and reported separately.
+
+- [North Star](docs/northstar/README.md): customer, value, standards, constraints.
+- [Architecture](docs/northstar/V2_ARCHITECTURE.md): context pipeline and adapter lifecycle.
+- [Experiment v2](docs/northstar/V2_EXPERIMENT.md): stages, comparison arms, metrics and stop criteria.
+- [Realignment goal](docs/goal/wrench-v2-realignment/GOAL.md): this cleanup's acceptance and evidence.
+- [Gateway routing experiment](docs/goal/wrench-gateway-model-research/GOAL.md): current evidence, bounded routing-LoRA role, and next proof gates.
+- [V1 learning](docs/northstar/V1_LEARNINGS.md): incident account and durable corrections.
+- [Storage/recovery](docs/northstar/STORAGE_AND_RECOVERY.md): strict aggregate limit below 50 GB.
+- [Collaboration contract](COLLABORATION_CONTRACT.json): present execution authority.
+- [Goal index](docs/goal/README.md): current and superseded work.
+
+The current user-directed continuation is the staged selective-routing proof
+in the gateway goal linked above. It does not mark the deterministic baseline,
+local-model task families, product-wide savings, release readiness, or a
+Hugging Face publication as accepted. Current metrics and gates are in the
+experiment record.
+
+Retained v1 tools, tests, source and receipts support reuse and regression
+analysis. They do not establish v2 capability. The former corpus goal, paid
+canary and hardware queue are historical scoped work; their permissions and
+results do not transfer to this experiment. See the
+[exact pre-realignment snapshots](docs/archive/2026-09-23-v1/README.md).

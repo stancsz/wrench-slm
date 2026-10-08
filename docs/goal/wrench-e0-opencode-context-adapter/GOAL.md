@@ -1,4 +1,8 @@
 # E0 OpenCode V2 context adapter contract
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: provider-free Wrench seams, a synthetic offline loopback request/lease boundary, a strict Wrench-owned project enrollment registry, and route-owned synthetic request/lease composition are implemented and independently reviewed. The latest offline follow-up adds synthetic prompt accounting over all seven validated context-hook fields. Isolated OpenCode v2.0.15 CLI is configured, but no Wrench hook integration or client prompt/task request has run
 Job: `W2-E0-OPENCODE-SESSION-ROOT-20260924`
@@ -191,43 +195,14 @@ The [V2 compaction guide](https://opencode.ai/v2/docs/compaction) describes
 its preflight size estimates and explicitly warns heuristic estimates cannot
 prevent every provider-specific overflow.
 
-## Next action
+## Deferred integration and data gates
 
-Implementing the actual OpenCode plugin remains gated on an owner-approved
-integration design and pinned runtime validation. Exact prompt gating remains
-gated on the complete provider/model request path, token counting for that
-request, and a documented or verified fail-closed dispatch contract. The future
-matched-task corpus and outcome-oracle protocol are selected below, but owner
-approval and participant consent remain prerequisites before any real capture
-or E4 utility measurement.
-
-The selected E0 characterization target is OpenCode `v2.0.15`, the OpenAI
-Responses route, and model `gpt-4.1-2025-04-14`. Pin the candidate provider-body
-lowering to the tagged `@opencode/ai@2.0.15` `OpenAIResponses.fromRequest`
-path, and separately pin the route, endpoint, transport, and any downstream
-request hooks before claiming final-request equivalence. Pin the local text
-tokenizer to `tiktoken==0.9.0`, explicitly loading `o200k_base`
-(encoding-file SHA-256
-`446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d`). These
-are source/research pins only; neither dependency was installed or run. The
-local tokenizer is not an exact count of a Responses request with tools,
-images, files, or provider-specific structure. Exact input counting requires
-the Responses input-token endpoint with the final equivalent request body;
-that would send request data to OpenAI and requires separate provider-data and
-spending approval before any call. A count of a submitted body would not itself
-establish that it is OpenCode's actual final request or that a later model call
-is blocked. The endpoint also does not establish that the hook projection
-matches OpenCode's later request transformations. Therefore the E0 prompt gate
-remains open. The pinned tokenizer's v0.9.0 model map also does not establish
-the selected model-to-encoding association; explicit `o200k_base` is a
-reproducible research pin only.
-
-For corpus mechanics now, use only a small Wrench-authored synthetic
-matched-task fixture set with deterministic task-specific checks and independent
-blinded verification. This can check harness behavior but cannot establish E4
-customer utility. The future source and oracle protocol are designated above;
-real utility work still needs owner-approved consent, use, access, retention,
-withdrawal, and deletion processes before collection.
+No OpenCode plugin, exact prompt gate or real-task corpus is part of the
+current objective. This goal's former integration and corpus proposals are
+historical references only. Resume them only if the [active goal](../wrench-token30/GOAL.md)
+checkpoint names a specific gate as an evidenced dependency. Real task capture
+still requires separate rights, consent, access, retention and deletion
+authority.
 
 ## Follow-up: isolated local CLI setup and mock runtime preflight
 

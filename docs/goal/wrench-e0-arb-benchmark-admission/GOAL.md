@@ -1,4 +1,8 @@
 # E0 ARB benchmark admission audit
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: read-only source audit complete; dataset download remains unadmitted
 Job: `W2-ARB-READONLY-ADMISSION-AUDIT-20260924`
@@ -44,9 +48,9 @@ does not establish Wrench's final utility. Keep the public subset evaluation-
 only, report per track and abstention stratum, and keep it quarantined from
 training.
 
-## Next action
+## Historical acquisition disposition
 
-Resolve the full archive member and expanded-byte inventory, exact per-repo at
-base-commit license/notice mapping, and task/query provenance. Then prepare a
-fresh storage reservation with measured download, extraction, evaluation and
-cleanup peak. Do not download while any item is unresolved.
+The proposed benchmark remains unadmitted and has no current acquisition
+action. Its inventory, licensing and provenance findings are reference only.
+Do not resume this study unless the [active goal](../wrench-token30/GOAL.md)
+checkpoint names it as an evidenced dependency.

@@ -1,6 +1,6 @@
 # Wrench North Star
 
-Updated: 2026-09-23 (America/Edmonton)
+Updated: 2026-10-03 (America/Edmonton)
 
 ## Product thesis
 
@@ -24,34 +24,48 @@ hosted service or new revenue model is assumed.
 
 ## Owner decision for v2
 
-Wrench is a **hybrid context runtime with self-learning LoRA**:
+Wrench is a **selective local task router with frontier fallback**:
 
 - Deterministic code parses, indexes, searches, filters, stores and verifies.
-- A small controller chooses evidence, retrieval steps, context policy,
-  tool namespaces and downstream routes within a fixed authority boundary.
-- Frozen Qwen weights plus a versioned Wrench-Core LoRA define shared behavior.
-- A small Continuous LoRA learns local habits in evaluated batches, with replay,
-  immutable versions and rollback.
+- Qwen supplies the small local model's base capabilities. A Wrench-trained
+  LoRA adds task-routing behavior that Qwen does not provide by default.
+- The LoRA proposes whether an evaluated task family is suitable for the
+  local model, should go to the user's stronger model, or should be handed back.
+- Deterministic policy owns allowed routes, confidence gates, and dispatch;
+  independent checks verify local results. The router cannot grant itself
+  tools, permissions, provider access, or write authority.
 - Current code facts, decisions and source text remain in external memory.
 
-"Layer 1 runtime" and the three weight layers are different uses of "layer".
-The [architecture](V2_ARCHITECTURE.md) makes their roles explicit.
-The owner-supplied [notes](inputs/README.md) remain design inputs; their
+The LoRA is an optional, replaceable routing component. It must earn its
+inference and maintenance cost over deterministic routing. The
+[architecture](V2_ARCHITECTURE.md) defines the route boundary and candidate
+lifecycle. Owner-supplied [notes](inputs/README.md) remain design inputs; their
 numerical examples and performance claims are not Wrench results.
 
 ## Value and proof
 
-Primary value is less paid frontier use and less end-to-end work for the
-same successfully completed task. Compare matched tasks against a direct
-downstream baseline and a deterministic Wrench baseline. Measure every retry,
-correction, fallback, context miss, local-model pass, cache effect and learning
-cost. An adapter must earn its latency and maintenance overhead.
+Primary value is lower total cost for the same successfully completed work,
+with local execution used where evidence supports it and frontier capacity
+available for the rest. Compare frozen, matched tasks across frontier-only,
+deterministic Wrench, and Qwen plus Wrench routing-LoRA arms. Count every
+attempt, retry, verification, recovery read, escalation, and local operating
+cost.
 
-Keep the v1 ambitions of 95% net frontier-token savings, 90% weighted workload
-coverage and 50% median/p95 successful-task latency improvement as long-term
-targets. None is achieved or justified by the new architecture.
-Experiment milestones have separate go/no-go signals and cannot be called a
-production pass. [V2 experiment](V2_EXPERIMENT.md) defines the comparisons.
+Routing coverage is an observed result, not a fixed quota. Promote a task
+family only when held-out evidence shows acceptable task success and safety,
+and the complete workflow has a practical cost or latency benefit. Report
+coverage, task success, frontier tokens, billed cost, local cost, and latency
+separately with uncertainty. The [experiment](V2_EXPERIMENT.md) defines staged
+proof and release gates; no target or component result alone proves production
+readiness.
+
+For the owner's first 30% target, clarified on 2026-10-06, the primary measure
+is frontier input plus output usage versus the same completed frontier-only
+tasks. Local model tokens are free for this metric and excluded from both
+totals. Count every frontier retry, verification and fallback call. Local
+tokens and resource/latency observations remain separate diagnostics, rather
+than penalties against the 30% frontier-token score. The
+[target goal](../goal/wrench-token30/GOAL.md) records the protocol and limits.
 
 Frontier Token Share is a secondary diagnostic with a fixed source-token
 denominator. It is not equivalent to savings versus a baseline. Repeated
@@ -72,15 +86,12 @@ Wrench evidence. [Reference review](REFERENCES.md) records what was checked.
 
 ## Data sources
 
-The [training and evaluation source plan](DATA_SOURCES.md) proposes consented
-real workflows, reviewed local-teacher candidates and exact fixtures for
-separate purposes. Real workflow capture remains unauthorized. The owner has
-authorized one fresh synthetic-only train/dev/held-out split for the bounded
-gateway LoRA diagnostic; the fixed matched-task seed and exposed local screens
-remain ineligible for that training. No real-work utility corpus is admitted.
-Public benchmarks are limited challenge sets, and raw web/code dumps do not
-stand in for verified Wrench outcomes. See the experiment-specific boundary in
-the [data source plan](DATA_SOURCES.md).
+The [training and evaluation source plan](DATA_SOURCES.md) governs provenance,
+consent, and split boundaries. Current product proof may use authored
+synthetic fixtures for mechanics only. Real workflow capture remains opt-in
+and separately authorized. Public benchmarks can challenge selected
+capabilities, but do not replace matched Wrench workflow outcomes. See the
+experiment-specific data boundary in [Data Sources](DATA_SOURCES.md).
 See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture.md).
 
 ## Durable standards
@@ -93,14 +104,40 @@ See the [edge-case fixture report](../reports/wrench-e0-pilot-edge-cases/fixture
   evidence or invalid output. Learned choices cannot rewrite safety policy.
 - Experience requires permission, source/outcome identity, redaction and review.
   Isolate related repositories, task groups and time periods across splits.
-- Training creates new adapter versions; never edit the sole good foundation,
-  core, active personal adapter or source dataset in place.
+- Train a routing-LoRA candidate as a new immutable version from reviewed
+  outcome evidence; never edit the foundation, active adapter, or source data
+  in place. Keep a known-good rollback and evaluate before promotion.
 - Hardware claims name actual device, memory, workload, quality, sustained
   latency and resources, with battery/thermals where relevant. Less than 2 GB,
   older phones and borrowed compute remain later targets.
 - Unknown results stay unknown. Preserve negative results and exact identities.
 
 ## Current work
+
+On 2026-10-03 the owner clarified the product objective: the Wrench LoRA
+enhances Qwen with task-routing decisions Qwen does not have by default. The
+small model should intercept only tasks for which Wrench has measured adequate
+quality. Uncertain, unsupported, or difficult tasks go to the user's stronger
+model with relevant evidence preserved. Routing remains bounded by
+deterministic policy, and local results require verification.
+
+The fastest proof path is a frozen, end-to-end paired task runner: frontier-only
+baseline, deterministic Wrench with frontier fallback, and Qwen plus the Wrench
+routing LoRA plus the same fallback. Begin with authored synthetic tasks to
+validate pairing, route receipts, verifier outcomes, and full-lifecycle
+accounting. Synthetic results are mechanics evidence only. Expand to consented
+representative tasks only after data permission and an approved protocol. Do
+not revive fixed local/frontier quotas or claim savings from prompt tokens
+alone. Current blockers and evidence are in the [active gateway goal](../goal/wrench-gateway-model-research/GOAL.md).
+
+The checked-in 0.8B semantic-controller failure remains a failure for that
+configuration and task. It does not test a Wrench-trained routing LoRA on
+frozen task families. No model is selected as the release candidate until the
+same harness measures quality, latency, resources, licensing, and lifecycle
+cost on the actual host. Provider calls, model training, publication, and
+production routing keep their existing per-job authorization gates.
+
+## Historical decisions through 2026-09-28
 
 On 2026-09-28 the owner removed a fixed model-size preference for the
 gateway demo. The current host has a 16 GB RTX 5060 Ti, 32 GiB system memory,

@@ -1,0 +1,1252 @@
+{
+  "schema": "wrench.pruned-artifact-inventory.v1",
+  "archived_utc": "2026-10-08T17:35:08.767173+00:00",
+  "approved_root": "C:\\wrench-slm-data\\artifacts\\token30",
+  "runs": [
+    "local-retry-01",
+    "local-retry-02",
+    "local-retry-03",
+    "local-retry-04",
+    "local-retry-05"
+  ],
+  "file_count": 206,
+  "total_bytes": 4675548,
+  "files": [
+    {
+      "run": "local-retry-01",
+      "path": "local-retry-01/preparation-failure.json",
+      "bytes": 545,
+      "sha256": "df01ea8f8798a79a4bada8bd06afc61a9b8ac6e6f92631a1f9b16b5f94e0966e"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/manifest.json",
+      "bytes": 10195,
+      "sha256": "859098515c1f4cf7fdfef3dd205f6990a9ee1091f208e27ecd19c28f34246993"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/original-failures.json",
+      "bytes": 8221,
+      "sha256": "0053a2ea16f1eefa1d51f13cd9a775dc948cdc1b32f0a34d8de6a7798880feba"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/preparation-validation-failure.json",
+      "bytes": 740,
+      "sha256": "636340f5867f7d4595b98fa8f4684314701908c94c6ef11173261a14918af65a"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/retry-prompts.json",
+      "bytes": 20743,
+      "sha256": "2e0aa0eef4b9f9779f39383335e37c9adbdbac7d1d48161c73deae4e380b20a0"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/tasks.json",
+      "bytes": 41156,
+      "sha256": "e2c4a9f287bf04c8268a02826553489b650646c201332b86f00a84f3a6a02e2f"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/artifact_store.py",
+      "bytes": 41334,
+      "sha256": "f9d589820fefee2f9a2417981a5d0ddffac7cf7b08fb799fb4c9033a9db5080b"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/client.py",
+      "bytes": 16089,
+      "sha256": "89a00ef9f151601e24b7af34510054f466a9d0e3e8b63dafdc9b08bcf893685b"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/context.py",
+      "bytes": 32541,
+      "sha256": "e5a04eb7bf300ca98f4ba53c47cc8c649325dace984533928af21929172ebc0b"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/core.py",
+      "bytes": 24928,
+      "sha256": "b51ec5251f881ccff92577e5385fdfafb4e29390a57f438d909496cd1eadcffd"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/dependency_packet.py",
+      "bytes": 5000,
+      "sha256": "a652e9fb4e0134e6d1a9f2e2c0d9fc0f0c0bae1c4463a7f533fa6db3b9b575e9"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/e0_context_pipeline.py",
+      "bytes": 109105,
+      "sha256": "666b1943ecff4ca4fa65d5b1f758c0f9f84b8a6a73689b882e2fd86b6dc493be"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/execution_state.py",
+      "bytes": 22527,
+      "sha256": "c0b6f0a73aa936ad53025e0f506f619197506c40ee4507f98ebeaaf5e9ac3515"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/execution_state_store.py",
+      "bytes": 27103,
+      "sha256": "8cfd5c0d5c4d7328f0ac95b20119e9eca1126b70a7349f5205ad729122b36636"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/finite_repair.py",
+      "bytes": 2584,
+      "sha256": "a0a033fd8fa8ed59a5dc1f6b2b8f97eee97d373371abd26d941ab68086fa3d57"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/gateway_router_eval.py",
+      "bytes": 9641,
+      "sha256": "d6bd99e72624b3389ecee166d7774ddb6f69493b20b9149830126d13f4cf5a91"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/gateway_spend_budget.py",
+      "bytes": 14404,
+      "sha256": "8f86986e14d254cffb391b5bb36688544fbc88d9d29710d3fe0204310f108b5d"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/handoff.py",
+      "bytes": 9019,
+      "sha256": "a7531a27700a8210153865abfb0fb24b0e4fabc5fe81d56248f5a850aac20cf1"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/mechanical.py",
+      "bytes": 34089,
+      "sha256": "b20b9c5844568997fcf558e1bd61f71893a8633c1a80d423c4030adcb32c4b8e"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/namespace_registry.py",
+      "bytes": 12371,
+      "sha256": "d8371568a30bb81de581cf76975ff18a1aa20ed81b6f0c5f1a1c431106be23c5"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/opencode_context.py",
+      "bytes": 11289,
+      "sha256": "05eb93591d943ace6d964e222b8c1de6e2c0197ecb63e6824798171a7366a886"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/opencode_hook_projection.py",
+      "bytes": 37526,
+      "sha256": "914462bd8edcce4805dca6c6a96cc651c1155536d50f4be77ab99ddc4f890d06"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/opencode_session_root.py",
+      "bytes": 3547,
+      "sha256": "4855d26e82638c1112c974bca229285952cc97e97ba092a5ce86912b5180b783"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/outcome_receipt.py",
+      "bytes": 39680,
+      "sha256": "f1d86c0c08fa88a850882ad61cf491b8a71f43f5ed1c7a480ca110cbc64d5b0b"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/parallel_gateway.py",
+      "bytes": 80055,
+      "sha256": "c0d7a451928881fc515c2427aea102dd3fc212b34004ea3bd889ff1caa264fa0"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/patching.py",
+      "bytes": 3720,
+      "sha256": "1e0fae0a00339c017e178aefeed0fb5ef584d963da1e540064a0b87bb298ac13"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/prefill.py",
+      "bytes": 45164,
+      "sha256": "43b6b6d48b5a8fd3a08ae70cc789d8090cf3bd43cc26464f798fbb1d46432968"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/prompt_compiler.py",
+      "bytes": 28025,
+      "sha256": "bbf3d1f8a7698807e87ee997429fc1bcf3b6d5a65e51ce91e282294dbe62b213"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/reasoning_output.py",
+      "bytes": 703,
+      "sha256": "03957a597b7a487f3dc27e0d65258c2b3f50e4595b4b738156b3f71b164f28f4"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/router.py",
+      "bytes": 4487,
+      "sha256": "b3f9f688e3cd6ee66cab512a635f4f88f42bb4c680852a7399251fd42e0efca5"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/snapshot.py",
+      "bytes": 37127,
+      "sha256": "f54f835a40ed894550f7ec0c709e6c9e33494d8eaec9e41dcd9715fb627cd78d"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/snapshot_structure.py",
+      "bytes": 21893,
+      "sha256": "4e59033c5c85e9d32263cbea873f2cea12b3f301b45ba59fa668da4b679f6c4a"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/state.py",
+      "bytes": 3178,
+      "sha256": "924a481fdf2c9e8603246cd25fb15cc8a847af4cae4a18a9d56b0339d9d76216"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/tier.py",
+      "bytes": 2484,
+      "sha256": "4d4962067d1f0cc08690f5c238bb7500790b098504a11f2f37bd391a16868741"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/toml_context_spans.py",
+      "bytes": 7566,
+      "sha256": "37139a3eef97ccdca31df6508ffe599bcfe84d92b99b85baac1b0bb9bd934a86"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/toolbelt.py",
+      "bytes": 16196,
+      "sha256": "b4a45ca256e33750e3970013c6e9cf59a94ad34c8b45380484e52dad4d1cc6f7"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/ttc.py",
+      "bytes": 5377,
+      "sha256": "8df5708b1246a0abd1a7c5655f4915d4c224ca730bcd74d5a2cd14fad897b20b"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/src/wrench_harness/worker.py",
+      "bytes": 27864,
+      "sha256": "9149c10fbbb0c34c82817ca0f1945919ac0f005e508c08960220ef05661aa851"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/check_token30_objective.py",
+      "bytes": 9592,
+      "sha256": "c160cc9c8e46c53e24291bb1767d24671fd099d593183c92a6b0a1064b1316cb"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/generate_gateway_lora_three_capability.py",
+      "bytes": 26760,
+      "sha256": "e73991b76c0e062026de2ee4e8b454327908694f6f311d5acb14cc02c5ad008f"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/inspect_gateway_router_dev_dataset.py",
+      "bytes": 14980,
+      "sha256": "10c2dc5c67dc89bede8df80fffecfd03ad540b490da711c07e6be9b127a51e85"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_gateway_router_dev_inference.py",
+      "bytes": 32548,
+      "sha256": "ea67335066fffc4e527e29253180f4d6ecd9a3e01ac5274fa0073babd9936d3d"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_local_retry.py",
+      "bytes": 20261,
+      "sha256": "cc652e1ba89f69704b629f26e6e4acc472ec0154e019d79aa442271e495778d6"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_minimax_frontier_pilot.py",
+      "bytes": 25231,
+      "sha256": "e3465a70815c069873515008de36dc94d0d31bb6c7b41f936be7142e62519aac"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_qwen_paired.py",
+      "bytes": 28719,
+      "sha256": "ff4e648bbc1be9c544ce4b8fad60e20b47f02f47d7f7364b8585ed737145bcff"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_thinking_local.py",
+      "bytes": 16041,
+      "sha256": "e1861d9b7b5a405b65a6ed293c4bb39ff33d1e39498d907052de4aafc0e7e8d1"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_verified_local.py",
+      "bytes": 17166,
+      "sha256": "953da3c6337b6db3398a202c9eb8c4f99c393a43ab487551fda7bd311ecc0ab7"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token30_verified_pair.py",
+      "bytes": 25811,
+      "sha256": "156602faea36f90b694a4bce9c18b6674c979e086c33b8341b5284169cb51d0c"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/run_token_reduction_pilot.py",
+      "bytes": 28232,
+      "sha256": "0927333dd75b4d8ba68a20eaeb9fff095ee64af16d4219868196d3d6e470d4b1"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/score_gateway_router_dev_predictions.py",
+      "bytes": 16517,
+      "sha256": "786c9c5fd05548560f7469534716b22305c1159f8499e1b1d8d03d67f800b9bf"
+    },
+    {
+      "run": "local-retry-02",
+      "path": "local-retry-02/source/tools/train_gateway_lora_screen_03_4b_gpu.py",
+      "bytes": 79254,
+      "sha256": "1d7ccbb42af72c41066d52a4cb6448d000c07d395657cae475daaa79363b49b5"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/manifest.json",
+      "bytes": 10207,
+      "sha256": "9d08e3b3873ae1663a24645c1dbfacdc016b9fbccf6f9fe330b3f6b943c9986f"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/original-failures.json",
+      "bytes": 8221,
+      "sha256": "0053a2ea16f1eefa1d51f13cd9a775dc948cdc1b32f0a34d8de6a7798880feba"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/retry-prompts.json",
+      "bytes": 20743,
+      "sha256": "2e0aa0eef4b9f9779f39383335e37c9adbdbac7d1d48161c73deae4e380b20a0"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source-review.json",
+      "bytes": 8438,
+      "sha256": "e67b5bfe0a6fbdc6adce984b0dc25a68b768364e0050b2ac9e66b201a3e49cad"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/tasks.json",
+      "bytes": 41156,
+      "sha256": "e2c4a9f287bf04c8268a02826553489b650646c201332b86f00a84f3a6a02e2f"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/artifact_store.py",
+      "bytes": 41334,
+      "sha256": "f9d589820fefee2f9a2417981a5d0ddffac7cf7b08fb799fb4c9033a9db5080b"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/client.py",
+      "bytes": 16089,
+      "sha256": "89a00ef9f151601e24b7af34510054f466a9d0e3e8b63dafdc9b08bcf893685b"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/context.py",
+      "bytes": 32541,
+      "sha256": "e5a04eb7bf300ca98f4ba53c47cc8c649325dace984533928af21929172ebc0b"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/core.py",
+      "bytes": 24928,
+      "sha256": "b51ec5251f881ccff92577e5385fdfafb4e29390a57f438d909496cd1eadcffd"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/dependency_packet.py",
+      "bytes": 5000,
+      "sha256": "a652e9fb4e0134e6d1a9f2e2c0d9fc0f0c0bae1c4463a7f533fa6db3b9b575e9"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/e0_context_pipeline.py",
+      "bytes": 109105,
+      "sha256": "666b1943ecff4ca4fa65d5b1f758c0f9f84b8a6a73689b882e2fd86b6dc493be"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/execution_state.py",
+      "bytes": 22527,
+      "sha256": "c0b6f0a73aa936ad53025e0f506f619197506c40ee4507f98ebeaaf5e9ac3515"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/execution_state_store.py",
+      "bytes": 27103,
+      "sha256": "8cfd5c0d5c4d7328f0ac95b20119e9eca1126b70a7349f5205ad729122b36636"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/finite_repair.py",
+      "bytes": 2584,
+      "sha256": "a0a033fd8fa8ed59a5dc1f6b2b8f97eee97d373371abd26d941ab68086fa3d57"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/gateway_router_eval.py",
+      "bytes": 9641,
+      "sha256": "d6bd99e72624b3389ecee166d7774ddb6f69493b20b9149830126d13f4cf5a91"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/gateway_spend_budget.py",
+      "bytes": 14404,
+      "sha256": "8f86986e14d254cffb391b5bb36688544fbc88d9d29710d3fe0204310f108b5d"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/handoff.py",
+      "bytes": 9019,
+      "sha256": "a7531a27700a8210153865abfb0fb24b0e4fabc5fe81d56248f5a850aac20cf1"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/mechanical.py",
+      "bytes": 34089,
+      "sha256": "b20b9c5844568997fcf558e1bd61f71893a8633c1a80d423c4030adcb32c4b8e"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/namespace_registry.py",
+      "bytes": 12371,
+      "sha256": "d8371568a30bb81de581cf76975ff18a1aa20ed81b6f0c5f1a1c431106be23c5"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/opencode_context.py",
+      "bytes": 11289,
+      "sha256": "05eb93591d943ace6d964e222b8c1de6e2c0197ecb63e6824798171a7366a886"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/opencode_hook_projection.py",
+      "bytes": 37526,
+      "sha256": "914462bd8edcce4805dca6c6a96cc651c1155536d50f4be77ab99ddc4f890d06"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/opencode_session_root.py",
+      "bytes": 3547,
+      "sha256": "4855d26e82638c1112c974bca229285952cc97e97ba092a5ce86912b5180b783"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/outcome_receipt.py",
+      "bytes": 39680,
+      "sha256": "f1d86c0c08fa88a850882ad61cf491b8a71f43f5ed1c7a480ca110cbc64d5b0b"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/parallel_gateway.py",
+      "bytes": 80055,
+      "sha256": "c0d7a451928881fc515c2427aea102dd3fc212b34004ea3bd889ff1caa264fa0"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/patching.py",
+      "bytes": 3720,
+      "sha256": "1e0fae0a00339c017e178aefeed0fb5ef584d963da1e540064a0b87bb298ac13"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/prefill.py",
+      "bytes": 45164,
+      "sha256": "43b6b6d48b5a8fd3a08ae70cc789d8090cf3bd43cc26464f798fbb1d46432968"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/prompt_compiler.py",
+      "bytes": 28025,
+      "sha256": "bbf3d1f8a7698807e87ee997429fc1bcf3b6d5a65e51ce91e282294dbe62b213"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/reasoning_output.py",
+      "bytes": 703,
+      "sha256": "03957a597b7a487f3dc27e0d65258c2b3f50e4595b4b738156b3f71b164f28f4"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/router.py",
+      "bytes": 4487,
+      "sha256": "b3f9f688e3cd6ee66cab512a635f4f88f42bb4c680852a7399251fd42e0efca5"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/snapshot.py",
+      "bytes": 37127,
+      "sha256": "f54f835a40ed894550f7ec0c709e6c9e33494d8eaec9e41dcd9715fb627cd78d"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/snapshot_structure.py",
+      "bytes": 21893,
+      "sha256": "4e59033c5c85e9d32263cbea873f2cea12b3f301b45ba59fa668da4b679f6c4a"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/state.py",
+      "bytes": 3178,
+      "sha256": "924a481fdf2c9e8603246cd25fb15cc8a847af4cae4a18a9d56b0339d9d76216"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/tier.py",
+      "bytes": 2484,
+      "sha256": "4d4962067d1f0cc08690f5c238bb7500790b098504a11f2f37bd391a16868741"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/toml_context_spans.py",
+      "bytes": 7566,
+      "sha256": "37139a3eef97ccdca31df6508ffe599bcfe84d92b99b85baac1b0bb9bd934a86"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/toolbelt.py",
+      "bytes": 16196,
+      "sha256": "b4a45ca256e33750e3970013c6e9cf59a94ad34c8b45380484e52dad4d1cc6f7"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/ttc.py",
+      "bytes": 5377,
+      "sha256": "8df5708b1246a0abd1a7c5655f4915d4c224ca730bcd74d5a2cd14fad897b20b"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/src/wrench_harness/worker.py",
+      "bytes": 27864,
+      "sha256": "9149c10fbbb0c34c82817ca0f1945919ac0f005e508c08960220ef05661aa851"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/check_token30_objective.py",
+      "bytes": 9592,
+      "sha256": "c160cc9c8e46c53e24291bb1767d24671fd099d593183c92a6b0a1064b1316cb"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/generate_gateway_lora_three_capability.py",
+      "bytes": 26760,
+      "sha256": "e73991b76c0e062026de2ee4e8b454327908694f6f311d5acb14cc02c5ad008f"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/inspect_gateway_router_dev_dataset.py",
+      "bytes": 14980,
+      "sha256": "10c2dc5c67dc89bede8df80fffecfd03ad540b490da711c07e6be9b127a51e85"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_gateway_router_dev_inference.py",
+      "bytes": 32548,
+      "sha256": "ea67335066fffc4e527e29253180f4d6ecd9a3e01ac5274fa0073babd9936d3d"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_local_retry.py",
+      "bytes": 20695,
+      "sha256": "5d42d5fee8d889903ddfbf3be68e91a63f66af928d256891298213d6aa8ba884"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_minimax_frontier_pilot.py",
+      "bytes": 25231,
+      "sha256": "e3465a70815c069873515008de36dc94d0d31bb6c7b41f936be7142e62519aac"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_qwen_paired.py",
+      "bytes": 28719,
+      "sha256": "ff4e648bbc1be9c544ce4b8fad60e20b47f02f47d7f7364b8585ed737145bcff"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_thinking_local.py",
+      "bytes": 16041,
+      "sha256": "e1861d9b7b5a405b65a6ed293c4bb39ff33d1e39498d907052de4aafc0e7e8d1"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_verified_local.py",
+      "bytes": 17166,
+      "sha256": "953da3c6337b6db3398a202c9eb8c4f99c393a43ab487551fda7bd311ecc0ab7"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token30_verified_pair.py",
+      "bytes": 25811,
+      "sha256": "156602faea36f90b694a4bce9c18b6674c979e086c33b8341b5284169cb51d0c"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/run_token_reduction_pilot.py",
+      "bytes": 28232,
+      "sha256": "0927333dd75b4d8ba68a20eaeb9fff095ee64af16d4219868196d3d6e470d4b1"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/score_gateway_router_dev_predictions.py",
+      "bytes": 16517,
+      "sha256": "786c9c5fd05548560f7469534716b22305c1159f8499e1b1d8d03d67f800b9bf"
+    },
+    {
+      "run": "local-retry-03",
+      "path": "local-retry-03/source/tools/train_gateway_lora_screen_03_4b_gpu.py",
+      "bytes": 79254,
+      "sha256": "1d7ccbb42af72c41066d52a4cb6448d000c07d395657cae475daaa79363b49b5"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/execution-claim.json",
+      "bytes": 189,
+      "sha256": "3088cd98d48dc7f241307f57720693a4e8fe41464d9a39dccc0834f421b7df0c"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/failure.json",
+      "bytes": 299,
+      "sha256": "6e929a2083ec4bc7ff3d51fa32682f1c1c1f9f75478f7cfa34440cf516d48799"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/manifest.json",
+      "bytes": 10207,
+      "sha256": "1577e41a332e74df5cc21be17fecf81b3a7a62d5e81ee7bd963e344e793e136f"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/original-failures.json",
+      "bytes": 8221,
+      "sha256": "0053a2ea16f1eefa1d51f13cd9a775dc948cdc1b32f0a34d8de6a7798880feba"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/resources.jsonl",
+      "bytes": 12342,
+      "sha256": "16d76863795695f56e869511481b9f33ec60631add6f81c8dc66ec31f5b28017"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/retry-prompts.json",
+      "bytes": 20743,
+      "sha256": "2e0aa0eef4b9f9779f39383335e37c9adbdbac7d1d48161c73deae4e380b20a0"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source-review.json",
+      "bytes": 5985,
+      "sha256": "8b183d02819cea83cffab0f012fa977831d8b45867193be26c41e1e45b1209f0"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/tasks.json",
+      "bytes": 41156,
+      "sha256": "e2c4a9f287bf04c8268a02826553489b650646c201332b86f00a84f3a6a02e2f"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/artifact_store.py",
+      "bytes": 41334,
+      "sha256": "f9d589820fefee2f9a2417981a5d0ddffac7cf7b08fb799fb4c9033a9db5080b"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/client.py",
+      "bytes": 16089,
+      "sha256": "89a00ef9f151601e24b7af34510054f466a9d0e3e8b63dafdc9b08bcf893685b"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/context.py",
+      "bytes": 32541,
+      "sha256": "e5a04eb7bf300ca98f4ba53c47cc8c649325dace984533928af21929172ebc0b"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/core.py",
+      "bytes": 24928,
+      "sha256": "b51ec5251f881ccff92577e5385fdfafb4e29390a57f438d909496cd1eadcffd"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/dependency_packet.py",
+      "bytes": 5000,
+      "sha256": "a652e9fb4e0134e6d1a9f2e2c0d9fc0f0c0bae1c4463a7f533fa6db3b9b575e9"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/e0_context_pipeline.py",
+      "bytes": 109105,
+      "sha256": "666b1943ecff4ca4fa65d5b1f758c0f9f84b8a6a73689b882e2fd86b6dc493be"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/execution_state.py",
+      "bytes": 22527,
+      "sha256": "c0b6f0a73aa936ad53025e0f506f619197506c40ee4507f98ebeaaf5e9ac3515"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/execution_state_store.py",
+      "bytes": 27103,
+      "sha256": "8cfd5c0d5c4d7328f0ac95b20119e9eca1126b70a7349f5205ad729122b36636"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/finite_repair.py",
+      "bytes": 2584,
+      "sha256": "a0a033fd8fa8ed59a5dc1f6b2b8f97eee97d373371abd26d941ab68086fa3d57"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/gateway_router_eval.py",
+      "bytes": 9641,
+      "sha256": "d6bd99e72624b3389ecee166d7774ddb6f69493b20b9149830126d13f4cf5a91"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/gateway_spend_budget.py",
+      "bytes": 14404,
+      "sha256": "8f86986e14d254cffb391b5bb36688544fbc88d9d29710d3fe0204310f108b5d"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/handoff.py",
+      "bytes": 9019,
+      "sha256": "a7531a27700a8210153865abfb0fb24b0e4fabc5fe81d56248f5a850aac20cf1"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/mechanical.py",
+      "bytes": 34089,
+      "sha256": "b20b9c5844568997fcf558e1bd61f71893a8633c1a80d423c4030adcb32c4b8e"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/namespace_registry.py",
+      "bytes": 12371,
+      "sha256": "d8371568a30bb81de581cf76975ff18a1aa20ed81b6f0c5f1a1c431106be23c5"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/opencode_context.py",
+      "bytes": 11289,
+      "sha256": "05eb93591d943ace6d964e222b8c1de6e2c0197ecb63e6824798171a7366a886"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/opencode_hook_projection.py",
+      "bytes": 37526,
+      "sha256": "914462bd8edcce4805dca6c6a96cc651c1155536d50f4be77ab99ddc4f890d06"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/opencode_session_root.py",
+      "bytes": 3547,
+      "sha256": "4855d26e82638c1112c974bca229285952cc97e97ba092a5ce86912b5180b783"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/outcome_receipt.py",
+      "bytes": 39680,
+      "sha256": "f1d86c0c08fa88a850882ad61cf491b8a71f43f5ed1c7a480ca110cbc64d5b0b"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/parallel_gateway.py",
+      "bytes": 80055,
+      "sha256": "c0d7a451928881fc515c2427aea102dd3fc212b34004ea3bd889ff1caa264fa0"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/patching.py",
+      "bytes": 3720,
+      "sha256": "1e0fae0a00339c017e178aefeed0fb5ef584d963da1e540064a0b87bb298ac13"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/prefill.py",
+      "bytes": 45164,
+      "sha256": "43b6b6d48b5a8fd3a08ae70cc789d8090cf3bd43cc26464f798fbb1d46432968"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/prompt_compiler.py",
+      "bytes": 28025,
+      "sha256": "bbf3d1f8a7698807e87ee997429fc1bcf3b6d5a65e51ce91e282294dbe62b213"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/reasoning_output.py",
+      "bytes": 703,
+      "sha256": "03957a597b7a487f3dc27e0d65258c2b3f50e4595b4b738156b3f71b164f28f4"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/router.py",
+      "bytes": 4487,
+      "sha256": "b3f9f688e3cd6ee66cab512a635f4f88f42bb4c680852a7399251fd42e0efca5"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/snapshot.py",
+      "bytes": 37127,
+      "sha256": "f54f835a40ed894550f7ec0c709e6c9e33494d8eaec9e41dcd9715fb627cd78d"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/snapshot_structure.py",
+      "bytes": 21893,
+      "sha256": "4e59033c5c85e9d32263cbea873f2cea12b3f301b45ba59fa668da4b679f6c4a"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/state.py",
+      "bytes": 3178,
+      "sha256": "924a481fdf2c9e8603246cd25fb15cc8a847af4cae4a18a9d56b0339d9d76216"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/tier.py",
+      "bytes": 2484,
+      "sha256": "4d4962067d1f0cc08690f5c238bb7500790b098504a11f2f37bd391a16868741"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/toml_context_spans.py",
+      "bytes": 7566,
+      "sha256": "37139a3eef97ccdca31df6508ffe599bcfe84d92b99b85baac1b0bb9bd934a86"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/toolbelt.py",
+      "bytes": 16196,
+      "sha256": "b4a45ca256e33750e3970013c6e9cf59a94ad34c8b45380484e52dad4d1cc6f7"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/ttc.py",
+      "bytes": 5377,
+      "sha256": "8df5708b1246a0abd1a7c5655f4915d4c224ca730bcd74d5a2cd14fad897b20b"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/src/wrench_harness/worker.py",
+      "bytes": 27864,
+      "sha256": "9149c10fbbb0c34c82817ca0f1945919ac0f005e508c08960220ef05661aa851"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/check_token30_objective.py",
+      "bytes": 9592,
+      "sha256": "c160cc9c8e46c53e24291bb1767d24671fd099d593183c92a6b0a1064b1316cb"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/generate_gateway_lora_three_capability.py",
+      "bytes": 26760,
+      "sha256": "e73991b76c0e062026de2ee4e8b454327908694f6f311d5acb14cc02c5ad008f"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/inspect_gateway_router_dev_dataset.py",
+      "bytes": 14980,
+      "sha256": "10c2dc5c67dc89bede8df80fffecfd03ad540b490da711c07e6be9b127a51e85"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_gateway_router_dev_inference.py",
+      "bytes": 32548,
+      "sha256": "ea67335066fffc4e527e29253180f4d6ecd9a3e01ac5274fa0073babd9936d3d"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_local_retry.py",
+      "bytes": 21032,
+      "sha256": "841128a4da311fb33fbff0e6549f2996cbfd247b0eb7732d5b10ec29087e7810"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_minimax_frontier_pilot.py",
+      "bytes": 25231,
+      "sha256": "e3465a70815c069873515008de36dc94d0d31bb6c7b41f936be7142e62519aac"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_qwen_paired.py",
+      "bytes": 28719,
+      "sha256": "ff4e648bbc1be9c544ce4b8fad60e20b47f02f47d7f7364b8585ed737145bcff"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_thinking_local.py",
+      "bytes": 16041,
+      "sha256": "e1861d9b7b5a405b65a6ed293c4bb39ff33d1e39498d907052de4aafc0e7e8d1"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_verified_local.py",
+      "bytes": 17166,
+      "sha256": "953da3c6337b6db3398a202c9eb8c4f99c393a43ab487551fda7bd311ecc0ab7"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token30_verified_pair.py",
+      "bytes": 25811,
+      "sha256": "156602faea36f90b694a4bce9c18b6674c979e086c33b8341b5284169cb51d0c"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/run_token_reduction_pilot.py",
+      "bytes": 28232,
+      "sha256": "0927333dd75b4d8ba68a20eaeb9fff095ee64af16d4219868196d3d6e470d4b1"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/score_gateway_router_dev_predictions.py",
+      "bytes": 16517,
+      "sha256": "786c9c5fd05548560f7469534716b22305c1159f8499e1b1d8d03d67f800b9bf"
+    },
+    {
+      "run": "local-retry-04",
+      "path": "local-retry-04/source/tools/train_gateway_lora_screen_03_4b_gpu.py",
+      "bytes": 79254,
+      "sha256": "1d7ccbb42af72c41066d52a4cb6448d000c07d395657cae475daaa79363b49b5"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/execution-claim.json",
+      "bytes": 189,
+      "sha256": "37d753efcd4586e29c2525e0f9977b7b2b9100d7a35b5a2954cb6bed9d49333c"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/failure.json",
+      "bytes": 299,
+      "sha256": "0f5026dd2c9e0582c1ac80c52519c85b277488b8c720bab7af29e4a722a813c0"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/manifest.json",
+      "bytes": 10207,
+      "sha256": "330773067821b2f7349ef1611cb034ee43ebb58409ec53995f29adee6b108297"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/original-failures.json",
+      "bytes": 8221,
+      "sha256": "0053a2ea16f1eefa1d51f13cd9a775dc948cdc1b32f0a34d8de6a7798880feba"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/resources.jsonl",
+      "bytes": 12338,
+      "sha256": "5c98f2013952116d4896551784d186333d68975bf7e388b85bd1ef5ed2f296da"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/retry-prompts.json",
+      "bytes": 20743,
+      "sha256": "2e0aa0eef4b9f9779f39383335e37c9adbdbac7d1d48161c73deae4e380b20a0"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/tasks.json",
+      "bytes": 41156,
+      "sha256": "e2c4a9f287bf04c8268a02826553489b650646c201332b86f00a84f3a6a02e2f"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/artifact_store.py",
+      "bytes": 41334,
+      "sha256": "f9d589820fefee2f9a2417981a5d0ddffac7cf7b08fb799fb4c9033a9db5080b"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/client.py",
+      "bytes": 16089,
+      "sha256": "89a00ef9f151601e24b7af34510054f466a9d0e3e8b63dafdc9b08bcf893685b"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/context.py",
+      "bytes": 32541,
+      "sha256": "e5a04eb7bf300ca98f4ba53c47cc8c649325dace984533928af21929172ebc0b"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/core.py",
+      "bytes": 24928,
+      "sha256": "b51ec5251f881ccff92577e5385fdfafb4e29390a57f438d909496cd1eadcffd"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/dependency_packet.py",
+      "bytes": 5000,
+      "sha256": "a652e9fb4e0134e6d1a9f2e2c0d9fc0f0c0bae1c4463a7f533fa6db3b9b575e9"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/e0_context_pipeline.py",
+      "bytes": 109105,
+      "sha256": "666b1943ecff4ca4fa65d5b1f758c0f9f84b8a6a73689b882e2fd86b6dc493be"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/execution_state.py",
+      "bytes": 22527,
+      "sha256": "c0b6f0a73aa936ad53025e0f506f619197506c40ee4507f98ebeaaf5e9ac3515"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/execution_state_store.py",
+      "bytes": 27103,
+      "sha256": "8cfd5c0d5c4d7328f0ac95b20119e9eca1126b70a7349f5205ad729122b36636"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/finite_repair.py",
+      "bytes": 2584,
+      "sha256": "a0a033fd8fa8ed59a5dc1f6b2b8f97eee97d373371abd26d941ab68086fa3d57"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/gateway_router_eval.py",
+      "bytes": 9641,
+      "sha256": "d6bd99e72624b3389ecee166d7774ddb6f69493b20b9149830126d13f4cf5a91"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/gateway_spend_budget.py",
+      "bytes": 14404,
+      "sha256": "8f86986e14d254cffb391b5bb36688544fbc88d9d29710d3fe0204310f108b5d"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/handoff.py",
+      "bytes": 9019,
+      "sha256": "a7531a27700a8210153865abfb0fb24b0e4fabc5fe81d56248f5a850aac20cf1"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/mechanical.py",
+      "bytes": 34089,
+      "sha256": "b20b9c5844568997fcf558e1bd61f71893a8633c1a80d423c4030adcb32c4b8e"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/namespace_registry.py",
+      "bytes": 12371,
+      "sha256": "d8371568a30bb81de581cf76975ff18a1aa20ed81b6f0c5f1a1c431106be23c5"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/opencode_context.py",
+      "bytes": 11289,
+      "sha256": "05eb93591d943ace6d964e222b8c1de6e2c0197ecb63e6824798171a7366a886"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/opencode_hook_projection.py",
+      "bytes": 37526,
+      "sha256": "914462bd8edcce4805dca6c6a96cc651c1155536d50f4be77ab99ddc4f890d06"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/opencode_session_root.py",
+      "bytes": 3547,
+      "sha256": "4855d26e82638c1112c974bca229285952cc97e97ba092a5ce86912b5180b783"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/outcome_receipt.py",
+      "bytes": 39680,
+      "sha256": "f1d86c0c08fa88a850882ad61cf491b8a71f43f5ed1c7a480ca110cbc64d5b0b"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/parallel_gateway.py",
+      "bytes": 80055,
+      "sha256": "c0d7a451928881fc515c2427aea102dd3fc212b34004ea3bd889ff1caa264fa0"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/patching.py",
+      "bytes": 3720,
+      "sha256": "1e0fae0a00339c017e178aefeed0fb5ef584d963da1e540064a0b87bb298ac13"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/prefill.py",
+      "bytes": 45164,
+      "sha256": "43b6b6d48b5a8fd3a08ae70cc789d8090cf3bd43cc26464f798fbb1d46432968"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/prompt_compiler.py",
+      "bytes": 28025,
+      "sha256": "bbf3d1f8a7698807e87ee997429fc1bcf3b6d5a65e51ce91e282294dbe62b213"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/reasoning_output.py",
+      "bytes": 703,
+      "sha256": "03957a597b7a487f3dc27e0d65258c2b3f50e4595b4b738156b3f71b164f28f4"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/router.py",
+      "bytes": 4487,
+      "sha256": "b3f9f688e3cd6ee66cab512a635f4f88f42bb4c680852a7399251fd42e0efca5"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/snapshot.py",
+      "bytes": 37127,
+      "sha256": "f54f835a40ed894550f7ec0c709e6c9e33494d8eaec9e41dcd9715fb627cd78d"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/snapshot_structure.py",
+      "bytes": 21893,
+      "sha256": "4e59033c5c85e9d32263cbea873f2cea12b3f301b45ba59fa668da4b679f6c4a"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/state.py",
+      "bytes": 3178,
+      "sha256": "924a481fdf2c9e8603246cd25fb15cc8a847af4cae4a18a9d56b0339d9d76216"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/tier.py",
+      "bytes": 2484,
+      "sha256": "4d4962067d1f0cc08690f5c238bb7500790b098504a11f2f37bd391a16868741"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/toml_context_spans.py",
+      "bytes": 7566,
+      "sha256": "37139a3eef97ccdca31df6508ffe599bcfe84d92b99b85baac1b0bb9bd934a86"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/toolbelt.py",
+      "bytes": 16196,
+      "sha256": "b4a45ca256e33750e3970013c6e9cf59a94ad34c8b45380484e52dad4d1cc6f7"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/ttc.py",
+      "bytes": 5377,
+      "sha256": "8df5708b1246a0abd1a7c5655f4915d4c224ca730bcd74d5a2cd14fad897b20b"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/src/wrench_harness/worker.py",
+      "bytes": 27864,
+      "sha256": "9149c10fbbb0c34c82817ca0f1945919ac0f005e508c08960220ef05661aa851"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/check_token30_objective.py",
+      "bytes": 9592,
+      "sha256": "c160cc9c8e46c53e24291bb1767d24671fd099d593183c92a6b0a1064b1316cb"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/generate_gateway_lora_three_capability.py",
+      "bytes": 26760,
+      "sha256": "e73991b76c0e062026de2ee4e8b454327908694f6f311d5acb14cc02c5ad008f"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/inspect_gateway_router_dev_dataset.py",
+      "bytes": 14980,
+      "sha256": "10c2dc5c67dc89bede8df80fffecfd03ad540b490da711c07e6be9b127a51e85"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_gateway_router_dev_inference.py",
+      "bytes": 32548,
+      "sha256": "ea67335066fffc4e527e29253180f4d6ecd9a3e01ac5274fa0073babd9936d3d"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_local_retry.py",
+      "bytes": 21032,
+      "sha256": "841128a4da311fb33fbff0e6549f2996cbfd247b0eb7732d5b10ec29087e7810"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_minimax_frontier_pilot.py",
+      "bytes": 25231,
+      "sha256": "e3465a70815c069873515008de36dc94d0d31bb6c7b41f936be7142e62519aac"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_qwen_paired.py",
+      "bytes": 28719,
+      "sha256": "ff4e648bbc1be9c544ce4b8fad60e20b47f02f47d7f7364b8585ed737145bcff"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_thinking_local.py",
+      "bytes": 16041,
+      "sha256": "e1861d9b7b5a405b65a6ed293c4bb39ff33d1e39498d907052de4aafc0e7e8d1"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_verified_local.py",
+      "bytes": 17166,
+      "sha256": "953da3c6337b6db3398a202c9eb8c4f99c393a43ab487551fda7bd311ecc0ab7"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token30_verified_pair.py",
+      "bytes": 25811,
+      "sha256": "156602faea36f90b694a4bce9c18b6674c979e086c33b8341b5284169cb51d0c"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/run_token_reduction_pilot.py",
+      "bytes": 28232,
+      "sha256": "0927333dd75b4d8ba68a20eaeb9fff095ee64af16d4219868196d3d6e470d4b1"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/score_gateway_router_dev_predictions.py",
+      "bytes": 16517,
+      "sha256": "786c9c5fd05548560f7469534716b22305c1159f8499e1b1d8d03d67f800b9bf"
+    },
+    {
+      "run": "local-retry-05",
+      "path": "local-retry-05/source/tools/train_gateway_lora_screen_03_4b_gpu.py",
+      "bytes": 79254,
+      "sha256": "1d7ccbb42af72c41066d52a4cb6448d000c07d395657cae475daaa79363b49b5"
+    }
+  ]
+}

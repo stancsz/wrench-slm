@@ -1,0 +1,28 @@
+{
+  "schema": "wrench.token30.objective.v1",
+  "objective_id": "wrench-token30-qwen-assisted-v1",
+  "primary_metric": "frontier_input_plus_output_full_workflow",
+  "target_reduction": 0.3,
+  "baseline_workflow": "frontier_only",
+  "candidate_workflow": "qwen_assisted",
+  "require_consumed_local_output": true,
+  "local_token_weight": 0,
+  "same_frozen_tasks_and_oracle": true,
+  "require_successful_baseline_and_candidate": true,
+  "retain_failed_tasks": true,
+  "frontier_accounting": "all_calls_all_attempts_including_verification_recovery_and_escalation",
+  "unknown_usage": "retain_hold_and_stop",
+  "per_task_cap_usd": "1.00",
+  "budget_scope": "stable_task_id_across_all_arms_diagnostics_and_reruns",
+  "retain_tighter_campaign_caps": true,
+  "current_local_model": {
+    "id": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+  },
+  "authority": "owner-approved autonomous design, implementation and bounded experiments; no repeat approval inside that scope",
+  "artifact_limit_bytes_exclusive": 50000000000,
+  "minimum_free_ram_fraction": 0.1,
+  "minimum_free_vram_fraction": 0.1,
+  "goal": "docs/goal/wrench-token30/GOAL.md",
+  "guard_limit": "Plan alignment only; the runner must invoke it before dispatch. Actual useful consumption, complete usage and quality require post-run receipts and independent review."
+}

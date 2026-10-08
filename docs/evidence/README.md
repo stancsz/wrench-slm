@@ -1,17 +1,16 @@
 # Wrench evidence map
 
-The current direction is [Wrench v2](../../GOAL.md). Its
-[experiment](../northstar/V2_EXPERIMENT.md) and
-[realignment review](../evals/wrench-v2-realignment/review.md) distinguish
-planned capability from observed cleanup and retained v1 behavior.
+The current direction is the [single token-reduction objective](../goal/wrench-token30/GOAL.md).
+Prior experiment outcomes are summarized in the
+[clean-slate archive](../archive/2026-10-08-clean-slate/LEARNINGS.md).
+The [realignment review](../evals/wrench-v2-realignment/review.md) is historical
+evidence, not a current product plan.
 
 ## V2
 
-- [V1 lessons](../northstar/V1_LEARNINGS.md): incident account and evidence limits.
 - [Reuse audit](../reports/wrench-v2-realignment/reuse-audit.md): surviving source and missing v2 capabilities.
 - [Realignment report](../reports/wrench-v2-realignment/realignment.md): changes and verification.
-- [Model file metadata](../northstar/model-candidate.json): pinned upstream sizes; no downloaded-weight verification.
-- [Storage/recovery policy](../northstar/STORAGE_AND_RECOVERY.md): required admission and recovery.
+- [Storage/recovery policy](../operations/STORAGE_AND_RECOVERY.md): required admission and recovery.
 
 ## Historical v1 evidence
 

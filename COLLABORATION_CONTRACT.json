@@ -1,19 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract_id": "wrench-v2-realignment-2026-09-23",
-  "version": "3.1",
+  "contract_id": "wrench-token30-qwen-assisted-2026-10-07",
+  "version": "4.0",
   "project": "wrench-slm",
   "collaboration": {
     "mode": "AUTO",
     "classification": {
-      "risk": "low",
+      "risk": "bounded",
       "risk_reasons": [
-        "repository_only_reversible_changes"
+        "reversible_repository_changes",
+        "explicit_per_task_frontier_cap",
+        "admitted_local_experiments_only"
       ],
       "complexity": "high",
       "complexity_reasons": [
-        "multiple_direction_documents",
-        "historical_evidence_preservation"
+        "paired_workflow_quality",
+        "complete_frontier_usage_accounting"
       ],
       "confidence_in_classification": "high"
     },
@@ -26,71 +28,66 @@
     },
     "task_routing": [
       {
-        "task_class": "repository cleanup, v1 lessons, v2 architecture and experiment definition, plus user-directed repository-only staged implementation and bounded offline verification",
+        "task_class": "objective hardening, implementation, tests and bounded Qwen-assisted experiments",
         "mode": "AUTO",
-        "boundary": "Reversible repository-only work and bounded offline verification under current user direction; no client install or run, provider call, real-data capture or transfer, spend, publication or production activation"
+        "boundary": "Useful consumed local Qwen work versus frontier-only completion under the active goal; $1 cumulative frontier cap per task, tighter campaign caps, durable spend reservations, permitted data and storage/resource admission."
       },
       {
-        "task_class": "the owner's 2026-09-27 Wrench gateway model experiment on models below 10B parameters",
-        "mode": "AUTO",
-        "boundary": "Local pinned-model inventory, download, LoRA training, inference and bounded evaluation are authorized only under the active goal, staged experiment, complete storage admission, measured 10% RAM/VRAM reserves and preserved data provenance. No provider generation, spending, production routing, publication or adapter activation is authorized."
-      },
-      {
-        "task_class": "scope or permission expansion, production promotion, publication, destructive data action or provider spending",
+        "task_class": "production activation, publication, private-data capture or spending outside the standing scope",
         "mode": "GUARD",
-        "boundary": "Concrete evidence and specific user authority before external or irreversible effects"
+        "boundary": "Current scoped authority does not expand to these actions."
       }
     ],
     "bounds": {
-      "scope": "Realign Wrench to a Layer 1 hybrid context runtime and frozen Qwen + Wrench-Core LoRA + Continuous LoRA. Preserve v1 evidence, document owner-reported filesystem corruption/data loss without inventing its cause, clean current guidance, define the full v2 experiment, and verify repository consistency. The original direction/cleanup task is complete. The current user-directed continuation permits reversible repository-only implementation and bounded offline verification for staged v2 goals. The owner's 2026-09-27 explicit update additionally authorizes local experimentation with pinned models below 10B parameters, including model inventory/download, LoRA training, inference and evaluation only after the active goal's storage, hardware, data and lifecycle gates pass. It does not authorize provider calls, spending, real/private data capture or transfer, publication or production activation.",
+      "scope": "Achieve at least 30% lower complete-workflow frontier input plus output for matched complex-task families through useful local Qwen work, with completion quality preserved. Archive conflicting live direction, preserve historical evidence and unrelated changes. Local tokens are effectively free for this objective.",
       "permissions": [
-        "read repository source/docs and supplied design notes",
-        "research public primary-source documentation and model metadata",
-        "make reversible source/documentation/navigation changes and bounded repository-only implementation changes under current user direction",
-        "run bounded offline verification and local documentation builds after storage admission",
-        "inventory, download, train and evaluate local models below 10B parameters for the owner-authorized Wrench gateway experiment after every documented per-job gate passes"
+        "read and edit relevant repository source, docs, directives and bounded experiment design",
+        "run focused tests and bounded offline verification after storage admission",
+        "run admitted pinned local Qwen inference for useful task work",
+        "run usage-complete frontier comparisons under the cumulative $1-per-task grant and existing tighter campaign limits",
+        "use only the explicitly authorized credential route at dispatch, without discovery, exposure or persistence"
       ],
       "prohibited_actions": [
-        "enable production or learned routing",
-        "publish or deploy without applicable human authority",
-        "transfer v1 corpus or canary spend allowances to v2",
-        "access or expose credentials",
-        "upload private user data or train on sealed evaluation material",
-        "delete user data, another task artifact or sole known-good checkpoint",
-        "install or run a client integration, call a provider or spend money, collect or transfer real task data, train, download model weights or run model inference outside the owner's 2026-09-27 bounded local-model experiment authorization and its per-job gates",
-        "weaken authority or evidence gates",
-        "claim v2 implemented or useful based on design, synthetic passes or metadata"
+        "reset a stable task budget through a new run ID or ledger",
+        "count local tokens against frontier reduction or claim unused local drafts as useful work",
+        "promote zero-Qwen compression diagnostics to Qwen-assisted target proof",
+        "train or tune on sealed final material; capture or upload private task data without its scope and consent",
+        "activate production routing or publish without applicable authority",
+        "delete user data, other task artifacts, negative evidence or the only known-good model/data copy",
+        "expose credentials or inspect unrelated credential stores",
+        "claim representative utility from synthetic mechanics or incomplete usage"
       ],
       "data_access": [
-        "repository source, documentation and supplied design notes",
-        "public hash-bound model and package metadata",
-        "Wrench-authored synthetic fixtures admitted for the active open-development experiment",
-        "pinned public model files below 10B parameters only after complete storage and hardware admission; training and tuning data remain synthetic unless separately authorized"
+        "repository source/docs and supplied design notes",
+        "permitted Wrench-authored synthetic fixtures admitted for the bounded experiment",
+        "existing pinned local model packages after exact identity and runtime admission"
       ],
-      "token_budget": 0,
-      "monetary_budget": 0,
+      "local_token_weight": 0,
+      "token_budget": null,
+      "monetary_budget": 1.0,
+      "frontier_per_task_cap_usd": "1.00",
+      "monetary_budget_scope": "stable_task_id_across_all_arms_diagnostics_and_reruns",
+      "retain_tighter_campaign_caps": true,
       "max_retries": 1,
-      "historical_authorization_record": "docs/archive/2026-09-23-v1/COLLABORATION_CONTRACT.v1.json; old scoped approvals do not authorize v2 spending. The 2026-09-27 owner override is recorded in docs/goal/wrench-gateway-model-research/GOAL.md and its iteration reports; it authorizes only gated local experiments below 10B and still sets provider spending to zero.",
+      "authority_record": "Owner: 30% frontier target, local tokens effectively free, $1 per task, autonomous bounded work without repeat permission. See docs/goal/wrench-token30/GOAL.md. Older grants do not reset or expand this budget.",
       "artifact_limit_bytes_exclusive": 50000000000
     },
     "evidence_required": [
-      "both owner notes preserved and hash-checked",
-      "v1 incident report separates owner account from verified technical cause",
-      "complete v2 architecture, continual adapter lifecycle and staged experiment",
-      "current navigation and parent authority reconciled",
+      "same frozen tasks, source, requirements and independent oracle in both arms",
+      "successful frontier-only baseline and candidate consuming useful real local Qwen output",
+      "complete frontier input/output usage including all attempts, verification, retries, recovery and escalation",
+      "cumulative stable-task spend receipts and retained unknown-usage holds",
+      "pinned local and frontier identities, admitted storage and current resources",
       "historical receipts and unrelated edits preserved",
-      "strict storage ceiling and current inventory",
-      "git diff --check and applicable offline checks",
-      "independent review and repaired material findings"
+      "objective plan guard, focused checks and independent review"
     ],
     "human_checkpoint": {
       "type": "human.approve_commit",
       "required_for": [
         "production activation",
-        "deployment",
-        "publication",
-        "provider spending",
-        "permission or data-scope expansion",
+        "deployment or publication",
+        "data-scope expansion",
+        "frontier spending outside the current grant",
         "destructive data changes",
         "commit"
       ]
@@ -112,8 +109,8 @@
     },
     "rollback": {
       "available": true,
-      "procedure": "Restore direction from exact v1 snapshots if the owner requests reversal; use Git for moved source paths; preserve user edits and historical evidence. No running model/adapter state is changed by this task.",
-      "recovery_point": "docs/archive/2026-09-23-v1/snapshot-manifest.json plus source HEAD 87909b958ac252b0b3b2cc720a300babb26b733d"
+      "procedure": "Restore pre-hardening direction from exact snapshots only if the owner requests reversal; preserve unrelated changes. No model/adapter state changes in this edit.",
+      "recovery_point": "docs/archive/2026-10-07-token30-objective/snapshot-manifest.json"
     },
     "audit": {
       "decision_log": true,
@@ -121,12 +118,13 @@
       "artifacts": [
         "GOAL.md",
         "AGENTS.md",
-        "docs/northstar/",
-        "docs/goal/wrench-v2-realignment/",
-        "docs/reports/wrench-v2-realignment/",
-        "docs/evals/wrench-v2-realignment/",
-        "docs/archive/2026-09-23-v1/"
+        "COLLABORATION_CONTRACT.json",
+        "docs/goal/wrench-token30/",
+        "docs/archive/2026-10-08-clean-slate/LEARNINGS.md",
+        "docs/archive/2026-10-07-token30-objective/"
       ]
-    }
+    },
+    "objective_id": "wrench-token30-qwen-assisted-v1",
+    "goal": "docs/goal/wrench-token30/GOAL.md"
   }
 }

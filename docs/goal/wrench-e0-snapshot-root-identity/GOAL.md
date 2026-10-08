@@ -1,4 +1,8 @@
 # E0 root-object identity in source snapshots
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: bounded snapshot-v3 identity and continuity increments implemented
 Updated: 2026-09-24 (America/Edmonton)

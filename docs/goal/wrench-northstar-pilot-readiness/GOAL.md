@@ -1,4 +1,8 @@
 # North Star pilot readiness
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: protocol proposed; no participant or repository data authorized
 Owner: root orchestrator, under human product authority

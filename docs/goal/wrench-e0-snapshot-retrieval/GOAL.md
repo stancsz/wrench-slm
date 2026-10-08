@@ -1,4 +1,8 @@
 # E0 snapshot identity and exact-source retrieval
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: committed bounded implementation increment; POSIX pytest follow-up complete
 Supervisor: root agent as goal owner
@@ -13,11 +17,8 @@ and fail with explicit missing or stale results when they no longer match. This
 advances E0's snapshot and exact-source contract without copying sources into
 an unbounded cache or store.
 
-This is the next slice in the full v2 experiment, not all of E0 or production
-qualification. Customer/value proof, full E0-E4 requirements and data rules
-remain in the [North Star](../../northstar/README.md),
-[architecture](../../northstar/V2_ARCHITECTURE.md), and
-[experiment](../../northstar/V2_EXPERIMENT.md).
+This is a historical component record, not an active slice in an E0-E4
+experiment. Current work follows the [active objective](../wrench-token30/GOAL.md).
 
 ## Acceptance
 
@@ -38,7 +39,7 @@ remain in the [North Star](../../northstar/README.md),
 
 ## Constraints
 
-Follow the [storage/recovery policy](../../northstar/STORAGE_AND_RECOVERY.md):
+Follow the [storage/recovery policy](../../operations/STORAGE_AND_RECOVERY.md):
 strictly below 50 GB aggregate, fresh reservation before artifact-producing
 work, at least 5 GB destination-volume headroom, and 10% RAM/VRAM reserve for
 resource-intensive jobs. This slice must stay in memory and use bounded test
@@ -54,13 +55,12 @@ publish, deploy, collect user traces, or mutate source files through the runtime
 | Integrate and commit this increment | Complete | Commit `b23f925` |
 | Run POSIX pytest fixtures | Complete | Ubuntu 24.04 WSL: snapshot and artifact-store suites, 42 passed, 2 skipped |
 
-## Next E0 work after this slice
+## Historical E0 gates
 
 The bounded artifact store, snapshot/context bridges, namespace registry,
 serialized prompt gate, structural index, outcome receipt, and caller-owned
 preparation facade now exist as separately accepted slices. Full E0 acceptance
-remains open: runtime-matched prompt/tokenizer identity, complete lifecycle
-accounting, and end-to-end authority evidence still need evidence. E4
-matched-task utility across the three clients remains a separate open gate.
-Keep E1-E4 adapter, learning, and recovery gates open until their evidence
-exists.
+remains open as historical product gates. They are not the current work queue.
+Use this component only when the [active goal](../wrench-token30/GOAL.md)
+checkpoint names it as an evidenced dependency; matched-task utility is now
+judged by that goal's paired-comparison criteria.

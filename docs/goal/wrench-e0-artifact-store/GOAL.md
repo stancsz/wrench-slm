@@ -1,4 +1,8 @@
 # E0 bounded artifact store
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: bounded store with protected-by-default expiry eligibility implemented; production retention policy, scheduler, and recovery qualification pending
 Supervisor: root agent as goal owner

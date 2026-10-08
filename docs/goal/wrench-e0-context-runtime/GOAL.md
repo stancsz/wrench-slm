@@ -1,4 +1,8 @@
 # E0 deterministic context runtime
+> Supporting record only. Follow the [active goal](../wrench-token30/GOAL.md);
+> this file's next-step text has no authority unless that goal's checkpoint
+> adopts it as an evidenced dependency or the owner sets a new commitment.
+
 
 Status: complete for the query-ranked assembly increment
 Supervisor: root agent as goal owner
@@ -13,8 +17,8 @@ and omitted. This reduces manual context gathering for developers using coding
 agents, while keeping evidence inspectable and the no-model baseline
 deterministic.
 
-The customer, value hypothesis, and long-term product evidence remain in the
-[North Star](../../northstar/README.md) and [E0-E4 experiment](../../northstar/V2_EXPERIMENT.md).
+This is a historical component outcome. Current work follows the
+[active token-reduction goal](../wrench-token30/GOAL.md); no E0-E4 queue is active.
 This goal covers one production-directed E0 increment. It is not full E0, full
 v2, or a production qualification claim.
 
@@ -38,10 +42,9 @@ v2, or a production qualification claim.
 
 ## Scope and constraints
 
-Read [architecture](../../northstar/V2_ARCHITECTURE.md),
-[experiment](../../northstar/V2_EXPERIMENT.md),
-[storage/recovery](../../northstar/STORAGE_AND_RECOVERY.md), and the
-[v2 realignment reuse audit](../../reports/wrench-v2-realignment/reuse-audit.md).
+Read the [storage/recovery policy](../../operations/STORAGE_AND_RECOVERY.md)
+and the [v2 realignment reuse audit](../../reports/wrench-v2-realignment/reuse-audit.md)
+only if the active goal names them as dependencies.
 Keep all Wrench-owned footprint below 50 GB decimal. Any artifact-producing
 job requires a fresh status and reservation. Preserve 10% RAM/VRAM free for
 any workload that uses those resources. Do not download models, train, infer,
@@ -70,7 +73,7 @@ remain E0 exit evidence. The POSIX-host snapshot follow-up is complete; see the
 utility and full request-lifecycle accounting remain E4 gates. The larger
 product proceeds through E1-E4 only after experiment stage gates pass.
 
-## First integration target: OpenCode V2
+## Historical integration context: OpenCode V2
 
 OpenCode V2 is selected as the first client integration target; its plugin
 integration is not implemented. The isolated OpenCode v2.0.15 CLI is installed
@@ -89,16 +92,17 @@ Strict E0 no-model preparation remains standalone. An adapter must bind the
 correct session/worktree root to an exact source snapshot, gate the full
 semantic request projection, and preserve the supplied tools map. Fixture
 results support mechanics only. A proposed future corpus and outcome-oracle
-protocol is recorded in the [E4 preregistration template](../../northstar/E4_PREREGISTRATION_TEMPLATE.md):
+protocol was recorded in a now-retired E4 preregistration template:
 prospective, per-task opt-in OpenCode localization and failing-test/log tasks,
 then matched E4 workflows across all three clients, with frozen evidence/action
 checks and independent adjudication of disagreements where feasible. No real
 task corpus is admitted and no capture, transfer, evaluation, or run is
 authorized. These choices do not establish E4 utility.
 
-## Next action
+## Deferred E0 gates
 
-Next: implement and verify only after OpenCode version, provider serializer,
-tokenizer, active-session root semantics, and dispatch authority have pinned
-contracts. Until then, keep runtime identity, full accounting, authority, and
-matched-task evidence open; do not claim a production route.
+The OpenCode integration and its runtime, serialization, tokenizer and
+dispatch gates are unresolved historical product work. They are not required
+for the current token-reduction comparison and create no next action. Resume
+only if the [active goal](../wrench-token30/GOAL.md) checkpoint names a gate as
+an evidenced dependency.

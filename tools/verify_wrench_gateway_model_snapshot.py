@@ -13,7 +13,7 @@ BLOCK_BYTES = 8 * 1024 * 1024
 EXPECTED_MODEL_DIR = Path(r"C:\wrench-slm-data\weights\Qwen3.5-0.8B")
 APPROVED_WEIGHTS_ROOT = Path(r"C:\wrench-slm-data\weights")
 APPROVED_INVENTORY_ROOT = Path(r"C:\wrench-slm-data\artifacts\wrench-gateway-model-research")
-DEFAULT_CANDIDATE = Path("docs/northstar/model-candidate.json")
+DEFAULT_CANDIDATE = Path("docs/archive/2026-10-08-clean-slate/model-candidate.json")
 
 
 def _hashes(path: Path, size: int) -> tuple[str, str]:

@@ -2,7 +2,7 @@
 
 > Historical v1 source disposition. The recorded D: payload location is
 > unavailable on this host and is not a verified recovery copy. Current v2
-> direction is [the context/adapter experiment](../docs/northstar/V2_EXPERIMENT.md);
+> direction is the [single active objective](../docs/goal/wrench-token30/GOAL.md);
 > large new data belongs under C:\wrench-slm-data. No old dataset is automatically
 > admitted to v2 training.
 

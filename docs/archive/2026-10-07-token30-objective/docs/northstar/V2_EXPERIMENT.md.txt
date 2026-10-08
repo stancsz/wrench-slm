@@ -1,10 +1,86 @@
-# Experiment v2: useful Layer 1 decisions that improve from experience
+# Experiment v2: prove selective small-model routing in real workflows
 
-Status: staged; E0 is not accepted. The owner stopped the tested small local
-semantic-controller direction on 2026-09-26. Full v2 acceptance and end-to-end
-frontier-token savings remain unmeasured.
+Status: staged; end-to-end utility and release readiness remain unproven.
 Owner: human product owner
-Planning date: 2026-09-23 (America/Edmonton)
+Updated: 2026-10-03 (America/Edmonton)
+
+## Current owner direction, 2026-10-03
+
+The owner added a first bounded target on 2026-10-06: **30% frontier token
+reduction for the same family of complex tasks**, with quality preserved.
+The owner clarified that local model tokens are free for this target.
+The [30% goal](../goal/wrench-token30/GOAL.md) defines the first synthetic
+local diagnosis pilot and subsequent stronger-model proof. Count all frontier
+input, output, recovery and retry usage for matched tasks; exclude local tokens
+from the savings ratio. A local-model diagnostic or prompt reduction cannot
+establish frontier savings or product utility.
+
+Wrench is not intended to replace frontier models for every task. It should
+use a small local model for task families where held-out evidence supports
+reliable results, then hand uncertain or difficult tasks to the user's stronger
+model. The Wrench LoRA enhances Qwen with task-routing decisions Qwen does not
+provide by default. Deterministic policy controls available routes and
+dispatch; independent checks verify local results.
+
+The goal is the fastest credible path to a useful, release-ready product and a
+reproducible Hugging Face release if model/data rights permit it. Do not require
+a fixed local/frontier percentage. Expand local coverage task family by task
+family only when quality, safety, and full-lifecycle cost evidence supports
+it. Keep the frontier-only path available as the fallback and comparison.
+
+Current sequence:
+
+1. Complete one deterministic, client-connected context/routing baseline with
+   exact source, route, outcome, retry, and usage lineage.
+2. Build a paired task runner bound to frozen manifests. Compare frontier-only,
+   deterministic Wrench with fallback, and Qwen plus Wrench routing LoRA plus
+   the same fallback. Start synthetic-only to validate mechanics, then use
+   permitted representative tasks for utility claims.
+3. Train or tune the LoRA only after the baseline identifies routing errors
+   that reviewed labels can address. Freeze thresholds before final scoring.
+4. Promote only task families with acceptable held-out success and safety and
+   a measured total-cost or latency benefit. Keep a verified frontier fallback.
+5. Release one supported client path with installation, recovery, security,
+   licensing, and reproducibility evidence. Publish model or data artifacts
+   only with cleared rights, provenance, hashes, and an honest model card.
+
+Synthetic passes prove plumbing, not utility. Full lifecycle counts include
+local inference, context assembly, retries, verification, recovery reads,
+frontier calls and billed charges. Report quality, routing coverage, frontier
+tokens, all-in cost, latency, and resource use as separate measures.
+
+The dated owner decisions and experiment records below preserve earlier
+scopes and evidence. Where they assume fixed 95/5 routing or mandatory personal
+adaptation, this 2026-10-03 direction supersedes them. Hash-bound receipts and
+historical results remain unchanged.
+
+## Hugging Face release checklist
+
+Publish a model or dataset only after the first supported workflow passes its
+release gates and the rights holder permits that exact artifact to be shared.
+The release package should include:
+
+- A model card naming the exact Qwen base revision, Wrench LoRA revision,
+  intended task families, routing labels, training and evaluation methods,
+  supported runtime, measured hardware, and known limitations.
+- A clear license and provenance record for the base model, adapter, tokenizer,
+  code, and each released dataset. Do not assume upstream rights transfer
+  automatically to a derivative.
+- Immutable artifact revisions and SHA-256 manifests for weights, tokenizer,
+  configuration, evaluation manifests, and release code.
+- Reproduction steps with pinned dependencies and commands, plus task-family
+  results for coverage, route errors, calibration, paired success, fallback,
+  frontier tokens, total cost, latency, and peak resources.
+- Data statements that distinguish synthetic mechanics fixtures from permitted
+  representative tasks, document consent and redaction where applicable, and
+  confirm sealed final examples were excluded from training and tuning.
+- Installation, disable/reset, rollback, and recovery instructions, with the
+  deterministic policy boundary and frontier fallback behavior documented.
+
+If weight or dataset rights are not cleared, publish only the releasable code
+and evaluation protocol, and state which artifacts cannot be redistributed.
+The Hugging Face package must report the exact tested artifacts and failures;
+synthetic passes alone do not justify a production claim.
 
 ## Owner decision, 2026-09-27: bounded gateway experiment reopened
 
@@ -87,7 +163,7 @@ Push a provider-free demo MVP with Wrench context preparation, a real local
 model, a deterministic code-task verifier, and paired baseline/prepared prompt
 and all-token, latency, resource, retry and recovery receipts. The MVP may use
 a fixed mock response to illustrate the frontier branch, explicitly marked
-as mock. This does not alter the 95/5/95 and 95%-cheaper acceptance criteria,
+as mock. This does not alter the historical 95/5/95 and 95%-cheaper acceptance criteria,
 authorize paid calls to forced SubRoute, or count a synthetic task as product
 utility. See the [active gateway goal](../goal/wrench-gateway-model-research/GOAL.md)
 for MVP definition and progress.
@@ -112,27 +188,24 @@ accepted.
 
 ## Question and intended product
 
-Can a deterministic context runtime plus a native small controller reduce the
-paid work of a coding agent, while a small personal LoRA improves local
-decisions without harming core behavior, safety or recoverability?
+Can Wrench use Qwen plus a Wrench routing LoRA to handle a useful subset of
+developer tasks locally, and return uncertain or difficult tasks to a stronger
+model, while maintaining task success and lowering full-workflow cost?
 
-The intended end state includes the full Layer 1 pipeline and all three weight
-components. A deterministic baseline, binary classifier, adapter file or
-synthetic test pass cannot by itself complete this experiment.
-
-Start with developers using OpenCode, DeepSeek Harness or Claude Code.
-Use one supported integration for the first replay, then demonstrate the same
-bounded context contract through all three before claiming full client support.
-Do not add unrelated client integrations.
+The first release should prove one coherent workflow through one supported
+client. Add other clients only when the first path is useful and stable. The
+product may ship with a measured subset of local task families and frontier
+fallback; it does not need to claim broad local autonomy or full frontier
+replacement.
 
 ## Hypotheses and comparisons
 
 | Hypothesis | Matched comparison | What could falsify it |
 | --- | --- | --- |
-| Context preparation removes paid mechanical work | Direct downstream baseline versus deterministic runtime | Extra retrieval/corrections erase token or latency savings |
-| A small controller improves context choices | Deterministic runtime versus frozen Qwen plus Wrench-Core | No held-out quality/efficiency gain after inference overhead |
-| Local experience improves behavior | Base+core versus base+core+personal on later tasks | No independent improvement, forgetting, unsafe routes or excessive training cost |
-| The learning stack remains recoverable | Active/prior/candidate across interruption and reset | Corrupt activation, mutated base/core, missing sources or failed rollback |
+| Wrench preparation reduces repeated context work | Direct frontier workflow versus deterministic Wrench with the same fallback | Added retrieval, verification, or recovery erases the full-lifecycle benefit |
+| Wrench LoRA improves task routing beyond base Qwen | Deterministic router and base Qwen versus Qwen plus routing LoRA on identical episodes | No held-out gain in safe local coverage or net workflow benefit after overhead |
+| Selective local handling preserves useful outcomes | Frontier-only versus hybrid for each proposed local task family | Material quality loss, unsafe route, poor calibration, or costly fallback |
+| Candidate routing is recoverable | Active/prior/candidate across interruption and reset | Corrupt activation, mutated base, missing sources, or failed rollback |
 
 The primary reference is [Headroom](REFERENCES.md), with Aider for repository
 navigation. Compare actual supported workflows, not published percentages.
@@ -141,22 +214,22 @@ navigation. Compare actual supported workflows, not published percentages.
 
 | Stage | Work | Required evidence to proceed |
 | --- | --- | --- |
-| E0 deterministic baseline | Snapshot/index input, lexical and structural candidates, exact hot evidence, bounded context compiler, reversible artifact store, namespace registry, rule/no-model route and outcome receipts | Exact-source round trips, final serialized prompt within budget, explicit omissions/stale misses, zero unauthorized actions, complete baseline accounting |
-| E1 core adapter | Verify pinned Qwen runtime/total size and adapter composition; train curated Wrench-Core decision tasks | Fresh group/repository holdout; improvement versus E0 on a predeclared decision metric after local overhead; no authority/regression failures |
-| E2 experience and personal adapter | Opt-in local capture, reviewed labels, bounded replay, asynchronous candidate fitting with base/core frozen | Fresh temporal holdout; better personal-task decisions than base+core; no core gate failures, frozen base/core hashes and bounded resource cost |
-| E3 promotion/recovery | Atomic active manifest, request version pinning, retained prior/factory state, delete/reset and core-version compatibility | Failed/incomplete candidates never activate; missing/corrupt files fail closed; restart, interruption and rollback restore expected outputs |
-| E4 integrated utility | Matched replays across the three named clients, real tasks, cold/warm caches, concurrency, cancellation/timeouts and sustained use | All authority, quality, accounting, resource and operational gates; human production decision follows evidence |
+| E0 measured baseline | One client path, deterministic context preparation, bounded source retrieval, route/outcome joins, exact prompt/usage accounting, safe fallback | Same frozen tasks run through direct baseline and Wrench path; exact-source provenance, complete attempts, verified outcomes, no unauthorized actions |
+| E1 route capability | Compare deterministic routing, base Qwen, and Qwen plus Wrench LoRA on frozen task-family episodes | Held-out route quality and calibration; eligible local task success; measured coverage, fallback, full lifecycle cost and latency |
+| E2 focused expansion | Add one supported task family or LoRA update at a time, based on reviewed failure/outcome evidence | Fresh family/time holdout; no material quality or safety regression; benefit after local inference and recovery cost |
+| E3 release recovery | Versioned route/adapter manifest, request version pins, retained prior state, install/uninstall, reset and rollback | Interrupted/incomplete candidates never activate; restart, corruption, missing files and rollback restore expected behavior |
+| E4 release evidence | Representative matched tasks on the first client, independent review, security/privacy/license checks, usable docs and public artifact package | Predeclared quality and safety gates pass; net practical benefit is reproducible; no unsupported claims; maintainable install and recovery |
 
 Use the [E4 preregistration template](E4_PREREGISTRATION_TEMPLATE.md) to
 freeze any future matched-task study. The template is protocol-only: completing
 it does not admit data or authorize capture, transfer, or a run. The authored
 synthetic seed remains mechanics-only and is excluded from utility aggregates.
 
-This realignment prepares these stages. It does not run them. The initial
-architecture builds E0 before fitting and replaces heuristics one decision
-at a time: rerank, retrieve/stop, tool selection, routing, then compression
-only where justified. Retain ablations so a slow or harmful learned component
-can be disabled without dismantling the runtime.
+Follow this sequence to reduce rework. Finish the paired measurement seam
+before another training run. Keep deterministic routing and the frontier-only
+path as controls. Add the routing LoRA only where the baseline identifies a
+decision error that reviewed data can address. Keep ablations so the LoRA can
+be disabled without dismantling context preparation or fallback.
 
 The first bounded pilot should cover localization, failing-test/log triage and
 tool/context selection across more than one repository/language. Include exact
@@ -179,20 +252,21 @@ The source six-action oracles remain reusable authority checks.
 Each experience record needs request/session/task identity, snapshot and
 candidate IDs, selected/omitted evidence, permitted choices, actual route,
 outcome/verifier evidence, corrections, rights/consent, redaction/review,
-base/core/personal identities and timestamps. Record ambiguity and discard
+base-model and routing-LoRA identities and timestamps. Record ambiguity and discard
 unverifiable learning targets. Never retain hidden teacher reasoning.
 
-Split by repository/task family and time before training. Maintain separate
-curated core training, development, immutable core regression, personalization
-train/replay and fresh temporal holdout. Do not mine errors from the sealed
-final set into training; retire an exposed evaluation set honestly and replace
-it through a separately frozen process. Previously uncertain v1 final material
-stays quarantined.
+The initial release candidate uses reviewed, outcome-backed routing examples,
+not continuous online or personal adaptation. Split by repository/task family
+and time before fitting. Maintain separate routing train, development and
+calibration, immutable regression, and fresh temporal holdout sets. Do not mine
+errors from the sealed final set into training; retire an exposed evaluation
+set honestly and replace it through a separately frozen process. Previously
+uncertain v1 final material stays quarantined.
 
 Corrections and failed-then-successful routes have high candidate value, but
-are not automatically causal ground truth. Review and verify them. The notes'
-replay percentages, ranks, batch cadence and example weights are tunable
-hypotheses, not accepted production constants.
+are not automatically causal ground truth. Review and verify them before use.
+Any later replay or continual-update scheme is separate future research and
+needs its own safety, forgetting, cost, and rollback evidence.
 
 ## Accounting and quality gates
 
@@ -200,32 +274,36 @@ Use these arms on identical frozen tasks and comparable downstream budgets:
 
 1. Downstream stronger model only, with its normal context.
 2. Deterministic Wrench plus the same downstream/fallback model.
-3. Deterministic Wrench plus base+Wrench-Core controller and the same fallback.
-4. The same system plus a personal adapter trained only on prior permitted data.
+3. Qwen plus Wrench routing LoRA plus the same permitted frontier fallback.
 
 Count the full request lifecycle, including tool schemas, auxiliary/title
 calls, verification, local inference, context rebuilds, cache misses, retrieval
 page faults, repairs, retries and fallback. Report local token/compute/energy
 and amortized learning costs separately from paid frontier tokens and dollars.
 
-Report paired final-task success and 95% confidence intervals; zero prohibited
-accepts, unexpected mutations, policy bypasses or data leakage is mandatory.
-A component must improve its predeclared primary metric without material final
-success regression. Insufficient power or uncertain non-inferiority is
-INCONCLUSIVE. Do not turn a small diagnostic sample into a release claim.
+Report paired final-task success and uncertainty by task family. Zero
+prohibited accepts, unexpected mutations, policy bypasses, or data leakage is
+mandatory. A local route must meet a predeclared quality and safety margin and
+show practical full-workflow benefit after local inference, verification,
+fallback, and recovery costs. Insufficient evidence is INCONCLUSIVE. Do not
+turn a small diagnostic sample into a release claim.
 
-Production ambitions retained from v1 are at least 95% net frontier-token
-savings, at least 90% weighted mechanical-workload coverage and at least 50%
-median/p95 end-to-end latency improvement on successful eligible tasks.
-Keep the [legacy gates](../misc/v1/WRENCH_4B_PRODUCTION_UTILITY_TEST_CONTRACT.md)
-as the historical comparison contract. Predeclare a v2 release contract for
-the broader workload before claiming production acceptance; the target cannot
-be lowered after results merely to obtain a pass.
+There is no fixed local completion or frontier escalation quota. Choose a
+confidence threshold on development data, freeze it before holdout evaluation,
+and report coverage, route errors, calibration, abstentions, fallback, task
+success, tokens, all-in cost, latency, and resources separately. Revisit the
+threshold only through a new development cycle, never by tuning against final
+results. Historical 95/5 and 95%-savings targets remain traceable in older
+records but do not define the current product-wide acceptance gate.
 
 For observed frontier token savings use:
 `1 - (all Wrench-workflow frontier tokens / all baseline frontier tokens)`.
 Require a nonzero baseline denominator, matched tokenizer/usage conventions
-and complete call accounting. "Net" also requires accounting for local
+and complete call accounting. The first 30% target uses this frontier-only
+ratio; local tokens do not affect its numerator or denominator. Additional
+local planning, verified work or retries can help if they reduce frontier
+usage while retaining quality. Local-token growth alone is not a failure of
+that target. "Net" all-in economics also requires accounting for local
 inference/verification/retries/training economics using an explicit frozen
 cost conversion, not subtracting unlike tokens without explanation.
 
@@ -234,12 +312,11 @@ tokenization of the unique logical source material for the task. Report both
 counts; do not add repeated local reads to the denominator. This metric cannot
 substitute for baseline savings, task success or dollars.
 
-For the personal adapter, require zero new core invariant failures, no material
-paired regression, statistically supported improvement on the chosen fresh
-personal metric, and save/load/reset parity. No threshold may be tuned on final
-results. Sample size and acceptable quality margin must be set before a run;
-the owner's illustrative 1-2% suggestion is not an automatic permission to
-accept observed loss.
+For each routing-LoRA candidate, require zero new safety/policy failures, no
+material paired success regression, demonstrated route calibration and
+family-level utility, plus save/load/reset parity. Set sample size and
+acceptable quality margins before each run. A route threshold or task family
+cannot be accepted because aggregate token savings hide a weaker task outcome.
 
 ## Data source decision
 
@@ -292,6 +369,8 @@ sustained operation. The smaller-device and phone milestones follow a useful
 validated desktop workflow. Multi-adapter banks and shared compute remain
 later research.
 
-A complete v2 result requires E0 through E4, with personal adaptation and
-recovery demonstrated. The documentation/cleanup goal has its own narrower
+A complete v2 result requires E0 through E4, with the selective routing
+candidate lifecycle and recovery demonstrated. The LoRA remains replaceable
+and should ship only if it improves measured routing over simpler controls.
+The documentation/cleanup goal has its own narrower
 completion audit and must never be presented as a completed v2 runtime.
