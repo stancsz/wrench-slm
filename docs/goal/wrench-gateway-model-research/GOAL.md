@@ -14,9 +14,10 @@ objectives in earlier records are historical.
 The complete pre-hardening goal, including its iteration ledger, is preserved
 byte-for-byte in the
 [archive](../../archive/2026-10-07-token30-objective/docs/goal/wrench-gateway-model-research/GOAL.md.txt).
-Original [evaluation reports](../../evals/wrench-gateway-model-research/) and
-[research reports](../../reports/wrench-gateway-model-research/) remain in place
-with their recorded identities and negative results.
+The concise [gateway findings archive](../../archive/2026-10-08-clean-slate/GATEWAY_LEARNINGS.md)
+retains reusable controls and the limits of prior evidence. Detailed
+iteration reports and experimental runners were pruned from the working tree
+to prepare for the active paired experiment.
 
 Reuse its context, verifier, local runtime, route/usage and durable-spend
 components only when needed for the active paired experiment. Old claims of
